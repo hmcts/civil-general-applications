@@ -101,11 +101,19 @@ pmd {
 
 jacocoTestReport {
   executionData(test, integration)
+  executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+  subprojects.each {
+    sourceSets it.sourceSets.main
+  }
   reports {
-    xml.required = true
-    csv.required = false
+    xml.enabled = true
+    csv.enabled = false
     xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
   }
+}
+
+jacocoTestReport.dependsOn {
+  subprojects*.test
 }
 
 project.tasks['sonarqube'].dependsOn jacocoTestReport
