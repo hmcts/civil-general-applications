@@ -16,6 +16,13 @@ version = '0.0.1'
 allprojects {
   sourceCompatibility = '11'
   targetCompatibility = '11'
+
+  apply plugin: 'jacoco'
+
+  jacoco {
+    toolVersion = '0.8.5' // jacocoMavenPluginVersion
+    reportsDir = file("$buildDir/reports/jacoco")
+  }
 }
 
 sourceSets {
@@ -101,20 +108,31 @@ pmd {
 
 jacocoTestReport {
   executionData(test, integration)
+  executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+  subprojects.each {
+    sourceSets it.sourceSets.main
+  }
   reports {
-    xml.required = true
-    csv.required = false
+    xml.enabled = true
+    csv.enabled = false
     xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
 
-project.tasks['sonarqube'].dependsOn jacocoTestReport
+jacocoTestReport.dependsOn {
+  subprojects*.test
+}
+
+project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
 
 sonarqube {
   properties {
     property "sonar.projectName", "Reform :: civil-general-applications"
-    property "sonar.projectKey", "uk.gov.hmcts.reform:civil-general-applications"
+    property "sonar.projectKey", "civil-service"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
+    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java, **/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
+    property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
+    property "sonar.host.url", "https://sonar.reform.hmcts.net/"
   }
 }
 
