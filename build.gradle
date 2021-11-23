@@ -16,6 +16,13 @@ version = '0.0.1'
 allprojects {
   sourceCompatibility = '11'
   targetCompatibility = '11'
+
+  apply plugin: 'jacoco'
+
+  jacoco {
+    toolVersion = '0.8.5' // jacocoMavenPluginVersion
+    reportsDir = file("$buildDir/reports/jacoco")
+  }
 }
 
 sourceSets {
