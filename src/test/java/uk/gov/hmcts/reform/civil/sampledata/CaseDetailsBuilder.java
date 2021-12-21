@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
-
 @SuppressWarnings("unchecked")
 public class CaseDetailsBuilder {
 

@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess.StartGeneralApplicationBusinessProcessCallbackHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -46,7 +45,8 @@ class StartGeneralApplicationBusinessProcessCallbackHandlerTest extends BaseCall
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         AboutToStartOrSubmitCallbackResponse response
-            = (AboutToStartOrSubmitCallbackResponse) startGeneralApplicationBusinessProcessCallbackHandler.handle(params);
+            = (AboutToStartOrSubmitCallbackResponse) startGeneralApplicationBusinessProcessCallbackHandler
+            .handle(params);
 
         CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
         BusinessProcess businessProcess = data.getBusinessProcess();
@@ -64,7 +64,8 @@ class StartGeneralApplicationBusinessProcessCallbackHandlerTest extends BaseCall
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         AboutToStartOrSubmitCallbackResponse response
-            = (AboutToStartOrSubmitCallbackResponse) startGeneralApplicationBusinessProcessCallbackHandler.handle(params);
+            = (AboutToStartOrSubmitCallbackResponse) startGeneralApplicationBusinessProcessCallbackHandler
+            .handle(params);
 
         assertThat(response.getErrors()).contains("Concurrency Error");
     }

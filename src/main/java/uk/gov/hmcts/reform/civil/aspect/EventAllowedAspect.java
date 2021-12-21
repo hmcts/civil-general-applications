@@ -31,7 +31,6 @@ public class EventAllowedAspect {
 
     @Pointcut("execution(* *(*)) && @annotation(EventAllowed)")
     public void eventAllowedPointCut() {
-        //Pointcut no implementation required
     }
 
     @Around("eventAllowedPointCut() && args(callbackParams))")
@@ -41,8 +40,7 @@ public class EventAllowedAspect {
     ) throws Throwable {
         if (callbackParams.getType() != ABOUT_TO_START) {
             return joinPoint.proceed();
-        }
-         else {
+        } else {
             CaseEvent caseEvent = CaseEvent.valueOf(callbackParams.getRequest().getEventId());
             CaseDetails caseDetails = callbackParams.getRequest().getCaseDetails();
             log.info(format(

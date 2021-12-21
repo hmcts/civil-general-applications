@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
@@ -19,23 +18,21 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
-
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.*;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-
 
 @Service
 @RequiredArgsConstructor
 public class CreateGeneralApplicationHandler extends CallbackHandler {
-
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
 
     public static final String CONFIRMATION_SUMMARY = "<br/>Your Court will make a decision on [this application]"
         + " Summary judgement"
         + "You have marked this application as urgent"
         + " The other [ party's / [arties'] legal representative has been notified"
         + "[not been notified] that you have submitted this application.]";
-
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
     private final ObjectMapper objectMapper;
 
     @Override

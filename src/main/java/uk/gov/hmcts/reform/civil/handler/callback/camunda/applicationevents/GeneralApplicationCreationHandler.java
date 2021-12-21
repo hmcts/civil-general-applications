@@ -40,6 +40,6 @@ public class GeneralApplicationCreationHandler extends CallbackHandler {
     }
 
     private CallbackResponse createGeneralApplication(CallbackParams callbackParams) {
-        return (null) ;
+        return (null);
     }
 }

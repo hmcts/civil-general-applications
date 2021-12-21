@@ -12,8 +12,9 @@ public class StartGeneralApplicationBusinessProcessExternalTaskListener {
     private static final String TOPIC = "START_BUSINESS_PROCESS_GASPEC";
 
     @Autowired
-    private StartGeneralApplicationBusinessProcessExternalTaskListener(StartGeneralApplicationBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
-                                                     ExternalTaskClient client) {
+    private StartGeneralApplicationBusinessProcessExternalTaskListener(
+            StartGeneralApplicationBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
+            ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(startGeneralApplicationBusinessProcessTaskHandler).open();
     }

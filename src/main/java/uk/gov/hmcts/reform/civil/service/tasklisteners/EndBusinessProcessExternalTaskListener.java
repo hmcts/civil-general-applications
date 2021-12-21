@@ -12,7 +12,9 @@ public class EndBusinessProcessExternalTaskListener {
     private static final String TOPIC = "END_BUSINESS_PROCESS_GASPEC";
 
     @Autowired
-    private EndBusinessProcessExternalTaskListener(EndGeneralApplicationBusinessProcessTaskHandler handler, ExternalTaskClient client) {
+    private EndBusinessProcessExternalTaskListener(
+            EndGeneralApplicationBusinessProcessTaskHandler handler,
+            ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(handler).open();
     }

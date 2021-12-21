@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.*;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.FLOW_NAME;
 
 @Component
 @RequiredArgsConstructor
@@ -18,9 +20,7 @@ public class StateFlowEngine {
     private final CaseDetailsConverter caseDetailsConverter;
 
     public StateFlow build() {
-        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME)
-            .initial(DRAFT)
-            .transitionTo(APPLICATION_SUBMITTED)
+        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME).initial(DRAFT).transitionTo(APPLICATION_SUBMITTED)
             .build();
     }
 
@@ -33,8 +33,7 @@ public class StateFlowEngine {
     }
 
     public boolean hasTransitionedTo(CaseDetails caseDetails, FlowState.Main state) {
-        return evaluate(caseDetails).getStateHistory().stream()
-            .map(State::getName)
+        return evaluate(caseDetails).getStateHistory().stream().map(State::getName)
             .anyMatch(name -> name.equals(state.fullName()));
     }
 

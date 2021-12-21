@@ -13,7 +13,6 @@ import java.util.List;
 
 import static java.time.LocalDate.now;
 
-
 public class CaseDataBuilder {
 
     public static final String LEGACY_CASE_REFERENCE = "000DC001";
@@ -58,5 +57,5 @@ public class CaseDataBuilder {
             .build();
     }
 
-    }
+}
 

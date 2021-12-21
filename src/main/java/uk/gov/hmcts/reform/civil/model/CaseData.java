@@ -7,7 +7,9 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
+
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+
 @Data
 @Builder(toBuilder = true)
 public class CaseData implements MappableObject {

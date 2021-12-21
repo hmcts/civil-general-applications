@@ -72,5 +72,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
         return null;
     }
 
-   private String getDescription(String eventId, Map data) { return null; }
+    private String getDescription(String eventId, Map data) {
+        return null;
+    }
 }

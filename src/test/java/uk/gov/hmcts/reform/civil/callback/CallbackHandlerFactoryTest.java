@@ -25,7 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackVersion.V_1;
 import static uk.gov.hmcts.reform.civil.callback.CallbackVersion.V_2;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.*;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 
 @SpringBootTest(classes = {
     CallbackHandlerFactory.class,
@@ -44,6 +46,89 @@ class CallbackHandlerFactoryTest {
     public static final CallbackResponse ALREADY_HANDLED_EVENT_RESPONSE = AboutToStartOrSubmitCallbackResponse.builder()
         .errors(List.of(format("Event %s is already processed", CREATE_GENERAL_APPLICATION.name())))
         .build();
+    @Autowired
+    private CallbackHandlerFactory callbackHandlerFactory;
+
+    @Test
+    void shouldThrowCallbackException_whenUnknownEvent() {
+        CallbackRequest callbackRequest = CallbackRequest
+            .builder()
+            .eventId("nope")
+            .build();
+        CallbackParams params = CallbackParams.builder()
+            .request(callbackRequest)
+            .type(ABOUT_TO_SUBMIT)
+            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
+            .version(V_1)
+            .build();
+
+        assertThatThrownBy(() -> callbackHandlerFactory.dispatch(params))
+            .isInstanceOf(CallbackException.class)
+            .hasMessage("Could not handle callback for event nope");
+    }
+
+    @Test
+    void shouldThrowCallbackException_whenUnknownVersion() {
+        CallbackRequest callbackRequest = CallbackRequest
+            .builder()
+            .eventId(INITIATE_GENERAL_APPLICATION.name())
+            .build();
+        CallbackParams params = CallbackParams.builder()
+            .request(callbackRequest)
+            .type(ABOUT_TO_SUBMIT)
+            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
+            .version(V_2)
+            .build();
+
+        assertThatThrownBy(() -> callbackHandlerFactory.dispatch(params))
+            .isInstanceOf(CallbackException.class)
+            .hasMessage(
+                "Callback for event INITIATE_GENERAL_APPLICATION, "
+                    + "version V_2, type ABOUT_TO_SUBMIT and page id null not implemented");
+    }
+
+    @Test
+    void shouldProcessEvent_whenValidCaseEvent() {
+        CallbackRequest callbackRequest = CallbackRequest
+            .builder()
+            .eventId(INITIATE_GENERAL_APPLICATION.name())
+            .caseDetailsBefore(CaseDetails.builder().data(Map.of("state", "created")).build())
+            .build();
+
+        CallbackParams params = CallbackParams.builder()
+            .request(callbackRequest)
+            .type(ABOUT_TO_SUBMIT)
+            .version(V_1)
+            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
+            .build();
+
+        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
+
+        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
+    }
+
+    @Test
+    void shouldProcessEvent_whenEventHasNoCamundaTask() {
+        CallbackRequest callbackRequest = CallbackRequest
+            .builder()
+            .eventId(INITIATE_GENERAL_APPLICATION.name())
+            .caseDetailsBefore(CaseDetails.builder().data(Map.of(
+                "businessProcess",
+                BusinessProcess.builder().activityId("unProcessedTask").build()
+            )).build())
+            .build();
+
+        CallbackParams params = CallbackParams.builder()
+            .request(callbackRequest)
+            .type(ABOUT_TO_SUBMIT)
+            .version(V_1)
+            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
+            .build();
+
+        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
+
+        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
+    }
 
     @TestConfiguration
     public static class OverrideBean {
@@ -117,88 +202,5 @@ class CallbackHandlerFactoryTest {
                 }
             };
         }
-    }
-
-    @Autowired
-    private CallbackHandlerFactory callbackHandlerFactory;
-
-    @Test
-    void shouldThrowCallbackException_whenUnknownEvent() {
-        CallbackRequest callbackRequest = CallbackRequest
-            .builder()
-            .eventId("nope")
-            .build();
-        CallbackParams params = CallbackParams.builder()
-            .request(callbackRequest)
-            .type(ABOUT_TO_SUBMIT)
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
-            .version(V_1)
-            .build();
-
-        assertThatThrownBy(() -> callbackHandlerFactory.dispatch(params))
-            .isInstanceOf(CallbackException.class)
-            .hasMessage("Could not handle callback for event nope");
-    }
-
-    @Test
-    void shouldThrowCallbackException_whenUnknownVersion() {
-        CallbackRequest callbackRequest = CallbackRequest
-            .builder()
-            .eventId(INITIATE_GENERAL_APPLICATION.name())
-            .build();
-        CallbackParams params = CallbackParams.builder()
-            .request(callbackRequest)
-            .type(ABOUT_TO_SUBMIT)
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
-            .version(V_2)
-            .build();
-
-        assertThatThrownBy(() -> callbackHandlerFactory.dispatch(params))
-            .isInstanceOf(CallbackException.class)
-            .hasMessage(
-                "Callback for event INITIATE_GENERAL_APPLICATION, version V_2, type ABOUT_TO_SUBMIT and page id null not implemented");
-    }
-
-    @Test
-    void shouldProcessEvent_whenValidCaseEvent() {
-        CallbackRequest callbackRequest = CallbackRequest
-            .builder()
-            .eventId(INITIATE_GENERAL_APPLICATION.name())
-            .caseDetailsBefore(CaseDetails.builder().data(Map.of("state", "created")).build())
-            .build();
-
-        CallbackParams params = CallbackParams.builder()
-            .request(callbackRequest)
-            .type(ABOUT_TO_SUBMIT)
-            .version(V_1)
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
-            .build();
-
-        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
-
-        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
-    }
-
-    @Test
-    void shouldProcessEvent_whenEventHasNoCamundaTask() {
-        CallbackRequest callbackRequest = CallbackRequest
-            .builder()
-            .eventId(INITIATE_GENERAL_APPLICATION.name())
-            .caseDetailsBefore(CaseDetails.builder().data(Map.of(
-                "businessProcess",
-                BusinessProcess.builder().activityId("unProcessedTask").build()
-            )).build())
-            .build();
-
-        CallbackParams params = CallbackParams.builder()
-            .request(callbackRequest)
-            .type(ABOUT_TO_SUBMIT)
-            .version(V_1)
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
-            .build();
-
-        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
-
-        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
     }
 }

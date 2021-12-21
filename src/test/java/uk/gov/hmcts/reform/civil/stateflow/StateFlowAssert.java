@@ -14,7 +14,8 @@ public class StateFlowAssert extends AbstractAssert<StateFlowAssert, StateFlow> 
         return new StateFlowAssert(actual);
     }
 
-   StateFlowAssert enteredStates(String... states) {
+    StateFlowAssert enteredStates(String... states) {
+
         isNotNull();
 
         StateMachineTestPlan<String, String> plan =
