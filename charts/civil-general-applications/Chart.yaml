@@ -10,3 +10,7 @@ dependencies:
   - name: java
     version: 3.6.0
     repository: '@hmctspublic'
+- name: camunda-bpm
+  version: 0.0.18
+  repository: '@hmctspublic'
+  condition: camunda-bpm.enabled
