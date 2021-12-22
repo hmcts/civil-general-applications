@@ -11,6 +11,7 @@ public class StartGeneralApplicationBusinessProcessExternalTaskListener {
 
     private static final String TOPIC = "START_BUSINESS_PROCESS_GASPEC";
 
+    @SuppressWarnings("checkstyle:LineLength")
     @Autowired
     private StartGeneralApplicationBusinessProcessExternalTaskListener(
             StartGeneralApplicationBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
