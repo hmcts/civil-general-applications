@@ -3,14 +3,32 @@ appVersion: "1.0"
 description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
-version: 0.0.1
+version: 0.0.2
 maintainers:
-  - name: HMCTS civil team
+  - name: HMCTS Civil team
+
 dependencies:
   - name: java
     version: 3.6.0
     repository: '@hmctspublic'
-- name: camunda-bpm
-  version: 0.0.18
-  repository: '@hmctspublic'
-  condition: camunda-bpm.enabled
+  - name: ccd
+    version: 6.0.0
+    repository: '@hmctspublic'
+    tags:
+      - civil-ccd-stack
+  - name: xui-webapp
+    version: ~0.2.16
+    repository: '@hmctspublic'
+    condition: xui-webapp.enabled
+  - name: idam-pr
+    version: ~2.2.3
+    repository: '@hmctspublic'
+    condition: idam-pr.enabled
+  - name: postgresql
+    version: ~8.9.8
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: camunda-bpm
+    version: 0.0.18
+    repository: '@hmctspublic'
+    condition: camunda-bpm.enabled

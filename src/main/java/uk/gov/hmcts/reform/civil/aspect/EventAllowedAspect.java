@@ -33,6 +33,7 @@ public class EventAllowedAspect {
     public void eventAllowedPointCut() {
     }
 
+    @SuppressWarnings({"checkstyle:RightCurly", "checkstyle:Indentation"})
     @Around("eventAllowedPointCut() && args(callbackParams))")
     public Object checkEventAllowed(
         ProceedingJoinPoint joinPoint,

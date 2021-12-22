@@ -44,8 +44,86 @@ class CallbackHandlerFactoryTest {
         .build();
 
     public static final CallbackResponse ALREADY_HANDLED_EVENT_RESPONSE = AboutToStartOrSubmitCallbackResponse.builder()
-        .errors(List.of(format("Event %s is already processed", CREATE_GENERAL_APPLICATION.name())))
+        .errors(List.of(format("Event %s is already processed", CREATE_GENERAL_APPLICATION_CASE.name())))
         .build();
+<<<<<<< Updated upstream
+=======
+
+    @TestConfiguration
+    public static class OverrideBean {
+        @Bean
+        public CallbackHandler createCaseCallbackHandler() {
+
+            return new CallbackHandler() {
+                @Override
+                protected Map<String, Callback> callbacks() {
+                    return ImmutableMap.of(
+                        callbackKey(V_1, ABOUT_TO_SUBMIT), this::createCitizenClaim
+                    );
+                }
+
+                private CallbackResponse createCitizenClaim(CallbackParams callbackParams) {
+                    return EVENT_HANDLED_RESPONSE;
+                }
+
+                @Override
+                public List<CaseEvent> handledEvents() {
+                    return Collections.singletonList(INITIATE_GENERAL_APPLICATION);
+                }
+            };
+        }
+
+        @Bean
+        public CallbackHandler sendSealedClaimCallbackHandler() {
+
+            return new CallbackHandler() {
+                @Override
+                protected Map<String, Callback> callbacks() {
+                    return ImmutableMap.of(
+                        callbackKey(V_1, ABOUT_TO_SUBMIT), this::sendSealedClaim
+                    );
+                }
+
+                private CallbackResponse sendSealedClaim(CallbackParams callbackParams) {
+                    return EVENT_HANDLED_RESPONSE;
+                }
+
+                @Override
+                public String camundaActivityId(CallbackParams callbackParams) {
+                    return "CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1";
+                }
+
+                @Override
+                public List<CaseEvent> handledEvents() {
+                    return Collections.singletonList(CREATE_GENERAL_APPLICATION_CASE);
+                }
+            };
+        }
+
+        @Bean
+        public CallbackHandler defendantResponseHandlerWithoutCallbackVersion() {
+
+            return new CallbackHandler() {
+                @Override
+                protected Map<String, Callback> callbacks() {
+                    return ImmutableMap.of(
+                        callbackKey(ABOUT_TO_SUBMIT), this::doMethod
+                    );
+                }
+
+                private CallbackResponse doMethod(CallbackParams callbackParams) {
+                    return EVENT_HANDLED_RESPONSE;
+                }
+
+                @Override
+                public List<CaseEvent> handledEvents() {
+                    return Collections.singletonList(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE);
+                }
+            };
+        }
+    }
+
+>>>>>>> Stashed changes
     @Autowired
     private CallbackHandlerFactory callbackHandlerFactory;
 

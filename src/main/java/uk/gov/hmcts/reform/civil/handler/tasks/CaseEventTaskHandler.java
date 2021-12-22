@@ -69,10 +69,12 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     }
 
     private String getSummary(String eventId, String state) {
+
         return null;
     }
 
     private String getDescription(String eventId, Map data) {
+
         return null;
     }
 }
