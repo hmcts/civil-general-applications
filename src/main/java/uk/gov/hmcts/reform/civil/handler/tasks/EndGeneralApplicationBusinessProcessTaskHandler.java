@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 
 @Slf4j
 @Component
@@ -33,7 +33,7 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
 
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, END_BUSINESS_PROCESS);
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, END_BUSINESS_PROCESS_GASPEC);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
 

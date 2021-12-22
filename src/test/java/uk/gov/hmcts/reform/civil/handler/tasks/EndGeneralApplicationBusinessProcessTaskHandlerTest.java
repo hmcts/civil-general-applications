@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 
 @SpringBootTest(classes = {
     EndGeneralApplicationBusinessProcessTaskHandler.class,
@@ -64,7 +64,7 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         when(mockExternalTask.getAllVariables())
             .thenReturn(Map.of(
                 "caseId", CASE_ID,
-                "caseEvent", END_BUSINESS_PROCESS
+                "caseEvent", END_BUSINESS_PROCESS_GASPEC
             ));
     }
 
@@ -77,14 +77,14 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
         StartEventResponse startEventResponse = startEventResponse(caseDetails);
 
-        when(coreCaseDataService.startUpdate(CASE_ID, END_BUSINESS_PROCESS)).thenReturn(startEventResponse);
+        when(coreCaseDataService.startUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC)).thenReturn(startEventResponse);
         when(coreCaseDataService.submitUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);
 
         handler.execute(mockExternalTask, externalTaskService);
 
-        verify(coreCaseDataService).startUpdate(CASE_ID, END_BUSINESS_PROCESS);
+        verify(coreCaseDataService).startUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
         verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
     }
@@ -92,7 +92,7 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {
         return StartEventResponse.builder()
             .token("1234")
-            .eventId(END_BUSINESS_PROCESS.name())
+            .eventId(END_BUSINESS_PROCESS_GASPEC.name())
             .caseDetails(caseDetails)
             .build();
     }

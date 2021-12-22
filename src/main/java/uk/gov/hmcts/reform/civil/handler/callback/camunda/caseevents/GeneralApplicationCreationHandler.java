@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.handler.callback.camunda.applicationevents;
+package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseevents;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationCreationHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(CREATE_GENERAL_APPLICATION);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(CREATE_GENERAL_APPLICATION_CASE);
     private static final String TASK_ID = "CreateGeneralApplicationCase";
 
     @Override
@@ -40,6 +40,7 @@ public class GeneralApplicationCreationHandler extends CallbackHandler {
     }
 
     private CallbackResponse createGeneralApplication(CallbackParams callbackParams) {
+
         return (null);
     }
 }
