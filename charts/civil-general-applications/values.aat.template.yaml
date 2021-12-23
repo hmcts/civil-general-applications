@@ -55,7 +55,7 @@ java:
     CMC_DB_USERNAME: ${POSTGRES_USER}
     CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
     CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
-    REFERENCE_DATABASE_MIGRATION: true
+    REFERENCE_DATABASE_MIGRATION: false
     FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://civil-service-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://civil-service-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://civil-service-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
