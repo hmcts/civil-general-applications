@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -27,11 +29,13 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 @RequiredArgsConstructor
 public class CreateGeneralApplicationHandler extends CallbackHandler {
 
-    public static final String CONFIRMATION_SUMMARY = "<br/>Your Court will make a decision on [this application]"
-        + " Summary judgement"
-        + "You have marked this application as urgent"
-        + " The other [ party's / [arties'] legal representative has been notified"
-        + "[not been notified] that you have submitted this application.]";
+    private static final String CONFIRMATION_SUMMARY = "<br/><p> Your Court will make a decision on %s."
+        + "<ul> %s </ul>"
+        + "</p> %s"
+        + " %s ";
+    private static final String URGENT_APPLICATION = "<p> You have marked this application as urgent. </p>";
+    private static final String PARTY_NOTIFIED = "<p> The other %s legal representative %s "
+        + "that you have submitted this application.";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
     private final ObjectMapper objectMapper;
 
@@ -71,16 +75,34 @@ public class CreateGeneralApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-
-        String body = format(
-            CONFIRMATION_SUMMARY);
+        String body = format(buildConfirmationSummary(caseData));
 
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(String.format(
-                "You have made an application"
+                "# You have made an application"
             ))
             .confirmationBody(body)
             .build();
+    }
+
+    private String buildConfirmationSummary(CaseData caseData) {
+        // Below is the mocked up data... we will get this information (like type(s) of application, multiparty or not,
+        // notified or not etc.) from the collection itself from the caseData.
+        // Until that object is ready, let's use a dummy one.
+        List<String> applicationTypes = Arrays.asList("Strike Out", "Summary Judgement", "Extend Time");
+        String collect = applicationTypes.stream().map(appType -> "<li>" + appType + "</li>")
+            .collect(Collectors.joining());
+        boolean isApplicationUrgent = true;
+        boolean isMultiParty = true;
+        boolean isNotified = true;
+        String lastLine = String.format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
+                                        isNotified ? "has been notified" : "has not been notified");
+        return String.format(CONFIRMATION_SUMMARY,
+                             applicationTypes.size() == 1 ? "this application" : "these applications",
+                             collect,
+                             isApplicationUrgent ? URGENT_APPLICATION : " ",
+                             lastLine
+                             );
     }
 
     /**
