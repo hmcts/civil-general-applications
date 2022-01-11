@@ -96,6 +96,10 @@ reference:
     enabled: true
     migration: false
 
+notifications:
+    govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
+    generalApplicationRespondentsEmailTemplate: "aca69f2f-cfc7-4e16-ab7a-76a7e25d3d01"
+
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
   key: ${OS_POSTCODE_LOOKUP_API_KEY:}
