@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.civil.enums.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
+import java.time.LocalDateTime;
+
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 
 @Data
@@ -21,6 +23,9 @@ public class CaseData implements MappableObject {
     private final String detailsOfClaim;
     private final YesOrNo needsToBeApprovedByJudge;
     private final GeneralApplicationTypes generalApplicationTypes;
+    private final String generalApplicationRespondentEmailAddress;
+    private final String legacyCaseReference;
+    private final LocalDateTime respondentDeadline;
 
     private final BusinessProcess businessProcess;
 
