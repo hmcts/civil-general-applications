@@ -92,15 +92,13 @@ public class CreateGeneralApplicationHandler extends CallbackHandler {
         List<String> applicationTypes = Arrays.asList("Strike Out", "Summary Judgement", "Extend Time");
         String collect = applicationTypes.stream().map(appType -> "<li>" + appType + "</li>")
             .collect(Collectors.joining());
-        boolean isApplicationUrgent = true;
-        boolean isMultiParty = true;
-        boolean isNotified = true;
-        String lastLine = String.format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
-                                        isNotified ? "has been notified" : "has not been notified");
+
+        String lastLine = String.format(PARTY_NOTIFIED, "parties'",
+                                        "has been notified");
         return String.format(CONFIRMATION_SUMMARY,
                              applicationTypes.size() == 1 ? "this application" : "these applications",
                              collect,
-                             isApplicationUrgent ? URGENT_APPLICATION : " ",
+                             URGENT_APPLICATION,
                              lastLine
                              );
     }
