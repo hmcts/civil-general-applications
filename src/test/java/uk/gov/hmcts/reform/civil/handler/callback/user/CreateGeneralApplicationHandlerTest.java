@@ -35,7 +35,6 @@ import static org.mockito.BDDMockito.given;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.handler.callback.user.CreateGeneralApplicationHandler.CONFIRMATION_SUMMARY;
 
 @SpringBootTest(classes = {
     CreateGeneralApplicationHandler.class,
@@ -52,6 +51,11 @@ import static uk.gov.hmcts.reform.civil.handler.callback.user.CreateGeneralAppli
 class CreateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     public static final String REFERENCE_NUMBER = "000DC001";
+
+    private static final String CONFIRMATION = "<br/><p>Your Court will make a decision on these applications."
+        + "<ul> <li>Strike Out</li><li>Summary Judgement</li><li>Extend Time</li> </ul>"
+        + "</p> <p> You have marked this application as urgent. </p> <p> The other parties' legal representative "
+        + "has been notified that you have submitted this application. ";
 
     @MockBean
     private Time time;
@@ -123,14 +127,12 @@ class CreateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
                     CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
                     SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
 
-                    String body = format(
-                        CONFIRMATION_SUMMARY,
-                        format("/cases/case-details/%s#CaseDocuments", CASE_ID));
+                    String body = format(CONFIRMATION);
 
                     assertThat(response).usingRecursiveComparison().isEqualTo(
                         SubmittedCallbackResponse.builder()
                             .confirmationHeader(format(
-                                "You have made an application"
+                                "# You have made an application"
                             ))
                             .confirmationBody(body)
                             .build());
