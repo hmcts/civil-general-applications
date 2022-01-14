@@ -47,8 +47,9 @@ class EventEmitterServiceTest {
             .businessProcess(businessProcess)
             .ccdCaseReference(1L)
             .build();
+        var caseId = caseData.getCcdCaseReference();
 
-        eventEmitterService.emitBusinessProcessCamundaEvent(caseData, true);
+        eventEmitterService.emitBusinessProcessCamundaEvent(caseId, caseData, true);
 
         verify(runtimeService).createMessageCorrelation("TEST_EVENT");
         verify(messageCorrelationBuilder).setVariable("caseId", 1L);

@@ -157,8 +157,8 @@ class CallbackHandlerFactoryTest {
 
         assertThatThrownBy(() -> callbackHandlerFactory.dispatch(params))
             .isInstanceOf(CallbackException.class)
-            .hasMessage(
-                "Callback for event CREATE_GENERAL_APPLICATION_CASE, version V_2, type ABOUT_TO_SUBMIT and page id null not implemented");
+            .hasMessage("Callback for event CREATE_GENERAL_APPLICATION_CASE, version V_2, "
+                    + "type ABOUT_TO_SUBMIT and page id null not implemented");
     }
 
     @Test

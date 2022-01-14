@@ -6,7 +6,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.event.DispatchBusinessProcessEvent;
-import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import static java.lang.String.format;
 
@@ -18,9 +18,8 @@ public class EventEmitterService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RuntimeService runtimeService;
 
-    public void emitBusinessProcessCamundaEvent(CaseData caseData, boolean dispatchProcess) {
-        var caseId = caseData.getCcdCaseReference();
-        var businessProcess = caseData.getBusinessProcess();
+    public void emitBusinessProcessCamundaEvent(Long caseId, GeneralApplication application, boolean dispatchProcess) {
+        var businessProcess = application.getBusinessProcess();
         var camundaEvent = businessProcess.getCamundaEvent();
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         try {

@@ -8,10 +8,14 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.READY;
 
 @Slf4j
 @Aspect
@@ -21,14 +25,19 @@ public class EventEmitterAspect {
 
     private final EventEmitterService eventEmitterService;
 
+    @SuppressWarnings({"checkstyle:WhitespaceAround", "checkstyle:LineLength"})
     @Around("execution(* *(*)) && @annotation(EventEmitter) && args(callbackParams))")
     public Object emitBusinessProcessEvent(ProceedingJoinPoint joinPoint, CallbackParams callbackParams)
         throws Throwable {
         if (callbackParams.getType() == SUBMITTED) {
             CaseData caseData = callbackParams.getCaseData();
-            if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == READY) {
-                eventEmitterService.emitBusinessProcessCamundaEvent(caseData, false);
-            }
+            var caseId = caseData.getCcdCaseReference();
+            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
+            generalApplications.forEach(app -> {
+                if (BusinessProcessStatus.READY == app.getValue().getBusinessProcess().getStatus()) {
+                    eventEmitterService.emitBusinessProcessCamundaEvent(caseId, app.getValue(), false);
+                }
+            });
         }
         return joinPoint.proceed();
     }

@@ -29,8 +29,8 @@ public class FlowStateAllowedEventService {
         entry(DRAFT.fullName(), List.of(INITIATE_GENERAL_APPLICATION)),
 
         entry(APPLICATION_SUBMITTED.fullName(),
-              List.of(CREATE_GENERAL_APPLICATION_CASE
-                  , LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+              List.of(CREATE_GENERAL_APPLICATION_CASE,
+                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
         )
     );
 
