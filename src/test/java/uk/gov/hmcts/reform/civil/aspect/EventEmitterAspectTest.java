@@ -17,14 +17,19 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
 
+import java.util.List;
+
+import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.READY;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -64,8 +69,13 @@ class EventEmitterAspectTest {
     @ParameterizedTest
     @EnumSource(value = BusinessProcessStatus.class, mode = EnumSource.Mode.EXCLUDE, names = {"READY"})
     void shouldNotEmitBusinessProcessCamundaEvent_whenBusinessProcessStatusIsNotReady(BusinessProcessStatus status) {
-        CaseData caseData = CaseData.builder()
+        GeneralApplication generalApplication = GeneralApplication.builder()
             .businessProcess(BusinessProcess.builder().status(status).build())
+            .build();
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.add(element(generalApplication));
+        CaseData caseData = CaseData.builder()
+            .generalApplications(newApplication)
             .build();
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .of(SUBMITTED, caseData)
@@ -80,19 +90,22 @@ class EventEmitterAspectTest {
     @SneakyThrows
     @Test
     void shouldEmitBusinessProcessCamundaEvent_whenCallbackIsSubmittedAndBusinessProcessStatusIsReady() {
-        Long caseId = 1633357679902210L;
-
+        GeneralApplication generalApplication = GeneralApplication.builder()
+            .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION))
+            .build();
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.add(element(generalApplication));
         CaseData caseData = CaseData.builder()
-            .businessProcess(BusinessProcess.builder().status(READY).build())
+            .generalApplications(newApplication)
+            .ccdCaseReference(1L)
             .build();
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .of(SUBMITTED, caseData)
             .build();
-
+        Long caseId = 1L;
         aspect.emitBusinessProcessEvent(proceedingJoinPoint, callbackParams);
 
-        verify(eventEmitterService).emitBusinessProcessCamundaEvent(caseId, caseData, false);
+        verify(eventEmitterService).emitBusinessProcessCamundaEvent(caseId, generalApplication, false);
         verify(proceedingJoinPoint).proceed();
     }
 }
-
