@@ -14,14 +14,20 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.*;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
