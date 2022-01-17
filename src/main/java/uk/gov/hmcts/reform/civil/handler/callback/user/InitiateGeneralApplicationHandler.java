@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
@@ -21,14 +22,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -58,63 +56,46 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-
+    @SuppressWarnings("checkstyle:RightCurly")
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
+        final GeneralApplication[] gApp = {null};
+        String body = "";
         generalApplications.forEach(app -> {
             if (BusinessProcessStatus.READY == app.getValue().getBusinessProcess().getStatus()) {
-                String body = buildConfirmationSummary(app.getValue());
-            }
+                gApp[0] = app.getValue();        }
         });
-
+        if (gApp[0] != null) {
+            body = buildConfirmationSummary(gApp[0]);
+        }
         return SubmittedCallbackResponse.builder()
             .confirmationHeader("# You have made an application")
-            .confirmationBody(null)
+            .confirmationBody(body)
             .build();
     }
 
     @SuppressWarnings("checkstyle:LineLength")
     private String buildConfirmationSummary(GeneralApplication application) {
-        List<String> applicationTypes = List.of(application.getGeneralAppType().toString());
-        String collect = applicationTypes.stream().map(appType -> "<li>" + appType + "</li>")
+        List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
+        String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
             .collect(Collectors.joining());
         boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
-                                                      == YesOrNo.NO).orElse(true);
-        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.NO).orElse(true);
-        boolean isNotified = Optional.of(application.getGeneralAppRespondentAgreement().getHasAgreed() == YesOrNo.NO).orElse(
+                                                      == YesOrNo.YES).orElse(true);
+        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
+        boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice() == YesOrNo.YES).orElse(
             true);
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"
         );
         return format(
             CONFIRMATION_SUMMARY,
-            applicationTypes.size() == 1 ? "this application" : "these applications",
+            types.size() == 1 ? "this application" : "these applications",
             collect,
             isApplicationUrgent ? URGENT_APPLICATION : " ",
             lastLine
         );
     }
-
-
-    /*  List<String> applicationTypes = Arrays.asList("STRIKE_OUT");
-      String collect = applicationTypes.stream().map(appType -> "<li>" + appType + "</li>")
-          .collect(Collectors.joining());
-      //TODO: Fix me
-      boolean isApplicationUrgent = Optional.of(isEmpty(caseData.getGeneralApplications())).orElse(true);
-      boolean isMultiParty = true;
-      //TODO: Fix me
-      boolean isNotified = Optional.of(caseData.getGeneralAppRespondentAgreement() == null).orElse(true);
-      String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
-                               isNotified ? "has been notified" : "has not been notified");
-      return format(CONFIRMATION_SUMMARY,
-                    applicationTypes.size() == 1 ? "this application" : "these applications",
-                    collect,
-                    isApplicationUrgent ? URGENT_APPLICATION : " ",
-                    lastLine
-      );
-  }
-*/
     /*
      * To be used to return empty callback response, will be used in overriding classes.
      *
@@ -123,14 +104,5 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
      */
     protected CallbackResponse emptyCallbackResponse(CallbackParams callbackParams) {
         return AboutToStartOrSubmitCallbackResponse.builder().build();
-    }
-
-    public List<Element<GeneralApplication>> addApplication(GeneralApplication application,
-                                                            List<Element<GeneralApplication>>
-                                                                generalApplicationDetails) {
-        List<Element<GeneralApplication>> newApplication = ofNullable(generalApplicationDetails).orElse(newArrayList());
-        newApplication.add(element(application));
-
-        return newApplication;
     }
 }
