@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
@@ -23,8 +21,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 
@@ -46,8 +42,6 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-            callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse,
             callbackKey(SUBMITTED), this::buildConfirmation
         );
     }
@@ -56,20 +50,22 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        GeneralApplication generalApplicationElement = generalApplications.stream()
+        Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
             .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
-                && app.getValue().getBusinessProcess().getProcessInstanceId() == null)
-            .findFirst()
-            .get().getValue();
+                && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
+        if (generalApplicationElementOptional.isPresent()) {
+            GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
             var body = buildConfirmationSummary(generalApplicationElement);
-
-        return SubmittedCallbackResponse.builder()
-            .confirmationHeader("# You have made an application")
-            .confirmationBody(body)
-            .build();
+            return SubmittedCallbackResponse.builder()
+                .confirmationHeader("# You have made an application")
+                .confirmationBody(body)
+                .build();
+        }
+        return null;
     }
 
     private String buildConfirmationSummary(GeneralApplication application) {
@@ -92,14 +88,5 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
             isApplicationUrgent ? URGENT_APPLICATION : " ",
             lastLine
         );
-    }
-    /*
-     * To be used to return empty callback response, will be used in overriding classes.
-     *
-     * @param callbackParams This parameter is required as this is passed as reference for execute method in CallBack
-     * @return empty callback response
-     */
-    protected CallbackResponse emptyCallbackResponse(CallbackParams callbackParams) {
-        return AboutToStartOrSubmitCallbackResponse.builder().build();
     }
 }
