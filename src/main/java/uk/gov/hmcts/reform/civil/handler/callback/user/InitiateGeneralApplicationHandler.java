@@ -56,26 +56,22 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-    @SuppressWarnings("checkstyle:RightCurly")
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        final GeneralApplication[] gApp = {null};
-        String body = "";
-        generalApplications.forEach(app -> {
-            if (BusinessProcessStatus.READY == app.getValue().getBusinessProcess().getStatus()) {
-                gApp[0] = app.getValue();        }
-        });
-        if (gApp[0] != null) {
-            body = buildConfirmationSummary(gApp[0]);
-        }
+        GeneralApplication generalApplicationElement = generalApplications.stream()
+            .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
+                && app.getValue().getBusinessProcess().getProcessInstanceId() == null)
+            .findFirst()
+            .get().getValue();
+            var body = buildConfirmationSummary(generalApplicationElement);
+
         return SubmittedCallbackResponse.builder()
             .confirmationHeader("# You have made an application")
             .confirmationBody(body)
             .build();
     }
 
-    @SuppressWarnings("checkstyle:LineLength")
     private String buildConfirmationSummary(GeneralApplication application) {
         List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
         String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
@@ -83,7 +79,8 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
                                                       == YesOrNo.YES).orElse(true);
         boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
-        boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice() == YesOrNo.YES).orElse(
+        boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
+                                             == YesOrNo.YES).orElse(
             true);
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"

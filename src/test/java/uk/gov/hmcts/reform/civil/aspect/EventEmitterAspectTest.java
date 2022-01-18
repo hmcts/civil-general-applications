@@ -68,7 +68,7 @@ class EventEmitterAspectTest {
     @SneakyThrows
     @ParameterizedTest
     @EnumSource(value = BusinessProcessStatus.class, mode = EnumSource.Mode.EXCLUDE, names = {"READY"})
-    void shouldNotEmitBusinessProcessCamundaEvent_whenBusinessProcessStatusIsNotReady(BusinessProcessStatus status) {
+    void shouldNotEmitBusinessProcessCamundaEvent_whenBusinessProcessStatusIsNotReadyAndProcessInstanceIdnull(BusinessProcessStatus status) {
         GeneralApplication generalApplication = GeneralApplication.builder()
             .businessProcess(BusinessProcess.builder().status(status).build())
             .build();
@@ -89,7 +89,7 @@ class EventEmitterAspectTest {
 
     @SneakyThrows
     @Test
-    void shouldEmitBusinessProcessCamundaEvent_whenCallbackIsSubmittedAndBusinessProcessStatusIsReady() {
+    void shouldEmitBusinessProcessCamundaEvent_whenCallbackIsSubmittedABusinessProcessStatusIsReadyAndProcessInstatntIsNotNull() {
         GeneralApplication generalApplication = GeneralApplication.builder()
             .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION))
             .build();
