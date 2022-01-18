@@ -64,7 +64,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
                 && app.getValue().getBusinessProcess().getProcessInstanceId() == null)
             .findFirst()
             .get().getValue();
-            var body = buildConfirmationSummary(generalApplicationElement);
+        var body = buildConfirmationSummary(generalApplicationElement);
 
         return SubmittedCallbackResponse.builder()
             .confirmationHeader("# You have made an application")

@@ -156,7 +156,6 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class SubmittedCallback {
 
-        @SuppressWarnings({"checkstyle:AbbreviationAsWordInName", "checkstyle:LocalVariableName", "checkstyle:LineLength"})
         @Test
         void shouldReturnExpectedSubmittedCallbackResponse() {
             CaseData caseData = getTestCaseData(CaseDataBuilder.builder().build());
@@ -167,8 +166,8 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
             String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
                 .collect(Collectors.joining());
-            boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
-                                                          == YesOrNo.YES).orElse(true);
+            boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement()
+                                                          .getGeneralAppUrgency() == YesOrNo.YES).orElse(true);
             boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
             boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
                                                  == YesOrNo.YES).orElse(true);
