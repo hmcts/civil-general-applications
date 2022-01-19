@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,11 +32,12 @@ import static java.lang.String.format;
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.*;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
@@ -64,11 +67,19 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             .build();
     }
 
-    private CaseData getReadyTestCaseData(CaseData caseData) {
-        GeneralApplication application = GeneralApplication.builder()
-            .generalAppType(GAApplicationType.builder()
-                                .types(singletonList(EXTEND_TIME))
-                                .build())
+    private CaseData getReadyTestCaseData(CaseData caseData, boolean multipleGenAppTypes) {
+        GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+        if (multipleGenAppTypes) {
+            builder.generalAppType(GAApplicationType.builder()
+                    .types(Arrays.asList(EXTEND_TIME, SUMMARY_JUDGEMENT))
+                    .build());
+        } else {
+            builder.generalAppType(GAApplicationType.builder()
+                    .types(singletonList(EXTEND_TIME))
+                    .build());
+        }
+        GeneralApplication application = builder
+
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(NO)
                                             .reasonsForWithoutNotice(STRING_CONSTANT)
@@ -123,16 +134,23 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void sholudReturnFirstReadyGeneralApplicationElement() {
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build());
-            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-            Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
-                .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
-                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
-            if (generalApplicationElementOptional.isPresent()) {
-                GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
-                assertThat(generalApplicationElement).isNotNull();
-            }
+        void shouldReturnBuildConfirmationForSingleApplicationType() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(), false);
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+
+            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            assertThat(response.getConfirmationBody()).isEqualTo("<br/><p> Your Court will make a decision on this application.<ul> <li>EXTEND_TIME</li> </ul></p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative has not been notified that you have submitted this application. ");
+        }
+
+        @Test
+        void shouldReturnBuildConfirmationForMultipleApplicationType() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(), true);
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+
+            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            assertThat(response.getConfirmationBody()).isEqualTo("<br/><p> Your Court will make a decision on these applications.<ul> <li>EXTEND_TIME</li><li>SUMMARY_JUDGEMENT</li> </ul></p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative has not been notified that you have submitted this application. ");
         }
 
         @Test
@@ -150,7 +168,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnExpectedSubmittedCallbackResponse() {
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build());
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(), false);
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
             Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
                 .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
