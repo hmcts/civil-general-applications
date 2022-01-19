@@ -3,7 +3,7 @@ appVersion: "1.0"
 description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
-version: 0.0.2
+version: 0.0.3
 maintainers:
   - name: HMCTS Civil team
 
@@ -11,11 +11,14 @@ dependencies:
   - name: java
     version: 3.6.0
     repository: '@hmctspublic'
+  - name: civil-service
+    version: 0.0.9
+    repository: '@hmctspublic'
+    condition: civil-service.enabled
   - name: ccd
     version: 6.0.0
     repository: '@hmctspublic'
-    tags:
-      - civil-ccd-stack
+    condition: ccd.enabled
   - name: xui-webapp
     version: ~0.2.16
     repository: '@hmctspublic'
