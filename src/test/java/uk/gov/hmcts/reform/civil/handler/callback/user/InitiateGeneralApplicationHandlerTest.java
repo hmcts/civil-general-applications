@@ -121,6 +121,16 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION);
         }
+
+        @Test
+        void shouldNotReturnBuildConfirmationIfGeneralApplicationIsEmpty() {
+            CaseData caseData = getEmptyTestCase(CaseDataBuilder.builder().build());
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+
+            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            assertThat(response.getConfirmationBody()).isNull();
+        }
     }
 }
 
