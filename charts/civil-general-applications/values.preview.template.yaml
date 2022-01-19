@@ -67,7 +67,7 @@ civil-service:
     applicationPort: 4000
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
-    ingressHost: ${SERVICE_FQDN}
+    ingressHost: civil-service-${SERVICE_FQDN}
     keyVaults:
       civil:
         resourceGroup: civil
