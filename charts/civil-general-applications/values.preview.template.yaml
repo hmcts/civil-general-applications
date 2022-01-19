@@ -95,8 +95,8 @@ civil-service:
       CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
       CMC_DB_HOST: ${SERVICE_NAME}-postgresql
       CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
-      CMC_DB_USERNAME: hmcts
-      CMC_DB_PASSWORD: hmcts
+      CMC_DB_USERNAME: ${POSTGRES_USER}
+      CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       REFERENCE_DATABASE_MIGRATION: true
       FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://camunda-${SERVICE_FQDN}/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://camunda-${SERVICE_FQDN}/engine-rest/
