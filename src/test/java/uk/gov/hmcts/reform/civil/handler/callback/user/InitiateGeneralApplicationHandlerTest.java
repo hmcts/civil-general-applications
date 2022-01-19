@@ -31,10 +31,10 @@ import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.unwrapElements;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
@@ -63,7 +63,8 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         return caseData.toBuilder()
             .build();
     }
-    private CaseData getTestCaseData(CaseData caseData) {
+
+    private CaseData getReadyTestCaseData(CaseData caseData) {
         GeneralApplication application = GeneralApplication.builder()
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -88,16 +89,46 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             .build();
     }
 
+    private CaseData getStartedTestCaseData(CaseData caseData) {
+        GeneralApplication application = GeneralApplication.builder()
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(EXTEND_TIME))
+                                .build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(NO)
+                                            .reasonsForWithoutNotice(STRING_CONSTANT)
+                                            .build())
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
+                                              .generalAppUrgency(YES)
+                                              .reasonsForUrgency(STRING_CONSTANT)
+                                              .urgentAppConsiderationDate(APP_DATE_EPOCH)
+                                              .build())
+            .isMultiParty(YesOrNo.NO)
+            .businessProcess(BusinessProcess.builder()
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .build())
+            .build();
+        return getEmptyTestCase(caseData)
+            .toBuilder()
+            .generalApplications(wrapElements(application))
+            .build();
+    }
+
     @Nested
     class SubmittedCallback {
 
         @Test
+        void handleEventsReturnsTheExpectedCallbackEvent() {
+            assertThat(handler.handledEvents()).contains(INITIATE_GENERAL_APPLICATION);
+        }
+
+        @Test
         void sholudReturnFirstReadyGeneralApplicationElement() {
-            CaseData caseData = getTestCaseData(CaseDataBuilder.builder().build());
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build());
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
             Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
                 .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
-                && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
+                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
             if (generalApplicationElementOptional.isPresent()) {
                 GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
                 assertThat(generalApplicationElement).isNotNull();
@@ -105,36 +136,56 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldReturnExpectedSubmittedCallbackResponse() {
-            CaseData caseData = getTestCaseData(CaseDataBuilder.builder().build());
+        void sholudNotReturnFirstReadyGeneralApplicationElement() {
+            CaseData caseData = getStartedTestCaseData(CaseDataBuilder.builder().build());
+            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
+            Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
+                .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
+                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
+            if (generalApplicationElementOptional.isPresent()) {
+                GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
+                assertThat(generalApplicationElement).isNull();
+            }
+        }
 
-            GeneralApplication application = unwrapElements(caseData.getGeneralApplications()).get(0);
+        @Test
+        void shouldReturnExpectedSubmittedCallbackResponse() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build());
+            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
+            Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
+                .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
+                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
             SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
 
-            List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
-            String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
-                .collect(Collectors.joining());
-            boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement()
-                                                          .getGeneralAppUrgency() == YesOrNo.YES).orElse(true);
-            boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
-            boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
-                                                 == YesOrNo.YES).orElse(true);
-            String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
-                                     isNotified ? "has been notified" : "has not been notified"
-            );
-            String body = format(CONFIRMATION_SUMMARY,
-                                 types.size() == 1 ? "this application" : "these applications",
-                                 collect,
-                                 isApplicationUrgent ? URGENT_APPLICATION : " ",
-                                 lastLine
-            );
-
-            assertThat(response).usingRecursiveComparison().isEqualTo(
-                SubmittedCallbackResponse.builder()
-                    .confirmationHeader("# You have made an application")
-                    .confirmationBody(body)
-                    .build());
+            if (generalApplicationElementOptional.isPresent()) {
+                GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
+                List<GeneralApplicationTypes> types = generalApplicationElement.getGeneralAppType().getTypes();
+                String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
+                    .collect(Collectors.joining());
+                boolean isApplicationUrgent = Optional.of(generalApplicationElement.getGeneralAppUrgencyRequirement()
+                                                              .getGeneralAppUrgency() == YesOrNo.YES).orElse(true);
+                boolean isMultiParty = Optional.of(generalApplicationElement.getIsMultiParty()
+                                                       == YesOrNo.YES).orElse(true);
+                boolean isNotified = Optional.of(generalApplicationElement.getGeneralAppInformOtherParty()
+                                                     .getIsWithNotice()
+                                                     == YesOrNo.YES).orElse(true);
+                String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
+                                         isNotified ? "has been notified" : "has not been notified"
+                );
+                String body = format(
+                    CONFIRMATION_SUMMARY,
+                    types.size() == 1 ? "this application" : "these applications",
+                    collect,
+                    isApplicationUrgent ? URGENT_APPLICATION : " ",
+                    lastLine
+                );
+                assertThat(response).usingRecursiveComparison().isEqualTo(
+                    SubmittedCallbackResponse.builder()
+                        .confirmationHeader("# You have made an application")
+                        .confirmationBody(body)
+                        .build());
+            }
         }
     }
 }
