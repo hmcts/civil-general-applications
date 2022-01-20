@@ -47,11 +47,11 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
     private static final String CONFIRMATION_SINGEL = "<br/><p> Your Court will make a decision on this application."
-        + "<ul> <li>EXTEND_TIME</li> </ul>"
+        + "<ul> <li>Extend time</li> </ul>"
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
     private static final String CONFIRMATION = "<br/><p> Your Court will make a decision on these applications."
-        + "<ul> <li>EXTEND_TIME</li><li>SUMMARY_JUDGEMENT</li> </ul>"
+        + "<ul> <li>Extend time</li><li>Summary judgement</li> </ul>"
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
 
