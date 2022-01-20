@@ -69,6 +69,26 @@ civil-service:
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
     ingressHost: civil-service-${SERVICE_FQDN}
+    keyVaults:
+      civil:
+      resourceGroup: civil
+        secrets:
+          - civil-idam-client-secret
+          - microservicekey-civil-service
+          - system-update-user-username
+          - system-update-user-password
+          - cross-access-user-username
+          - cross-access-user-password
+          - prd-admin-user-username
+          - prd-admin-user-password
+          - AppInsightsInstrumentationKey
+          - docmosis-api-key
+          - gov-notify-api-key
+          - sendgrid-api-key
+          - robotics-notification-sender
+          - robotics-notification-recipient
+          - launch-darkly-sdk-key
+          - ordnance-survey-api-key
     environment:
       IDAM_CLIENT_ID: civil-service
       IDAM_CLIENT_REDIRECT_URI: https://civil-ccd-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
