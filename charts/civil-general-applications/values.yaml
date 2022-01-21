@@ -1,7 +1,9 @@
-tags:
-  civil-ccd-stack: false
+ccd:
+  enabled: false
+
 postgresql:
   enabled: false
+  
 idam-pr:
   enabled: false
 
