@@ -3,10 +3,13 @@ package uk.gov.hmcts.reform.civil.sampledata;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static java.time.LocalDate.now;
 
@@ -32,11 +35,17 @@ public class CaseDataBuilder {
     // Claimant Response
     protected BusinessProcess businessProcess;
 
+    protected List<Element<GeneralApplication>> generalApplications;
+
     public CaseDataBuilder businessProcess(BusinessProcess businessProcess) {
         this.businessProcess = businessProcess;
         return this;
     }
 
+    public CaseDataBuilder generalApplications(List<Element<GeneralApplication>> generalApplications){
+        this.generalApplications = generalApplications;
+        return this;
+    }
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
@@ -50,6 +59,7 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdCaseReference(ccdCaseReference)
+            .generalApplications(generalApplications)
             .build();
     }
 

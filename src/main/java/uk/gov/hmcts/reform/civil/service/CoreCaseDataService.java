@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
 
 @Service
@@ -56,6 +57,20 @@ public class CoreCaseDataService {
         );
     }
 
+    public StartEventResponse startGaUpdate(String caseId, CaseEvent eventName) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+
+        return coreCaseDataApi.startEventForCaseWorker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            caseId,
+            eventName.name()
+        );
+    }
+
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
 
@@ -70,6 +85,27 @@ public class CoreCaseDataService {
             caseDataContent
         );
         return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    public CaseData submitGaUpdate(String caseId, CaseDataContent caseDataContent) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+
+        CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            caseId,
+            true,
+            caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    public void triggerGaEvent(Long caseId, CaseEvent eventName, Map<String, Object> contentModified) {
+        StartEventResponse startEventResponse = startGaUpdate(caseId.toString(), eventName);
+        submitGaUpdate(caseId.toString(), caseDataContentFromStartEventResponse(startEventResponse, contentModified));
     }
 
     public SearchResult searchCases(Query query) {
