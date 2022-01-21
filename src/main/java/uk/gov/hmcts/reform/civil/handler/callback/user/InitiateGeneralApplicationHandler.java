@@ -73,7 +73,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private String buildConfirmationSummary(GeneralApplication application) {
         List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
-        String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
+        String collect = types.stream().map(appType -> "<li>" + appType.getDisplayedValue() + "</li>")
             .collect(Collectors.joining());
         boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
                                                       == YesOrNo.YES).orElse(true);
