@@ -71,7 +71,7 @@ civil-service:
     ingressHost: civil-service-${SERVICE_FQDN}
     keyVaults:
       civil:
-      resourceGroup: civil
+        resourceGroup: civil
         secrets:
           - civil-idam-client-secret
           - microservicekey-civil-service
