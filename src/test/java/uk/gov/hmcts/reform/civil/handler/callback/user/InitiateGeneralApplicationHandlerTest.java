@@ -13,7 +13,11 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.*;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.time.LocalDate;
@@ -53,10 +57,10 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
 
-    private static final String CONF_SINGLE_NOT_NOTIFIED = "<br/><p> Your Court will make a decision on this " +
-            "application.<ul> <li>Extend time</li> </ul></p> <p> You have marked this application as urgent. </p> " +
-            "<p> The other party's legal representative has not been notified that you have submitted this " +
-            "application. ";
+    private static final String CONF_SINGLE_NOT_NOTIFIED = "<br/><p> Your Court will make a decision on this "
+            + "application.<ul> <li>Extend time</li> </ul></p> <p> You have marked this application as urgent. </p> "
+            + "<p> The other party's legal representative has not been notified that you have submitted this "
+            + "application. ";
 
 
     private CaseData getEmptyTestCase(CaseData caseData) {
