@@ -68,7 +68,6 @@ class EventEmitterAspectTest {
     @SneakyThrows
     @ParameterizedTest
     @EnumSource(value = BusinessProcessStatus.class, mode = EnumSource.Mode.EXCLUDE, names = {"READY"})
-
     void shouldNotEmitBusinessProcessCamundaEvent_whenBPStatusIsNotReadyAndPIIdnull(BusinessProcessStatus status) {
         GeneralApplication generalApplication = GeneralApplication.builder()
             .businessProcess(BusinessProcess.builder().status(status).build())
@@ -77,6 +76,21 @@ class EventEmitterAspectTest {
         newApplication.add(element(generalApplication));
         CaseData caseData = CaseData.builder()
             .generalApplications(newApplication)
+            .build();
+        CallbackParams callbackParams = CallbackParamsBuilder.builder()
+            .of(SUBMITTED, caseData)
+            .build();
+
+        aspect.emitBusinessProcessEvent(proceedingJoinPoint, callbackParams);
+
+        verifyNoInteractions(eventEmitterService);
+        verify(proceedingJoinPoint).proceed();
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldNotEmitBusinessProcessCamundaEvent_whenGAIsNull() {
+        CaseData caseData = CaseData.builder()
             .build();
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .of(SUBMITTED, caseData)

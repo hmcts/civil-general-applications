@@ -38,7 +38,6 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         + "that you have submitted this application.";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
 
-    @SuppressWarnings("checkstyle:CommentsIndentation")
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -54,20 +53,22 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
-            .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
-                && app.getValue().getBusinessProcess().getProcessInstanceId() == null)
-            .findFirst();
-        if (generalApplicationElementOptional.isPresent()) {
-            GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
-            var body = buildConfirmationSummary(generalApplicationElement);
-
-            return SubmittedCallbackResponse.builder()
-                .confirmationHeader("# You have made an application")
-                .confirmationBody(body)
-                .build();
+        String body = null;
+        if (generalApplications != null) {
+            Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
+                .filter(app -> app.getValue() != null && app.getValue().getBusinessProcess() != null
+                    && app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
+                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
+            if (generalApplicationElementOptional.isPresent()) {
+                GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
+                body = buildConfirmationSummary(generalApplicationElement);
+            }
         }
-        return null;
+
+        return SubmittedCallbackResponse.builder()
+            .confirmationHeader("# You have made an application")
+            .confirmationBody(body)
+            .build();
     }
 
     private String buildConfirmationSummary(GeneralApplication application) {
@@ -78,8 +79,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
                                                       == YesOrNo.YES).orElse(true);
         boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
         boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
-                                             == YesOrNo.YES).orElse(
-            true);
+                                             == YesOrNo.YES).orElse(true);
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"
         );

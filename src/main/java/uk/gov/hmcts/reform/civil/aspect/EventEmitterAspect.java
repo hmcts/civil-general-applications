@@ -33,12 +33,16 @@ public class EventEmitterAspect {
             CaseData caseData = callbackParams.getCaseData();
             var caseId = caseData.getCcdCaseReference();
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-            Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
-                .filter(app -> app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
-                    && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
-            if (generalApplicationElementOptional.isPresent()) {
-                GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
-                eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplicationElement, false);
+
+            if (generalApplications != null) {
+                Optional<Element<GeneralApplication>> generalApplicationElementOptional = generalApplications.stream()
+                    .filter(app -> app.getValue() != null && app.getValue().getBusinessProcess() != null
+                        && app.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.READY
+                        && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
+                if (generalApplicationElementOptional.isPresent()) {
+                    GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
+                    eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplicationElement, false);
+                }
             }
         }
         return joinPoint.proceed();
