@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -76,10 +78,17 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         String collect = types.stream().map(appType -> "<li>" + appType.getDisplayedValue() + "</li>")
             .collect(Collectors.joining());
         boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
-                                                      == YesOrNo.YES).orElse(true);
-        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
-        boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
-                                             == YesOrNo.YES).orElse(true);
+                                                      == YES).orElse(true);
+        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YES).orElse(true);
+        boolean isNotified = false;
+        if (application.getGeneralAppRespondentAgreement() != null
+                && application.getGeneralAppRespondentAgreement() != null
+                && application.getGeneralAppRespondentAgreement().getHasAgreed() == NO
+                && application.getGeneralAppInformOtherParty() != null
+                && application.getGeneralAppInformOtherParty().getIsWithNotice() != null
+                && application.getGeneralAppInformOtherParty().getIsWithNotice() == YES) {
+            isNotified = true;
+        }
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"
         );
