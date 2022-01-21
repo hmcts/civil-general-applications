@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -23,6 +22,8 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -73,13 +74,17 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private String buildConfirmationSummary(GeneralApplication application) {
         List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
-        String collect = types.stream().map(appType -> "<li>" + appType + "</li>")
+        String collect = types.stream().map(appType -> "<li>" + appType.getDisplayedValue() + "</li>")
             .collect(Collectors.joining());
         boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
-                                                      == YesOrNo.YES).orElse(true);
-        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YesOrNo.YES).orElse(true);
-        boolean isNotified = Optional.of(application.getGeneralAppInformOtherParty().getIsWithNotice()
-                                             == YesOrNo.YES).orElse(true);
+                                                      == YES).orElse(true);
+        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YES).orElse(true);
+        boolean isNotified = application.getGeneralAppRespondentAgreement() != null
+                && application.getGeneralAppRespondentAgreement().getHasAgreed() != null
+                && application.getGeneralAppRespondentAgreement().getHasAgreed() == NO
+                && application.getGeneralAppInformOtherParty() != null
+                && application.getGeneralAppInformOtherParty().getIsWithNotice() != null
+                && application.getGeneralAppInformOtherParty().getIsWithNotice() == YES;
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"
         );
