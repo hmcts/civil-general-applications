@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.core.Map;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
@@ -39,6 +41,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -128,6 +131,138 @@ class CoreCaseDataServiceTest {
                 eq(JURISDICTION),
                 eq(CASE_TYPE),
                 eq(CASE_ID),
+                anyBoolean(),
+                any(CaseDataContent.class)
+            );
+        }
+
+        private StartEventResponse buildStartEventResponse() {
+            return StartEventResponse.builder()
+                .eventId(EVENT_ID)
+                .token(EVENT_TOKEN)
+                .caseDetails(caseDetails)
+                .build();
+        }
+    }
+
+    @Nested
+    class TriggerGaEvent {
+
+        private static final String EVENT_ID = "CREATE_GENERAL_APPLICATION_CASE";
+        private static final String JURISDICTION = "CIVIL";
+        private static final String EVENT_TOKEN = "eventToken";
+        private static final String CASE_ID = "1";
+        private static final String USER_ID = "User1";
+        private final CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .build();
+        private final CaseDetails caseDetails = CaseDetailsBuilder.builder()
+            .data(caseData)
+            .build();
+
+        @BeforeEach
+        void setUp() {
+            when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+
+            when(coreCaseDataApi.startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
+                                                         GENERAL_APPLICATION_CASE_TYPE, CASE_ID, EVENT_ID
+            )).thenReturn(buildStartEventResponse());
+
+            when(coreCaseDataApi.submitEventForCaseWorker(
+                     eq(USER_AUTH_TOKEN),
+                     eq(SERVICE_AUTH_TOKEN),
+                     eq(USER_ID),
+                     eq(JURISDICTION),
+                     eq(GENERAL_APPLICATION_CASE_TYPE),
+                     eq(CASE_ID),
+                     anyBoolean(),
+                     any(CaseDataContent.class)
+                 )
+            ).thenReturn(caseDetails);
+        }
+
+        @Test
+        void shouldStartAndSubmitEvent_WhenCalled() {
+            service.triggerGaEvent(Long.valueOf(CASE_ID), CaseEvent.valueOf(EVENT_ID), Map.of());
+
+            verify(coreCaseDataApi).startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
+                                                            JURISDICTION, GENERAL_APPLICATION_CASE_TYPE,
+                                                            CASE_ID, EVENT_ID
+            );
+            verify(coreCaseDataApi).submitEventForCaseWorker(
+                eq(USER_AUTH_TOKEN),
+                eq(SERVICE_AUTH_TOKEN),
+                eq(USER_ID),
+                eq(JURISDICTION),
+                eq(GENERAL_APPLICATION_CASE_TYPE),
+                eq(CASE_ID),
+                anyBoolean(),
+                any(CaseDataContent.class)
+            );
+        }
+
+        private StartEventResponse buildStartEventResponse() {
+            return StartEventResponse.builder()
+                .eventId(EVENT_ID)
+                .token(EVENT_TOKEN)
+                .caseDetails(caseDetails)
+                .build();
+        }
+    }
+
+    @Nested
+    class CreateGeneralAppCase {
+
+        private static final String EVENT_ID = "CREATE_GENERAL_APPLICATION_CASE";
+        private static final String GENERAL_APPLICATION_CREATION = "GENERAL_APPLICATION_CREATION";
+        private static final String JURISDICTION = "CIVIL";
+        private static final String EVENT_TOKEN = "eventToken";
+        private static final String CASE_ID = "1";
+        private static final String USER_ID = "User1";
+        private final CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .build();
+        private final CaseDetails caseDetails = CaseDetailsBuilder.builder()
+            .data(caseData)
+            .build();
+
+        @BeforeEach
+        void setUp() {
+            when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+
+            when(coreCaseDataApi.startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
+                GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+            )).thenReturn(buildStartEventResponse());
+
+            when(coreCaseDataApi.submitForCaseworker(
+                    eq(USER_AUTH_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    eq(USER_ID),
+                    eq(JURISDICTION),
+                    eq(GENERAL_APPLICATION_CASE_TYPE),
+                    anyBoolean(),
+                    any(CaseDataContent.class)
+                )
+            ).thenReturn(caseDetails);
+        }
+
+        @Test
+        void shouldStartAndSubmitEvent_WhenCalled() {
+
+            GeneralApplication generalApplication = GeneralApplication.builder().build();
+
+            service.createGeneralAppCase(generalApplication.toMap(objectMapper));
+
+            verify(coreCaseDataApi).startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
+                JURISDICTION, GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+            );
+
+            verify(coreCaseDataApi).submitForCaseworker(
+                eq(USER_AUTH_TOKEN),
+                eq(SERVICE_AUTH_TOKEN),
+                eq(USER_ID),
+                eq(JURISDICTION),
+                eq(GENERAL_APPLICATION_CASE_TYPE),
                 anyBoolean(),
                 any(CaseDataContent.class)
             );

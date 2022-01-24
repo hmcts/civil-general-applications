@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERAL_APPLICATION_CREATION;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,11 @@ public class CoreCaseDataService {
         submitUpdate(caseId.toString(), caseDataContentFromStartEventResponse(startEventResponse, contentModified));
     }
 
+    public void createGeneralAppCase(Map<String, Object> caseDataMap) {
+        var startEventResponse = startCaseForCaseworker(GENERAL_APPLICATION_CREATION.name());
+        submitForCaseWorker(caseDataContent(startEventResponse, caseDataMap));
+    }
+
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
 
@@ -51,6 +58,20 @@ public class CoreCaseDataService {
             systemUpdateUser.getUserId(),
             JURISDICTION,
             CASE_TYPE,
+            caseId,
+            eventName.name()
+        );
+    }
+
+    public StartEventResponse startGaUpdate(String caseId, CaseEvent eventName) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+
+        return coreCaseDataApi.startEventForCaseWorker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
             caseId,
             eventName.name()
         );
@@ -70,6 +91,27 @@ public class CoreCaseDataService {
             caseDataContent
         );
         return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    public CaseData submitGaUpdate(String caseId, CaseDataContent caseDataContent) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+
+        CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            caseId,
+            true,
+            caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    public void triggerGaEvent(Long caseId, CaseEvent eventName, Map<String, Object> contentModified) {
+        StartEventResponse startEventResponse = startGaUpdate(caseId.toString(), eventName);
+        submitGaUpdate(caseId.toString(), caseDataContentFromStartEventResponse(startEventResponse, contentModified));
     }
 
     public SearchResult searchCases(Query query) {
@@ -99,6 +141,42 @@ public class CoreCaseDataService {
                        .id(startEventResponse.getEventId())
                        .build())
             .data(payload)
+            .build();
+    }
+
+    public StartEventResponse startCaseForCaseworker(String eventId) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        return coreCaseDataApi.startForCaseworker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            eventId);
+    }
+
+    public CaseData submitForCaseWorker(CaseDataContent caseDataContent) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            true,
+            caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    private CaseDataContent caseDataContent(StartEventResponse startEventResponse, Map<String, Object> caseDataMap) {
+        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
+        data.putAll(caseDataMap);
+
+        return CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(Event.builder().id(startEventResponse.getEventId()).build())
+            .data(data)
             .build();
     }
 }
