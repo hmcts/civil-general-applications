@@ -80,11 +80,9 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
                                                       == YES).orElse(true);
         boolean isMultiParty = Optional.of(application.getIsMultiParty() == YES).orElse(true);
         boolean isNotified = application.getGeneralAppRespondentAgreement() != null
-                && application.getGeneralAppRespondentAgreement().getHasAgreed() != null
-                && application.getGeneralAppRespondentAgreement().getHasAgreed() == NO
+                && NO.equals(application.getGeneralAppRespondentAgreement().getHasAgreed())
                 && application.getGeneralAppInformOtherParty() != null
-                && application.getGeneralAppInformOtherParty().getIsWithNotice() != null
-                && application.getGeneralAppInformOtherParty().getIsWithNotice() == YES;
+                && YES.equals(application.getGeneralAppInformOtherParty().getIsWithNotice());
         String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
                                  isNotified ? "has been notified" : "has not been notified"
         );
