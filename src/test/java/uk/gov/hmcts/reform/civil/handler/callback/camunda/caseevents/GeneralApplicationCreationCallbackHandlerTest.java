@@ -27,9 +27,13 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_CASE_DATA;
+import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
@@ -74,10 +78,19 @@ class GeneralApplicationCreationCallbackHandlerTest extends BaseCallbackHandlerT
 
             generalApplicationCreationHandler.createGeneralApplication(params);
 
-            Mockito.verify(coreCaseDataService).createGeneralAppCase(
-                generalApplication.toMap(objectMapper));
+            GeneralApplication expectedGeneralApplication = getGeneralApplication();
 
-            Assertions.assertEquals(Collections.EMPTY_LIST, caseData.getGeneralApplications());
+            Mockito.verify(coreCaseDataService).createGeneralAppCase(
+                expectedGeneralApplication.toMap(objectMapper));
+
+            expectedGeneralApplication.getBusinessProcess().setStatus(FINISHED);
+            Map<String, Object> output = params.getRequest().getCaseDetails().getData();
+            output.put("generalApplications", getGeneralApplications(expectedGeneralApplication));
+
+            Mockito.verify(coreCaseDataService).triggerEvent(
+                caseData.getCcdCaseReference(),
+                UPDATE_GA_CASE_DATA,
+                output);
         }
 
         @Test

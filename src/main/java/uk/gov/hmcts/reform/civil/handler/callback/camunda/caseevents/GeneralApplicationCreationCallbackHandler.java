@@ -63,7 +63,7 @@ public class GeneralApplicationCreationCallbackHandler extends CallbackHandler {
                 coreCaseDataService.createGeneralAppCase(
                     generalApplication.toMap(objectMapper)
                 );
-                generalApplications.remove(genApps.get());
+                generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
                 coreCaseDataService.triggerEvent(
                     caseData.getCcdCaseReference(),
                     UPDATE_GA_CASE_DATA,
