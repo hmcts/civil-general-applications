@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseevents;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,13 +24,11 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_CASE_DATA;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
