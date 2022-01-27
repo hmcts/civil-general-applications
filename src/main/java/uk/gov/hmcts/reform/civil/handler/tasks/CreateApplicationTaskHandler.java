@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class CaseEventTaskHandler implements BaseExternalTaskHandler {
+public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -32,15 +32,15 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
-        String applicationId = variables.getApplicationId();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(applicationId, variables.getCaseEvent());
+        String caseId = variables.getCaseId();
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
         String flowState = externalTask.getVariable(FLOW_STATE);
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
-        data = coreCaseDataService.submitUpdate(applicationId, caseDataContent);
+        data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
     }
 
     @Override
