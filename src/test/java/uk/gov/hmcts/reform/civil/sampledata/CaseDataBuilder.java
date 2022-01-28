@@ -59,7 +59,7 @@ public class CaseDataBuilder {
     public CaseData build() {
         return CaseData.builder()
             .businessProcess(businessProcess)
-            .ccdCaseReference(ccdCaseReference)
+            .ccdCaseReference(CASE_ID)
             .generalApplications(generalApplications)
             .build();
     }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
@@ -16,7 +17,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -34,8 +34,6 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,10 +75,16 @@ public class CreateApplicationTaskHandlerTest {
     private ExternalTaskService externalTaskService;
 
     @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
     private CreateApplicationTaskHandler createApplicationTaskHandler;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void init() {
@@ -90,7 +94,7 @@ public class CreateApplicationTaskHandlerTest {
     }
 
     @Nested
-    class CreateApplication {
+    class CreateGeneralApplication {
 
         @BeforeEach
         void init() {
@@ -102,11 +106,47 @@ public class CreateApplicationTaskHandlerTest {
             when(mockTask.getAllVariables()).thenReturn(variables);
         }
 
-        // Very basic test covered here where GeneralApplication not being passed... You need to create similar test
-        // and verify the changes in the GeneralApplication when you verify execution of submitUpdate
         @Test
-        void shouldTriggerCCDEvent_whenHandlerIsExecuted() {
-            // Step 1 : Set up data
+        void shouldTriggerCCDEvent() {
+
+            GeneralApplication generalApplication = getGeneralApplication();
+
+            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+                .generalApplications(getGeneralApplications(generalApplication))
+                .businessProcess(BusinessProcess.builder().status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
+            VariableMap variables = Variables.createVariables();
+            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_FLAGS, Map.of());
+            variables.putValue("generalApplicationCaseId", GA_ID);
+
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            CaseDataContent caseDataContent = CaseDataContent.builder().build();
+
+            when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
+                .thenReturn(startEventResponse);
+
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenReturn(caseData);
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
+                                                                           anyMap())).thenReturn(caseDataContent);
+
+            when(coreCaseDataService.createGeneralAppCase(generalApplication.toMap(objectMapper))).thenReturn(caseData);
+
+            when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+
+            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
+            verify(coreCaseDataService).createGeneralAppCase(getGeneralApplication().toMap(objectMapper));
+            verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
+        }
+
+        @Test
+        void shouldNotTriggerCCDEvent() {
 
             CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
                 .businessProcess(BusinessProcess.builder().status(STARTED)
@@ -121,33 +161,20 @@ public class CreateApplicationTaskHandlerTest {
             StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
             CaseDataContent caseDataContent = CaseDataContent.builder().build();
 
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenReturn(caseData);
+
             when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
                 .thenReturn(startEventResponse);
 
             when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
                     anyMap())).thenReturn(caseDataContent);
 
-            // Step 2 : execution
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
-            // Step 3 : Assertions and Verifications
             verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
             verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
             verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
-        }
-
-        public CaseDataContent caseDataContentFromStartEventResponse(
-            StartEventResponse startEventResponse, Map<String, Object> contentModified) {
-            var payload = new HashMap<>(startEventResponse.getCaseDetails().getData());
-            payload.putAll(contentModified);
-
-            return CaseDataContent.builder()
-                .eventToken(startEventResponse.getToken())
-                .event(Event.builder()
-                           .id(startEventResponse.getEventId())
-                           .build())
-                .data(payload)
-                .build();
         }
 
         private List<Element<GeneralApplication>> getGeneralApplications(GeneralApplication generalApplication) {
