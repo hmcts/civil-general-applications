@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,10 @@ import java.util.Map;
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
@@ -96,13 +102,13 @@ public class CreateApplicationTaskHandlerTest {
             when(mockTask.getAllVariables()).thenReturn(variables);
         }
 
+        // Very basic test covered here where GeneralApplication not being passed... You need to create similar test
+        // and verify the changes in the GeneralApplication when you verify execution of submitUpdate
         @Test
         void shouldTriggerCCDEvent_whenHandlerIsExecuted() {
-
-            GeneralApplication generalApplication = getGeneralApplication();
+            // Step 1 : Set up data
 
             CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
-                .generalApplications(getGeneralApplications(generalApplication))
                 .businessProcess(BusinessProcess.builder().status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
 
@@ -112,16 +118,22 @@ public class CreateApplicationTaskHandlerTest {
             variables.putValue("generalApplicationCaseId", GA_ID);
 
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            CaseDataContent caseDataContent = CaseDataContent.builder().build();
 
-            when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
-                .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
+            when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
+                .thenReturn(startEventResponse);
 
-            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class), any(Map.class)));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
+                    anyMap())).thenReturn(caseDataContent);
 
+            // Step 2 : execution
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
-            verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-            //verify(externalTaskService).complete(mockTask, variables);
+            // Step 3 : Assertions and Verifications
+            verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
+            verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
+            verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
         }
 
         public CaseDataContent caseDataContentFromStartEventResponse(
