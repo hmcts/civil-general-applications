@@ -53,7 +53,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
     private static final String CONFIRMATION = "<br/><p> Your Court will make a decision on these applications."
-        + "<ul> <li>Extend time</li><li>Summary judgement</li> </ul>"
+        + "<ul> <li>Extend time</li><li>Summary judgment</li> </ul>"
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
 
