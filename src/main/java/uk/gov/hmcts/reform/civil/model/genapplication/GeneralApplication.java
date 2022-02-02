@@ -1,11 +1,14 @@
 package uk.gov.hmcts.reform.civil.model.genapplication;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.model.CaseLink;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -28,8 +31,8 @@ public class GeneralApplication implements MappableObject {
     private final GAHearingDetails generalAppHearingDetails;
     private final List<Element<Document>> evidenceDocument;
     private final YesOrNo isMultiParty;
-    private final GAApplicationCaseReference generalAppCaseReference;
-    private final GAApplicationState generalAppState;
+    private CaseLink caseLink;
+    private GeneralAppParentCaseLink generalAppParentCaseLink;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -45,8 +48,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppHearingDetails") GAHearingDetails generalAppHearingDetails,
                        @JsonProperty("evidenceDocument") List<Element<Document>> evidenceDocument,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
-                       @JsonProperty("generalAppCaseReference") GAApplicationCaseReference generalAppCaseReference,
-                       @JsonProperty("generalAppState") GAApplicationState generalAppState) {
+                       @JsonProperty("caseLink") CaseLink caseLink,
+                       @JsonProperty("parentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -59,7 +62,13 @@ public class GeneralApplication implements MappableObject {
         this.generalAppHearingDetails = generalAppHearingDetails;
         this.evidenceDocument = evidenceDocument;
         this.isMultiParty = isMultiParty;
-        this.generalAppCaseReference = generalAppCaseReference;
-        this.generalAppState = generalAppState;
+        this.caseLink = caseLink;
+        this.generalAppParentCaseLink = generalAppParentCaseLink;
+    }
+
+    @JsonIgnore
+    public GeneralApplication addCaseLink(CaseLink caseLink) {
+        this.caseLink = caseLink;
+        return this;
     }
 }

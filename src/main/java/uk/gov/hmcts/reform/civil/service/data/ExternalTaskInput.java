@@ -9,6 +9,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 public class ExternalTaskInput {
 
     String caseId;
-    CaseEvent caseEvent;
     String generalApplicationCaseId;
+    CaseEvent caseEvent;
 }
