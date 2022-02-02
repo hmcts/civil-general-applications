@@ -22,7 +22,8 @@ public enum CaseEvent {
     MAKE_PBA_PAYMENT(CAMUNDA),
 
     UPDATE_CASE_DATA(TESTING_SUPPORT),
-    UPDATE_GA_CASE_DATA(CAMUNDA);
+
+    NOTIFY_GENERAL_APPLICATION_RESPONDENT(CAMUNDA);
 
     private final UserType userType;
 

@@ -30,6 +30,10 @@ public class CaseDataBuilder {
     // Create Claim
     protected Long ccdCaseReference;
 
+    protected String generalApplicationRespondentEmailAddress;
+
+    protected String legacyCaseReference;
+
     protected CaseState ccdState;
 
     // Claimant Response
@@ -37,8 +41,18 @@ public class CaseDataBuilder {
 
     protected List<Element<GeneralApplication>> generalApplications;
 
+    public CaseDataBuilder legacyCaseReference(String legacyCaseReference){
+        this.legacyCaseReference = legacyCaseReference;
+        return this;
+    }
+
     public CaseDataBuilder generalApplications(List<Element<GeneralApplication>> generalApplications) {
         this.generalApplications = generalApplications;
+        return this;
+    }
+
+    public CaseDataBuilder generalApplicationRespondentEmailAddress(String generalApplicationRespondentEmailAddress) {
+        this.generalApplicationRespondentEmailAddress =generalApplicationRespondentEmailAddress;
         return this;
     }
 
@@ -59,10 +73,11 @@ public class CaseDataBuilder {
     public CaseData build() {
         return CaseData.builder()
             .businessProcess(businessProcess)
-            .ccdCaseReference(CASE_ID)
+            .ccdCaseReference(ccdCaseReference)
+            .generalApplicationRespondentEmailAddress(generalApplicationRespondentEmailAddress)
+            .legacyCaseReference(legacyCaseReference)
             .generalApplications(generalApplications)
             .build();
     }
 
 }
-

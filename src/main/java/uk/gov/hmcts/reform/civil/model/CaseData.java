@@ -36,6 +36,8 @@ public class CaseData implements MappableObject {
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
     private final String generalAppReasonsOfOrder;
+    private final String legacyCaseReference;
+    private final String generalApplicationRespondentEmailAddress;
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
