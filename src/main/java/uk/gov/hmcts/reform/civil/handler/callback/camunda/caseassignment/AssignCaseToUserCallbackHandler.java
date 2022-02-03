@@ -96,9 +96,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                             .getApplicant1OrganisationPolicy().getOrganisation().getOrganisationID();
 
                     coreCaseUserService.assignCase(caseId, submitterId, organisationId, CaseRole.APPLICANTSOLICITORONE);
-                    coreCaseUserService.removeCreatorRoleCaseAssignment(caseId, submitterId, organisationId);
+                    // create respondent solicitor
 
-                    setSolicitorEmailID(generalApplication, userDetails);
                 }
             }
             return updateCaseDate(callbackParams, generalApplications);
