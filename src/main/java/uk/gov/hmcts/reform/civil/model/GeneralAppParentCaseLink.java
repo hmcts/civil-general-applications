@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GeneralAppParentCaseLink {
 
-    @JsonProperty(value = "caseReference")
+    @JsonProperty(value = "CaseReference")
     private String caseReference;
 
 }

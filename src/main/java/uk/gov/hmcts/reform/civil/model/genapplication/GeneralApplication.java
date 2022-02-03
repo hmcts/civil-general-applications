@@ -49,7 +49,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("evidenceDocument") List<Element<Document>> evidenceDocument,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
                        @JsonProperty("caseLink") CaseLink caseLink,
-                       @JsonProperty("parentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink) {
+                       @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;

@@ -42,7 +42,8 @@ public class UpdateCaseDataController {
     @PutMapping("/testing-support/app/case/{caseId}")
     public void updateGaCaseData(@PathVariable("caseId") Long caseId, @RequestBody Map<String, Object> caseDataMap) {
         try {
-            var startEventResponse = coreCaseDataService.startGaUpdate(caseId.toString(), LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE);
+            var startEventResponse = coreCaseDataService.startGaUpdate(caseId.toString(),
+                                                                       LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE);
             coreCaseDataService.submitGaUpdate(caseId.toString(), caseDataContent(startEventResponse, caseDataMap));
         } catch (FeignException e) {
             log.error(String.format("Updating app case data failed: %s", e.contentUTF8()));
