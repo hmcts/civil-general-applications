@@ -36,10 +36,8 @@ public class PaymentTaskHandler implements BaseExternalTaskHandler {
         Map<String, Object> allVariables = externalTask.getAllVariables();
         ExternalTaskInput externalTaskInput = objectMapper.convertValue(allVariables, ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
-            caseId,
-            externalTaskInput.getCaseEvent()
-        );
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
+                                                                                externalTaskInput.getCaseEvent());
         BusinessProcess businessProcess = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails())
             .getBusinessProcess().updateActivityId(externalTask.getActivityId());
         data = coreCaseDataService.submitUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
