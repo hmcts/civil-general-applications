@@ -41,6 +41,7 @@ public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
             .updateActivityId(externalTask.getActivityId());
 
         String flowState = externalTask.getVariable(FLOW_STATE);
+
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, variables,  flowState);
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
