@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
@@ -20,7 +21,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class CaseEventTaskHandler implements BaseExternalTaskHandler {
+public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -32,16 +33,16 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
-        String caseId = variables.getCaseId();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
+        String generalApplicationCaseId = variables.getGeneralApplicationCaseId();
+        StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
                                                                                 variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
         String flowState = externalTask.getVariable(FLOW_STATE);
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
-        data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, variables,  flowState);
+        data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
     @Override
@@ -54,28 +55,20 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess,
+                                            BusinessProcess businessProcess, ExternalTaskInput variables,
                                             String flowState) {
         Map<String, Object> data = startEventResponse.getCaseDetails().getData();
         data.put("businessProcess", businessProcess);
+        data.put("generalAppParentCaseLink", GeneralAppParentCaseLink.builder()
+            .caseReference(variables.getCaseId()).build());
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId())
-                       .summary(getSummary(startEventResponse.getEventId(), flowState))
-                       .description(getDescription(startEventResponse.getEventId(), data))
+                       .summary(null)
+                       .description(null)
                        .build())
             .data(data)
             .build();
-    }
-
-    private String getSummary(String eventId, String state) {
-
-        return null;
-    }
-
-    private String getDescription(String eventId, Map data) {
-
-        return null;
     }
 }

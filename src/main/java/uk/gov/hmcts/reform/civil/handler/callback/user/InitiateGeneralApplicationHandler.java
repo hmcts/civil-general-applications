@@ -30,7 +30,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 @RequiredArgsConstructor
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
-    private static final String CONFIRMATION_SUMMARY = "<br/><p> Your Court will make a decision on %s."
+    private static final String CONFIRMATION_SUMMARY = "<br/><p> The Court will make a decision on %s."
         + "<ul> %s </ul>"
         + "</p> %s"
         + " %s ";

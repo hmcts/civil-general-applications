@@ -22,7 +22,7 @@ public class ElementUtils {
     public static <T> List<Element<T>> wrapElements(T... elements) {
         return Stream.of(elements)
             .filter(Objects::nonNull)
-            .map(element -> Element.<T>builder().value(element).build())
+            .map(ElementUtils::element)
             .collect(toList());
     }
 
