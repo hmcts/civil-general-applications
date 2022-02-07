@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
@@ -37,7 +38,8 @@ public class CaseData implements MappableObject {
     private final String generalAppDetailsOfOrder;
     private final String generalAppReasonsOfOrder;
     private final String legacyCaseReference;
-    private final String generalApplicationRespondentEmailAddress;
+    private final String respondentSolicitor1EmailAddress;
+    private final LocalDateTime notificationDeadline;
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;

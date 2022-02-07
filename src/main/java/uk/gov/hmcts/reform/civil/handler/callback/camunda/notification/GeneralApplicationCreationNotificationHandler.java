@@ -11,16 +11,18 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +31,6 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private static final List<CaseEvent> EVENTS = List.of(
         NOTIFY_GENERAL_APPLICATION_RESPONDENT
     );
-
-    private static final String TASK_ID = "NotifyGeneralApplicationRespondent";
 
     private static final String REFERENCE_TEMPLATE = "general-application-respondent-notification-%s";
 
@@ -52,11 +52,12 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
 
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        var recipient = caseData.getGeneralApplicationRespondentEmailAddress();
+        var recipient = caseData.getRespondentSolicitor1EmailAddress();
 
         boolean conditions = isWithNotice(caseData)
             && isNonConsent(caseData)
-            && isNonUrgent(caseData);
+            && isNonUrgent(caseData)
+            && !(recipient == null || recipient.isEmpty());
 
         if (conditions) {
             sendNotificationToGeneralAppRespondent(caseData, recipient);
@@ -72,41 +73,35 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             recipient,
             notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
             addProperties(caseData),
-            String.format(REFERENCE_TEMPLATE, caseData.getLegacyCaseReference())
+            String.format(REFERENCE_TEMPLATE, caseData.getCcdCaseReference().toString())
         );
     }
 
     private boolean isNonConsent(CaseData caseData) {
-        List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        boolean present = generalApplications.stream()
-            .anyMatch(app -> app.getValue()
-                .getGeneralAppRespondentAgreement()
-                .getHasAgreed() == YesOrNo.NO);
-        return present;
+        return caseData
+            .getGeneralAppRespondentAgreement()
+            .getHasAgreed() == YesOrNo.NO;
     }
 
     private boolean isWithNotice(CaseData caseData) {
-        List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        boolean present = generalApplications.stream()
-            .anyMatch(app -> app.getValue()
-                .getGeneralAppInformOtherParty()
-                .getIsWithNotice() == YesOrNo.YES);
-        return present;
+        return caseData
+            .getGeneralAppInformOtherParty()
+            .getIsWithNotice() == YesOrNo.YES;
     }
 
     private boolean isNonUrgent(CaseData caseData) {
-        List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-        boolean present = generalApplications.stream()
-            .anyMatch(app -> app.getValue()
-                .getGeneralAppUrgencyRequirement()
-                .getGeneralAppUrgency() == YesOrNo.NO);
-        return present;
+        return caseData
+            .getGeneralAppUrgencyRequirement()
+            .getGeneralAppUrgency() == YesOrNo.NO;
     }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
+        LocalDateTime deadline = LocalDate.now().atStartOfDay().plusDays(5);
         return Map.of(
-            GENERAL_APPLICATION_REFERENCE, caseData.getLegacyCaseReference()
+            GENERAL_APPLICATION_REFERENCE, caseData.getCcdCaseReference().toString(),
+            GA_NOTIFICATION_DEADLINE,
+            DateFormatHelper.formatLocalDateTime(deadline, DATE)
         );
     }
 }

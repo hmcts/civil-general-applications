@@ -4,6 +4,9 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import java.math.BigDecimal;
@@ -30,9 +33,15 @@ public class CaseDataBuilder {
     // Create Claim
     protected Long ccdCaseReference;
 
-    protected String generalApplicationRespondentEmailAddress;
+    protected String respondentSolicitor1EmailAddress;
 
     protected String legacyCaseReference;
+
+    protected GAInformOtherParty gaInformOtherParty;
+
+    protected GAUrgencyRequirement gaUrgencyRequirement;
+
+    protected GARespondentOrderAgreement gaRespondentOrderAgreement;
 
     protected CaseState ccdState;
 
@@ -51,13 +60,33 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder generalApplicationRespondentEmailAddress(String generalApplicationRespondentEmailAddress) {
-        this.generalApplicationRespondentEmailAddress =generalApplicationRespondentEmailAddress;
+    public CaseDataBuilder respondentSolicitor1EmailAddress(String respondentSolicitor1EmailAddress) {
+        this.respondentSolicitor1EmailAddress =respondentSolicitor1EmailAddress;
         return this;
     }
 
     public CaseDataBuilder businessProcess(BusinessProcess businessProcess) {
         this.businessProcess = businessProcess;
+        return this;
+    }
+
+    public CaseDataBuilder ccdCaseReference(Long ccdCaseReference){
+        this.ccdCaseReference = ccdCaseReference;
+        return this;
+    }
+
+    public CaseDataBuilder gaInformOtherParty(GAInformOtherParty gaInformOtherParty){
+        this.gaInformOtherParty = gaInformOtherParty;
+        return this;
+    }
+
+    public CaseDataBuilder gaUrgencyRequirement(GAUrgencyRequirement gaUrgencyRequirement){
+        this.gaUrgencyRequirement = gaUrgencyRequirement;
+        return this;
+    }
+
+    public CaseDataBuilder gaRespondentOrderAgreement(GARespondentOrderAgreement gaRespondentOrderAgreement){
+        this.gaRespondentOrderAgreement = gaRespondentOrderAgreement;
         return this;
     }
 
@@ -74,9 +103,12 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdCaseReference(ccdCaseReference)
-            .generalApplicationRespondentEmailAddress(generalApplicationRespondentEmailAddress)
+            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
             .legacyCaseReference(legacyCaseReference)
             .generalApplications(generalApplications)
+            .generalAppInformOtherParty(gaInformOtherParty)
+            .generalAppUrgencyRequirement(gaUrgencyRequirement)
+            .generalAppRespondentAgreement(gaRespondentOrderAgreement)
             .build();
     }
 
