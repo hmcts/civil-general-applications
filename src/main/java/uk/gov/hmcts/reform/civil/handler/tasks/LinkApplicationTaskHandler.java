@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -40,8 +41,8 @@ public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
-        String flowState = externalTask.getVariable(FLOW_STATE);
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, variables,  flowState);
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
+            variables, startEventData.getGeneralAppParentCaseLink());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
@@ -56,11 +57,15 @@ public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
                                             BusinessProcess businessProcess, ExternalTaskInput variables,
-                                            String flowState) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
-        data.put("businessProcess", businessProcess);
-        data.put("generalAppParentCaseLink", GeneralAppParentCaseLink.builder()
-            .caseReference(variables.getCaseId()).build());
+                                            GeneralAppParentCaseLink generalAppParentCaseLink) {
+        Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
+        updatedData.put("businessProcess", businessProcess);
+
+        if (generalAppParentCaseLink == null
+            || StringUtils.isBlank(generalAppParentCaseLink.getCaseReference())) {
+            updatedData.put("generalAppParentCaseLink", GeneralAppParentCaseLink.builder()
+                .caseReference(variables.getCaseId()).build());
+        }
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
@@ -68,7 +73,7 @@ public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
                        .summary(null)
                        .description(null)
                        .build())
-            .data(data)
+            .data(updatedData)
             .build();
     }
 }
