@@ -8,9 +8,9 @@ import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
-import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -81,8 +81,7 @@ public class GeneralApplication implements MappableObject {
     }
 
     @JsonIgnore
-    public GeneralApplication addCaseLink(CaseLink caseLink) {
+    public void addCaseLink(CaseLink caseLink) {
         this.caseLink = caseLink;
-        return this;
     }
 }
