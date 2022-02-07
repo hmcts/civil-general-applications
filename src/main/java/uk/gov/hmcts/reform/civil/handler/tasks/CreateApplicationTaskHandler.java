@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -63,6 +64,10 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                     GeneralApplication generalApplication) {
         generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
         generalApplication.getBusinessProcess().setCamundaEvent(variables.getCaseEvent().name());
+        if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
+            generalApplication.addCaseLink(CaseLink.builder()
+                              .caseReference(String.valueOf(generalAppCaseData.getCcdCaseReference())).build());
+        }
     }
 
     private void createGeneralApplicationCase(GeneralApplication generalApplication) {

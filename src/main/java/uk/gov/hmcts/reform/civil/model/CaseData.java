@@ -45,6 +45,8 @@ public class CaseData implements MappableObject {
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
     private final GAEvidence generalAppUploadEvidences;
+    private final YesOrNo isMultiParty;
+    private final CaseLink caseLink;
     private final List<Element<GeneralApplication>> generalApplications;
 
     private final BusinessProcess businessProcess;
