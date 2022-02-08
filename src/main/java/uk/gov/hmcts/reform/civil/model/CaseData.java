@@ -52,7 +52,6 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
-    private final String respondentSolicitor1EmailAddress;
     private final List<Element<GeneralApplication>> generalApplications;
 
     private final BusinessProcess businessProcess;
