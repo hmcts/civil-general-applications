@@ -47,7 +47,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
-    private Boolean checkGAExitsWithApplicantSolicitorDetails(CaseData caseData) {
+    private boolean applicationSolicitorDetailsExist(CaseData caseData) {
         return caseData.getApplicantSolicitor1UserDetails() != null
             && caseData.getApplicant1OrganisationPolicy() != null;
     }
@@ -56,7 +56,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
 
-        if (checkGAExitsWithApplicantSolicitorDetails(caseData)) {
+        if (applicationSolicitorDetailsExist(caseData)) {
             IdamUserDetails userDetails = caseData.getApplicantSolicitor1UserDetails();
             String submitterId = userDetails.getId();
             String organisationId = caseData
