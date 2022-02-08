@@ -69,7 +69,7 @@ public class CoreCaseUserService {
         );
     }
 
-    private void assignUserToCaseForRole(String caseId, String userId, String organisationId,
+    public void assignUserToCaseForRole(String caseId, String userId, String organisationId,
                                          CaseRole caseRole, String caaAccessToken) {
         CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
             = CaseAssignedUserRoleWithOrganisation.builder()
@@ -106,7 +106,7 @@ public class CoreCaseUserService {
         );
     }
 
-    private boolean userWithCaseRoleExistsOnCase(String caseId, String accessToken, CaseRole caseRole) {
+    public boolean userWithCaseRoleExistsOnCase(String caseId, String accessToken, CaseRole caseRole) {
         CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
             accessToken,
             authTokenGenerator.generate(),

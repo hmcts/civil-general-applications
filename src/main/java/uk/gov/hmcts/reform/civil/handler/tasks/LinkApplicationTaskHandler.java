@@ -42,7 +42,7 @@ public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
             .updateActivityId(externalTask.getActivityId());
 
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
-            variables, startEventData.getGeneralAppParentCaseLink());
+                                                          variables, startEventData.getGeneralAppParentCaseLink());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
