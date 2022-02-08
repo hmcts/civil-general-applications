@@ -1,0 +1,114 @@
+package uk.gov.hmcts.reform.civil.service;
+
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.runtime.MessageCorrelationBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEventPublisher;
+import uk.gov.hmcts.reform.civil.event.DispatchBusinessProcessEvent;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+
+import java.util.List;
+
+import static org.assertj.core.util.Lists.newArrayList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+
+@SpringBootTest(classes = {JacksonAutoConfiguration.class, CaseDetailsConverter.class})
+class EventEmitterServiceTest {
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @MockBean
+    private RuntimeService runtimeService;
+
+    @MockBean
+    private MessageCorrelationBuilder messageCorrelationBuilder;
+
+    private EventEmitterService eventEmitterService;
+
+    @BeforeEach
+    void setup() {
+        eventEmitterService = new EventEmitterService(applicationEventPublisher, runtimeService);
+        when(runtimeService.createMessageCorrelation(any())).thenReturn(messageCorrelationBuilder);
+        when(messageCorrelationBuilder.setVariable(any(), any())).thenReturn(messageCorrelationBuilder);
+    }
+
+    @Test
+    void shouldSendMessageAndTriggerEvent_whenInvoked() {
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+        GeneralApplication generalApplication = GeneralApplication.builder()
+            .businessProcess(businessProcess)
+            .build();
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.add(element(generalApplication));
+        CaseData caseData = CaseData.builder()
+            .generalApplications(newApplication)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplication, true);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+        verify(applicationEventPublisher).publishEvent(new DispatchBusinessProcessEvent(1L, businessProcess));
+    }
+
+    @Test
+    void shouldSendMessageAndNotTriggerEvent_whenNotTrue() {
+        when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+        GeneralApplication generalApplication = GeneralApplication.builder()
+            .businessProcess(businessProcess)
+            .build();
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.add(element(generalApplication));
+        CaseData caseData = CaseData.builder()
+            .generalApplications(newApplication)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplication, false);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+
+    }
+
+    @Test
+    void shouldHandleException_whenInvoked() {
+        when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+        GeneralApplication generalApplication = GeneralApplication.builder()
+            .businessProcess(businessProcess)
+            .build();
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.add(element(generalApplication));
+        CaseData caseData = CaseData.builder()
+            .generalApplications(newApplication)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplication, true);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+    }
+}
