@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -19,7 +20,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
-import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,7 +31,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-
 
 @SpringBootTest(classes = {
     GeneralApplicationCreationNotificationHandler.class,
@@ -73,7 +72,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                 DUMMY_EMAIL,
                 "general-application-respondent-template-id",
                 getNotificationDataMap(),
-                "general-application-respondent-notification-"+GENERAL_APP_REFERENCE
+                "general-application-respondent-notification-" + GENERAL_APP_REFERENCE
             );
         }
 
@@ -81,11 +80,11 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
             return Map.of(
                 NotificationData.GENERAL_APPLICATION_REFERENCE, GENERAL_APP_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
-                DateFormatHelper.formatLocalDate(NOTIFICATION_DEADLINE.toLocalDate(),DateFormatHelper.DATE)
+                DateFormatHelper.formatLocalDate(NOTIFICATION_DEADLINE.toLocalDate(), DateFormatHelper.DATE)
             );
         }
 
-        private CaseData getCaseData(){
+        private CaseData getCaseData() {
             return new CaseDataBuilder()
                 .businessProcess(BusinessProcess.builder().status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID).build())

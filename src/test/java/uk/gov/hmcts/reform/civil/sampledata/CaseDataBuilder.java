@@ -50,7 +50,7 @@ public class CaseDataBuilder {
 
     protected List<Element<GeneralApplication>> generalApplications;
 
-    public CaseDataBuilder legacyCaseReference(String legacyCaseReference){
+    public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
         return this;
     }
@@ -61,7 +61,7 @@ public class CaseDataBuilder {
     }
 
     public CaseDataBuilder respondentSolicitor1EmailAddress(String respondentSolicitor1EmailAddress) {
-        this.respondentSolicitor1EmailAddress =respondentSolicitor1EmailAddress;
+        this.respondentSolicitor1EmailAddress = respondentSolicitor1EmailAddress;
         return this;
     }
 
@@ -70,22 +70,22 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder ccdCaseReference(Long ccdCaseReference){
+    public CaseDataBuilder ccdCaseReference(Long ccdCaseReference) {
         this.ccdCaseReference = ccdCaseReference;
         return this;
     }
 
-    public CaseDataBuilder gaInformOtherParty(GAInformOtherParty gaInformOtherParty){
+    public CaseDataBuilder gaInformOtherParty(GAInformOtherParty gaInformOtherParty) {
         this.gaInformOtherParty = gaInformOtherParty;
         return this;
     }
 
-    public CaseDataBuilder gaUrgencyRequirement(GAUrgencyRequirement gaUrgencyRequirement){
+    public CaseDataBuilder gaUrgencyRequirement(GAUrgencyRequirement gaUrgencyRequirement) {
         this.gaUrgencyRequirement = gaUrgencyRequirement;
         return this;
     }
 
-    public CaseDataBuilder gaRespondentOrderAgreement(GARespondentOrderAgreement gaRespondentOrderAgreement){
+    public CaseDataBuilder gaRespondentOrderAgreement(GARespondentOrderAgreement gaRespondentOrderAgreement) {
         this.gaRespondentOrderAgreement = gaRespondentOrderAgreement;
         return this;
     }
