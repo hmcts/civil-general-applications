@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -47,6 +48,11 @@ public class CaseData implements MappableObject {
     private final GAEvidence generalAppUploadEvidences;
     private final YesOrNo isMultiParty;
     private final CaseLink caseLink;
+    private GeneralAppParentCaseLink generalAppParentCaseLink;
+    private final IdamUserDetails applicantSolicitor1UserDetails;
+    private final OrganisationPolicy applicant1OrganisationPolicy;
+    private final OrganisationPolicy respondent1OrganisationPolicy;
+    private final String respondentSolicitor1EmailAddress;
     private final List<Element<GeneralApplication>> generalApplications;
 
     private final BusinessProcess businessProcess;
