@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.LinkApplicationTaskHandler;
 @Component
 public class LinkApplicationEventExternalTaskListener {
 
-    private static final String TOPIC = "linkApplicationEventGASpec";
+    private static final String TOPIC = "applicationEventGASpec";
 
     @Autowired
     private LinkApplicationEventExternalTaskListener(LinkApplicationTaskHandler linkApplicationTaskHandler,
