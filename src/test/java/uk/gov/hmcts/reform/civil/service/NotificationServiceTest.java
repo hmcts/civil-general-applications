@@ -45,8 +45,7 @@ class NotificationServiceTest {
                     REFERENCE
                 );
 
-            assertThrows(NotificationException.class,
-                         () -> notificationService
+            assertThrows(NotificationException.class, () -> notificationService
                              .sendMail(
                                  NULL_EMAIL,
                                  TEMPLATE_ID,
@@ -69,8 +68,7 @@ class NotificationServiceTest {
                     REFERENCE
                 );
 
-            assertThrows(NotificationException.class,
-                         () -> notificationService
+            assertThrows(NotificationException.class, () -> notificationService
                              .sendMail(
                                  DUMMY_EMAIL,
                                  NULL_TEMPLATE_ID,
