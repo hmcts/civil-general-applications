@@ -1,15 +1,10 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
-import uk.gov.hmcts.reform.civil.callback.CallbackException;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
@@ -17,9 +12,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 
 import java.util.List;
@@ -37,8 +29,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
     private final CoreCaseUserService coreCaseUserService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final CoreCaseDataService coreCaseDataService;
-    private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -57,64 +47,24 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
-    private Boolean checkGAExitsWithSolicitorDetails(Element<GeneralApplication> generalApplication) {
-        return generalApplication.getValue().getApplicantSolicitor1UserDetails() != null
-            && generalApplication.getValue().getApplicant1OrganisationPolicy() != null
-            && generalApplication.getValue().getRespondent1OrganisationPolicy() != null
-            && generalApplication.getValue().getRespondentSolicitor1EmailAddress() != null;
-    }
-
-    private void setSolicitorEmailID(Element<GeneralApplication> generalApplication, IdamUserDetails userDetails) {
-        generalApplication.getValue().toBuilder()
-            .applicantSolicitor1UserDetails(IdamUserDetails.builder()
-                                                .email(userDetails.getEmail()).build()).build();
-    }
-
-    private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            List<Element<GeneralApplication>> generalApplications) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
-        data.put("generalApplications", generalApplications);
-
-        return CaseDataContent.builder()
-            .eventToken(startEventResponse.getToken())
-            .event(Event.builder().id(startEventResponse.getEventId()).build())
-            .data(data)
-            .build();
+    private boolean applicationSolicitorDetailsExist(CaseData caseData) {
+        return caseData.getApplicantSolicitor1UserDetails() != null
+            && caseData.getApplicant1OrganisationPolicy() != null;
     }
 
     private CallbackResponse assignSolicitorCaseRole(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
 
-        if (caseData.getGeneralApplications() != null) {
-            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-            for (Element<GeneralApplication> generalApplication : generalApplications) {
-                if (checkGAExitsWithSolicitorDetails(generalApplication)) {
-                    IdamUserDetails userDetails = generalApplication.getValue().getApplicantSolicitor1UserDetails();
-                    String submitterId = userDetails.getId();
-                    String organisationId = generalApplication.getValue()
-                            .getApplicant1OrganisationPolicy().getOrganisation().getOrganisationID();
-
-                    coreCaseUserService.assignCase(caseId, submitterId, organisationId, CaseRole.APPLICANTSOLICITORONE);
-                    // create respondent solicitor
-
-                }
-            }
-            return updateCaseDate(callbackParams, generalApplications);
+        if (applicationSolicitorDetailsExist(caseData)) {
+            IdamUserDetails userDetails = caseData.getApplicantSolicitor1UserDetails();
+            String submitterId = userDetails.getId();
+            String organisationId = caseData
+                    .getApplicant1OrganisationPolicy().getOrganisation().getOrganisationID();
+            coreCaseUserService.assignCase(caseId, submitterId, organisationId, CaseRole.APPLICANTSOLICITORONE);
         }
 
-        throw new CallbackException(String.format("AssignCaseToUserCallbackHandler::assignSolicitorCaseRole "
-                                                      + "NullPointer Exception : %s", caseId));
-
-    }
-
-    private CallbackResponse updateCaseDate(CallbackParams callbackParams,
-                                            List<Element<GeneralApplication>> generalApplications) {
-        Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
-        output.put("generalApplications", generalApplications);
-
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(output)
             .build();
     }
 }
