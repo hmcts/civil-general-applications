@@ -33,7 +33,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PBA_PAYMENT_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
-    private static final String TASK_ID = "CreateClaimMakePayment";
+    private static final String TASK_ID = "GeneralApplicationMakePayment";
     public static final String DUPLICATE_PAYMENT_MESSAGE
         = "You attempted to retry the payment to soon. Try again later.";
 
@@ -49,73 +49,13 @@ public class PaymentsCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_SUBMIT), this::makePbaPaymentBackwardsCompatible,
-            callbackKey(V_1, ABOUT_TO_SUBMIT), this::makePbaPayment
+            callbackKey(ABOUT_TO_SUBMIT), this::makePbaPayment
         );
     }
 
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
-    }
-
-    private CallbackResponse makePbaPaymentBackwardsCompatible(CallbackParams callbackParams) {
-        var caseData = callbackParams.getCaseData();
-        /*var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
-        List<String> errors = new ArrayList<>();
-        try {
-            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
-            caseData = caseData.toBuilder()
-                .paymentDetails(PaymentDetails.builder().status(SUCCESS).reference(paymentReference).build())
-                .paymentSuccessfulDate(time.now())
-                .build();
-        } catch (FeignException e) {
-            if (e.status() == 403) {
-                caseData = updateWithBusinessErrorBackwardsCompatible(caseData, e);
-            } else {
-                errors.add(ERROR_MESSAGE);
-            }
-        } catch (InvalidPaymentRequestException e) {
-            log.error(String.format("Duplicate Payment error status code 400 for case: %s, response body: %s",
-                                    caseData.getCcdCaseReference(), e.getMessage()
-            ));
-            caseData = updateWithDuplicatePaymentErrorBackwardsCompatible(caseData, e);
-        }
-        */
-
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseData.toMap(objectMapper))
-            .errors(Collections.emptyList())
-            .build();
-    }
-
-    private CaseData updateWithDuplicatePaymentError(CaseData caseData, InvalidPaymentRequestException e) {
-        /*
-        var paymentDetails = ofNullable(caseData.getClaimIssuedPaymentDetails())
-            .map(PaymentDetails::toBuilder)
-            .orElse(PaymentDetails.builder())
-            .status(FAILED)
-            .errorCode(null)
-            .errorMessage(DUPLICATE_PAYMENT_MESSAGE)
-            .build();
-
-        return caseData.toBuilder().claimIssuedPaymentDetails(paymentDetails).build();
-         */
-        return caseData;
-    }
-
-    private CaseData updateWithDuplicatePaymentErrorBackwardsCompatible(CaseData caseData,
-                                                                        InvalidPaymentRequestException e) {
-        /*
-        var paymentDetails = PaymentDetails.builder()
-            .status(FAILED)
-            .errorMessage(DUPLICATE_PAYMENT_MESSAGE)
-            .errorCode(null)
-            .build();
-
-        return caseData.toBuilder().paymentDetails(paymentDetails).build();
-         */
-        return caseData;
     }
 
     private CallbackResponse makePbaPayment(CallbackParams callbackParams) {
@@ -160,29 +100,6 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             .build();
     }
 
-    private CaseData updateWithBusinessErrorBackwardsCompatible(CaseData caseData, FeignException e) {
-        /*
-        try {
-            var paymentDto = objectMapper.readValue(e.contentUTF8(), PaymentDto.class);
-            var statusHistory = paymentDto.getStatusHistories()[0];
-            return caseData.toBuilder()
-                .paymentDetails(PaymentDetails.builder()
-                                    .status(FAILED)
-                                    .errorCode(statusHistory.getErrorCode())
-                                    .errorMessage(statusHistory.getErrorMessage())
-                                    .build())
-                .build();
-        } catch (JsonProcessingException jsonException) {
-            log.error(String.format("Unknown payment error for case: %s, response body: %s",
-                                    caseData.getCcdCaseReference(), e.contentUTF8()
-            ));
-            throw e;
-        }
-
-         */
-        return caseData;
-    }
-
     private CaseData updateWithBusinessError(CaseData caseData, FeignException e) {
         /*
         try {
@@ -206,6 +123,21 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             throw e;
         }
 
+         */
+        return caseData;
+    }
+
+    private CaseData updateWithDuplicatePaymentError(CaseData caseData, InvalidPaymentRequestException e) {
+        /*
+        var paymentDetails = ofNullable(caseData.getClaimIssuedPaymentDetails())
+            .map(PaymentDetails::toBuilder)
+            .orElse(PaymentDetails.builder())
+            .status(FAILED)
+            .errorCode(null)
+            .errorMessage(DUPLICATE_PAYMENT_MESSAGE)
+            .build();
+
+        return caseData.toBuilder().claimIssuedPaymentDetails(paymentDetails).build();
          */
         return caseData;
     }
