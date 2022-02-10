@@ -22,7 +22,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class LinkApplicationTaskHandler implements BaseExternalTaskHandler {
+public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
