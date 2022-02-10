@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PBA_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PBA_PAYMENT_GASPEC;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_FLAGS;
 
 @SpringBootTest(classes = {
@@ -66,7 +66,7 @@ class PaymentTaskHandlerTest {
         when(mockExternalTask.getActivityId()).thenReturn("activityId");
 
         when(mockExternalTask.getAllVariables())
-            .thenReturn(Map.of("caseId", CASE_ID, "caseEvent", MAKE_PBA_PAYMENT.name()));
+            .thenReturn(Map.of("caseId", CASE_ID, "caseEvent", MAKE_PBA_PAYMENT_GASPEC.name()));
     }
 
     @Nested
@@ -83,15 +83,15 @@ class PaymentTaskHandlerTest {
 
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
 
-            when(coreCaseDataService.startUpdate(CASE_ID, MAKE_PBA_PAYMENT))
+            when(coreCaseDataService.startGaUpdate(CASE_ID, MAKE_PBA_PAYMENT_GASPEC))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
 
-            when(coreCaseDataService.submitUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
+            when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
             paymentTaskHandler.execute(mockExternalTask, externalTaskService);
 
-            verify(coreCaseDataService).startUpdate(CASE_ID, MAKE_PBA_PAYMENT);
-            verify(coreCaseDataService).submitUpdate(eq(CASE_ID), any(CaseDataContent.class));
+            verify(coreCaseDataService).startGaUpdate(CASE_ID, MAKE_PBA_PAYMENT_GASPEC);
+            verify(coreCaseDataService).submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class));
             verify(externalTaskService).complete(mockExternalTask, variables);
         }
     }
