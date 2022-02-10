@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.sampledata;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -48,6 +49,8 @@ public class CaseDataBuilder {
     // Claimant Response
     protected BusinessProcess businessProcess;
 
+    private GeneralAppParentCaseLink generalAppParentCaseLink;
+
     protected List<Element<GeneralApplication>> generalApplications;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
@@ -67,6 +70,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder businessProcess(BusinessProcess businessProcess) {
         this.businessProcess = businessProcess;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppParentCaseLink(GeneralAppParentCaseLink generalAppParentCaseLink) {
+        this.generalAppParentCaseLink = generalAppParentCaseLink;
         return this;
     }
 
@@ -109,6 +117,7 @@ public class CaseDataBuilder {
             .generalAppInformOtherParty(gaInformOtherParty)
             .generalAppUrgencyRequirement(gaUrgencyRequirement)
             .generalAppRespondentAgreement(gaRespondentOrderAgreement)
+            .generalAppParentCaseLink(generalAppParentCaseLink)
             .build();
     }
 
