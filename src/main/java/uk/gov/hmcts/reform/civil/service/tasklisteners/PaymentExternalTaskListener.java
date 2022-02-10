@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.PaymentTaskHandler;
 @Component
 public class PaymentExternalTaskListener {
 
-    private static final String TOPIC = "applicationEventGASpec";
+    private static final String TOPIC = "processPaymentGASpec";
 
     @Autowired
     private PaymentExternalTaskListener(PaymentTaskHandler paymentTaskHandler, ExternalTaskClient client) {

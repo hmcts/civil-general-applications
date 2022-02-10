@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -21,10 +23,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CallbackVersion.V_1;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PBA_PAYMENT_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
 @Service
@@ -62,11 +65,12 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-        /*
+
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
-            PaymentDetails paymentDetails = ofNullable(caseData.getClaimIssuedPaymentDetails())
+            GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+            PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                 .map(PaymentDetails::toBuilder)
                 .orElse(PaymentDetails.builder())
                 .status(SUCCESS)
@@ -76,10 +80,10 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                 .build();
 
             caseData = caseData.toBuilder()
-                .claimIssuedPaymentDetails(paymentDetails)
-                .paymentSuccessfulDate(time.now())
-                .build();
-
+                .generalAppPBADetails(pbaDetails.toBuilder()
+                        .paymentDetails(paymentDetails)
+                        .paymentSuccessfulDate(time.now()).build())
+               .build();
         } catch (FeignException e) {
             log.info(String.format("Http Status %s ", e.status()), e);
             if (e.status() == 403) {
@@ -93,7 +97,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             ));
             caseData = updateWithDuplicatePaymentError(caseData, e);
         }
-        */
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))
             .errors(errors)

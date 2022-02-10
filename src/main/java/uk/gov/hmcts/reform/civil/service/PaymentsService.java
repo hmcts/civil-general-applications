@@ -4,9 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
+import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
+import uk.gov.hmcts.reform.prd.model.Organisation;
+
+import static java.util.Optional.ofNullable;
 
 @Service
 @RequiredArgsConstructor
@@ -21,19 +27,20 @@ public class PaymentsService {
     }
 
     private CreditAccountPaymentRequest buildRequest(CaseData caseData) {
-        /*
-        FeeDto claimFee = caseData.getClaimFee().toFeeDto();
+        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
+        FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
         var organisationId = caseData.getApplicant1OrganisationPolicy().getOrganisation().getOrganisationID();
         var organisationName = organisationService.findOrganisationById(organisationId)
             .map(Organisation::getName)
             .orElseThrow(RuntimeException::new);
 
-        String customerReference = ofNullable(caseData.getClaimIssuedPaymentDetails())
+        String customerReference = ofNullable(generalAppPBADetails.getPaymentDetails())
             .map(PaymentDetails::getCustomerReference)
-            .orElse(caseData.getPaymentReference());
+            .orElse(generalAppPBADetails.getPbaReference());
 
         return CreditAccountPaymentRequest.builder()
-            .accountNumber(caseData.getApplicantSolicitor1PbaAccounts().getValue().getLabel())
+            .accountNumber(generalAppPBADetails.getApplicantsPbaAccounts()
+                    .getValue().getLabel())
             .amount(claimFee.getCalculatedAmount())
             .caseReference(caseData.getLegacyCaseReference())
             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
@@ -44,8 +51,5 @@ public class PaymentsService {
             .siteId(paymentsConfiguration.getSiteId())
             .fees(new FeeDto[]{claimFee})
             .build();
-
-         */
-        return CreditAccountPaymentRequest.builder().build();
     }
 }
