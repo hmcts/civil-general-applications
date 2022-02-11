@@ -4,17 +4,17 @@ import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.LinkApplicationTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.GeneralApplicationTaskHandler;
 
 @Component
-public class LinkApplicationEventExternalTaskListener {
+public class GeneralApplicationEventExternalTaskListener {
 
     private static final String TOPIC = "applicationEventGASpec";
 
     @Autowired
-    private LinkApplicationEventExternalTaskListener(LinkApplicationTaskHandler linkApplicationTaskHandler,
-                                                  ExternalTaskClient client) {
+    private GeneralApplicationEventExternalTaskListener(GeneralApplicationTaskHandler generalApplicationTaskHandler,
+                                                        ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
-        subscriptionBuilder.handler(linkApplicationTaskHandler).open();
+        subscriptionBuilder.handler(generalApplicationTaskHandler).open();
     }
 }
