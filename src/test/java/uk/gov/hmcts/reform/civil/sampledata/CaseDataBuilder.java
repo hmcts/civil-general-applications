@@ -1,10 +1,16 @@
 package uk.gov.hmcts.reform.civil.sampledata;
 
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
@@ -15,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.time.LocalDate.now;
+import static java.util.Arrays.asList;
 
 public class CaseDataBuilder {
 
@@ -22,13 +29,14 @@ public class CaseDataBuilder {
     public static final Long CASE_ID = 1594901956117591L;
     public static final LocalDateTime SUBMITTED_DATE_TIME = LocalDateTime.now();
     public static final LocalDateTime RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.toLocalDate().plusDays(14)
-        .atTime(23, 59, 59);
+            .atTime(23, 59, 59);
     public static final LocalDateTime APPLICANT_RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.plusDays(120);
     public static final LocalDate CLAIM_ISSUED_DATE = now();
     public static final LocalDateTime DEADLINE = LocalDate.now().atStartOfDay().plusDays(14);
     public static final LocalDate PAST_DATE = now().minusDays(1);
     public static final LocalDateTime NOTIFICATION_DEADLINE = LocalDate.now().atStartOfDay().plusDays(1);
     public static final BigDecimal FAST_TRACK_CLAIM_AMOUNT = BigDecimal.valueOf(10000);
+    public static final String CUSTOMER_REFERENCE = "12345";
 
     // Create Claim
     protected Long ccdCaseReference;
@@ -42,6 +50,10 @@ public class CaseDataBuilder {
     protected GAUrgencyRequirement gaUrgencyRequirement;
 
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
+
+    protected GAPbaDetails gaPbaDetails;
+
+    protected OrganisationPolicy applicant1OrganisationPolicy;
 
     protected CaseState ccdState;
 
@@ -90,6 +102,16 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder gaPbaDetails(GAPbaDetails gaPbaDetails) {
+        this.gaPbaDetails = gaPbaDetails;
+        return this;
+    }
+
+    public CaseDataBuilder applicant1OrganisationPolicy(OrganisationPolicy applicant1OrganisationPolicy) {
+        this.applicant1OrganisationPolicy = applicant1OrganisationPolicy;
+        return this;
+    }
+
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
@@ -101,15 +123,37 @@ public class CaseDataBuilder {
 
     public CaseData build() {
         return CaseData.builder()
-            .businessProcess(businessProcess)
-            .ccdCaseReference(ccdCaseReference)
-            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
-            .legacyCaseReference(legacyCaseReference)
-            .generalApplications(generalApplications)
-            .generalAppInformOtherParty(gaInformOtherParty)
-            .generalAppUrgencyRequirement(gaUrgencyRequirement)
-            .generalAppRespondentAgreement(gaRespondentOrderAgreement)
-            .build();
+                .businessProcess(businessProcess)
+                .ccdCaseReference(ccdCaseReference)
+                .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
+                .legacyCaseReference(legacyCaseReference)
+                .generalApplications(generalApplications)
+                .generalAppInformOtherParty(gaInformOtherParty)
+                .generalAppUrgencyRequirement(gaUrgencyRequirement)
+                .generalAppRespondentAgreement(gaRespondentOrderAgreement)
+                .generalAppPBADetails(gaPbaDetails)
+                .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+                .build();
+    }
+
+    public CaseData buildMakePaymentsCaseData() {
+        uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
+                .organisationID("OrgId").build();
+
+        return build().toBuilder()
+                .ccdCaseReference(1644495739087775L)
+                .ccdCaseReference(1644495739087775L)
+                .legacyCaseReference("000DC001")
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .applicantsPbaAccounts(DynamicList.builder()
+                                .listItems(asList(DynamicListElement.builder().label("PBA0088192").build(),
+                                        DynamicListElement.builder().label("PBA0078095").build()))
+                                .value(DynamicListElement.dynamicElement("PBA0078095")).build())
+                        .fee(Fee.builder().code("FE203").calculatedAmountInPence(BigDecimal.valueOf(27500)).build())
+                        .pbaReference(CUSTOMER_REFERENCE).build())
+                .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+                .build();
     }
 
 }
