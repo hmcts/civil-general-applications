@@ -8,15 +8,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAEvidence;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +45,7 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final List<Element<GeneralApplication>> generalApplications;
+    private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
 
     private final BusinessProcess businessProcess;
 

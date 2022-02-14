@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -39,6 +40,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo isMultiParty;
     private CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
+    private LocalDateTime generalAppSubmittedDateGAspec;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -59,7 +61,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("evidenceDocument") List<Element<Document>> evidenceDocument,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
                        @JsonProperty("caseLink") CaseLink caseLink,
-                       @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink) {
+                       @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
+                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -78,6 +81,7 @@ public class GeneralApplication implements MappableObject {
         this.isMultiParty = isMultiParty;
         this.caseLink = caseLink;
         this.generalAppParentCaseLink = generalAppParentCaseLink;
+        this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
     }
 
     @JsonIgnore
