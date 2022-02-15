@@ -53,13 +53,12 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         var recipient = caseData.getRespondentSolicitor1EmailAddress();
-
-        boolean conditions = isWithNotice(caseData)
+        boolean isNotificationCriteriaSatisfied = isWithNotice(caseData)
             && isNonConsent(caseData)
             && isNonUrgent(caseData)
             && !(recipient == null || recipient.isEmpty());
 
-        if (conditions) {
+        if (isNotificationCriteriaSatisfied) {
             sendNotificationToGeneralAppRespondent(caseData, recipient);
         }
 
