@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 
@@ -81,26 +82,27 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private boolean isNonConsent(CaseData caseData) {
         return caseData
             .getGeneralAppRespondentAgreement()
-            .getHasAgreed() == YesOrNo.NO;
+            .getHasAgreed() == NO;
     }
 
     private boolean isWithNotice(CaseData caseData) {
-        return caseData
-            .getGeneralAppInformOtherParty()
-            .getIsWithNotice() == YES;
+        return caseData.getGeneralAppRespondentAgreement() != null
+                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+                && caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 
     private boolean isNonUrgent(CaseData caseData) {
         return caseData
             .getGeneralAppUrgencyRequirement()
-            .getGeneralAppUrgency() == YesOrNo.NO;
+            .getGeneralAppUrgency() == NO;
     }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         LocalDateTime deadline = LocalDate.now().atStartOfDay().plusDays(5);
         return Map.of(
-            APPLICANT_REFERENCE, YES.equals(caseData.getIsPCClaimantMakingApplication()) ? "claimant" : "respondant",
+            APPLICANT_REFERENCE, YES.equals(caseData.getIsPCClaimantMakingApplication()) ? "claimant" : "respondent",
             GENERAL_APPLICATION_REFERENCE, caseData.getCcdCaseReference().toString(),
             GA_NOTIFICATION_DEADLINE,
             DateFormatHelper.formatLocalDateTime(deadline, DATE)
