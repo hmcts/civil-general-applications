@@ -71,6 +71,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
 
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
+            paymentsService.validateRequest(caseData);
             var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
