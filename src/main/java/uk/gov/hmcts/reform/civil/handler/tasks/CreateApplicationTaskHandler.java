@@ -62,9 +62,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 updateParentCaseGeneralApplication(variables, generalApplication);
                 applications = addApplication(buildApplication(generalApplication, caseData),
                                               caseData.getGeneralApplicationsDetails());
-                CaseLink caseLink = generalApplication.getCaseLink();
-                generalApplications = generalApplications.stream().filter(GA -> GA.getValue().getCaseLink() != caseLink)
-                    .collect(Collectors.toList());
             }
         }
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
@@ -73,18 +70,19 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
-        String collect = types.stream().map(appType -> appType.getDisplayedValue() + " , ")
-            .collect(Collectors.joining());
+        String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
+            .collect(Collectors.joining(","));
         return GeneralApplicationsDetails.builder()
-            .generalAppType1(collect)
+            .generalApplicationType(collect)
             .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
-            .caseLink(generalApplication.getCaseLink())
-            .caseState(caseData.getCcdState()).build();
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                generalAppCaseData.getCcdCaseReference())).build())
+            .caseState(caseData.getCcdState().getDisplayedValue()).build();
     }
 
     private List<Element<GeneralApplicationsDetails>> addApplication(GeneralApplicationsDetails application,
                                                                      List<Element<GeneralApplicationsDetails>>
-                                                                        generalApplicationsDetails) {
+                                                                         generalApplicationsDetails) {
         List<Element<GeneralApplicationsDetails>> newApplication = ofNullable(generalApplicationsDetails)
             .orElse(newArrayList());
         newApplication.add(element(application));
