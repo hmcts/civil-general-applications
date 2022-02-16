@@ -30,7 +30,7 @@ public class PaymentsService {
         if (generalAppPBADetails == null) {
             error = "PBA details not received.";
         }
-        if (generalAppPBADetails.getFee() == null) {
+        if (generalAppPBADetails != null && generalAppPBADetails.getFee() == null) {
             error = "Fees are not set correctly.";
         }
         if (caseData.getApplicant1OrganisationPolicy() == null
