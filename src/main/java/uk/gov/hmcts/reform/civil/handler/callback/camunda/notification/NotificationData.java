@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface NotificationData {
 
-    String GENERAL_APPLICATION_REFERENCE = "claimReferenceNumber";
+    String CASE_REFERENCE = "claimReferenceNumber";
     String GA_NOTIFICATION_DEADLINE = "notificationDeadLine";
 
     Map<String, String> addProperties(CaseData caseData);
