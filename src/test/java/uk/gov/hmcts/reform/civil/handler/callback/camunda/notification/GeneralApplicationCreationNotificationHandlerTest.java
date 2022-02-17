@@ -78,6 +78,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
 
         private Map<String, String> getNotificationDataMap() {
             return Map.of(
+                NotificationData.APPLICANT_REFERENCE, "claimant",
                 NotificationData.GENERAL_APPLICATION_REFERENCE, GENERAL_APP_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 DateFormatHelper.formatLocalDate(NOTIFICATION_DEADLINE.toLocalDate(), DateFormatHelper.DATE)
@@ -93,6 +94,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                 .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .ccdCaseReference(GENERAL_APP_REFERENCE)
                 .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
+                .isPCClaimantMakingApplication(YES)
                 .build();
         }
     }
