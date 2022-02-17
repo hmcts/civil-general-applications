@@ -91,12 +91,12 @@ withPipeline(type, product, component) {
         sh """
           eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
           ./bin/add-roles.sh
-          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
-          ./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
-          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          ./bin/import-bpmn-diagram.sh .
+          #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
+          #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
+          #./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
+          #./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          #./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          #./bin/import-bpmn-diagram.sh .
         """
 
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
@@ -124,12 +124,12 @@ withPipeline(type, product, component) {
         sh """
           eval \$(./bin/variables/load-staging-environment-variables.sh)
           ./bin/add-roles.sh
-          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
-          ./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
-          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          ./bin/import-bpmn-diagram.sh .
+          #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
+          #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
+          #./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
+          #./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          #./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          #./bin/import-bpmn-diagram.sh .
         """
 
         env.URL="https://civil-ccd-xui-staging.aat.platform.hmcts.net"
