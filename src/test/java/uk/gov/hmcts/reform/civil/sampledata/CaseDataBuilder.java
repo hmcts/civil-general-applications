@@ -46,6 +46,8 @@ public class CaseDataBuilder {
 
     protected String legacyCaseReference;
 
+    protected String generalAppDeadlineNotificationDate;
+
     protected GAInformOtherParty gaInformOtherParty;
 
     protected GAUrgencyRequirement gaUrgencyRequirement;
@@ -67,6 +69,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppDeadlineNotificationDate(String generalAppDeadlineNotificationDate) {
+        this.generalAppDeadlineNotificationDate = generalAppDeadlineNotificationDate;
         return this;
     }
 
@@ -131,18 +138,19 @@ public class CaseDataBuilder {
 
     public CaseData build() {
         return CaseData.builder()
-                .businessProcess(businessProcess)
-                .ccdCaseReference(ccdCaseReference)
-                .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
-                .legacyCaseReference(legacyCaseReference)
-                .generalApplications(generalApplications)
-                .generalAppInformOtherParty(gaInformOtherParty)
-                .generalAppUrgencyRequirement(gaUrgencyRequirement)
-                .generalAppRespondentAgreement(gaRespondentOrderAgreement)
-                .generalAppParentCaseLink(generalAppParentCaseLink)
-                .generalAppPBADetails(gaPbaDetails)
-                .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
-                .build();
+            .businessProcess(businessProcess)
+            .ccdCaseReference(ccdCaseReference)
+            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
+            .legacyCaseReference(legacyCaseReference)
+            .generalApplications(generalApplications)
+            .generalAppInformOtherParty(gaInformOtherParty)
+            .generalAppUrgencyRequirement(gaUrgencyRequirement)
+            .generalAppRespondentAgreement(gaRespondentOrderAgreement)
+            .generalAppParentCaseLink(generalAppParentCaseLink)
+            .generalAppPBADetails(gaPbaDetails)
+            .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+            .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
+            .build();
     }
 
     public CaseData buildMakePaymentsCaseData() {
