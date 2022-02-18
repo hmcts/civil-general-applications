@@ -93,6 +93,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
         private Map<String, String> getNotificationDataMap() {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.APPLICANT_REFERENCE, "claimant",
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 DateFormatHelper.formatLocalDate(NOTIFICATION_DEADLINE, DATE)
             );
@@ -127,6 +128,17 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                     .build();
             }
 
+        private CaseData getCaseData() {
+            return new CaseDataBuilder()
+                .businessProcess(BusinessProcess.builder().status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID).build())
+                .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .ccdCaseReference(GENERAL_APP_REFERENCE)
+                .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
+                .isPCClaimantMakingApplication(YES)
+                .build();
         }
     }
 }

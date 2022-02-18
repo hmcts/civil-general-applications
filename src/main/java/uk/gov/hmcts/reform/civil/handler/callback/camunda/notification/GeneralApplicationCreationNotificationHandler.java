@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
@@ -21,6 +20,8 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
@@ -80,31 +81,33 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private boolean isNonConsent(CaseData caseData) {
         return caseData
             .getGeneralAppRespondentAgreement()
-            .getHasAgreed() == YesOrNo.NO;
+            .getHasAgreed() == NO;
     }
 
     private boolean isWithNotice(CaseData caseData) {
-        return caseData
-            .getGeneralAppInformOtherParty()
-            .getIsWithNotice() == YesOrNo.YES;
+        return caseData.getGeneralAppRespondentAgreement() != null
+                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+                && caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 
     private boolean isNonUrgent(CaseData caseData) {
         return caseData
             .getGeneralAppUrgencyRequirement()
-            .getGeneralAppUrgency() == YesOrNo.NO;
+            .getGeneralAppUrgency() == NO;
     }
-
+  
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
+            APPLICANT_REFERENCE, YES.equals(caseData.getIsPCClaimantMakingApplication()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
-                .formatLocalDate(
-                    LocalDate.parse(
-                        caseData
-                            .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
-                        FORMATTER), DATE)
+            .formatLocalDate(
+                LocalDate.parse(
+                    caseData
+                        .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
+                    FORMATTER), DATE)
         );
     }
 }
