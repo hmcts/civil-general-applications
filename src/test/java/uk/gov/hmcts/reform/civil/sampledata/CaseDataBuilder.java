@@ -47,6 +47,8 @@ public class CaseDataBuilder {
 
     protected String legacyCaseReference;
 
+    protected String generalAppDeadlineNotificationDate;
+
     protected GAInformOtherParty gaInformOtherParty;
 
     protected GAUrgencyRequirement gaUrgencyRequirement;
@@ -70,6 +72,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppDeadlineNotificationDate(String generalAppDeadlineNotificationDate) {
+        this.generalAppDeadlineNotificationDate = generalAppDeadlineNotificationDate;
         return this;
     }
 
@@ -151,6 +158,7 @@ public class CaseDataBuilder {
                 .isPCClaimantMakingApplication(isPCClaimantMakingApplication)
                 .generalAppPBADetails(gaPbaDetails)
                 .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+                .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
                 .build();
     }
 
