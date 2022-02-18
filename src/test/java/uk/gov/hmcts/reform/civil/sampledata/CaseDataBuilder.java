@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.sampledata;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -63,6 +64,8 @@ public class CaseDataBuilder {
 
     private GeneralAppParentCaseLink generalAppParentCaseLink;
 
+    private YesOrNo isPCClaimantMakingApplication;
+
     protected List<Element<GeneralApplication>> generalApplications;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
@@ -87,6 +90,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalAppParentCaseLink(GeneralAppParentCaseLink generalAppParentCaseLink) {
         this.generalAppParentCaseLink = generalAppParentCaseLink;
+        return this;
+    }
+
+    public CaseDataBuilder isPCClaimantMakingApplication(YesOrNo isPCClaimantMakingApplication) {
+        this.isPCClaimantMakingApplication = isPCClaimantMakingApplication;
         return this;
     }
 
@@ -140,6 +148,7 @@ public class CaseDataBuilder {
                 .generalAppUrgencyRequirement(gaUrgencyRequirement)
                 .generalAppRespondentAgreement(gaRespondentOrderAgreement)
                 .generalAppParentCaseLink(generalAppParentCaseLink)
+                .isPCClaimantMakingApplication(isPCClaimantMakingApplication)
                 .generalAppPBADetails(gaPbaDetails)
                 .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
                 .build();
