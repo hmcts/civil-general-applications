@@ -106,6 +106,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
                     .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                     .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                    .isPCClaimantMakingApplication(YES)
                     .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .generalAppParentCaseLink(
                         GeneralAppParentCaseLink
@@ -127,18 +128,6 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                     .generalAppDeadlineNotificationDate(DUMMY_DATE)
                     .build();
             }
-
-        private CaseData getCaseData() {
-            return new CaseDataBuilder()
-                .businessProcess(BusinessProcess.builder().status(STARTED)
-                                     .processInstanceId(PROCESS_INSTANCE_ID).build())
-                .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
-                .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
-                .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                .ccdCaseReference(GENERAL_APP_REFERENCE)
-                .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
-                .isPCClaimantMakingApplication(YES)
-                .build();
         }
     }
 }
