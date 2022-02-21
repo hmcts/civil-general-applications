@@ -42,12 +42,14 @@ public class CaseData implements MappableObject {
     private final String legacyCaseReference;
     private final String respondentSolicitor1EmailAddress;
     private final LocalDateTime notificationDeadline;
+    private final String generalAppDeadlineNotificationDate;
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
     private final GAEvidence generalAppUploadEvidences;
     private final YesOrNo isMultiParty;
+    private final YesOrNo isPCClaimantMakingApplication;
     private final CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails applicantSolicitor1UserDetails;

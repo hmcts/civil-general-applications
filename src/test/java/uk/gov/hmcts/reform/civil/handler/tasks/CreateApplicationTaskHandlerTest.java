@@ -73,16 +73,23 @@ public class CreateApplicationTaskHandlerTest {
     private static final String GA_ID = "2";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
+    private static final String DUMMY_DATE = "2022-02-22T15:59:59";
+
     @Mock
     private ExternalTask mockTask;
+
     @Mock
     private ExternalTaskService externalTaskService;
+
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
+
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
     @Autowired
     private CreateApplicationTaskHandler createApplicationTaskHandler;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -95,12 +102,14 @@ public class CreateApplicationTaskHandlerTest {
 
     @Nested
     class CreateGeneralApplication {
+
         @BeforeEach
         void init() {
             Map<String, Object> variables = Map.of(
                 "caseId", CASE_ID,
                 "caseEvent", CREATE_GENERAL_APPLICATION_CASE.name()
             );
+
             when(mockTask.getAllVariables()).thenReturn(variables);
         }
 
@@ -121,24 +130,40 @@ public class CreateApplicationTaskHandlerTest {
                 .generalApplicationsDetails(generalApplicationsDetailsList)
                 .businessProcess(BusinessProcess.builder().status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
             VariableMap variables = Variables.createVariables();
             variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
             variables.putValue(FLOW_FLAGS, Map.of());
             variables.putValue("generalApplicationCaseId", GA_ID);
+
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
             StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
             CaseDataContent caseDataContent = CaseDataContent.builder().build();
+
             when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
                 .thenReturn(startEventResponse);
+
             when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
                 .thenReturn(caseData);
+
             when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
                                                                            anyMap())).thenReturn(caseDataContent);
-            when(coreCaseDataService.createGeneralAppCase(generalApplication.toMap(objectMapper))).thenReturn(caseData);
+
             when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+
+            Map<String, Object> map = generalApplication.toMap(objectMapper);
+            map.put("generalAppDeadlineNotificationDate",
+                    generalApplication
+                        .getGeneralAppDeadlineNotification());
+
+            when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
+
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
             verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-            verify(coreCaseDataService).createGeneralAppCase(getGeneralApplication().toMap(objectMapper));
+
+            verify(coreCaseDataService).createGeneralAppCase(map);
+
             verify(coreCaseDataService).caseDataContentFromStartEventResponse(startEventResponse,
                                         getUpdatedCaseData(caseData, generalApplications,
                                                            generalApplicationsDetailsList));
@@ -157,26 +182,75 @@ public class CreateApplicationTaskHandlerTest {
 
         @Test
         void shouldNotTriggerCCDEvent() {
+
             CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
                 .businessProcess(BusinessProcess.builder().status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
             VariableMap variables = Variables.createVariables();
             variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
             variables.putValue(FLOW_FLAGS, Map.of());
             variables.putValue("generalApplicationCaseId", GA_ID);
+
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
             StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
             CaseDataContent caseDataContent = CaseDataContent.builder().build();
+
             when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
                 .thenReturn(caseData);
+
             when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
                 .thenReturn(startEventResponse);
+
             when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
-                                                                           anyMap())).thenReturn(caseDataContent);
+                    anyMap())).thenReturn(caseDataContent);
+
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
             verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
             verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
             verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
+        }
+
+        @Test
+        void shouldTriggerCCDEventWhenAdditionalFieldAdded() {
+            GeneralApplication generalApplication = getGeneralApplication();
+
+            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+                .generalApplications(getGeneralApplications(generalApplication))
+                .build();
+
+            VariableMap variables = Variables.createVariables();
+            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_FLAGS, Map.of());
+            variables.putValue("generalApplicationCaseId", GA_ID);
+
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            CaseDataContent caseDataContent = CaseDataContent.builder().build();
+            when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
+                .thenReturn(startEventResponse);
+
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenReturn(caseData);
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
+                                                                           anyMap())).thenReturn(caseDataContent);
+
+            when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+            Map<String, Object> map = generalApplication.toMap(objectMapper);
+            map.put("generalAppDeadlineNotificationDate",
+                    generalApplication
+                        .getGeneralAppDeadlineNotification());
+
+            when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
+
+            when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+
+            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(coreCaseDataService).createGeneralAppCase(map);
+
         }
 
         private List<Element<GeneralApplication>> getGeneralApplications(GeneralApplication generalApplication) {
@@ -185,14 +259,17 @@ public class CreateApplicationTaskHandlerTest {
 
         private GeneralApplication getGeneralApplication() {
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+
             builder.generalAppType(GAApplicationType.builder()
                                        .types(singletonList(SUMMARY_JUDGEMENT))
                                        .build());
+
             return builder
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                 .isWithNotice(YES)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
+                .generalAppDeadlineNotification(DUMMY_DATE)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
                                                   .reasonsForUrgency(STRING_CONSTANT)
@@ -202,6 +279,7 @@ public class CreateApplicationTaskHandlerTest {
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
+                                     .camundaEvent(CREATE_GENERAL_APPLICATION_CASE.name())
                                      .build())
                 .build();
         }

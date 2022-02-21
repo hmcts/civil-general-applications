@@ -37,7 +37,9 @@ public class GeneralApplication implements MappableObject {
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
     private final List<Element<Document>> evidenceDocument;
+    private final String generalAppDeadlineNotification;
     private final YesOrNo isMultiParty;
+    private final YesOrNo isPCClaimantMakingApplication;
     private CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private LocalDateTime generalAppSubmittedDateGAspec;
@@ -59,7 +61,9 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppStatementOfTruth") GAStatementOfTruth generalAppStatementOfTruth,
                        @JsonProperty("generalAppHearingDetails") GAHearingDetails generalAppHearingDetails,
                        @JsonProperty("evidenceDocument") List<Element<Document>> evidenceDocument,
+                       @JsonProperty("generalAppDeadlineNotification") String generalAppDeadlineNotification,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
+                       @JsonProperty("isPCClaimantMakingApplication") YesOrNo isPCClaimantMakingApplication,
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec) {
@@ -78,7 +82,9 @@ public class GeneralApplication implements MappableObject {
         this.generalAppStatementOfTruth = generalAppStatementOfTruth;
         this.generalAppHearingDetails = generalAppHearingDetails;
         this.evidenceDocument = evidenceDocument;
+        this.generalAppDeadlineNotification = generalAppDeadlineNotification;
         this.isMultiParty = isMultiParty;
+        this.isPCClaimantMakingApplication = isPCClaimantMakingApplication;
         this.caseLink = caseLink;
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;

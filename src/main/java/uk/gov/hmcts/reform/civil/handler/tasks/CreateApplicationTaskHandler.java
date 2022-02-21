@@ -100,9 +100,11 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     }
 
     private void createGeneralApplicationCase(GeneralApplication generalApplication) {
-        generalAppCaseData = coreCaseDataService.createGeneralAppCase(
-            generalApplication.toMap(mapper)
-        );
+        Map<String, Object> map = generalApplication.toMap(mapper);
+        map.put("generalAppDeadlineNotificationDate",
+                generalApplication
+                    .getGeneralAppDeadlineNotification());
+        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
     }
 
     @Override
