@@ -122,8 +122,8 @@ withPipeline(type, product, component) {
     before('smoketest:aat') {
         validateRpaContract()
         sh """
-          eval \$(./bin/variables/load-staging-environment-variables.sh)
-          ./bin/add-roles.sh
+          ßeval \$(./bin/variables/load-staging-environment-variables.sh)
+          #./bin/add-roles.sh
           #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
           #./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
