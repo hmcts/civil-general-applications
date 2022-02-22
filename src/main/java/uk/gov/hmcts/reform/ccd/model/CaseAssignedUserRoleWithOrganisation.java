@@ -15,6 +15,7 @@ public class CaseAssignedUserRoleWithOrganisation {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String organisationId;
 
+
     @JsonProperty("case_id")
     private String caseDataId;
 

@@ -27,6 +27,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
 
+
     private CaseData data;
 
     @Override

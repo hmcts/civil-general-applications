@@ -24,9 +24,9 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 @RequiredArgsConstructor
 public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
+
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
-
     private final CoreCaseUserService coreCaseUserService;
     private final CaseDetailsConverter caseDetailsConverter;
 
