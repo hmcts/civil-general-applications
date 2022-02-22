@@ -8,17 +8,25 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @RequiredArgsConstructor
 @Component
@@ -26,23 +34,21 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
+    private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-
     private CaseData data;
-
     private CaseData generalAppCaseData;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
-
+        List<Element<GeneralApplicationsDetails>> applications = Collections.emptyList();
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
         if (generalApplications != null && !generalApplications.isEmpty()) {
             var genApps = generalApplications.stream()
@@ -54,10 +60,33 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 GeneralApplication generalApplication = genApps.get().getValue();
                 createGeneralApplicationCase(generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
+                applications = addApplication(buildApplication(generalApplication, caseData),
+                                              caseData.getGeneralApplicationsDetails());
             }
         }
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications)));
+            startEventResponse, getUpdatedCaseData(caseData, generalApplications, applications)));
+    }
+
+    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
+        List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
+        String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
+            .collect(Collectors.joining(","));
+        return GeneralApplicationsDetails.builder()
+            .generalApplicationType(collect)
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                generalAppCaseData.getCcdCaseReference())).build())
+            .caseState(caseData.getCcdState().getDisplayedValue()).build();
+    }
+
+    private List<Element<GeneralApplicationsDetails>> addApplication(GeneralApplicationsDetails application,
+                                                                     List<Element<GeneralApplicationsDetails>>
+                                                                         generalApplicationsDetails) {
+        List<Element<GeneralApplicationsDetails>> newApplication = ofNullable(generalApplicationsDetails)
+            .orElse(newArrayList());
+        newApplication.add(element(application));
+        return newApplication;
     }
 
     private void updateParentCaseGeneralApplication(ExternalTaskInput variables,
@@ -65,8 +94,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
         generalApplication.getBusinessProcess().setCamundaEvent(variables.getCaseEvent().name());
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
-            generalApplication.addCaseLink(CaseLink.builder()
-                              .caseReference(String.valueOf(generalAppCaseData.getCcdCaseReference())).build());
+            generalApplication.addCaseLink(CaseLink.builder().caseReference(String.valueOf(
+                generalAppCaseData.getCcdCaseReference())).build());
         }
     }
 
@@ -91,9 +120,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                   List<Element<GeneralApplication>> generalApplications) {
+                                                   List<Element<GeneralApplication>> generalApplications,
+                                                   List<Element<GeneralApplicationsDetails>>
+                                                       generalApplicationsDetails) {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS, generalApplications);
+        output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         return output;
     }
 }

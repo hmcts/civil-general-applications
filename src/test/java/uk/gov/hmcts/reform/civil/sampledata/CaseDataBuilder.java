@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -69,6 +70,7 @@ public class CaseDataBuilder {
     private YesOrNo isPCClaimantMakingApplication;
 
     protected List<Element<GeneralApplication>> generalApplications;
+    protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -82,6 +84,17 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalApplications(List<Element<GeneralApplication>> generalApplications) {
         this.generalApplications = generalApplications;
+        return this;
+    }
+
+    public CaseDataBuilder ccdState(CaseState ccdState) {
+        this.ccdState = ccdState;
+        return this;
+    }
+
+    public CaseDataBuilder generalApplicationsDetails(List<Element<GeneralApplicationsDetails>>
+                                                          generalApplicationsDetails) {
+        this.generalApplicationsDetails = generalApplicationsDetails;
         return this;
     }
 
@@ -147,7 +160,8 @@ public class CaseDataBuilder {
     public CaseData build() {
         return CaseData.builder()
                 .businessProcess(businessProcess)
-                .ccdCaseReference(ccdCaseReference)
+            .ccdState(ccdState)
+            .ccdCaseReference(ccdCaseReference)
                 .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
                 .legacyCaseReference(legacyCaseReference)
                 .generalApplications(generalApplications)
@@ -155,11 +169,12 @@ public class CaseDataBuilder {
                 .generalAppUrgencyRequirement(gaUrgencyRequirement)
                 .generalAppRespondentAgreement(gaRespondentOrderAgreement)
                 .generalAppParentCaseLink(generalAppParentCaseLink)
-                .isPCClaimantMakingApplication(isPCClaimantMakingApplication)
-                .generalAppPBADetails(gaPbaDetails)
-                .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
-                .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
-                .build();
+            .generalApplicationsDetails(generalApplicationsDetails)
+            .generalAppPBADetails(gaPbaDetails)
+            .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+            .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
+            .isPCClaimantMakingApplication(isPCClaimantMakingApplication)
+            .build();
     }
 
     public CaseData buildMakePaymentsCaseData() {
