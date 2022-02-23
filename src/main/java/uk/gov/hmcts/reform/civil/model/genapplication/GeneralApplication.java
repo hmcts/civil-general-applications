@@ -42,6 +42,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo isPCClaimantMakingApplication;
     private CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
+    private final IdamUserDetails civilServiceUserRoles;
     private LocalDateTime generalAppSubmittedDateGAspec;
 
     @JsonCreator
@@ -66,6 +67,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("isPCClaimantMakingApplication") YesOrNo isPCClaimantMakingApplication,
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
+                       @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
                        @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
@@ -87,6 +89,7 @@ public class GeneralApplication implements MappableObject {
         this.isPCClaimantMakingApplication = isPCClaimantMakingApplication;
         this.caseLink = caseLink;
         this.generalAppParentCaseLink = generalAppParentCaseLink;
+        this.civilServiceUserRoles = civilServiceUserRoles;
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
     }
 
