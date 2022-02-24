@@ -3,13 +3,13 @@ appVersion: "1.0"
 description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
-version: 0.0.4
+version: 0.0.5
 maintainers:
   - name: HMCTS Civil team
 
 dependencies:
   - name: java
-    version: 3.6.0
+    version: 3.7.2
     repository: '@hmctspublic'
   - name: civil-service
     version: 0.0.9
@@ -32,6 +32,6 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
   - name: camunda-bpm
-    version: 0.0.18
+    version: 0.0.23
     repository: '@hmctspublic'
     condition: camunda-bpm.enabled
