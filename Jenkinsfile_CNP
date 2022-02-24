@@ -89,7 +89,7 @@ withPipeline(type, product, component) {
     before('smoketest:preview') {
         validateRpaContract()
         sh """
-          # eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
+          eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
           #./bin/add-roles.sh
           #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
