@@ -11,6 +11,7 @@ import static uk.gov.hmcts.reform.civil.callback.UserType.USER;
 @RequiredArgsConstructor
 public enum CaseEvent {
     INITIATE_GENERAL_APPLICATION(USER),
+    RESPOND_TO_APPLICATION(USER),
 
     CREATE_GENERAL_APPLICATION_CASE(CAMUNDA),
     GENERAL_APPLICATION_CREATION(CAMUNDA),
