@@ -34,8 +34,6 @@ public class CaseData implements MappableObject {
     private final CaseState ccdState;
     private final String detailsOfClaim;
     private final YesOrNo addApplicant2;
-    private final YesOrNo generalAppUrgencyYesOrNo;
-    private final YesOrNo isWithNoteYesOrNo;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
     private final GAPbaDetails generalAppPBADetails;

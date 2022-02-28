@@ -63,7 +63,7 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
 
         when(mockExternalTask.getAllVariables())
             .thenReturn(Map.of(
-                "caseId", CASE_ID,
+                "generalApplicationCaseId", CASE_ID,
                 "caseEvent", END_BUSINESS_PROCESS_GASPEC
             ));
     }
@@ -77,15 +77,15 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
         StartEventResponse startEventResponse = startEventResponse(caseDetails);
 
-        when(coreCaseDataService.startUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC)).thenReturn(startEventResponse);
-        when(coreCaseDataService.submitUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
+        when(coreCaseDataService.startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC)).thenReturn(startEventResponse);
+        when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);
 
         handler.execute(mockExternalTask, externalTaskService);
 
-        verify(coreCaseDataService).startUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
-        verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContentWithFinishedStatus);
+        verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
+        verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
     }
 

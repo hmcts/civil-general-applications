@@ -20,11 +20,11 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
+import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
 @RequiredArgsConstructor
@@ -55,10 +55,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         var recipient = caseData.getRespondentSolicitor1EmailAddress();
-        boolean isNotificationCriteriaSatisfied = isWithNotice(caseData)
-            && isNonConsent(caseData)
-            && isNonUrgent(caseData)
-            && !(recipient == null || recipient.isEmpty());
+        boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(caseData);
 
         if (isNotificationCriteriaSatisfied) {
             sendNotificationToGeneralAppRespondent(caseData, recipient);
@@ -78,25 +75,6 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
         );
     }
 
-    private boolean isNonConsent(CaseData caseData) {
-        return caseData
-            .getGeneralAppRespondentAgreement()
-            .getHasAgreed() == NO;
-    }
-
-    private boolean isWithNotice(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement() != null
-                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppInformOtherParty() != null
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
-    }
-
-    private boolean isNonUrgent(CaseData caseData) {
-        return caseData
-            .getGeneralAppUrgencyRequirement()
-            .getGeneralAppUrgency() == NO;
-    }
-  
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(

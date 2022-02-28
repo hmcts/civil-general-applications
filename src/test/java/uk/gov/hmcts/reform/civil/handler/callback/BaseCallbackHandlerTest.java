@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.civil.service.UserService;
 import java.util.HashMap;
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_ACKNOWLEDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 public abstract class BaseCallbackHandlerTest {
 
@@ -32,7 +32,7 @@ public abstract class BaseCallbackHandlerTest {
     public CallbackParams callbackParamsOf(Map<String, Object> data, CallbackType type) {
         return callbackParamsOf(
             data,
-            AWAITING_RESPONDENT_ACKNOWLEDGEMENT,
+            AWAITING_RESPONDENT_RESPONSE,
             type,
             null,
             null,
@@ -43,7 +43,7 @@ public abstract class BaseCallbackHandlerTest {
     public CallbackParams callbackParamsOf(Map<String, Object> data, CallbackType type, String pageId) {
         return callbackParamsOf(
             data,
-            AWAITING_RESPONDENT_ACKNOWLEDGEMENT,
+            AWAITING_RESPONDENT_RESPONSE,
             type,
             null,
             pageId,

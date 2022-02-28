@@ -197,4 +197,26 @@ public class CaseDataBuilder {
                 .build();
     }
 
+    public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
+        return CaseData.builder()
+                .generalAppType(application.getGeneralAppType())
+                .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+                .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+                .generalAppPBADetails(application.getGeneralAppPBADetails())
+                .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+                .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+                .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
+                .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+                .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+                .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+                .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+                .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+                .isMultiParty(application.getIsMultiParty())
+                .isPCClaimantMakingApplication(application.getIsPCClaimantMakingApplication())
+                .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+                .applicantSolicitor1UserDetails(application.getApplicantSolicitor1UserDetails())
+                .applicant1OrganisationPolicy(application.getApplicant1OrganisationPolicy())
+                .respondent1OrganisationPolicy(application.getRespondent1OrganisationPolicy())
+                .build();
+    }
 }

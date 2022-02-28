@@ -125,7 +125,7 @@ public class CreateApplicationTaskHandlerTest {
                 .caseState("pending").build();
             generalApplicationsDetailsList.add(element(generalApplicationsDetails));
             CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
-                .ccdState(CaseState.PENDING_CASE_ISSUED)
+                .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
                 .generalApplications(generalApplications)
                 .generalApplicationsDetails(generalApplicationsDetailsList)
                 .businessProcess(BusinessProcess.builder().status(STARTED)
