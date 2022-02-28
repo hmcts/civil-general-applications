@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_ACKNOWLEDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @SuppressWarnings("unchecked")
 public class CaseDetailsBuilder {
@@ -51,7 +51,7 @@ public class CaseDetailsBuilder {
     public CaseDetailsBuilder atStateAwaitingRespondentAcknowledgement() {
         CaseData caseData = CaseDataBuilder.builder().build();
         this.data = mapper.convertValue(caseData, Map.class);
-        this.state = AWAITING_RESPONDENT_ACKNOWLEDGEMENT.name();
+        this.state = AWAITING_RESPONDENT_RESPONSE.name();
         return this;
     }
 }
