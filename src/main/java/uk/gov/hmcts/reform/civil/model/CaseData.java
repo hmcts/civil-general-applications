@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAEvidence;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -34,6 +34,8 @@ public class CaseData implements MappableObject {
     private final CaseState ccdState;
     private final String detailsOfClaim;
     private final YesOrNo addApplicant2;
+    private final YesOrNo generalAppUrgencyYesOrNo;
+    private final YesOrNo isWithNoteYesOrNo;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
     private final GAPbaDetails generalAppPBADetails;
@@ -47,7 +49,6 @@ public class CaseData implements MappableObject {
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
-    private final GAEvidence generalAppUploadEvidences;
     private final YesOrNo isMultiParty;
     private final YesOrNo isPCClaimantMakingApplication;
     private final CaseLink caseLink;
@@ -55,6 +56,7 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
+    private final List<Element<Document>> generalAppEvidenceDocument;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
 
