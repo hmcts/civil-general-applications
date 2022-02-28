@@ -44,7 +44,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final UserService userService;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
-    private boolean isUserIDExits;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
 
@@ -88,7 +87,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         IdamUserDetails userDetails = caseData.getCivilServiceUserRoles();
         String submitterId = userDetails.getId();
         Optional<Organisation> org = findOrganisation(callbackParams.getParams().get(BEARER_TOKEN).toString());
-        String organisationId = org.get().getOrganisationIdentifier();
 
         List<CaseAssignedUserRole> applicantSolicitors = userRoles.getCaseAssignedUserRoles().stream()
             .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORONE.toString())
@@ -100,32 +98,35 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.toString()))
             .collect(Collectors.toList());
 
-        if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
-            submitterId))) {
+        if (org.isPresent()) {
+            String organisationId = org.get().getOrganisationIdentifier();
 
-            applicantSolicitors.stream().forEach((AS) -> {
-                coreCaseUserService
-                    .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
-            });
+            if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
+                submitterId))) {
 
-            respondentSolicitors.stream().forEach((AS) -> {
-                coreCaseUserService
-                    .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-            });
-        } else if (!respondentSolicitors.isEmpty() && respondentSolicitors
-            .stream().anyMatch(AS -> AS.getUserId().equals(
-            submitterId))) {
+                applicantSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                });
 
-            applicantSolicitors.stream().forEach((AS) -> {
-                coreCaseUserService
-                    .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-            });
+                respondentSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                });
+            } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
+                .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
 
-            respondentSolicitors.stream().forEach((AS) -> {
-                coreCaseUserService
-                    .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
-            });
+                applicantSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                });
 
+                respondentSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                });
+
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
