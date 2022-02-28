@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAEvidence;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -197,4 +198,27 @@ public class CaseDataBuilder {
                 .build();
     }
 
+    public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
+        return CaseData.builder()
+                .generalAppType(application.getGeneralAppType())
+                .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+                .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+                .generalAppPBADetails(application.getGeneralAppPBADetails())
+                .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+                .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+                .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
+                .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+                .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+                .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+                .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+                .generalAppUploadEvidences(GAEvidence.builder().evidenceDocument(application.getEvidenceDocument())
+                        .build())
+                .isMultiParty(application.getIsMultiParty())
+                .isPCClaimantMakingApplication(application.getIsPCClaimantMakingApplication())
+                .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+                .applicantSolicitor1UserDetails(application.getApplicantSolicitor1UserDetails())
+                .applicant1OrganisationPolicy(application.getApplicant1OrganisationPolicy())
+                .respondent1OrganisationPolicy(application.getRespondent1OrganisationPolicy())
+                .build();
+    }
 }
