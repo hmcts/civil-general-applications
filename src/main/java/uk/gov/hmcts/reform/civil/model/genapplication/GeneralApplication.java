@@ -36,7 +36,7 @@ public class GeneralApplication implements MappableObject {
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
-    private final List<Element<Document>> evidenceDocument;
+    private final List<Element<Document>> generalAppEvidenceDocument;
     private final String generalAppDeadlineNotification;
     private final YesOrNo isMultiParty;
     private final YesOrNo isPCClaimantMakingApplication;
@@ -61,7 +61,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppUrgencyRequirement") GAUrgencyRequirement generalAppUrgencyRequirement,
                        @JsonProperty("generalAppStatementOfTruth") GAStatementOfTruth generalAppStatementOfTruth,
                        @JsonProperty("generalAppHearingDetails") GAHearingDetails generalAppHearingDetails,
-                       @JsonProperty("evidenceDocument") List<Element<Document>> evidenceDocument,
+                       @JsonProperty("generalAppEvidenceDocument") List<Element<Document>> generalAppEvidenceDocument,
                        @JsonProperty("generalAppDeadlineNotification") String generalAppDeadlineNotification,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
                        @JsonProperty("isPCClaimantMakingApplication") YesOrNo isPCClaimantMakingApplication,
@@ -83,7 +83,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppUrgencyRequirement = generalAppUrgencyRequirement;
         this.generalAppStatementOfTruth = generalAppStatementOfTruth;
         this.generalAppHearingDetails = generalAppHearingDetails;
-        this.evidenceDocument = evidenceDocument;
+        this.generalAppEvidenceDocument = generalAppEvidenceDocument;
         this.generalAppDeadlineNotification = generalAppDeadlineNotification;
         this.isMultiParty = isMultiParty;
         this.isPCClaimantMakingApplication = isPCClaimantMakingApplication;

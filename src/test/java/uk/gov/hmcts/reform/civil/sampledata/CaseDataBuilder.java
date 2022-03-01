@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAEvidence;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -211,8 +210,7 @@ public class CaseDataBuilder {
                 .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
                 .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
                 .generalAppHearingDetails(application.getGeneralAppHearingDetails())
-                .generalAppUploadEvidences(GAEvidence.builder().evidenceDocument(application.getEvidenceDocument())
-                        .build())
+                .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
                 .isMultiParty(application.getIsMultiParty())
                 .isPCClaimantMakingApplication(application.getIsPCClaimantMakingApplication())
                 .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
