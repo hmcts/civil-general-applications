@@ -89,14 +89,18 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         Optional<Organisation> org = findOrganisation(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<CaseAssignedUserRole> applicantSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORONE.toString())
-                || CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORTWO.toString()))
+            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
+                || CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORTWO.getFormattedName()))
             .collect(Collectors.toList());
 
         List<CaseAssignedUserRole> respondentSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORONE.toString())
-                || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.toString()))
+            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
+                || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()))
             .collect(Collectors.toList());
+
+        if (applicantSolicitors.isEmpty() && respondentSolicitors.isEmpty()) {
+            throw new IllegalArgumentException("Applicant and Respondent Solicitors should not be Null");
+        }
 
         if (org.isPresent()) {
             String organisationId = org.get().getOrganisationIdentifier();
