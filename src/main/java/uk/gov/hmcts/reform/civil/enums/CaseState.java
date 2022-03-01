@@ -6,7 +6,16 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CaseState {
+    //Parent Case states needed to create Pojo at application start
     PENDING_CASE_ISSUED("Pending case issued"),
+    CASE_ISSUED("Case issued"),
+    AWAITING_CASE_DETAILS_NOTIFICATION("Awaiting case details notofication"),
+    AWAITING_RESPONDENT_ACKNOWLEDGEMENT("Awaiting respondent acknowledgement"),
+    CASE_DISMISSED("Case Dismissed"),
+    AWAITING_APPLICANT_INTENTION("Awaiting applicant intention"),
+    PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
+
+    //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
     AWAITING_RESPONDENT_RESPONSE("Awaiting Respondent Response"),
     APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION("Application Submitted - Awaiting Judicial Decision"),
