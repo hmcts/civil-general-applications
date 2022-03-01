@@ -53,6 +53,7 @@ public class CaseData implements MappableObject {
     private final CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails applicantSolicitor1UserDetails;
+    private final IdamUserDetails civilServiceUserRoles;
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final List<Element<GeneralApplication>> generalApplications;

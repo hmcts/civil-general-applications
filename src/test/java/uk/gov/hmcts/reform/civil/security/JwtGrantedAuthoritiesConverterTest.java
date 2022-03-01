@@ -72,6 +72,7 @@ class JwtGrantedAuthoritiesConverterTest {
             UserInfo userInfo = mock(UserInfo.class);
             doReturn(Collections.emptyList()).when(userInfo).getRoles();
             when(userService.getUserInfo(anyString())).thenReturn(userInfo);
+            when(userService.getAccessToken(anyString(), anyString())).thenReturn("access_token");
             Collection<GrantedAuthority> authorities = converter.convert(jwt);
             assertNotNull(authorities);
             assertEquals(0, authorities.size());
@@ -90,6 +91,7 @@ class JwtGrantedAuthoritiesConverterTest {
             UserInfo userInfo = mock(UserInfo.class);
             doReturn(ImmutableList.of("caseworker-solicitor")).when(userInfo).getRoles();
             when(userService.getUserInfo(anyString())).thenReturn(userInfo);
+            when(userService.getAccessToken(anyString(), anyString())).thenReturn("access_token");
             Collection<GrantedAuthority> authorities = converter.convert(jwt);
             assertNotNull(authorities);
             assertEquals(1, authorities.size());
