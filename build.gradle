@@ -312,7 +312,7 @@ dependencies {
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.58'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.0.16'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.0.17'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
@@ -331,7 +331,7 @@ dependencies {
 
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.6.3'
 
-  testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.1.0'
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.3.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.3.1'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.1.0'
 
