@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowStateAllowedEventService;
@@ -78,9 +79,9 @@ class EventAllowedAspectTest {
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .type(ABOUT_TO_START)
             .request(CallbackRequest.builder()
-                .eventId(CaseEvent.INITIATE_GENERAL_APPLICATION.name())
-                .caseDetails(CaseDetailsBuilder.builder().build())
-                .build())
+                         .eventId(CaseEvent.MAKE_PBA_PAYMENT_GASPEC.name())
+                         .caseDetails(CaseDetailsBuilder.builder().atStateAwaitingRespondentAcknowledgement().build())
+                         .build())
             .build();
         Object result = eventAllowedAspect.checkEventAllowed(proceedingJoinPoint, callbackParams);
 
@@ -100,6 +101,28 @@ class EventAllowedAspectTest {
                 .eventId(CaseEvent.INITIATE_GENERAL_APPLICATION.name())
                 .caseDetails(CaseDetailsBuilder.builder().build())
                 .build())
+            .build();
+        Object result = eventAllowedAspect.checkEventAllowed(proceedingJoinPoint, callbackParams);
+
+        assertThat(result).isEqualTo(response);
+        verify(proceedingJoinPoint).proceed();
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldProceedToMethodInvocation_whenEventIsAllowedForAboutToStartRespondToApplication() {
+        AboutToStartOrSubmitCallbackResponse response = AboutToStartOrSubmitCallbackResponse.builder().build();
+        when(proceedingJoinPoint.proceed()).thenReturn(response);
+
+        CallbackParams callbackParams = CallbackParamsBuilder.builder()
+            .type(ABOUT_TO_START)
+            .request(CallbackRequest.builder()
+                         .eventId(CaseEvent.RESPOND_TO_APPLICATION.name())
+                         .caseDetails(CaseDetailsBuilder.builder()
+                                          .data(CaseData.builder()
+                                                    .ccdCaseReference(12312312L)
+                                                    .build()).build())
+                         .build())
             .build();
         Object result = eventAllowedAspect.checkEventAllowed(proceedingJoinPoint, callbackParams);
 
