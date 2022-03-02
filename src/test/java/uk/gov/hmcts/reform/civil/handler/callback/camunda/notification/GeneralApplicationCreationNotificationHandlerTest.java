@@ -106,7 +106,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
                     .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                     .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
-                    .isPCClaimantMakingApplication(YES)
+                    .parentClaimantIsApplicant(YES)
                     .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .generalAppParentCaseLink(
                         GeneralAppParentCaseLink

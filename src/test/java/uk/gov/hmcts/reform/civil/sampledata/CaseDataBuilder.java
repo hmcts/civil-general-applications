@@ -67,7 +67,7 @@ public class CaseDataBuilder {
 
     private GeneralAppParentCaseLink generalAppParentCaseLink;
 
-    private YesOrNo isPCClaimantMakingApplication;
+    private YesOrNo parentClaimantIsApplicant;
 
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
@@ -113,8 +113,8 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder isPCClaimantMakingApplication(YesOrNo isPCClaimantMakingApplication) {
-        this.isPCClaimantMakingApplication = isPCClaimantMakingApplication;
+    public CaseDataBuilder parentClaimantIsApplicant(YesOrNo parentClaimantIsApplicant) {
+        this.parentClaimantIsApplicant = parentClaimantIsApplicant;
         return this;
     }
 
@@ -173,7 +173,7 @@ public class CaseDataBuilder {
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
-            .isPCClaimantMakingApplication(isPCClaimantMakingApplication)
+            .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .build();
     }
 
@@ -212,11 +212,8 @@ public class CaseDataBuilder {
                 .generalAppHearingDetails(application.getGeneralAppHearingDetails())
                 .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
                 .isMultiParty(application.getIsMultiParty())
-                .isPCClaimantMakingApplication(application.getIsPCClaimantMakingApplication())
+                .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
                 .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
-                .applicantSolicitor1UserDetails(application.getApplicantSolicitor1UserDetails())
-                .applicant1OrganisationPolicy(application.getApplicant1OrganisationPolicy())
-                .respondent1OrganisationPolicy(application.getRespondent1OrganisationPolicy())
                 .build();
     }
 }

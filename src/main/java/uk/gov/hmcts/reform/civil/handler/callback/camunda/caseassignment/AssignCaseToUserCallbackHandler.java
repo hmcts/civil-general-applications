@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,8 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final UserService userService;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
+    private final ObjectMapper objectMapper;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
 
@@ -67,14 +71,13 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
-    private boolean applicationSolicitorDetailsExist(CaseData caseData) {
-        return caseData.getApplicantSolicitor1UserDetails() != null
-            && caseData.getApplicant1OrganisationPolicy() != null;
-    }
-
     private CallbackResponse assignSolicitorCaseRole(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
+
+        // second idam call is workaround for null pointer when hiding field in getIdamEmail callback
+
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
 
@@ -108,6 +111,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
                 submitterId))) {
 
+                caseDataBuilder.parentClaimantIsApplicant(YES);
+
                 applicantSolicitors.stream().forEach((AS) -> {
                     coreCaseUserService
                         .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
@@ -119,6 +124,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 });
             } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
                 .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
+
+                caseDataBuilder.parentClaimantIsApplicant(NO);
 
                 applicantSolicitors.stream().forEach((AS) -> {
                     coreCaseUserService
@@ -133,7 +140,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             }
         }
 
-        return AboutToStartOrSubmitCallbackResponse.builder()
+        return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(objectMapper))
             .build();
 
     }
