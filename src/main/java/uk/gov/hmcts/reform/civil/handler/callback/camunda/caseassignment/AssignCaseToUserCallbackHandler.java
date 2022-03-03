@@ -75,8 +75,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
 
-        // second idam call is workaround for null pointer when hiding field in getIdamEmail callback
-
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
