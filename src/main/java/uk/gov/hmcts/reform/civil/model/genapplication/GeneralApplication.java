@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
+import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -44,6 +45,8 @@ public class GeneralApplication implements MappableObject {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails civilServiceUserRoles;
     private LocalDateTime generalAppSubmittedDateGAspec;
+    private final List<Element<SolicitorDetails>> applicantSolicitors;
+    private final List<Element<SolicitorDetails>> defendantSolicitors;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -68,7 +71,9 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
-                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec) {
+                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
+                       @JsonProperty("applicantSolicitors") List<Element<SolicitorDetails>> applicantSolicitors,
+                       @JsonProperty("defendantSolicitors") List<Element<SolicitorDetails>> defendantSolicitors) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -91,6 +96,8 @@ public class GeneralApplication implements MappableObject {
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.civilServiceUserRoles = civilServiceUserRoles;
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
+        this.applicantSolicitors = applicantSolicitors;
+        this.defendantSolicitors = defendantSolicitors;
     }
 
     @JsonIgnore
