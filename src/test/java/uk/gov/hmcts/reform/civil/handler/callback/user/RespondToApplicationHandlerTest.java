@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -47,7 +48,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     private static final String ACTIVITY_ID = "anyActivity";
     private static final String CONFIRMATION_MESSAGE = "<br/><p> You have responded to the following application: </p>"
         + "<ul> <li>Summary judgment</li> </ul>"
-        + " <p> The application and your response will be reviewed by a Judge </p> ";
+        + " <p> The application and your response will be reviewed by a Judge. </p> ";
     private static final String ERROR = "The General Application has already received a response.";
     public static final String TRIAL_DATE_FROM_REQUIRED = "Please enter the Date from if the trial has been fixed";
     public static final String INVALID_TRIAL_DATE_RANGE = "Trial Date From cannot be after Trial Date to. "
