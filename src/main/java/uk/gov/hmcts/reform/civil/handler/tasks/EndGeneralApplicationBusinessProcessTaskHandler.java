@@ -31,13 +31,11 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                                                                   ExternalTaskInput.class);
-        String caseId = externalTaskInput.getCaseId();
-
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, END_BUSINESS_PROCESS_GASPEC);
+        String caseId = externalTaskInput.getGeneralApplicationCaseId();
+        StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId, END_BUSINESS_PROCESS_GASPEC);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
-
-        coreCaseDataService.submitUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

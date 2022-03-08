@@ -41,9 +41,12 @@ public class EventAllowedAspect {
     ) throws Throwable {
         if (callbackParams.getType() != ABOUT_TO_START) {
             return joinPoint.proceed();
-        } else {
+        }
             CaseEvent caseEvent = CaseEvent.valueOf(callbackParams.getRequest().getEventId());
             CaseDetails caseDetails = callbackParams.getRequest().getCaseDetails();
+            if (flowStateAllowedEventService.isAllowed(caseDetails, caseEvent)) {
+                return joinPoint.proceed();
+            } else {
             log.info(format(
                 "%s is not allowed on the case id %s",
                 caseEvent.name(), caseDetails.getId()

@@ -10,19 +10,21 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
+import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
 @RequiredArgsConstructor
@@ -53,13 +55,9 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         var recipient = caseData.getRespondentSolicitor1EmailAddress();
+        boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(caseData);
 
-        boolean conditions = isWithNotice(caseData)
-            && isNonConsent(caseData)
-            && isNonUrgent(caseData)
-            && !(recipient == null || recipient.isEmpty());
-
-        if (conditions) {
+        if (isNotificationCriteriaSatisfied) {
             sendNotificationToGeneralAppRespondent(caseData, recipient);
         }
 
@@ -73,35 +71,21 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             recipient,
             notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
             addProperties(caseData),
-            String.format(REFERENCE_TEMPLATE, caseData.getCcdCaseReference().toString())
+            String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
-    }
-
-    private boolean isNonConsent(CaseData caseData) {
-        return caseData
-            .getGeneralAppRespondentAgreement()
-            .getHasAgreed() == YesOrNo.NO;
-    }
-
-    private boolean isWithNotice(CaseData caseData) {
-        return caseData
-            .getGeneralAppInformOtherParty()
-            .getIsWithNotice() == YesOrNo.YES;
-    }
-
-    private boolean isNonUrgent(CaseData caseData) {
-        return caseData
-            .getGeneralAppUrgencyRequirement()
-            .getGeneralAppUrgency() == YesOrNo.NO;
     }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
-        LocalDateTime deadline = LocalDate.now().atStartOfDay().plusDays(5);
         return Map.of(
-            GENERAL_APPLICATION_REFERENCE, caseData.getCcdCaseReference().toString(),
-            GA_NOTIFICATION_DEADLINE,
-            DateFormatHelper.formatLocalDateTime(deadline, DATE)
+            APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
+            CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
+            GA_NOTIFICATION_DEADLINE, DateFormatHelper
+            .formatLocalDate(
+                LocalDate.parse(
+                    caseData
+                        .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
+                    FORMATTER), DATE)
         );
     }
 }

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.sampledata;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +48,8 @@ public class CaseDataBuilder {
 
     protected String legacyCaseReference;
 
+    protected String generalAppDeadlineNotificationDate;
+
     protected GAInformOtherParty gaInformOtherParty;
 
     protected GAUrgencyRequirement gaUrgencyRequirement;
@@ -63,15 +67,34 @@ public class CaseDataBuilder {
 
     private GeneralAppParentCaseLink generalAppParentCaseLink;
 
+    private YesOrNo parentClaimantIsApplicant;
+
     protected List<Element<GeneralApplication>> generalApplications;
+    protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
         return this;
     }
 
+    public CaseDataBuilder generalAppDeadlineNotificationDate(String generalAppDeadlineNotificationDate) {
+        this.generalAppDeadlineNotificationDate = generalAppDeadlineNotificationDate;
+        return this;
+    }
+
     public CaseDataBuilder generalApplications(List<Element<GeneralApplication>> generalApplications) {
         this.generalApplications = generalApplications;
+        return this;
+    }
+
+    public CaseDataBuilder ccdState(CaseState ccdState) {
+        this.ccdState = ccdState;
+        return this;
+    }
+
+    public CaseDataBuilder generalApplicationsDetails(List<Element<GeneralApplicationsDetails>>
+                                                          generalApplicationsDetails) {
+        this.generalApplicationsDetails = generalApplicationsDetails;
         return this;
     }
 
@@ -87,6 +110,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalAppParentCaseLink(GeneralAppParentCaseLink generalAppParentCaseLink) {
         this.generalAppParentCaseLink = generalAppParentCaseLink;
+        return this;
+    }
+
+    public CaseDataBuilder parentClaimantIsApplicant(YesOrNo parentClaimantIsApplicant) {
+        this.parentClaimantIsApplicant = parentClaimantIsApplicant;
         return this;
     }
 
@@ -132,7 +160,8 @@ public class CaseDataBuilder {
     public CaseData build() {
         return CaseData.builder()
                 .businessProcess(businessProcess)
-                .ccdCaseReference(ccdCaseReference)
+            .ccdState(ccdState)
+            .ccdCaseReference(ccdCaseReference)
                 .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
                 .legacyCaseReference(legacyCaseReference)
                 .generalApplications(generalApplications)
@@ -140,9 +169,12 @@ public class CaseDataBuilder {
                 .generalAppUrgencyRequirement(gaUrgencyRequirement)
                 .generalAppRespondentAgreement(gaRespondentOrderAgreement)
                 .generalAppParentCaseLink(generalAppParentCaseLink)
-                .generalAppPBADetails(gaPbaDetails)
-                .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
-                .build();
+            .generalApplicationsDetails(generalApplicationsDetails)
+            .generalAppPBADetails(gaPbaDetails)
+            .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+            .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
+            .parentClaimantIsApplicant(parentClaimantIsApplicant)
+            .build();
     }
 
     public CaseData buildMakePaymentsCaseData() {
@@ -165,4 +197,23 @@ public class CaseDataBuilder {
                 .build();
     }
 
+    public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
+        return CaseData.builder()
+                .generalAppType(application.getGeneralAppType())
+                .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+                .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+                .generalAppPBADetails(application.getGeneralAppPBADetails())
+                .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+                .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+                .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
+                .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+                .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+                .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+                .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+                .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+                .isMultiParty(application.getIsMultiParty())
+                .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
+                .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+                .build();
+    }
 }
