@@ -11,8 +11,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
-import uk.gov.hmcts.reform.ccd.model.Organisation;
-import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.config.CrossAccessUserConfiguration;
@@ -87,18 +85,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                        .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
                                        .email("applicant@someorg.com")
                                        .build())
-            .applicantSolicitor1UserDetails(IdamUserDetails.builder()
-                                                .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                                                .email("applicant@someorg.com")
-                                                .build())
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-            .applicant1OrganisationPolicy(OrganisationPolicy.builder()
-                                              .organisation(Organisation.builder().organisationID("OrgId1").build())
-                                              .build())
-            .respondent1OrganisationPolicy(OrganisationPolicy.builder()
-                                               .organisation(Organisation.builder().organisationID("OrgId2").build())
-                                               .build())
-
             .build();
 
         caseData = builder.build();

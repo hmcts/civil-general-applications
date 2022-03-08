@@ -78,7 +78,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
-            APPLICANT_REFERENCE, YES.equals(caseData.getIsPCClaimantMakingApplication()) ? "claimant" : "respondent",
+            APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
             .formatLocalDate(

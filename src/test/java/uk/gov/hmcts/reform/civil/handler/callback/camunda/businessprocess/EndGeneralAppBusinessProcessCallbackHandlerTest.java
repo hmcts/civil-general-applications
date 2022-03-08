@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
-import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -163,12 +161,9 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
                     .generalAppHearingDetails(GAHearingDetails.builder().build())
                     .isMultiParty(NO)
-                    .isPCClaimantMakingApplication(YES)
+                    .parentClaimantIsApplicant(YES)
                     .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                             .caseReference(PARENT_CCD_REF.toString()).build())
-                    .applicantSolicitor1UserDetails(IdamUserDetails.builder().build())
-                    .applicant1OrganisationPolicy(OrganisationPolicy.builder().build())
-                    .respondent1OrganisationPolicy(OrganisationPolicy.builder().build())
                     .build();
         }
 
