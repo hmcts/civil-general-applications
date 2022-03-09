@@ -44,6 +44,7 @@ public class GeneralApplication implements MappableObject {
     private LocalDateTime generalAppSubmittedDateGAspec;
     private final List<Element<SolicitorDetails>> applicantSolicitors;
     private final List<Element<SolicitorDetails>> defendantSolicitors;
+    private final List<Element<GARespondentResponse>> respondentsResponses;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -67,7 +68,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
                        @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
                        @JsonProperty("applicantSolicitors") List<Element<SolicitorDetails>> applicantSolicitors,
-                       @JsonProperty("defendantSolicitors") List<Element<SolicitorDetails>> defendantSolicitors) {
+                       @JsonProperty("defendantSolicitors") List<Element<SolicitorDetails>> defendantSolicitors,
+                       @JsonProperty("respondentsResponses") List<Element<GARespondentResponse>> respondentsResponses) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -89,6 +91,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
         this.applicantSolicitors = applicantSolicitors;
         this.defendantSolicitors = defendantSolicitors;
+        this.respondentsResponses = respondentsResponses;
     }
 
     @JsonIgnore

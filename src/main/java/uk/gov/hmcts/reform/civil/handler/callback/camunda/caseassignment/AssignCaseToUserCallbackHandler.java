@@ -110,7 +110,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         if (org.isPresent()) {
             String organisationId = org.get().getOrganisationIdentifier();
             List<Element<SolicitorDetails>> applicantSols = new ArrayList<>();
-            List<Element<SolicitorDetails>> respondantSols = new ArrayList<>();
+            List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
 
             if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
                 submitterId))) {
@@ -128,13 +128,13 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 respondentSolicitors.stream().forEach((RS) -> {
                     coreCaseUserService
                         .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-                    respondantSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
+                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
                                                   .caseDataId(RS.getCaseDataId())
                                                   .userId(RS.getUserId()).build()));
                 });
 
                 caseDataBuilder.applicantSolicitors(applicantSols);
-                caseDataBuilder.defendantSolicitors(respondantSols);
+                caseDataBuilder.defendantSolicitors(respondentSols);
 
             } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
                 .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
@@ -144,7 +144,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 applicantSolicitors.stream().forEach((RS) -> {
                     coreCaseUserService
                         .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-                    respondantSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
+                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
                                                    .caseDataId(RS.getCaseDataId())
                                                    .userId(RS.getUserId()).build()));
                 });
