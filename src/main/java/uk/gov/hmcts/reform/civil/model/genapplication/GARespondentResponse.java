@@ -12,13 +12,13 @@ import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 public class GARespondentResponse implements MappableObject {
 
     private GAHearingDetails gaHearingDetails;
-    private final YesOrNo hasRespondentAgreed;
+    private final YesOrNo generalAppRespondent1Representative;
 
     @JsonCreator
     GARespondentResponse(@JsonProperty("gaHearingDetails") GAHearingDetails gaHearingDetails,
-                         @JsonProperty("hasRespondentAgreed")
-                             YesOrNo hasRespondentAgreed) {
+                         @JsonProperty("generalAppRespondent1Representative")
+                             YesOrNo generalAppRespondent1Representative) {
         this.gaHearingDetails = gaHearingDetails;
-        this.hasRespondentAgreed = hasRespondentAgreed;
+        this.generalAppRespondent1Representative = generalAppRespondent1Representative;
     }
 }

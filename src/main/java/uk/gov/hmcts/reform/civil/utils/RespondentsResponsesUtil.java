@@ -3,19 +3,37 @@ package uk.gov.hmcts.reform.civil.utils;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 
 import java.util.List;
 
 public class RespondentsResponsesUtil {
 
-    public static boolean isRespondentsResponesSatisfied(CaseData caseData) {
+    private static final int ONE_V_ONE = 1;
+    private static final int ONE_V_TWO = 2;
 
-        // check multiple solicitors and check if all the solicitors has response the application
-        // if one solictor has response and another not return False
-        // if both solicitor has responsed or timer elpase, return True
+
+    public static boolean isRespondentsResponseSatisfied(CaseData caseData
+        , CaseData.CaseDataBuilder caseDataBuilder) {
+
+        if (caseData.getDefendantSolicitors() == null
+            || caseDataBuilder.build().getRespondentsResponses() == null) {
+            return false;
+        }
+
+        List<Element<GARespondentResponse>> respondentsResponses = caseDataBuilder.build().getRespondentsResponses();
         List<Element<SolicitorDetails>> defendantSolicitors = caseData.getDefendantSolicitors();
 
+        if (defendantSolicitors.size() == ONE_V_ONE
+            && respondentsResponses != null && respondentsResponses.size() == ONE_V_ONE) {
+            return true;
+        }
 
-        return true;
+        if (defendantSolicitors.size() == ONE_V_TWO && respondentsResponses != null) {
+            return respondentsResponses.size() == ONE_V_TWO;
+        }
+
+        return false;
+
     }
 }

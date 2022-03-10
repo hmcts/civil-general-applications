@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.handler.callback.CallbackHandlerHelper;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -35,8 +36,11 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -45,6 +49,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final CallbackHandlerHelper callbackHandlerHelper;
 
     private static final String RESPONSE_MESSAGE = "# You have responded to an application";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -194,7 +199,13 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
 
+        CaseState newState = isRespondentsResponseSatisfied(caseData, caseDataBuilder)
+            ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            : AWAITING_RESPONDENT_RESPONSE;
+        callbackHandlerHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
+            .state(newState.toString())
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
@@ -213,7 +224,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
 
-        gaRespondentResponseBuilder.hasRespondentAgreed(caseData.getGeneralAppRespondent1Representative()
+        gaRespondentResponseBuilder.generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
                                                             .getGeneralAppRespondent1Representative())
             .gaHearingDetails(caseData.getHearingDetailsResp()).build();
 
