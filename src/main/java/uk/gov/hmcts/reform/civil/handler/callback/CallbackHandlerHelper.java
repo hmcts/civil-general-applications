@@ -26,7 +26,6 @@ public class CallbackHandlerHelper {
 
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
 
-
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();

@@ -195,7 +195,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        List<Element<GARespondentResponse>> respondentsResponses = addApplication(buildApplication(caseData), caseData.getRespondentsResponses());
+        List<Element<GARespondentResponse>> respondentsResponses =
+            addApplication(buildApplication(caseData), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
 
@@ -224,7 +225,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
 
-        gaRespondentResponseBuilder.generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
+        gaRespondentResponseBuilder
+            .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
                                                             .getGeneralAppRespondent1Representative())
             .gaHearingDetails(caseData.getHearingDetailsResp()).build();
 

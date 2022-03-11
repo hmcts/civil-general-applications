@@ -12,9 +12,11 @@ public class RespondentsResponsesUtil {
     private static final int ONE_V_ONE = 1;
     private static final int ONE_V_TWO = 2;
 
+    private RespondentsResponsesUtil() {
+        // Utilities class, no instances
+    }
 
-    public static boolean isRespondentsResponseSatisfied(CaseData caseData
-        , CaseData.CaseDataBuilder caseDataBuilder) {
+    public static boolean isRespondentsResponseSatisfied(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder) {
 
         if (caseData.getDefendantSolicitors() == null
             || caseDataBuilder.build().getRespondentsResponses() == null) {
