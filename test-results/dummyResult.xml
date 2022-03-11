@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="10.7190" tests="3" failures="0" skipped="2">
+  <testsuite name="Root Suite" timestamp="2022-03-09T13:35:43" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="CCD 1v1 - General Application Journey @e2e" timestamp="2022-03-09T13:35:43" tests="3" file="/Users/admin/Documents/GitHub/civil-general-apps-ccd-definition/e2e/tests/1v1GeneralApplication_test.js" time="10.7170" failures="0">
+    <testcase name="CCD 1v1 - General Application Journey @e2e: Create case for 1v1" time="8.5060" classname="Create case for 1v1">
+    </testcase>
+  </testsuite>
+</testsuites>
