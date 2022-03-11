@@ -20,3 +20,7 @@ bin/main/application.yaml
 *.ipr
 
 .DS_Store
+
+# test_output
+output/
+/test-results/result.xml
