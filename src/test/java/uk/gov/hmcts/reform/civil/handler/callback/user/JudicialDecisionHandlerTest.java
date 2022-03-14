@@ -109,7 +109,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
         assertThat(response).isNotNull();
-        assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(YES);
+        assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
         GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
         assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(expectedRecitalText);
@@ -157,6 +157,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
@@ -186,8 +187,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
                 .parentClaimantIsApplicant(NO)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
                 .createdDate(LocalDateTime.now())
                 .applicantPartyName("ApplicantPartyName")

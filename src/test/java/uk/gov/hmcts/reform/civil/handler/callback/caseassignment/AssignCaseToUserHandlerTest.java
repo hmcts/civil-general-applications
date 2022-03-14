@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.caseassignment;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static feign.Request.HttpMethod.GET;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -249,4 +253,37 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getApplicantPartyName();
     }
+
+    @Test
+    void shouldThrowExceptionWhenOrgNotFound() {
+
+        when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
+        when(organisationApi.findUserOrganisation(any(), any()))
+                .thenThrow(new FeignException.NotFound(
+                        "not found message",
+                        Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+                        "not found response body".getBytes(UTF_8)));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                assignCaseToUserHandler.handle(params));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenOrgAccessForbidden() {
+
+        when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
+        when(organisationApi.findUserOrganisation(any(), any()))
+                .thenThrow(new FeignException.Forbidden(
+                        "forbidden",
+                        Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+                        "forbidden".getBytes(UTF_8)));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                assignCaseToUserHandler.handle(params));
+    }
+
 }
