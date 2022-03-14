@@ -40,6 +40,10 @@ public class GeneralApplication implements MappableObject {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails civilServiceUserRoles;
     private LocalDateTime generalAppSubmittedDateGAspec;
+    private final String claimant1PartyName;
+    private final String claimant2PartyName;
+    private final String defendant1PartyName;
+    private final String defendant2PartyName;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -61,7 +65,11 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
-                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec) {
+                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
+                       @JsonProperty("claimant1PartyName") String claimant1PartyName,
+                       @JsonProperty("claimant2PartyName") String claimant2PartyName,
+                       @JsonProperty("defendant1PartyName") String defendant1PartyName,
+                       @JsonProperty("defendant2PartyName") String defendant2PartyName) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -81,6 +89,10 @@ public class GeneralApplication implements MappableObject {
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.civilServiceUserRoles = civilServiceUserRoles;
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
+        this.claimant1PartyName = claimant1PartyName;
+        this.claimant2PartyName = claimant2PartyName;
+        this.defendant1PartyName = defendant1PartyName;
+        this.defendant2PartyName = claimant2PartyName;
     }
 
     @JsonIgnore
