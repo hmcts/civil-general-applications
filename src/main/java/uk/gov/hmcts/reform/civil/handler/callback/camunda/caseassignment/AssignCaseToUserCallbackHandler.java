@@ -61,7 +61,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-                callbackKey(ABOUT_TO_SUBMIT), this::assignSolicitorCaseRole
+            callbackKey(ABOUT_TO_SUBMIT), this::assignSolicitorCaseRole
         );
     }
 
@@ -84,9 +84,9 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
 
         CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
-                getCaaAccessToken(),
-                authTokenGenerator.generate(),
-                List.of(parentCaseId)
+            getCaaAccessToken(),
+            authTokenGenerator.generate(),
+            List.of(parentCaseId)
         );
 
         IdamUserDetails userDetails = caseData.getCivilServiceUserRoles();
@@ -94,14 +94,14 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         Optional<Organisation> org = findOrganisation(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<CaseAssignedUserRole> applicantSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-                .filter(CA -> CA.getCaseRole().contentEquals(APPLICANTSOLICITORONE.getFormattedName())
-                        || CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORTWO.getFormattedName()))
-                .collect(Collectors.toList());
+            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
+                || CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORTWO.getFormattedName()))
+            .collect(Collectors.toList());
 
         List<CaseAssignedUserRole> respondentSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-                .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
-                        || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()))
-                .collect(Collectors.toList());
+            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
+                || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()))
+            .collect(Collectors.toList());
 
         if (applicantSolicitors.isEmpty() && respondentSolicitors.isEmpty()) {
             throw new IllegalArgumentException("Applicant and Respondent Solicitors should not be Null");
@@ -110,8 +110,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         if (org.isPresent()) {
             String organisationId = org.get().getOrganisationIdentifier();
 
-            if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId()
-                    .equals(submitterId))) {
+            if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
+                submitterId))) {
 
                 caseDataBuilder.parentClaimantIsApplicant(YES);
                 Optional<CaseAssignedUserRole> submitter = applicantSolicitors.stream()
@@ -124,13 +124,17 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                     }
                 }
 
-                applicantSolicitors.forEach((AS) -> coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, APPLICANTSOLICITORONE));
+                applicantSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                });
 
-                respondentSolicitors.forEach((AS) -> coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE));
+                respondentSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                });
             } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
-                    .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
+                .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
 
                 caseDataBuilder.parentClaimantIsApplicant(NO);
                 Optional<CaseAssignedUserRole> submitter = respondentSolicitors.stream()
@@ -143,23 +147,28 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                     }
                 }
 
-                applicantSolicitors.forEach((AS) -> coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE));
+                applicantSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                });
 
-                respondentSolicitors.forEach((AS) -> coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, APPLICANTSOLICITORONE));
+                respondentSolicitors.stream().forEach((AS) -> {
+                    coreCaseUserService
+                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                });
+
             }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(objectMapper))
-                .build();
+            .build();
 
     }
 
     private String getCaaAccessToken() {
         return userService.getAccessToken(
-                crossAccessUserConfiguration.getUserName(),
-                crossAccessUserConfiguration.getPassword()
+            crossAccessUserConfiguration.getUserName(),
+            crossAccessUserConfiguration.getPassword()
         );
     }
 

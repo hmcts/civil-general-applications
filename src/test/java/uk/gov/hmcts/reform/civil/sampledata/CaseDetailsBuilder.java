@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
@@ -20,6 +21,7 @@ public class CaseDetailsBuilder {
     private String state;
     private Map<String, Object> data;
     private Long id;
+    private LocalDateTime createdDate;
 
     public static CaseDetailsBuilder builder() {
         return new CaseDetailsBuilder();
@@ -40,11 +42,17 @@ public class CaseDetailsBuilder {
         return this;
     }
 
+    public CaseDetailsBuilder createdDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+        return this;
+    }
+
     public CaseDetails build() {
         return CaseDetails.builder()
             .data(data)
             .state(state)
             .id(id)
+            .createdDate(createdDate)
             .build();
     }
 

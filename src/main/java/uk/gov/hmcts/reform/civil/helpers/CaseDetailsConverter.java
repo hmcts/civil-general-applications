@@ -31,8 +31,4 @@ public class CaseDetailsConverter {
         }
         return objectMapper.convertValue(data, CaseData.class);
     }
-
-    public CaseData toCaseData(Map<String, Object> caseDataMap) {
-        return objectMapper.convertValue(caseDataMap, CaseData.class);
-    }
 }
