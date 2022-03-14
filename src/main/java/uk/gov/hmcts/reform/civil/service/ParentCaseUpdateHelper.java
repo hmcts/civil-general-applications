@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.handler.callback;
+package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_S
 
 @Service
 @RequiredArgsConstructor
-public class CallbackHandlerHelper {
+public class ParentCaseUpdateHelper {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;

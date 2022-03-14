@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.handler.callback.CallbackHandlerHelper;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     CaseDetailsConverter caseDetailsConverter;
 
     @MockBean
-    CallbackHandlerHelper callbackHandlerHelper;
+    ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
 

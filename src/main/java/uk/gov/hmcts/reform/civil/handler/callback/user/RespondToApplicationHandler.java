@@ -12,13 +12,13 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.handler.callback.CallbackHandlerHelper;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final CallbackHandlerHelper callbackHandlerHelper;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final String RESPONSE_MESSAGE = "# You have responded to an application";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -203,7 +203,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseState newState = isRespondentsResponseSatisfied(caseData, caseDataBuilder)
             ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
             : AWAITING_RESPONDENT_RESPONSE;
-        callbackHandlerHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
+        parentCaseUpdateHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newState.toString())

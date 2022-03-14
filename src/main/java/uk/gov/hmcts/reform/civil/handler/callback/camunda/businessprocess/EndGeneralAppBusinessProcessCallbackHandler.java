@@ -9,9 +9,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
-import uk.gov.hmcts.reform.civil.handler.callback.CallbackHandlerHelper;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private static final List<CaseEvent> EVENTS = List.of(END_BUSINESS_PROCESS_GASPEC);
 
     private final CaseDetailsConverter caseDetailsConverter;
-    private final CallbackHandlerHelper callbackHandlerHelper;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -46,7 +46,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         CaseState newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-        callbackHandlerHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+        parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
         return evaluateReady(callbackParams, newState);
     }
 

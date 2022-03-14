@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.handler.callback.CallbackHandlerHelper;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -32,6 +31,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
 
 import java.util.HashMap;
@@ -58,7 +58,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     EndGeneralAppBusinessProcessCallbackHandler.class,
     CaseDetailsConverter.class,
     CoreCaseDataService.class,
-    CallbackHandlerHelper.class,
+    ParentCaseUpdateHelper.class,
     ObjectMapper.class,
     ApplicationNotificationUtil.class
 })
@@ -71,7 +71,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
     private ObjectMapper objectMapper;
 
     @Autowired
-    private CallbackHandlerHelper callbackHandlerHelper;
+    private ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
