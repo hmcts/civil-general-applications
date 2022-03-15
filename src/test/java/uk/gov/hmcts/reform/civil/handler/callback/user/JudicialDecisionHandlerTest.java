@@ -20,7 +20,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,10 +33,10 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
 @SpringBootTest(classes = {
-    JudicialDecisionHandler.class,
-    JacksonAutoConfiguration.class,
+        JudicialDecisionHandler.class,
+        JacksonAutoConfiguration.class,
 },
-    properties = {"reference.database.enabled=false"})
+        properties = {"reference.database.enabled=false"})
 public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
@@ -46,6 +48,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
 
 
     @Test
@@ -55,8 +58,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void testAboutToStartForNotifiedApplication() {
-        String expectedRecitalText = "Upon reading the application of Claimant dated 14 March 22 and upon the "
-                + "application of ApplicantPartyName dated 14 March 22 and upon considering the information "
+        String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+                + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
         String expectedDismissalOrder = "This application is dismissed.\n\n"
                 + "[Insert Draft Order from application]\n\n"
@@ -70,14 +73,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
         GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(expectedRecitalText);
+        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                DATE_FORMATTER.format(LocalDate.now())));
         assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
     }
 
     @Test
     void testAboutToStartForCloakedApplication() {
-        String expectedRecitalText = "Upon reading the application of Claimant dated 14 March 22 and upon the "
-                + "application of ApplicantPartyName dated 14 March 22 and upon considering the information "
+        String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+                + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
         String expectedDismissalOrder = "This application is dismissed.\n\n"
                 + "[Insert Draft Order from application]\n\n"
@@ -91,14 +95,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(YES);
         GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(expectedRecitalText);
+        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                DATE_FORMATTER.format(LocalDate.now())));
         assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
     }
 
     @Test
     void testAboutToStartForDefendant_judgeRecitalText() {
-        String expectedRecitalText = "Upon reading the application of Defendant dated 14 March 22 and upon the "
-                + "application of ApplicantPartyName dated 14 March 22 and upon considering the information "
+        String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
+                + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
         String expectedDismissalOrder = "This application is dismissed.\n\n"
                 + "[Insert Draft Order from application]\n\n"
@@ -112,7 +117,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
         GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(expectedRecitalText);
+        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                DATE_FORMATTER.format(LocalDate.now())));
         assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
     }
 
@@ -128,58 +134,58 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     private CaseData getNotifiedApplication() {
         List<GeneralApplicationTypes> types = List.of(
-            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
-            .createdDate(LocalDateTime.now())
-            .applicantPartyName("ApplicantPartyName")
-            .generalAppRespondent1Representative(
-                GARespondentRepresentative.builder()
-                    .generalAppRespondent1Representative(YES)
-                    .build())
-            .generalAppType(
-                GAApplicationType
-                    .builder()
-                    .types(types).build())
-            .businessProcess(BusinessProcess
-                                 .builder()
-                                 .camundaEvent(CAMUNDA_EVENT)
-                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                                 .status(BusinessProcessStatus.STARTED)
-                                 .activityId(ACTIVITY_ID)
-                                 .build())
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .build();
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                        GARespondentRepresentative.builder()
+                                .generalAppRespondent1Representative(YES)
+                                .build())
+                .generalAppType(
+                        GAApplicationType
+                                .builder()
+                                .types(types).build())
+                .businessProcess(BusinessProcess
+                        .builder()
+                        .camundaEvent(CAMUNDA_EVENT)
+                        .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                        .status(BusinessProcessStatus.STARTED)
+                        .activityId(ACTIVITY_ID)
+                        .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
     }
 
     private CaseData getCloakedApplication() {
         List<GeneralApplicationTypes> types = List.of(
-            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
-            .parentClaimantIsApplicant(YES)
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
-            .createdDate(LocalDateTime.now())
-            .applicantPartyName("ApplicantPartyName")
-            .generalAppRespondent1Representative(
-                GARespondentRepresentative.builder()
-                    .generalAppRespondent1Representative(YES)
-                    .build())
-            .generalAppType(
-                GAApplicationType
-                    .builder()
-                    .types(types).build())
-            .businessProcess(BusinessProcess
-                                 .builder()
-                                 .camundaEvent(CAMUNDA_EVENT)
-                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                                 .status(BusinessProcessStatus.STARTED)
-                                 .activityId(ACTIVITY_ID)
-                                 .build())
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .build();
+                .parentClaimantIsApplicant(YES)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                        GARespondentRepresentative.builder()
+                                .generalAppRespondent1Representative(YES)
+                                .build())
+                .generalAppType(
+                        GAApplicationType
+                                .builder()
+                                .types(types).build())
+                .businessProcess(BusinessProcess
+                        .builder()
+                        .camundaEvent(CAMUNDA_EVENT)
+                        .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                        .status(BusinessProcessStatus.STARTED)
+                        .activityId(ACTIVITY_ID)
+                        .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
     }
 
     private CaseData getApplicationByParentCaseDefendant() {
@@ -188,7 +194,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return CaseData.builder()
                 .parentClaimantIsApplicant(NO)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
-                .createdDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
                 .applicantPartyName("ApplicantPartyName")
                 .generalAppRespondent1Representative(
                         GARespondentRepresentative.builder()

@@ -73,7 +73,6 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("applicantSolicitors") List<Element<SolicitorDetails>> applicantSolicitors,
                        @JsonProperty("defendantSolicitors") List<Element<SolicitorDetails>> defendantSolicitors,
                        @JsonProperty("respondentsResponses") List<Element<GARespondentResponse>> respondentsResponses,
-                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
                        @JsonProperty("claimant1PartyName") String claimant1PartyName,
                        @JsonProperty("claimant2PartyName") String claimant2PartyName,
                        @JsonProperty("defendant1PartyName") String defendant1PartyName,
