@@ -1,12 +1,16 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
+import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -14,25 +18,32 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
 @SpringBootTest(classes = {
+    CaseDetailsConverter.class,
     RespondToApplicationHandler.class,
     JacksonAutoConfiguration.class,
 },
@@ -41,6 +52,19 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     RespondToApplicationHandler handler;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Autowired
+    CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    ParentCaseUpdateHelper parentCaseUpdateHelper;
+
+    List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
+
+    List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -245,6 +269,95 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         }
     }
 
+    @Test
+    void shouldReturn_Awaiting_Respondent_Response_1Def_2Responses() {
+
+        respondentSols.add(element(SolicitorDetails.builder().caseRole("role").build()));
+        respondentsResponses.add(element(GARespondentResponse.builder().generalAppRespondent1Representative(YES).build()
+        ));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
+    }
+
+    @Test
+    void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_2Def_2Responses() {
+
+        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+
+        Collections.addAll(respondentSols, element(solicitorDetails), element(solicitorDetails));
+
+        respondentsResponses.add(element(GARespondentResponse.builder()
+                                             .generalAppRespondent1Representative(YES).build()));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
+    }
+
+    @Test
+    void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response() {
+
+        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+
+        Collections.addAll(respondentSols, element(solicitorDetails));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
+    }
+
+    @Test
+    void shouldReturn_Awaiting_Respondent_Response_2Def_1Response() {
+
+        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+
+        Collections.addAll(respondentSols, element(solicitorDetails), element(solicitorDetails));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
+    }
+
+    @Test
+    void shouldReturn_Awaiting_Respondent_Response_For_NoDef_NoResponse() {
+
+        CaseData caseData = getCase();
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
+    }
+
     private CaseData getCaseWithNullUnavailableDateFrom() {
         return CaseData.builder()
             .hearingDetailsResp(GAHearingDetails.builder()
@@ -338,6 +451,32 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
+    }
+
+    private CaseData getCase(List<Element<SolicitorDetails>> defendantSolicitors,
+                             List<Element<GARespondentResponse>> respondentsResponses) {
+        List<GeneralApplicationTypes> types = List.of(
+            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        return CaseData.builder()
+            .defendantSolicitors(defendantSolicitors)
+            .respondentsResponses(respondentsResponses)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
                     .generalAppRespondent1Representative(YES)

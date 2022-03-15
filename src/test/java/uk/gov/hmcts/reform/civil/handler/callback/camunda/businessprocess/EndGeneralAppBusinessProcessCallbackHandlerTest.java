@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
 
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     EndGeneralAppBusinessProcessCallbackHandler.class,
     CaseDetailsConverter.class,
     CoreCaseDataService.class,
+    ParentCaseUpdateHelper.class,
     ObjectMapper.class,
     ApplicationNotificationUtil.class
 })
@@ -67,6 +69,9 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;

@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -20,11 +21,13 @@ import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.prd.client.OrganisationApi;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +49,9 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final OrganisationApi organisationApi;
     private final CaseAccessDataStoreApi caseAccessDataStoreApi;
     private final UserService userService;
+    private final ObjectMapper mapper;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
-    private final ObjectMapper objectMapper;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
 
@@ -105,6 +109,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         if (org.isPresent()) {
             String organisationId = org.get().getOrganisationIdentifier();
+            List<Element<SolicitorDetails>> applicantSols = new ArrayList<>();
+            List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
 
             if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
                 submitterId))) {
@@ -114,31 +120,47 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 applicantSolicitors.stream().forEach((AS) -> {
                     coreCaseUserService
                         .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                    applicantSols.add(element(SolicitorDetails.builder().caseRole(AS.getCaseRole())
+                                                  .caseDataId(AS.getCaseDataId())
+                                                  .userId(AS.getUserId()).build()));
                 });
 
-                respondentSolicitors.stream().forEach((AS) -> {
+                respondentSolicitors.stream().forEach((RS) -> {
                     coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                        .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
+                                                  .caseDataId(RS.getCaseDataId())
+                                                  .userId(RS.getUserId()).build()));
                 });
+
+                caseDataBuilder.applicantSolicitors(applicantSols);
+                caseDataBuilder.defendantSolicitors(respondentSols);
+
             } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
                 .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
 
                 caseDataBuilder.parentClaimantIsApplicant(NO);
 
-                applicantSolicitors.stream().forEach((AS) -> {
+                applicantSolicitors.stream().forEach((RS) -> {
                     coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                        .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
+                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
+                                                   .caseDataId(RS.getCaseDataId())
+                                                   .userId(RS.getUserId()).build()));
                 });
 
                 respondentSolicitors.stream().forEach((AS) -> {
                     coreCaseUserService
                         .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
+                    applicantSols.add(element(SolicitorDetails.builder().caseRole(AS.getCaseRole())
+                                                  .caseDataId(AS.getCaseDataId())
+                                                  .userId(AS.getUserId()).build()));
                 });
 
             }
         }
 
-        return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(objectMapper))
+        return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper))
             .build();
 
     }
