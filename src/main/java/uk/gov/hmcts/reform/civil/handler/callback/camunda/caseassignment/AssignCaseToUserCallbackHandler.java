@@ -37,6 +37,10 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORTWO;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -116,6 +120,15 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 submitterId))) {
 
                 caseDataBuilder.parentClaimantIsApplicant(YES);
+                Optional<CaseAssignedUserRole> submitter = applicantSolicitors.stream()
+                     .filter(user -> submitterId.equals(user.getUserId())).findFirst();
+                if (submitter.isPresent()) {
+                    if (APPLICANTSOLICITORONE.getFormattedName().equals(submitter.get().getCaseRole())) {
+                        caseDataBuilder.applicantPartyName(caseData.getClaimant1PartyName());
+                    } else if (APPLICANTSOLICITORTWO.getFormattedName().equals(submitter.get().getCaseRole())) {
+                        caseDataBuilder.applicantPartyName(caseData.getClaimant2PartyName());
+                    }
+                }
 
                 applicantSolicitors.stream().forEach((AS) -> {
                     coreCaseUserService
@@ -140,6 +153,15 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
 
                 caseDataBuilder.parentClaimantIsApplicant(NO);
+                Optional<CaseAssignedUserRole> submitter = respondentSolicitors.stream()
+                        .filter(user -> submitterId.equals(user.getUserId())).findFirst();
+                if (submitter.isPresent()) {
+                    if (RESPONDENTSOLICITORONE.getFormattedName().equals(submitter.get().getCaseRole())) {
+                        caseDataBuilder.applicantPartyName(caseData.getClaimant1PartyName());
+                    } else if (RESPONDENTSOLICITORTWO.getFormattedName().equals(submitter.get().getCaseRole())) {
+                        caseDataBuilder.applicantPartyName(caseData.getClaimant2PartyName());
+                    }
+                }
 
                 applicantSolicitors.stream().forEach((RS) -> {
                     coreCaseUserService

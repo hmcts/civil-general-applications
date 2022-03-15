@@ -26,10 +26,9 @@ public class CaseDetailsConverter {
         if (caseDetails.getState() != null) {
             data.put("ccdState", CaseState.valueOf(caseDetails.getState()));
         }
+        if (caseDetails.getCreatedDate() != null) {
+            data.put("createdDate", caseDetails.getCreatedDate());
+        }
         return objectMapper.convertValue(data, CaseData.class);
-    }
-
-    public CaseData toCaseData(Map<String, Object> caseDataMap) {
-        return objectMapper.convertValue(caseDataMap, CaseData.class);
     }
 }

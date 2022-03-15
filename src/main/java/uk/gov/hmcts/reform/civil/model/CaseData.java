@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -35,6 +36,8 @@ public class CaseData implements MappableObject {
     private final Long ccdCaseReference;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private final CaseState ccdState;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private final LocalDateTime createdDate;
     private final String detailsOfClaim;
     private final YesOrNo addApplicant2;
     private final GAApplicationType generalAppType;
@@ -67,6 +70,13 @@ public class CaseData implements MappableObject {
     private final List<Element<SolicitorDetails>> applicantSolicitors;
     private final List<Element<SolicitorDetails>> defendantSolicitors;
     private final List<Element<GARespondentResponse>> respondentsResponses;
+    private final YesOrNo applicationIsCloaked;
+    private final GAJudicialMakeAnOrder judicialDecisionMakeOrder;
+    private final String applicantPartyName;
+    private final String claimant1PartyName;
+    private final String claimant2PartyName;
+    private final String defendant1PartyName;
+    private final String defendant2PartyName;
 
     private final BusinessProcess businessProcess;
 

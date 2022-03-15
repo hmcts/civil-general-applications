@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.caseassignment;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -20,6 +23,7 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment.AssignCaseToUserCallbackHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
@@ -31,7 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static feign.Request.HttpMethod.GET;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -67,28 +74,29 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
     private CallbackParams params;
 
-    private GeneralApplication caseData;
-
     public static final Long CASE_ID = 1594901956117591L;
 
     public static final String STRING_CONSTANT = "This is string";
 
     @BeforeEach
     void setup() {
-
         GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
         builder.generalAppType(GAApplicationType.builder()
-                                          .types(singletonList(SUMMARY_JUDGEMENT))
-                                          .build())
-            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
-            .civilServiceUserRoles(IdamUserDetails.builder()
-                                       .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                                       .email("applicant@someorg.com")
-                                       .build())
-            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-            .build();
+                        .types(singletonList(SUMMARY_JUDGEMENT))
+                        .build())
+                .claimant1PartyName("Applicant1")
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                        .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                        .email("applicant@someorg.com")
+                        .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
 
-        caseData = builder.build();
+        GeneralApplication caseData = builder.build();
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -96,71 +104,65 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     }
 
     public List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
-        List<CaseAssignedUserRole> caseAssignedUserRoles = List.of(
-            CaseAssignedUserRole.builder().caseDataId("1").userId("1")
-                .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("3")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("4")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("5")
-                .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build());
-
-        return caseAssignedUserRoles;
+        return List.of(
+                CaseAssignedUserRole.builder().caseDataId("1").userId("1")
+                        .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                        .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                        .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build());
     }
 
     public List<CaseAssignedUserRole> getCaseAssignedRespondentUserRoles() {
-        List<CaseAssignedUserRole> caseAssignedUserRoles = List.of(
-            CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("3")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("4")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("5")
-                .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build());
-
-        return caseAssignedUserRoles;
+        return List.of(
+                CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                        .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName()).build());
     }
 
     public List<CaseAssignedUserRole> getCaseAssignedRespondentUserRolesWithNoApplicantSolicitor() {
-        List<CaseAssignedUserRole> caseAssignedUserRoles = List.of(
-            CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("3")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("4")
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("5")
-                .caseRole(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()).build());
+        return List.of(
+                CaseAssignedUserRole.builder().caseDataId("1").userId("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                        .caseRole(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()).build());
 
-        return caseAssignedUserRoles;
     }
 
     public List<CaseAssignedUserRole> getCaseAssignedApplicantUserRolesEmptyList() {
-        List<CaseAssignedUserRole> caseAssignedUserRoles = Collections.emptyList();
-        return caseAssignedUserRoles;
+        return Collections.emptyList();
     }
 
     @Test
     void shouldAssignCaseToApplicantSolicitorOne() {
 
         when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-            .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
         when(organisationApi.findUserOrganisation(any(), any()))
-            .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
-                            .builder().organisationIdentifier("OrgId1").build());
+                .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
+                        .builder().organisationIdentifier("OrgId1").build());
 
-        assignCaseToUserHandler.handle(params);
-
+        var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
+        assertThat(extractApplicantPartyNameFromResponse(response)).isNotEmpty();
         verify(coreCaseUserService).assignCase(
-            CASE_ID.toString(),
-            "f5e5cc53-e065-43dd-8cec-2ad005a6b9a9",
-            "OrgId1",
-            CaseRole.APPLICANTSOLICITORONE
+                CASE_ID.toString(),
+                "f5e5cc53-e065-43dd-8cec-2ad005a6b9a9",
+                "OrgId1",
+                CaseRole.APPLICANTSOLICITORONE
         );
     }
 
@@ -168,53 +170,55 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     void shouldThrowExceptionForNoSolicitors() {
 
         when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-            .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
         when(organisationApi.findUserOrganisation(any(), any()))
-            .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
-                            .builder().organisationIdentifier("OrgId1").build());
+                .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
+                        .builder().organisationIdentifier("OrgId1").build());
 
         assertThrows(IllegalArgumentException.class, () ->
-            assignCaseToUserHandler.handle(params));
+                assignCaseToUserHandler.handle(params));
     }
 
     @Test
     void shouldAssignCaseToRespondentSolicitorOne() {
 
         when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-            .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedRespondentUserRoles()).build());
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedRespondentUserRoles()).build());
         when(organisationApi.findUserOrganisation(any(), any()))
-            .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
-                            .builder().organisationIdentifier("OrgId1").build());
+                .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
+                        .builder().organisationIdentifier("OrgId1").build());
 
-        assignCaseToUserHandler.handle(params);
+        var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
 
+        assertThat(extractApplicantPartyNameFromResponse(response)).isNotEmpty();
         verify(coreCaseUserService).assignCase(
-            CASE_ID.toString(),
-            "5",
-            "OrgId1",
-            CaseRole.RESPONDENTSOLICITORONE
+                CASE_ID.toString(),
+                "5",
+                "OrgId1",
+                CaseRole.RESPONDENTSOLICITORONE
         );
     }
 
     @Test
     void shouldAssignCaseTo_PC_Respondent_As_GA_Applicant() {
         when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-            .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedRespondentUserRolesWithNoApplicantSolicitor())
-                            .build());
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedRespondentUserRolesWithNoApplicantSolicitor())
+                        .build());
         when(organisationApi.findUserOrganisation(any(), any()))
-            .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
-                            .builder().organisationIdentifier("OrgId1").build());
+                .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
+                        .builder().organisationIdentifier("OrgId1").build());
 
-        assignCaseToUserHandler.handle(params);
+        var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
 
+        assertThat(extractApplicantPartyNameFromResponse(response)).isNotEmpty();
         verify(coreCaseUserService).assignCase(
-            CASE_ID.toString(),
-            "f5e5cc53-e065-43dd-8cec-2ad005a6b9a9",
-            "OrgId1",
-            CaseRole.APPLICANTSOLICITORONE
+                CASE_ID.toString(),
+                "f5e5cc53-e065-43dd-8cec-2ad005a6b9a9",
+                "OrgId1",
+                CaseRole.APPLICANTSOLICITORONE
         );
     }
 
@@ -222,25 +226,64 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     void shouldNotInvokeAssignUserToCaseForRole() {
 
         when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-            .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
 
         when(organisationApi.findUserOrganisation(any(), any()))
-            .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
-                            .builder().organisationIdentifier("OrgId1").build());
+                .thenReturn(uk.gov.hmcts.reform.prd.model.Organisation
+                        .builder().organisationIdentifier("OrgId1").build());
 
         when(coreCaseUserService
-                 .userWithCaseRoleExistsOnCase(STRING_CONSTANT, STRING_CONSTANT, CaseRole.APPLICANTSOLICITORONE))
-            .thenReturn(Boolean.TRUE);
+                .userWithCaseRoleExistsOnCase(STRING_CONSTANT, STRING_CONSTANT, CaseRole.APPLICANTSOLICITORONE))
+                .thenReturn(Boolean.TRUE);
 
-        assignCaseToUserHandler.handle(params);
+        var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
 
+        assertThat(extractApplicantPartyNameFromResponse(response)).isNotEmpty();
         verify(coreCaseUserService, never()).assignUserToCaseForRole(
-            anyString(),
-            anyString(),
-            anyString(),
-            any(CaseRole.class),
-            anyString()
+                anyString(),
+                anyString(),
+                anyString(),
+                any(CaseRole.class),
+                anyString()
         );
     }
+
+    private String extractApplicantPartyNameFromResponse(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getApplicantPartyName();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenOrgNotFound() {
+
+        when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
+        when(organisationApi.findUserOrganisation(any(), any()))
+                .thenThrow(new FeignException.NotFound(
+                        "not found message",
+                        Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+                        "not found response body".getBytes(UTF_8)));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                assignCaseToUserHandler.handle(params));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenOrgAccessForbidden() {
+
+        when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                        .caseAssignedUserRoles(getCaseAssignedApplicantUserRolesEmptyList()).build());
+        when(organisationApi.findUserOrganisation(any(), any()))
+                .thenThrow(new FeignException.Forbidden(
+                        "forbidden",
+                        Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+                        "forbidden".getBytes(UTF_8)));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                assignCaseToUserHandler.handle(params));
+    }
+
 }

@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -93,6 +94,7 @@ class CoreCaseDataServiceTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .build();
         private final CaseDetails caseDetails = CaseDetailsBuilder.builder()
+            .createdDate(LocalDateTime.now())
             .data(caseData)
             .build();
 
