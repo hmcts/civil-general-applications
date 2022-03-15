@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -11,10 +12,13 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,18 +27,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
 @RequiredArgsConstructor
 public class RespondToApplicationHandler extends CallbackHandler {
+
+    private final ObjectMapper objectMapper;
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final String RESPONSE_MESSAGE = "# You have responded to an application";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -64,6 +79,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return Map.of(
             callbackKey(ABOUT_TO_START), this::isApplicationInJudicialReviewStage,
             callbackKey(MID, "hearing-screen-response"), this::hearingScreenResponse,
+            callbackKey(ABOUT_TO_SUBMIT), this::submitClaim,
             callbackKey(SUBMITTED), this::buildResponseConfirmation
         );
     }
@@ -172,5 +188,48 @@ public class RespondToApplicationHandler extends CallbackHandler {
             appType,
             JUDGES_REVIEW_MESSAGE
         );
+    }
+
+    private CallbackResponse submitClaim(CallbackParams callbackParams) {
+
+        CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        List<Element<GARespondentResponse>> respondentsResponses =
+            addApplication(buildApplication(caseData), caseData.getRespondentsResponses());
+
+        caseDataBuilder.respondentsResponses(respondentsResponses);
+
+        CaseState newState = isRespondentsResponseSatisfied(caseData, caseDataBuilder)
+            ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            : AWAITING_RESPONDENT_RESPONSE;
+        parentCaseUpdateHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .state(newState.toString())
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private List<Element<GARespondentResponse>> addApplication(GARespondentResponse gaRespondentResponseBuilder,
+                                                             List<Element<GARespondentResponse>> respondentsResponses) {
+
+        List<Element<GARespondentResponse>> newApplication = ofNullable(respondentsResponses).orElse(newArrayList());
+        newApplication.add(element(gaRespondentResponseBuilder));
+
+        return newApplication;
+    }
+
+
+    private GARespondentResponse buildApplication(CaseData caseData) {
+
+        GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
+
+        gaRespondentResponseBuilder
+            .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
+                                                            .getGeneralAppRespondent1Representative())
+            .gaHearingDetails(caseData.getHearingDetailsResp()).build();
+
+        return gaRespondentResponseBuilder.build();
     }
 }

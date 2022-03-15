@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -40,6 +41,9 @@ public class GeneralApplication implements MappableObject {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails civilServiceUserRoles;
     private LocalDateTime generalAppSubmittedDateGAspec;
+    private final List<Element<SolicitorDetails>> applicantSolicitors;
+    private final List<Element<SolicitorDetails>> defendantSolicitors;
+    private final List<Element<GARespondentResponse>> respondentsResponses;
     private final String claimant1PartyName;
     private final String claimant2PartyName;
     private final String defendant1PartyName;
@@ -66,6 +70,10 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
                        @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
+                       @JsonProperty("applicantSolicitors") List<Element<SolicitorDetails>> applicantSolicitors,
+                       @JsonProperty("defendantSolicitors") List<Element<SolicitorDetails>> defendantSolicitors,
+                       @JsonProperty("respondentsResponses") List<Element<GARespondentResponse>> respondentsResponses,
+                       @JsonProperty("generalAppSubmittedDateGAspec") LocalDateTime generalAppSubmittedDateGAspec,
                        @JsonProperty("claimant1PartyName") String claimant1PartyName,
                        @JsonProperty("claimant2PartyName") String claimant2PartyName,
                        @JsonProperty("defendant1PartyName") String defendant1PartyName,
@@ -89,6 +97,9 @@ public class GeneralApplication implements MappableObject {
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.civilServiceUserRoles = civilServiceUserRoles;
         this.generalAppSubmittedDateGAspec = generalAppSubmittedDateGAspec;
+        this.applicantSolicitors = applicantSolicitors;
+        this.defendantSolicitors = defendantSolicitors;
+        this.respondentsResponses = respondentsResponses;
         this.claimant1PartyName = claimant1PartyName;
         this.claimant2PartyName = claimant2PartyName;
         this.defendant1PartyName = defendant1PartyName;

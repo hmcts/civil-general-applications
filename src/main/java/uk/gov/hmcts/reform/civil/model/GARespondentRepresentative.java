@@ -15,7 +15,7 @@ public class GARespondentRepresentative {
     private final YesOrNo generalAppRespondent1Representative;
 
     @JsonCreator
-    GARespondentRepresentative(@JsonProperty("generalAppRespondent1Representative")
+    GARespondentRepresentative(@JsonProperty("hasAgreed")
                                    YesOrNo generalAppRespondent1Representative) {
         this.generalAppRespondent1Representative = generalAppRespondent1Representative;
     }
