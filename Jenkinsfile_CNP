@@ -95,7 +95,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          #./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
           ./bin/import-bpmn-diagram.sh .
         """
 
