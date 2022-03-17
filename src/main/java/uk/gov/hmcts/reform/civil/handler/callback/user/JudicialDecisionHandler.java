@@ -15,15 +15,18 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -31,6 +34,8 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
+    private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
             + "application of %s dated %s and upon considering the information provided by the parties";
@@ -39,12 +44,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
+    public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
+            + " should be given, is required.";
+    public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
+            + " should be given, cannot be in past.";
+
 
     private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage);
+        return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
+        callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen);
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -81,6 +92,36 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 caseData.getApplicantPartyName(),
                 DATE_FORMATTER.format(LocalDate.now()));
     }
+
+    private CallbackResponse gaValidateMakeDecisionScreen(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+        List<String> errors = judicialDecisionMakeOrder != null
+                ? validateUrgencyDates(judicialDecisionMakeOrder)
+                : Collections.emptyList();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+                .errors(errors)
+                .build();
+    }
+
+    public List<String> validateUrgencyDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+        List<String> errors = new ArrayList<>();
+        if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                && judicialDecisionMakeOrder.getDirectionsResponseByDate() == null) {
+            errors.add(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
+        }
+
+        if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                && judicialDecisionMakeOrder.getDirectionsResponseByDate() != null) {
+            LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getDirectionsResponseByDate();
+            if (LocalDate.now().isAfter(directionsResponseByDate)) {
+                errors.add(RESPOND_TO_DIRECTIONS_DATE_IN_PAST);
+            }
+        }
+        return errors;
+    }
+
 
     @Override
     public List<CaseEvent> handledEvents() {

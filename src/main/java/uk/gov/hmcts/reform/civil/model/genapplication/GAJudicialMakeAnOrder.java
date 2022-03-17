@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 
+import java.time.LocalDate;
+
 @Setter
 @Data
 @Builder(toBuilder = true)
@@ -16,6 +18,8 @@ public class GAJudicialMakeAnOrder {
     private GAJudgeMakeAnOrderOption makeAnOrder;
     private String orderText;
     private String dismissalOrderText;
+    private String directionsText;
+    private LocalDate directionsResponseByDate;
     private String reasonForDecisionText;
 
     @JsonCreator
@@ -23,11 +27,15 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("makeAnOrder") GAJudgeMakeAnOrderOption makeAnOrder,
                           @JsonProperty("orderText") String orderText,
                           @JsonProperty("dismissalOrderText") String dismissalOrderText,
+                          @JsonProperty("directionsText") String directionsText,
+                          @JsonProperty("directionsResponseByDate") LocalDate directionsResponseByDate,
                           @JsonProperty("reasonForDecisionText") String reasonForDecisionText) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
         this.dismissalOrderText = dismissalOrderText;
+        this.directionsText = directionsText;
+        this.directionsResponseByDate = directionsResponseByDate;
         this.reasonForDecisionText = reasonForDecisionText;
     }
 }

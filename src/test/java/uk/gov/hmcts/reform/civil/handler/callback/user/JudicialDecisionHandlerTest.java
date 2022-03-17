@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,9 +30,12 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
 @SpringBootTest(classes = {
@@ -49,170 +55,271 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
-
+    private static final String expectedDismissalOrder = "This application is dismissed.\n\n"
+            + "[Insert Draft Order from application]\n\n"
+            + "A person who was not notified of the application before this order was made may apply to have the "
+            + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
+            + "notification of the order.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(JUDGE_MAKES_DECISION);
     }
 
-    @Test
-    void testAboutToStartForNotifiedApplication() {
-        String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
-                + "provided by the parties";
-        String expectedDismissalOrder = "This application is dismissed.\n\n"
-                + "[Insert Draft Order from application]\n\n"
-                + "A person who was not notified of the application before this order was made may apply to have the "
-                + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
-                + "notification of the order.";
-        CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
-        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+    @Nested
+    class AboutToStartCallbackHandling {
 
-        assertThat(response).isNotNull();
-        assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
-        GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+        @Test
+        void testAboutToStartForNotifiedApplication() {
+            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+                    + "application of ApplicantPartyName dated %s and upon considering the information "
+                    + "provided by the parties";
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
-                DATE_FORMATTER.format(LocalDate.now())));
-        assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                    DATE_FORMATTER.format(LocalDate.now())));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForCloakedApplication() {
+            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+                    + "application of ApplicantPartyName dated %s and upon considering the information "
+                    + "provided by the parties";
+
+            CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(YES);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                    DATE_FORMATTER.format(LocalDate.now())));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForDefendant_judgeRecitalText() {
+            String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
+                    + "application of ApplicantPartyName dated %s and upon considering the information "
+                    + "provided by the parties";
+
+            CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
+                    DATE_FORMATTER.format(LocalDate.now())));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
     }
 
-    @Test
-    void testAboutToStartForCloakedApplication() {
-        String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
-                + "provided by the parties";
-        String expectedDismissalOrder = "This application is dismissed.\n\n"
-                + "[Insert Draft Order from application]\n\n"
-                + "A person who was not notified of the application before this order was made may apply to have the "
-                + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
-                + "notification of the order.";
-        CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
-        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        private GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            return responseCaseData.getJudicialDecisionMakeOrder();
+        }
 
-        assertThat(response).isNotNull();
-        assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(YES);
-        GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+        private YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            return responseCaseData.getApplicationIsCloaked();
+        }
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
-                DATE_FORMATTER.format(LocalDate.now())));
-        assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        private CaseData getNotifiedApplication() {
+            List<GeneralApplicationTypes> types = List.of(
+                    (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                    .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                    .applicantPartyName("ApplicantPartyName")
+                    .generalAppRespondent1Representative(
+                            GARespondentRepresentative.builder()
+                                    .generalAppRespondent1Representative(YES)
+                                    .build())
+                    .generalAppType(
+                            GAApplicationType
+                                    .builder()
+                                    .types(types).build())
+                    .businessProcess(BusinessProcess
+                            .builder()
+                            .camundaEvent(CAMUNDA_EVENT)
+                            .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                            .status(BusinessProcessStatus.STARTED)
+                            .activityId(ACTIVITY_ID)
+                            .build())
+                    .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                    .build();
+        }
+
+        private CaseData getCloakedApplication() {
+            List<GeneralApplicationTypes> types = List.of(
+                    (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                    .parentClaimantIsApplicant(YES)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                    .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                    .applicantPartyName("ApplicantPartyName")
+                    .generalAppRespondent1Representative(
+                            GARespondentRepresentative.builder()
+                                    .generalAppRespondent1Representative(YES)
+                                    .build())
+                    .generalAppType(
+                            GAApplicationType
+                                    .builder()
+                                    .types(types).build())
+                    .businessProcess(BusinessProcess
+                            .builder()
+                            .camundaEvent(CAMUNDA_EVENT)
+                            .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                            .status(BusinessProcessStatus.STARTED)
+                            .activityId(ACTIVITY_ID)
+                            .build())
+                    .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                    .build();
+        }
+
+        private CaseData getApplicationByParentCaseDefendant() {
+            List<GeneralApplicationTypes> types = List.of(
+                    (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                    .parentClaimantIsApplicant(NO)
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                    .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                    .applicantPartyName("ApplicantPartyName")
+                    .generalAppRespondent1Representative(
+                            GARespondentRepresentative.builder()
+                                    .generalAppRespondent1Representative(YES)
+                                    .build())
+                    .generalAppType(
+                            GAApplicationType
+                                    .builder()
+                                    .types(types).build())
+                    .businessProcess(BusinessProcess
+                            .builder()
+                            .camundaEvent(CAMUNDA_EVENT)
+                            .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                            .status(BusinessProcessStatus.STARTED)
+                            .activityId(ACTIVITY_ID)
+                            .build())
+                    .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                    .build();
+        }
+
     }
 
-    @Test
-    void testAboutToStartForDefendant_judgeRecitalText() {
-        String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
-                + "provided by the parties";
-        String expectedDismissalOrder = "This application is dismissed.\n\n"
-                + "[Insert Draft Order from application]\n\n"
-                + "A person who was not notified of the application before this order was made may apply to have the "
-                + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
-                + "notification of the order.";
-        CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
-        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+    @Nested
+    class MidEventForRespondToDirectionsDateValidity {
 
-        assertThat(response).isNotNull();
-        assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
-        GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+        private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
+        public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
+                + " should be given, is required.";
+        public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
+                + " should be given, cannot be in past.";
 
-        assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
-                DATE_FORMATTER.format(LocalDate.now())));
-        assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
-    }
+        @Test
+        void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
+            CaseData caseData = CaseDataBuilder.builder().build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
-    private GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
-        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        return responseCaseData.getJudicialDecisionMakeOrder();
-    }
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-    private YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
-        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        return responseCaseData.getApplicationIsCloaked();
-    }
+            assertThat(response.getErrors()).isEmpty();
+        }
 
-    private CaseData getNotifiedApplication() {
-        List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-        return CaseData.builder()
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
-                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
-                .applicantPartyName("ApplicantPartyName")
-                .generalAppRespondent1Representative(
-                        GARespondentRepresentative.builder()
-                                .generalAppRespondent1Representative(YES)
-                                .build())
-                .generalAppType(
-                        GAApplicationType
-                                .builder()
-                                .types(types).build())
-                .businessProcess(BusinessProcess
-                        .builder()
-                        .camundaEvent(CAMUNDA_EVENT)
-                        .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                        .status(BusinessProcessStatus.STARTED)
-                        .activityId(ACTIVITY_ID)
-                        .build())
-                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-                .build();
-    }
+        @Test
+        void shouldReturnErrors_whenApplicationIsUrgentButConsiderationDateIsNotProvided() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING, null);
 
-    private CaseData getCloakedApplication() {
-        List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-        return CaseData.builder()
-                .parentClaimantIsApplicant(YES)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
-                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
-                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
-                .applicantPartyName("ApplicantPartyName")
-                .generalAppRespondent1Representative(
-                        GARespondentRepresentative.builder()
-                                .generalAppRespondent1Representative(YES)
-                                .build())
-                .generalAppType(
-                        GAApplicationType
-                                .builder()
-                                .types(types).build())
-                .businessProcess(BusinessProcess
-                        .builder()
-                        .camundaEvent(CAMUNDA_EVENT)
-                        .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                        .status(BusinessProcessStatus.STARTED)
-                        .activityId(ACTIVITY_ID)
-                        .build())
-                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-                .build();
-    }
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
-    private CaseData getApplicationByParentCaseDefendant() {
-        List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-        return CaseData.builder()
-                .parentClaimantIsApplicant(NO)
-                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
-                .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
-                .applicantPartyName("ApplicantPartyName")
-                .generalAppRespondent1Representative(
-                        GARespondentRepresentative.builder()
-                                .generalAppRespondent1Representative(YES)
-                                .build())
-                .generalAppType(
-                        GAApplicationType
-                                .builder()
-                                .types(types).build())
-                .businessProcess(BusinessProcess
-                        .builder()
-                        .camundaEvent(CAMUNDA_EVENT)
-                        .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                        .status(BusinessProcessStatus.STARTED)
-                        .activityId(ACTIVITY_ID)
-                        .build())
-                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-                .build();
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isNotEmpty();
+            assertThat(response.getErrors()).contains(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
+        }
+
+
+        @Test
+        void shouldReturnErrors_whenUrgencyConsiderationDateIsInPastForUrgentApplication() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
+                    LocalDate.now().minusDays(1));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isNotEmpty();
+            assertThat(response.getErrors()).contains(RESPOND_TO_DIRECTIONS_DATE_IN_PAST);
+        }
+
+        @Test
+        void shouldNotCauseAnyErrors_whenUrgencyConsiderationDateIsInFutureForUrgentApplication() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
+                    LocalDate.now().plusDays(1));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(DISMISS_THE_APPLICATION,
+                    LocalDate.now().minusDays(1));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        private CaseData getApplication_MakeDecision_GiveDirections(GAJudgeMakeAnOrderOption orderOption,
+                                                                    LocalDate directionsResponseByDate) {
+            List<GeneralApplicationTypes> types = List.of(
+                    (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                    .parentClaimantIsApplicant(YES)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                    .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                    .applicantPartyName("ApplicantPartyName")
+                    .generalAppRespondent1Representative(
+                            GARespondentRepresentative.builder()
+                                    .generalAppRespondent1Representative(YES)
+                                    .build())
+                    .generalAppType(
+                            GAApplicationType
+                                    .builder()
+                                    .types(types).build())
+                    .businessProcess(BusinessProcess
+                            .builder()
+                            .camundaEvent(CAMUNDA_EVENT)
+                            .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                            .status(BusinessProcessStatus.STARTED)
+                            .activityId(ACTIVITY_ID)
+                            .build())
+                    .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                            .makeAnOrder(orderOption)
+                            .directionsText("ABC")
+                            .directionsResponseByDate(directionsResponseByDate).build())
+                    .build();
+        }
     }
 
 }
