@@ -29,7 +29,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -156,15 +155,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             } else {
                 if (LocalDate.now().isAfter(judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate())) {
                     errors.add(REQUESTED_MORE_INFO_BY_DATE_IN_PAST);
-                }
-            }
-        }
-        if (SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
-            if (judicialRequestMoreInfo.getJudgeSendAppToOtherPartyResponseByDate() == null) {
-                errors.add(OTHER_PARTY_MORE_INFO_BY_DATE_REQUIRED);
-            } else {
-                if (LocalDate.now().isAfter(judicialRequestMoreInfo.getJudgeSendAppToOtherPartyResponseByDate())) {
-                    errors.add(OTHER_PARTY_MORE_INFO_BY_DATE_IN_PAST);
                 }
             }
         }

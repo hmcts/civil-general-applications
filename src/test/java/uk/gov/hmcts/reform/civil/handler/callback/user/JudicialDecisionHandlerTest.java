@@ -335,10 +335,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "respond, is required.";
         public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must "
                 + "respond, cannot be in past.";
-        public static final String OTHER_PARTY_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the other party must "
-                + "respond, is required.";
-        public static final String OTHER_PARTY_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the other party must "
-                + "respond, cannot be in past.";
 
         @Test
         void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
@@ -352,8 +348,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsNull() {
-            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    null, LocalDate.now());
+            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION, null);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -365,7 +360,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsInPast() {
             CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    LocalDate.now().minusDays(1), LocalDate.now());
+                    LocalDate.now().minusDays(1));
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -378,44 +373,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotReturnErrors_whenRequestedMoreInfoAndTheDateIsInFuture() {
             CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    LocalDate.now().plusDays(1), LocalDate.now());
-
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            assertThat(response.getErrors()).isEmpty();
-        }
-
-        @Test
-        void shouldReturnErrors_whenRequestedMoreInfoFromOtherPartyAndTheDateIsNull() {
-            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                    LocalDate.now(), null);
-
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors()).contains(OTHER_PARTY_MORE_INFO_BY_DATE_REQUIRED);
-        }
-
-        @Test
-        void shouldReturnErrors_whenRequestedMoreInfoFromOtherPartyAndTheDateIsInPast() {
-            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                    LocalDate.now(), LocalDate.now().minusDays(1));
-
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors()).contains(OTHER_PARTY_MORE_INFO_BY_DATE_IN_PAST);
-        }
-
-        @Test
-        void shouldNotReturnErrors_whenRequestedMoreInfoFromOtherPartyAndTheDateIsInFuture() {
-            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                    LocalDate.now(), LocalDate.now().plusDays(1));
+                    LocalDate.now().plusDays(1));
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -427,7 +385,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_RequestMoreInformation(null,
-                    LocalDate.now().minusDays(1), LocalDate.now().minusDays(1));
+                    LocalDate.now().minusDays(1));
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -437,8 +395,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
-                                                               LocalDate judgeRequestMoreInfoByDate,
-                                                               LocalDate judgeSendAppToOtherPartyResponseByDate) {
+                                                               LocalDate judgeRequestMoreInfoByDate) {
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
@@ -470,7 +427,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                             .requestMoreInfoOption(option)
                             .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
-                            .judgeSendAppToOtherPartyResponseByDate(judgeSendAppToOtherPartyResponseByDate)
                             .build())
                     .build();
         }
