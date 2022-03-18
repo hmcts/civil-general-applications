@@ -27,6 +27,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
@@ -36,6 +37,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SE
 public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
+    private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
+
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
@@ -46,6 +49,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
+    public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
+            + " should be given, is required.";
+    public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
+            + " should be given, cannot be in past.";
+
     public static final String REQUESTED_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the applicant must respond, "
             + "is required.";
     public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must respond, "
@@ -60,7 +68,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
-                callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen);
+        callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
+        callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen);
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -98,6 +107,35 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 DATE_FORMATTER.format(LocalDate.now()));
     }
 
+    private CallbackResponse gaValidateMakeDecisionScreen(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+        List<String> errors = judicialDecisionMakeOrder != null
+                ? validateUrgencyDates(judicialDecisionMakeOrder)
+                : Collections.emptyList();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+                .errors(errors)
+                .build();
+    }
+
+    public List<String> validateUrgencyDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+        List<String> errors = new ArrayList<>();
+        if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                && judicialDecisionMakeOrder.getDirectionsResponseByDate() == null) {
+            errors.add(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
+        }
+
+        if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                && judicialDecisionMakeOrder.getDirectionsResponseByDate() != null) {
+            LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getDirectionsResponseByDate();
+            if (LocalDate.now().isAfter(directionsResponseByDate)) {
+                errors.add(RESPOND_TO_DIRECTIONS_DATE_IN_PAST);
+            }
+        }
+        return errors;
+    }
+
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
@@ -132,6 +170,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         return errors;
     }
+
 
     @Override
     public List<CaseEvent> handledEvents() {
