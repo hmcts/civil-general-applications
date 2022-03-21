@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
@@ -35,6 +37,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
+
+    private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
@@ -49,13 +53,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
             + " should be given, cannot be in past.";
 
+    public static final String REQUESTED_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the applicant must respond, "
+            + "is required.";
+    public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must respond, "
+            + "cannot be in past.";
+    public static final String OTHER_PARTY_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the other party must "
+            + "respond, is required.";
+    public static final String OTHER_PARTY_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the other party must "
+            + "respond, cannot be in past.";
 
     private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
-        callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen);
+        callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
+        callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen);
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -117,6 +130,32 @@ public class JudicialDecisionHandler extends CallbackHandler {
             LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getDirectionsResponseByDate();
             if (LocalDate.now().isAfter(directionsResponseByDate)) {
                 errors.add(RESPOND_TO_DIRECTIONS_DATE_IN_PAST);
+            }
+        }
+        return errors;
+    }
+
+    private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+        List<String> errors = judicialRequestMoreInfo != null
+                ? validateDatesForRequestMoreInfoScreen(judicialRequestMoreInfo)
+                : Collections.emptyList();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+                .errors(errors)
+                .build();
+    }
+
+    public List<String> validateDatesForRequestMoreInfoScreen(GAJudicialRequestMoreInfo judicialRequestMoreInfo) {
+        List<String> errors = new ArrayList<>();
+        if (REQUEST_MORE_INFORMATION.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
+            if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() == null) {
+                errors.add(REQUESTED_MORE_INFO_BY_DATE_REQUIRED);
+            } else {
+                if (LocalDate.now().isAfter(judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate())) {
+                    errors.add(REQUESTED_MORE_INFO_BY_DATE_IN_PAST);
+                }
             }
         }
         return errors;
