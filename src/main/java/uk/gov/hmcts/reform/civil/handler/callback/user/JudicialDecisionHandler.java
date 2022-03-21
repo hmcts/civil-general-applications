@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang.StringUtils.EMPTY;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
@@ -181,17 +178,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
             GAJudicialRequestMoreInfo requestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
             if (requestMoreInfo != null) {
                 if (REQUEST_MORE_INFORMATION.equals(requestMoreInfo.getRequestMoreInfoOption())) {
-                    confirmationHeader = "# You have requested more "
-                            + "information";
-                    body = "<br/><p>The applicant will be notified. They will need to provide a response by "
-                            + DATE_FORMATTER_SUBMIT_CALLBACK.format(requestMoreInfo.getJudgeRequestMoreInfoByDate())
-                            + "</p>";
+                    if (requestMoreInfo.getJudgeRequestMoreInfoByDate() != null) {
+                        confirmationHeader = "# You have requested more information";
+                        body = "<br/><p>The applicant will be notified. They will need to provide a response by "
+                               + DATE_FORMATTER_SUBMIT_CALLBACK.format(requestMoreInfo.getJudgeRequestMoreInfoByDate())
+                               + "</p>";
+                    } else {
+                        throw new IllegalArgumentException("Missing data during submission of judicial decision");
+                    }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
                     confirmationHeader = "# You have requested a response";
                     body = "<br/><p>The parties will be notified. They will need to provide a response by "
                             + DATE_FORMATTER_SUBMIT_CALLBACK.format(LocalDate.now().plusDays(7))
                             + "</p>";
                 }
+            } else {
+                throw new IllegalArgumentException("Missing data during submission of judicial decision");
             }
         }
         return SubmittedCallbackResponse.builder()
