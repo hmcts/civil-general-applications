@@ -76,8 +76,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
-        caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                      .karthickTesting("this is dummy text").build());
+        /*caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
+                                                      .karthickTesting("this is dummy text").build());*/
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
