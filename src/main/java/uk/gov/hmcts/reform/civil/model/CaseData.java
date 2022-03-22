@@ -79,6 +79,8 @@ public class CaseData implements MappableObject {
     private final String claimant2PartyName;
     private final String defendant1PartyName;
     private final String defendant2PartyName;
+    private final String judicialGeneralHearingOrderRecital;
+    private final String judicialGeneralOrderHearingDirections;
 
     private final BusinessProcess businessProcess;
 

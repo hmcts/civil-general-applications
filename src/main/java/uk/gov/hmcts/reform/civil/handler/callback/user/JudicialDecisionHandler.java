@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import java.time.LocalDate;
@@ -35,6 +34,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
             + "application of %s dated %s and upon considering the information provided by the parties";
+    private static final String JUDICIAL_HEARGING_RECITAL_TEXT = "Upon the "
+        + "application of %s dated %s and upon considering the information provided by the parties";
+    private static final String JUDICIAL_HEARING_DIRECTIONS_TEXT = "A person who was not notified of the application"
+        + "before this order was made may apply to have the order set aside or varied.\n"
+        + "Any application under this paragraph must be made within 7 days after "
+        + "notification of the order.";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
             + "[Insert Draft Order from application]\n\n"
             + "A person who was not notified of the application before this order was made may apply to have the "
@@ -64,20 +69,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
-
-        GAJudgesHearingListGAspec.GAJudgesHearingListGAspecBuilder gaJudgesHearingListGAspecBuilder;
-        if (caseData.getJudicialDecisionMakeOrder() != null) {
-            gaJudgesHearingListGAspecBuilder = caseData.getJudicialListForHearing().toBuilder();
-        } else {
-            gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
-        }
-
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
-        /*caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                      .karthickTesting("this is dummy text").build());*/
+        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
+            .judicialGeneralOrderHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
@@ -92,6 +89,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 DATE_FORMATTER.format(caseData.getCreatedDate()),
                 caseData.getApplicantPartyName(),
                 DATE_FORMATTER.format(LocalDate.now()));
+    }
+
+    private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData) {
+        return format(JUDICIAL_HEARGING_RECITAL_TEXT,
+                      (caseData.getApplicantPartyName() == null ? "party" : caseData.getApplicantPartyName()),
+                      DATE_FORMATTER.format(caseData.getCreatedDate()));
     }
 
     @Override
