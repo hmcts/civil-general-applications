@@ -15,21 +15,24 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 @RequiredArgsConstructor
 public class JudicialDecisionService {
 
-    private static final String WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST = "The date entered cannot be in the past.";
+    public static final String WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST =
+        "The date entered cannot be in the past.";
 
-    public List<String> validateWrittenRepresentationsDates(GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate) {
+    public List<String> validateWrittenRepresentationsDates(GAJudicialWrittenRepresentations
+                                                                judicialWrittenRepresentationsDate) {
         List<String> errors = new ArrayList<>();
         if (judicialWrittenRepresentationsDate.getWrittenOption() == SEQUENTIAL_REPRESENTATIONS
             && judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null) {
-            LocalDate writtenSequentailRepresentationDate = judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy();
+            LocalDate writtenSequentailRepresentationDate = judicialWrittenRepresentationsDate
+                .getWrittenSequentailRepresentationsBy();
             if (LocalDate.now().isAfter(writtenSequentailRepresentationDate)) {
                 errors.add(WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST);
             }
         }
-
         if (judicialWrittenRepresentationsDate.getWrittenOption() == CONCURRENT_REPRESENTATIONS
             && judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy() != null) {
-            LocalDate writtenConcurrentRepresentationDate = judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy();
+            LocalDate writtenConcurrentRepresentationDate = judicialWrittenRepresentationsDate
+                .getWrittenConcurrentRepresentationsBy();
             if (LocalDate.now().isAfter(writtenConcurrentRepresentationDate)) {
                 errors.add(WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST);
             }

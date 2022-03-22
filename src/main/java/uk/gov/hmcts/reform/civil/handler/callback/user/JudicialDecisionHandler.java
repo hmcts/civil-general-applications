@@ -42,9 +42,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
-    private static final String DIRECTIONS_IN_RELATION_TO_HEARING_TEXT = "A person who was not notified of the application"
-    +"before this order was made may apply to have this order set aside or varied. Any application under this paragraph"
-    +"must be made within 7 days after notification of the order.";
+    private static final String DIRECTIONS_IN_RELATION_TO_HEARING_TEXT = "A person who was not notified of the "
+        + "application before this order was made may apply to have this order set aside or varied. "
+        + "Any application under this paragraph must be made within 7 days after notification of the order.";
 
     private final JudicialDecisionService judicialDecisionService;
 
@@ -77,7 +77,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
-        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData)).directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
+        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+            .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
@@ -96,7 +97,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateWrittenRepresentationsDate(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
+        GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate =
+            caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
         List<String> errors = judicialWrittenRepresentationsDate != null
             ? judicialDecisionService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
             : Collections.emptyList();

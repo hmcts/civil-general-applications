@@ -16,17 +16,20 @@ public class GAJudicialWrittenRepresentations {
 
     private GAJudgeWrittenRepresentationsOptions writtenOption;
     private LocalDate writtenSequentailRepresentationsBy;
-    private String sequentialMustRespondWithin1;
+    private String sequentialMustRespondWithin;
     private LocalDate writtenConcurrentRepresentationsBy;
 
     @JsonCreator
-    GAJudicialWrittenRepresentations(@JsonProperty("makeAnOrderForWrittenRepresentations") GAJudgeWrittenRepresentationsOptions writtenOption,
-                          @JsonProperty("writtenSequentailRepresentationsBy") LocalDate writtenSequentailRepresentationsBy,
-                          @JsonProperty("sequentialMustRespondWithin1") String sequentialMustRespondWithin1,
-                          @JsonProperty("writtenConcurrentRepresentationsBy") LocalDate writtenConcurrentRepresentationsBy) {
+    GAJudicialWrittenRepresentations(@JsonProperty("makeAnOrderForWrittenRepresentations")
+                                         GAJudgeWrittenRepresentationsOptions writtenOption,
+                                     @JsonProperty("writtenSequentailRepresentationsBy")
+                                         LocalDate writtenSequentailRepresentationsBy,
+                                     @JsonProperty("sequentialMustRespondWithin") String sequentialMustRespondWithin,
+                                     @JsonProperty("writtenConcurrentRepresentationsBy")
+                                         LocalDate writtenConcurrentRepresentationsBy) {
         this.writtenOption = writtenOption;
         this.writtenSequentailRepresentationsBy = writtenSequentailRepresentationsBy;
-        this.sequentialMustRespondWithin1 = sequentialMustRespondWithin1;
+        this.sequentialMustRespondWithin = sequentialMustRespondWithin;
         this.writtenConcurrentRepresentationsBy = writtenConcurrentRepresentationsBy;
     }
 }
