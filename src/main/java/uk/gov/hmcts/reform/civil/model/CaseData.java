@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -72,6 +73,7 @@ public class CaseData implements MappableObject {
     private final List<Element<GARespondentResponse>> respondentsResponses;
     private final YesOrNo applicationIsCloaked;
     private final GAJudicialMakeAnOrder judicialDecisionMakeOrder;
+    private final GAJudgesHearingListGAspec judicialListForHearing;
     private final String applicantPartyName;
     private final String claimant1PartyName;
     private final String claimant2PartyName;

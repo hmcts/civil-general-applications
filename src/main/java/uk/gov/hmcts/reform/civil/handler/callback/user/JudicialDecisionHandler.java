@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import java.time.LocalDate;
@@ -63,9 +64,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
+
+        GAJudgesHearingListGAspec.GAJudgesHearingListGAspecBuilder gaJudgesHearingListGAspecBuilder;
+        if (caseData.getJudicialDecisionMakeOrder() != null) {
+            gaJudgesHearingListGAspecBuilder = caseData.getJudicialListForHearing().toBuilder();
+        } else {
+            gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
+        }
+
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
+
+        caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
+                                                      .karthickTesting("this is dummy text").build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
