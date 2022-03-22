@@ -188,6 +188,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
                     confirmationHeader = "# You have requested a response";
+                    //TODO: The LocalDate.now().plusDays(7) is a temporary evaluation. This date will be populated
+                    //later based on the deadline calculator
                     body = "<br/><p>The parties will be notified. They will need to provide a response by "
                             + DATE_FORMATTER_SUBMIT_CALLBACK.format(LocalDate.now().plusDays(7))
                             + "</p>";
