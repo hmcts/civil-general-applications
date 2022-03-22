@@ -5,25 +5,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class GAJudgesHearingListGAspec {
 
-    private String judgeHearingListText;
-    private String judgeHearingCourtLocationText;
-    private String judgeHearingTimeEstimateText;
-    private String judgeHearingSupportReqText;
+    private YesOrNo sameHearingPrefByAppAndResp;
+    private YesOrNo sameCourtLocationPrefByAppAndResp;
+    private YesOrNo sameHearingTimeEstByAppAndResp;
+    private YesOrNo sameHearingSupportReqByAppAndResp;
 
     @JsonCreator
-    GAJudgesHearingListGAspec(@JsonProperty("judgeHearingListText") String judgeHearingListText,
-                          @JsonProperty("judgeHearingCourtLocationText") String judgeHearingCourtLocationText,
-                          @JsonProperty("judgeHearingTimeEstimateText") String judgeHearingTimeEstimateText,
-                          @JsonProperty("judgeHearingSupportReqText") String judgeHearingSupportReqText) {
-        this.judgeHearingListText = judgeHearingListText;
-        this.judgeHearingCourtLocationText = judgeHearingCourtLocationText;
-        this.judgeHearingTimeEstimateText = judgeHearingTimeEstimateText;
-        this.judgeHearingSupportReqText = judgeHearingSupportReqText;
+    GAJudgesHearingListGAspec(@JsonProperty("sameHearingPrefByAppAndResp") YesOrNo sameHearingPrefByAppAndResp,
+                              @JsonProperty("sameCourtLocationPrefByAppAndResp")
+                                  YesOrNo sameCourtLocationPrefByAppAndResp,
+                              @JsonProperty("sameHearingSupportReqByAppAndResp")
+                                  YesOrNo sameHearingSupportReqByAppAndResp,
+                              @JsonProperty("sameHearingTimeEstByAppAndResp") YesOrNo sameHearingTimeEstByAppAndResp) {
+        this.sameHearingPrefByAppAndResp = sameHearingPrefByAppAndResp;
+        this.sameCourtLocationPrefByAppAndResp = sameCourtLocationPrefByAppAndResp;
+        this.sameHearingTimeEstByAppAndResp = sameHearingTimeEstByAppAndResp;
+        this.sameHearingSupportReqByAppAndResp = sameHearingSupportReqByAppAndResp;
     }
 }
