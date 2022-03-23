@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -79,7 +80,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGeneralOrderHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
 
-        YesOrNo isAppandRespsameHearingPref = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().getDisplayedValue()
@@ -95,10 +96,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                   .sameHearingPrefByAppAndResp(isAppandRespsameHearingPref)
+                                                   .sameHearingPrefByAppAndResp(isAppAndRespSameHearingPref)
                                                    .build());
 
-        YesOrNo isAppandRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
@@ -106,7 +107,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .getHearingPreferredLocation().getValue()))
             ? YES : NO;
 
-        YesOrNo isAppandRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getHearingDetailsResp().getHearingDuration().getDisplayedValue()
@@ -114,17 +115,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .getHearingDuration().getDisplayedValue()))
             ? YES : NO;
 
-        YesOrNo isAppandRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && !caseData.getHearingDetailsResp().getSupportRequirement().isEmpty()
-            &&  checkIfAppAndRespHaveSameSupportReq(caseData))
+            && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                   .sameCourtLocationPrefByAppAndResp(isAppandRespSameCourtLocPref)
-                                                   .sameCourtLocationPrefByAppAndResp(isAppandRespSameTimeEst)
-                                                   .sameHearingSupportReqByAppAndResp(isAppandRespSameSupportReq)
+                                                   .sameCourtLocationPrefByAppAndResp(isAppAndRespSameCourtLocPref)
+                                                   .sameHearingTimeEstByAppAndResp(isAppAndRespSameTimeEst)
+                                                   .sameHearingSupportReqByAppAndResp(isAppAndRespSameSupportReq)
                                                    .build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -133,10 +134,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
-        ArrayList applicantSupportReq = new ArrayList<>(caseData.getHearingDetailsResp().getSupportRequirement().stream().collect(Collectors.toList()));
-        ArrayList respondantSupportReq = new ArrayList<>(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement().stream().collect(
-            Collectors.toList()));
-                return applicantSupportReq.equals(respondantSupportReq);
+        ArrayList<GAHearingSupportRequirements> applicantSupportReq
+            = new ArrayList<>(caseData.getHearingDetailsResp().getSupportRequirement()
+                                .stream().collect(Collectors.toList()));
+        ArrayList<GAHearingSupportRequirements> respondentSupportReq
+            = new ArrayList<>(caseData.getRespondentsResponses()
+                                  .stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement()
+                                  .stream().collect(Collectors.toList()));
+        Collections.sort(respondentSupportReq);
+        Collections.sort(applicantSupportReq);
+        return applicantSupportReq.equals(respondentSupportReq);
     }
 
     private String getJudgeRecitalPrepopulatedText(CaseData caseData) {
