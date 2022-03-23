@@ -10,19 +10,27 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +38,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
 @SpringBootTest(classes = {
@@ -54,6 +63,25 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(JUDGE_MAKES_DECISION);
+    }
+
+    @Test
+    void testAboutToStartForHearingGeneralOrderRecital() {
+        String expectedRecitalText = "Upon the "
+            + "application of %s dated %s and upon considering the information provided by the parties";
+        String expectedDirectionText = "A person who was not notified of the application"
+            + "before this order was made may apply to have the order set aside or varied.\n"
+            + "Any application under this paragraph must be made within 7 days after "
+            + "notification of the order.";
+        CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(), ABOUT_TO_START);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        assertThat(response).isNotNull();
+        GAJudgesHearingListGAspec hearingOrder = getJudicialHearingOrder(response);
+
+        assertThat(hearingOrder.getSameHearingPrefByAppAndResp()).isEqualTo(YES);
+        assertThat(hearingOrder.getSameHearingTimeEstByAppAndResp()).isEqualTo(YES);
+        assertThat(hearingOrder.getSameHearingSupportReqByAppAndResp()).isEqualTo(YES);
     }
 
     @Test
@@ -127,6 +155,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return responseCaseData.getJudicialDecisionMakeOrder();
     }
 
+    private GAJudgesHearingListGAspec getJudicialHearingOrder(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getJudicialListForHearing();
+    }
+
     private YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getApplicationIsCloaked();
@@ -157,6 +190,61 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                         .build())
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
+    }
+
+    private CaseData getHearingOrderApplnAndResp() {
+
+        List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
+        applSupportReq
+            .add(GAHearingSupportRequirements.HEARING_LOOPS);
+        applSupportReq
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
+        respSupportReq
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+        respSupportReq
+            .add(GAHearingSupportRequirements.HEARING_LOOPS);
+
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .supportRequirement(respSupportReq)
+                                                   .build()).build()
+        ));
+
+        List<GeneralApplicationTypes> types = List.of(
+            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        return CaseData.builder()
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .hearingDetailsResp(GAHearingDetails.builder().hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .hearingDuration(GAHearingDuration.HOUR_1)
+                                    .supportRequirement(applSupportReq)
+                                    .build())
+            .respondentsResponses(respondentsResponses)
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .createdDate(LocalDateTime.of(2022, 01, 15, 0, 0, 0))
+            .applicantPartyName("ApplicantPartyName")
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
     }
 
     private CaseData getCloakedApplication() {

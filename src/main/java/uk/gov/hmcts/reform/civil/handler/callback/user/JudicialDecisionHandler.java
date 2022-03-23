@@ -99,17 +99,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .sameHearingPrefByAppAndResp(isAppAndRespSameHearingPref)
                                                    .build());
 
-        YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
+        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
+        Uncomment the below code once Hearing Preferred Location is implemented.*/
+
+        /*YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp() != null
             && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
             .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
                         .getHearingPreferredLocation().getValue()))
-            ? YES : NO;
+            ? YES : NO;*/
 
         YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp() != null
             && caseData.getHearingDetailsResp().getHearingDuration().getDisplayedValue()
             .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
                         .getHearingDuration().getDisplayedValue()))
@@ -118,12 +123,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
-            && !caseData.getHearingDetailsResp().getSupportRequirement().isEmpty()
+            && caseData.getHearingDetailsResp() != null
+            && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                   .sameCourtLocationPrefByAppAndResp(isAppAndRespSameCourtLocPref)
+                                                   .sameCourtLocationPrefByAppAndResp(YES)
                                                    .sameHearingTimeEstByAppAndResp(isAppAndRespSameTimeEst)
                                                    .sameHearingSupportReqByAppAndResp(isAppAndRespSameSupportReq)
                                                    .build());
@@ -134,16 +140,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
-        ArrayList<GAHearingSupportRequirements> applicantSupportReq
-            = new ArrayList<>(caseData.getHearingDetailsResp().getSupportRequirement()
-                                .stream().collect(Collectors.toList()));
-        ArrayList<GAHearingSupportRequirements> respondentSupportReq
-            = new ArrayList<>(caseData.getRespondentsResponses()
-                                  .stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement()
-                                  .stream().collect(Collectors.toList()));
-        Collections.sort(respondentSupportReq);
-        Collections.sort(applicantSupportReq);
-        return applicantSupportReq.equals(respondentSupportReq);
+
+        if (caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement() != null) {
+            ArrayList<GAHearingSupportRequirements> applicantSupportReq
+                = new ArrayList<>(caseData.getHearingDetailsResp().getSupportRequirement()
+                                      .stream().collect(Collectors.toList()));
+            ArrayList<GAHearingSupportRequirements> respondentSupportReq
+                = new ArrayList<>(caseData.getRespondentsResponses()
+                                      .stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement()
+                                      .stream().collect(Collectors.toList()));
+            Collections.sort(respondentSupportReq);
+            Collections.sort(applicantSupportReq);
+            return applicantSupportReq.equals(respondentSupportReq);
+        }
+
+        return false;
     }
 
     private String getJudgeRecitalPrepopulatedText(CaseData caseData) {
