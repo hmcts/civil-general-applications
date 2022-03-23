@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -44,7 +43,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -145,7 +143,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
                     DATE_FORMATTER.format(LocalDate.now())));
             assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
-    }
+        }
 
         private GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
@@ -305,6 +303,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getErrors()).isEmpty();
 
         }
+
         public CaseData getSequentialWrittenRepresentationDecision(LocalDate writtenRepresentationDate) {
 
             GAJudicialWrittenRepresentations.GAJudicialWrittenRepresentationsBuilder
@@ -331,7 +330,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
     }
-
 
     @Nested
     class MidEventForRespondToDirectionsDateValidity {
@@ -363,7 +361,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
         }
-
 
         @Test
         void shouldReturnErrors_whenUrgencyConsiderationDateIsInPastForUrgentApplication() {
