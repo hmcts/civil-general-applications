@@ -7,6 +7,8 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
+def generalappCCDBranch = "master"
+
 AppPipelineConfig pipelineConf
 
 static Map<String, Object> secret(String secretName, String envVariable) {
@@ -73,9 +75,9 @@ withPipeline(type, product, component) {
                 try {
                     sh '''
             set -e
-    
+
             git remote set-url origin $(git config remote.origin.url | sed "s/github.com/${BEARER_TOKEN}@github.com/g")
-    
+
             git fetch origin demo:demo
             git push --force origin HEAD:demo
           '''
@@ -90,17 +92,18 @@ withPipeline(type, product, component) {
         validateRpaContract()
         sh """
           eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
-          #./bin/add-roles.sh
-          #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
-          #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
-          #./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          #./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          #./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          #./bin/import-bpmn-diagram.sh .
+          ./bin/add-roles.sh
+          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
+          ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
+          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
+          ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*LRspec.json"
+          ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*LRspec.json"
+          ./bin/import-bpmn-diagram.sh .
         """
 
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
     }
 
     after('smoketest:preview') {
@@ -113,6 +116,7 @@ withPipeline(type, product, component) {
         env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
         env.CIVIL_SERVICE_URL="http://civil-service-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-apps-ccd-definition-pr-${CHANGE_ID}.service.core-compute-preview.internal"
     }
 
     after('functionalTest:preview') {
@@ -123,13 +127,13 @@ withPipeline(type, product, component) {
         validateRpaContract()
         sh """
           eval \$(./bin/variables/load-staging-environment-variables.sh)
-          #./bin/add-roles.sh
-          #./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
-          #./bin/pull-latest-release-asset.sh civil-general-apps-ccd-definition civil-general-apps-ccd-definition.zip
-          #./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          #./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          #./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
-          #./bin/import-bpmn-diagram.sh .
+          ./bin/add-roles.sh
+          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
+          ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
+          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
+          ./bin/import-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json,*LRspec.json"
+          ./bin/import-bpmn-diagram.sh .
         """
 
         env.URL="https://civil-ccd-xui-staging.aat.platform.hmcts.net"
