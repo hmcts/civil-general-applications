@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -25,8 +27,10 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +38,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -49,17 +55,19 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.service.JudicialDecisionService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
 
-@SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
 @SpringBootTest(classes = {
         JudicialDecisionHandler.class,
-        JacksonAutoConfiguration.class,
-},
+        JacksonAutoConfiguration.class},
         properties = {"reference.database.enabled=false"})
 public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     JudicialDecisionHandler handler;
+
+    @MockBean
+    JudicialDecisionService service;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -135,7 +143,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(expectedRecitalText,
                     DATE_FORMATTER.format(LocalDate.now())));
             assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
-    }
+        }
 
         private GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
@@ -233,6 +241,97 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Nested
+    class MidEventForWrittenRepresentation {
+
+        private static final String VALIDATE_WRITTEN_REPRESENTATION_PAGE = "ga-validate-written-representation-date";
+
+        @Test
+        void shouldReturnErrors_whenSequentialWrittenRepresentationDateIsInPast() {
+            CallbackParams params = callbackParamsOf(
+                    getSequentialWrittenRepresentationDecision(LocalDate.now().minusDays(1)),
+                    MID,
+                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+            );
+            when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isNotEmpty();
+            assertThat(response.getErrors()).contains(WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST);
+        }
+
+        @Test
+        void shouldReturnErrors_whenConcurrentWrittenRepresentationDateIsInPast() {
+            CallbackParams params = callbackParamsOf(
+                    getConcurrentWrittenRepresentationDecision(LocalDate.now().minusDays(1)),
+                    MID,
+                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+            );
+            when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isNotEmpty();
+            assertThat(response.getErrors()).contains(WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST);
+        }
+
+        @Test
+        void shouldNotReturnErrors_whenSequentialWrittenRepresentationDateIsInFuture() {
+            CallbackParams params = callbackParamsOf(
+                    getSequentialWrittenRepresentationDecision(LocalDate.now()),
+                    MID,
+                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+            );
+            when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldNotReturnErrors_whenConcurrentWrittenRepresentationDateIsInFuture() {
+            CallbackParams params = callbackParamsOf(
+                    getConcurrentWrittenRepresentationDecision(LocalDate.now()),
+                    MID,
+                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+            );
+            when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isEmpty();
+
+        }
+
+        public CaseData getSequentialWrittenRepresentationDecision(LocalDate writtenRepresentationDate) {
+
+            GAJudicialWrittenRepresentations.GAJudicialWrittenRepresentationsBuilder
+                    writtenRepresentationBuilder = GAJudicialWrittenRepresentations.builder();
+            writtenRepresentationBuilder.writtenOption(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS)
+                    .writtenSequentailRepresentationsBy(writtenRepresentationDate)
+                    .writtenConcurrentRepresentationsBy(null);
+
+            GAJudicialWrittenRepresentations gaJudicialWrittenRepresentations = writtenRepresentationBuilder.build();
+            return CaseData.builder()
+                    .judicialDecisionMakeAnOrderForWrittenRepresentations(gaJudicialWrittenRepresentations).build();
+        }
+
+        public CaseData getConcurrentWrittenRepresentationDecision(LocalDate writtenRepresentationDate) {
+            GAJudicialWrittenRepresentations.GAJudicialWrittenRepresentationsBuilder
+                    writtenRepresentationBuilder = GAJudicialWrittenRepresentations.builder();
+            writtenRepresentationBuilder.writtenOption(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS)
+                    .writtenConcurrentRepresentationsBy(writtenRepresentationDate)
+                    .writtenSequentailRepresentationsBy(null);
+
+            GAJudicialWrittenRepresentations gaJudicialWrittenRepresentations = writtenRepresentationBuilder.build();
+            return CaseData.builder()
+                    .judicialDecisionMakeAnOrderForWrittenRepresentations(gaJudicialWrittenRepresentations).build();
+        }
+
+    }
+
+    @Nested
     class MidEventForRespondToDirectionsDateValidity {
 
         private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
@@ -262,7 +361,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
         }
-
 
         @Test
         void shouldReturnErrors_whenUrgencyConsiderationDateIsInPastForUrgentApplication() {

@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +38,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
-@SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
@@ -48,6 +49,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
             + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
@@ -55,6 +57,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
+    private static final String DIRECTIONS_IN_RELATION_TO_HEARING_TEXT = "A person who was not notified of the "
+        + "application before this order was made may apply to have this order set aside or varied. "
+        + "Any application under this paragraph must be made within 7 days after notification of the order.";
+
+    private final JudicialDecisionService judicialDecisionService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
             + " should be given, is required.";
     public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
@@ -72,8 +79,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
                 callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
                 callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
+                callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
                 callbackKey(ABOUT_TO_SUBMIT), this::emptySubmittedCallbackResponse,
                 callbackKey(SUBMITTED), this::buildConfirmation);
+
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -95,6 +104,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
+
+        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+            .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
@@ -202,6 +214,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .confirmationHeader(confirmationHeader)
                 .confirmationBody(body)
                 .build();
+    }
+
+    private CallbackResponse gaValidateWrittenRepresentationsDate(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate =
+            caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
+        List<String> errors = judicialWrittenRepresentationsDate != null
+            ? judicialDecisionService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
+            : Collections.emptyList();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
+            .build();
     }
 
     @Override
