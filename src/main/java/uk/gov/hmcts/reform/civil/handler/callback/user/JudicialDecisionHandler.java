@@ -84,7 +84,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
                         .getHearingPreferencesPreferredType().getDisplayedValue()))
             ? YES : NO;
 
@@ -114,16 +114,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp() != null
             && caseData.getHearingDetailsResp().getHearingDuration().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
                         .getHearingDuration().getDisplayedValue()))
             ? YES : NO;
 
         YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp() != null
             && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
@@ -141,16 +139,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
 
-        if (caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement() != null) {
+        if (caseData.getRespondentsResponses().stream().iterator().next().getValue()
+            .getGaHearingDetails().getSupportRequirement() != null) {
+
             ArrayList<GAHearingSupportRequirements> applicantSupportReq
-                = new ArrayList<>(caseData.getHearingDetailsResp().getSupportRequirement()
-                                      .stream().collect(Collectors.toList()));
+                = caseData.getHearingDetailsResp().getSupportRequirement().stream().sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
             ArrayList<GAHearingSupportRequirements> respondentSupportReq
-                = new ArrayList<>(caseData.getRespondentsResponses()
-                                      .stream().findFirst().get().getValue().getGaHearingDetails().getSupportRequirement()
-                                      .stream().collect(Collectors.toList()));
-            Collections.sort(respondentSupportReq);
-            Collections.sort(applicantSupportReq);
+                = caseData.getRespondentsResponses().stream().iterator().next().getValue()
+                .getGaHearingDetails().getSupportRequirement().stream().sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
             return applicantSupportReq.equals(respondentSupportReq);
         }
 
