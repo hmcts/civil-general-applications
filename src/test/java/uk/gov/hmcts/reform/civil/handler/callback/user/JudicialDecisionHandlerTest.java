@@ -67,12 +67,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void testAboutToStartForHearingGeneralOrderRecital() {
-        String expectedRecitalText = "Upon the "
-            + "application of %s dated %s and upon considering the information provided by the parties";
-        String expectedDirectionText = "A person who was not notified of the application"
-            + "before this order was made may apply to have the order set aside or varied.\n"
-            + "Any application under this paragraph must be made within 7 days after "
-            + "notification of the order.";
         CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(), ABOUT_TO_START);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
