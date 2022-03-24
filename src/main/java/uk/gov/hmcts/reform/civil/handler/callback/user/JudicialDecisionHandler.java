@@ -57,7 +57,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_DIRECTIONS_TEXT = "A person who was not notified of the application"
+    private static final String JUDICIAL_HEARING_DIRECTIONS_TEXT = "A person who was not notified of the application "
         + "before this order was made may apply to have the order set aside or varied.\n"
         + "Any application under this paragraph must be made within 7 days after "
         + "notification of the order.";
@@ -118,7 +118,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
-            .judicialGeneralOrderHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
+            .judicialGOHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
 
         YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
@@ -210,7 +210,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData) {
         return format(
             JUDICIAL_HEARING_RECITAL_TEXT,
-            (caseData.getApplicantPartyName() == null ? "party" : caseData.getApplicantPartyName()),
+            (caseData.getParentClaimantIsApplicant() == null
+                || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant",
             DATE_FORMATTER.format(caseData.getCreatedDate()));
     }
 
