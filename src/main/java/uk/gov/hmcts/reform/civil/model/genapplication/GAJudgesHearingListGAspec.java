@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 
+import java.util.List;
+
 @Setter
 @Data
 @Builder(toBuilder = true)
@@ -22,7 +24,7 @@ public class GAJudgesHearingListGAspec {
 
     private GAJudicialHearingType hearingPreferencesPreferredType;
     private GAHearingDuration judicialTimeEstimate;
-    private SupportRequirements judicialSupportRequirement;
+    private List<SupportRequirements> judicialSupportRequirement;
     private String addlnInfoCourtStaff;
 
     @JsonCreator
@@ -36,7 +38,7 @@ public class GAJudgesHearingListGAspec {
                                   GAJudicialHearingType hearingPreferencesPreferredType,
                               @JsonProperty("judicialTimeEstimate") GAHearingDuration judicialTimeEstimate,
                               @JsonProperty("judicialSupportRequirement")
-                                  SupportRequirements judicialSupportRequirement,
+                                  List<SupportRequirements> judicialSupportRequirement,
                               @JsonProperty("addlnInfoCourtStaff") String addlnInfoCourtStaff) {
 
         this.sameHearingPrefByAppAndResp = sameHearingPrefByAppAndResp;
