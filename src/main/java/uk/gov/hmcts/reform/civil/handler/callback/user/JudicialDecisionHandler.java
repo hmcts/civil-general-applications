@@ -49,6 +49,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
+    private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -61,6 +62,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "before this order was made may apply to have the order set aside or varied.\n"
         + "Any application under this paragraph must be made within 7 days after "
         + "notification of the order.";
+    private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
+    private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
             + "[Insert Draft Order from application]\n\n"
             + "A person who was not notified of the application before this order was made may apply to have the "
@@ -89,6 +92,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
                 callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
                 callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
+                callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
                 callbackKey(ABOUT_TO_SUBMIT), this::emptySubmittedCallbackResponse,
                 callbackKey(SUBMITTED), this::buildConfirmation);
 
@@ -320,6 +324,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
             .build();
+    }
+
+    private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
+            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private String getJudgeHearingPrePopulatedText(CaseData caseData) {
+        return format(JUDICIAL_HEARING_TYPE,
+                      caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue());
+    }
+
+    private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
+        return format(
+            JUDICIAL_TIME_ESTIMATE, caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue());
     }
 
     @Override
