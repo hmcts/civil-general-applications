@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -46,12 +49,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
+    private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
             + "application of %s dated %s and upon considering the information provided by the parties";
+    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
+        + "application of %s dated %s and upon considering the information provided by the parties";
+    private static final String JUDICIAL_HEARING_DIRECTIONS_TEXT = "A person who was not notified of the application "
+        + "before this order was made may apply to have the order set aside or varied.\n"
+        + "Any application under this paragraph must be made within 7 days after "
+        + "notification of the order.";
+    private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
+    private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
             + "[Insert Draft Order from application]\n\n"
             + "A person who was not notified of the application before this order was made may apply to have the "
@@ -80,6 +92,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
                 callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
                 callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
+                callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
                 callbackKey(ABOUT_TO_SUBMIT), this::emptySubmittedCallbackResponse,
                 callbackKey(SUBMITTED), this::buildConfirmation);
 
@@ -108,9 +121,84 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
 
+        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
+            .judicialGOHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
+
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().getDisplayedValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingPreferencesPreferredType().getDisplayedValue()))
+            ? YES : NO;
+
+        GAJudgesHearingListGAspec.GAJudgesHearingListGAspecBuilder gaJudgesHearingListGAspecBuilder;
+        if (caseData.getJudicialListForHearing() != null) {
+            gaJudgesHearingListGAspecBuilder = caseData.getJudicialListForHearing().toBuilder();
+        } else {
+            gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
+        }
+
+        caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
+                                                   .sameHearingPrefByAppAndResp(isAppAndRespSameHearingPref)
+                                                   .build());
+
+        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
+        Uncomment the below code once Hearing Preferred Location is implemented.*/
+
+        /*YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp() != null
+            && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
+            .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
+                        .getHearingPreferredLocation().getValue()))
+            ? YES : NO;*/
+
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp().getHearingDuration().getDisplayedValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingDuration().getDisplayedValue()))
+            ? YES : NO;
+
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp().getSupportRequirement() != null
+            && checkIfAppAndRespHaveSameSupportReq(caseData))
+            ? YES : NO;
+
+        caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
+                                                   .sameCourtLocationPrefByAppAndResp(YES)
+                                                   .sameHearingTimeEstByAppAndResp(isAppAndRespSameTimeEst)
+                                                   .sameHearingSupportReqByAppAndResp(isAppAndRespSameSupportReq)
+                                                   .build());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+    private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
+
+        if (caseData.getRespondentsResponses().stream().iterator().next().getValue()
+            .getGaHearingDetails().getSupportRequirement() != null) {
+
+            ArrayList<GAHearingSupportRequirements> applicantSupportReq
+                = caseData.getHearingDetailsResp().getSupportRequirement().stream().sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+            ArrayList<GAHearingSupportRequirements> respondentSupportReq
+                = caseData.getRespondentsResponses().stream().iterator().next().getValue()
+                .getGaHearingDetails().getSupportRequirement().stream().sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+            return applicantSupportReq.equals(respondentSupportReq);
+        }
+
+        return false;
     }
 
     private String getJudgeRecitalPrepopulatedText(CaseData caseData) {
@@ -121,6 +209,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 DATE_FORMATTER.format(caseData.getCreatedDate()),
                 caseData.getApplicantPartyName(),
                 DATE_FORMATTER.format(LocalDate.now()));
+    }
+
+    private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData) {
+        return format(
+            JUDICIAL_HEARING_RECITAL_TEXT,
+            (caseData.getParentClaimantIsApplicant() == null
+                || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant",
+            DATE_FORMATTER.format(caseData.getCreatedDate()));
     }
 
     private CallbackResponse gaValidateMakeDecisionScreen(CallbackParams callbackParams) {
@@ -227,6 +324,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
             .build();
+    }
+
+    private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
+            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private String getJudgeHearingPrePopulatedText(CaseData caseData) {
+        return format(JUDICIAL_HEARING_TYPE,
+                      caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue());
+    }
+
+    private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
+        return format(
+            JUDICIAL_TIME_ESTIMATE, caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue());
     }
 
     @Override
