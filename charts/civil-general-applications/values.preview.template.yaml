@@ -36,7 +36,7 @@ java:
         - cross-access-user-password
         - prd-admin-user-username
         - prd-admin-user-password
-        - AppInsightsInstrumentationKey
+        #- AppInsightsInstrumentationKey needs to be replaced with GA specific key
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
@@ -81,7 +81,7 @@ civil-service:
           - cross-access-user-password
           - prd-admin-user-username
           - prd-admin-user-password
-          - AppInsightsInstrumentationKey
+          #- AppInsightsInstrumentationKey needs to be replaced with GA specific key
           - docmosis-api-key
           - gov-notify-api-key
           - sendgrid-api-key
@@ -201,6 +201,7 @@ ccd:
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-serv
       keyVaults: []
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
   am-role-assignment-service:
@@ -236,6 +237,7 @@ camunda-bpm:
     disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
     ingressHost: camunda-${SERVICE_FQDN}
+    image: 'hmctsprivate.azurecr.io/camunda/bpm:staging-5dfb772-20220310152711'
     environment:
       CAMUNDA_API_AUTH_ENABLED: false
       CAMUNDA_DB_HOST: ${SERVICE_NAME}-postgresql
