@@ -12,6 +12,7 @@ cd ..
 
 #Copy ccd definition files  to civil-ccd-def which contians bpmn files
 cp -r ./civil-general-apps-ccd-definition/ga-ccd-definition .
+cp -r ./civil-general-apps-ccd-definition/e2e .
 rm -rf ./civil-general-apps-ccd-definition
 
 
