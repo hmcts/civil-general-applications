@@ -220,27 +220,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getNotifiedApplication() {
-            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
-            applSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-            applSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-
-            List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
-            respSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-            respSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-
-            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-            respondentsResponses
-                .add(element(GARespondentResponse.builder()
-                                 .gaHearingDetails(GAHearingDetails.builder()
-                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                       .hearingDuration(GAHearingDuration.HOUR_1)
-                                                       .supportRequirement(respSupportReq)
-                                                       .build()).build()
-                ));
 
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -249,11 +228,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                     .applicantPartyName("ApplicantPartyName")
-                    .respondentsResponses(respondentsResponses)
+                    .respondentsResponses(getRespodentResponses())
                     .generalAppHearingDetails(GAHearingDetails.builder()
                                               .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                               .hearingDuration(GAHearingDuration.HOUR_1)
-                                              .supportRequirement(applSupportReq)
+                                              .supportRequirement(getApplicantResponses())
                                               .build())
                     .generalAppRespondent1Representative(
                             GARespondentRepresentative.builder()
@@ -276,28 +255,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData getHearingOrderApplnAndResp() {
 
-            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
-            applSupportReq
-                    .add(GAHearingSupportRequirements.HEARING_LOOPS);
-            applSupportReq
-                    .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-
-            List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
-            respSupportReq
-                    .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-            respSupportReq
-                    .add(GAHearingSupportRequirements.HEARING_LOOPS);
-
-            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-            respondentsResponses
-                    .add(element(GARespondentResponse.builder()
-                            .gaHearingDetails(GAHearingDetails.builder()
-                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                    .hearingDuration(GAHearingDuration.HOUR_1)
-                                    .supportRequirement(respSupportReq)
-                                    .build()).build()
-                    ));
-
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
@@ -305,9 +262,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .hearingDetailsResp(GAHearingDetails.builder()
                             .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                             .hearingDuration(GAHearingDuration.HOUR_1)
-                            .supportRequirement(applSupportReq)
+                            .supportRequirement(getApplicantResponses())
                             .build())
-                    .respondentsResponses(respondentsResponses)
+                    .respondentsResponses(getRespodentResponses())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                     .applicantPartyName("ApplicantPartyName")
@@ -318,7 +275,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .generalAppHearingDetails(GAHearingDetails.builder()
                                         .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                         .hearingDuration(GAHearingDuration.HOUR_1)
-                                        .supportRequirement(applSupportReq)
+                                        .supportRequirement(getApplicantResponses())
                                         .build())
                     .generalAppType(
                             GAApplicationType
@@ -337,38 +294,16 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData getCloakedApplication() {
 
-            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
-            applSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-            applSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-
-            List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
-            respSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-            respSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-
-            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-            respondentsResponses
-                .add(element(GARespondentResponse.builder()
-                                 .gaHearingDetails(GAHearingDetails.builder()
-                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                       .hearingDuration(GAHearingDuration.HOUR_1)
-                                                       .supportRequirement(respSupportReq)
-                                                       .build()).build()
-                ));
-
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
                     .parentClaimantIsApplicant(YES)
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                    .respondentsResponses(respondentsResponses)
+                    .respondentsResponses(getRespodentResponses())
                     .generalAppHearingDetails(GAHearingDetails.builder()
                                               .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                               .hearingDuration(GAHearingDuration.HOUR_1)
-                                              .supportRequirement(applSupportReq)
+                                              .supportRequirement(getApplicantResponses())
                                               .build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                     .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
@@ -394,27 +329,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getApplicationByParentCaseDefendant() {
-            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
-            applSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-            applSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
 
-            List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
-            respSupportReq
-                .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-            respSupportReq
-                .add(GAHearingSupportRequirements.HEARING_LOOPS);
-
-            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-            respondentsResponses
-                .add(element(GARespondentResponse.builder()
-                                 .gaHearingDetails(GAHearingDetails.builder()
-                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                       .hearingDuration(GAHearingDuration.HOUR_1)
-                                                       .supportRequirement(respSupportReq)
-                                                       .build()).build()
-                ));
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
@@ -422,11 +337,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                     .applicantPartyName("ApplicantPartyName")
-                    .respondentsResponses(respondentsResponses)
+                    .respondentsResponses(getRespodentResponses())
                     .generalAppHearingDetails(GAHearingDetails.builder()
                                               .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                               .hearingDuration(GAHearingDuration.HOUR_1)
-                                              .supportRequirement(applSupportReq)
+                                              .supportRequirement(getApplicantResponses())
                                               .build())
                     .generalAppRespondent1Representative(
                             GARespondentRepresentative.builder()
@@ -907,28 +822,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     public CaseData getHearingOrderApplnAndResp() {
 
-        List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
-        applSupportReq
-            .add(GAHearingSupportRequirements.HEARING_LOOPS);
-        applSupportReq
-            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-
-        List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
-        respSupportReq
-            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-        respSupportReq
-            .add(GAHearingSupportRequirements.HEARING_LOOPS);
-
-        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-        respondentsResponses
-            .add(element(GARespondentResponse.builder()
-                             .gaHearingDetails(GAHearingDetails.builder()
-                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                   .hearingDuration(GAHearingDuration.HOUR_1)
-                                                   .supportRequirement(respSupportReq)
-                                                   .build()).build()
-            ));
-
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
@@ -939,16 +832,16 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                     .hearingDuration(GAHearingDuration.HOUR_1)
-                                    .supportRequirement(applSupportReq)
+                                    .supportRequirement(getApplicantResponses())
                                     .build())
-            .respondentsResponses(respondentsResponses)
+            .respondentsResponses(getRespodentResponses())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
             .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
             .applicantPartyName("ApplicantPartyName")
             .generalAppHearingDetails(GAHearingDetails.builder()
                                           .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                           .hearingDuration(GAHearingDuration.HOUR_1)
-                                          .supportRequirement(applSupportReq)
+                                          .supportRequirement(getApplicantResponses())
                                           .build())
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
@@ -967,6 +860,37 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                  .build())
             .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .build();
+    }
+
+    public List<Element<GARespondentResponse>> getRespodentResponses() {
+
+        List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
+        respSupportReq
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+        respSupportReq
+            .add(GAHearingSupportRequirements.HEARING_LOOPS);
+
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .supportRequirement(respSupportReq)
+                                                   .build()).build()
+            ));
+
+        return respondentsResponses;
+    }
+
+    public List<GAHearingSupportRequirements> getApplicantResponses() {
+        List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
+        applSupportReq
+            .add(GAHearingSupportRequirements.HEARING_LOOPS);
+        applSupportReq
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        return applSupportReq;
     }
 }
 
