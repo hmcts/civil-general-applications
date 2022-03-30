@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -370,9 +371,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
             .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue())
             : format(JUDICIAL_PREF_TYPE_TEXT_1, caseData.getGeneralAppHearingDetails()
-            .getHearingPreferencesPreferredType().getDisplayedValue(), caseData.getRespondentsResponses()
-                         .stream().iterator().next().getValue().getGaHearingDetails()
-            .getHearingPreferencesPreferredType().getDisplayedValue());
+            .getHearingPreferencesPreferredType().getDisplayedValue(), caseData.getRespondentsResponses() == null
+            ? StringUtils.EMPTY : caseData.getRespondentsResponses()
+            .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferencesPreferredType()
+            .getDisplayedValue());
     }
 
     private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
@@ -380,8 +382,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData.getGeneralAppHearingDetails()
             .getHearingDuration().getDisplayedValue())
             : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
-            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses()
-            .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue());
+            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ? StringUtils.EMPTY :
+            caseData.getRespondentsResponses()
+                .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue());
     }
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
@@ -390,10 +393,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
             = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
             .collect(Collectors.toList());
 
-        List<String> respondentSupportReq
-            = caseData.getRespondentsResponses().stream().iterator().next().getValue()
-            .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
-            .collect(Collectors.toList());
+        List<String> respondentSupportReq = Collections.emptyList();
+        if (caseData.getRespondentsResponses() != null) {
+            respondentSupportReq
+                = caseData.getRespondentsResponses().stream().iterator().next().getValue()
+                .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
+                .collect(Collectors.toList());
+        }
 
         String appSupportReq = String.join(", ", applicantSupportReq);
         String resSupportReq = String.join(", ", respondentSupportReq);
@@ -412,7 +418,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         /*return isAppAndRespSameCourtLocPref == YES ? format(JUDICIAL_COURT_LOC_TEXT_2, caseData
             .getGeneralAppHearingDetails().getHearingPreferredLocation())
             : format(JUDICIAL_COURT_LOC_TEXT_1, caseData.getGeneralAppHearingDetails()
-            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses()
+            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ?
+            StringUtils.EMPTY : caseData.getRespondentsResponses()
                          .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferredLocation());*/
     }
 
