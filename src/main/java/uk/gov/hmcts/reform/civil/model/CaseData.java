@@ -13,8 +13,11 @@ import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -72,11 +75,20 @@ public class CaseData implements MappableObject {
     private final List<Element<GARespondentResponse>> respondentsResponses;
     private final YesOrNo applicationIsCloaked;
     private final GAJudicialMakeAnOrder judicialDecisionMakeOrder;
+    private final GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
+    private final GAJudicialWrittenRepresentations judicialDecisionMakeAnOrderForWrittenRepresentations;
+    private final String judgeRecitalText;
+    private final String directionInRelationToHearingText;
+    private final GAJudgesHearingListGAspec judicialListForHearing;
     private final String applicantPartyName;
     private final String claimant1PartyName;
     private final String claimant2PartyName;
     private final String defendant1PartyName;
     private final String defendant2PartyName;
+    private final String judicialGeneralHearingOrderRecital;
+    private final String judicialGOHearingDirections;
+    private final String judicialHearingGeneralOrderHearingText;
+    private final String judicialGeneralOrderHearingEstimationTimeText;
 
     private final BusinessProcess businessProcess;
 
