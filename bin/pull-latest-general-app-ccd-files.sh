@@ -15,6 +15,7 @@ cp -r ./civil-general-apps-ccd-definition/ga-ccd-definition .
 cp -r ./civil-general-apps-ccd-definition/e2e .
 cp -r ./civil-general-apps-ccd-definition/package.json .
 cp -r ./civil-general-apps-ccd-definition/yarn.lock .
+echo *
 rm -rf ./civil-general-apps-ccd-definition
 
 
