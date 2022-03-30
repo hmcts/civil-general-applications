@@ -54,8 +54,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private static final String RESPONSE_MESSAGE = "# You have provided the requested info";
     private static final String JUDGES_REVIEW_MESSAGE =
         "<p> The application and your response will be reviewed by a Judge. </p>";
-    private static final String CONFIRMATION_SUMMARY = "<br/><p> In relation to the following application(s)"
-        + "%s: </p>"
+    private static final String CONFIRMATION_SUMMARY = "<br/><p> In relation to the following application(s): </p>"
         + "<ul> %s </ul>"
         + " %s ";
     public static final String TRIAL_DATE_FROM_REQUIRED = "Please enter the Date from if the trial has been fixed";
@@ -184,7 +183,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .collect(Collectors.joining());
         return format(
             CONFIRMATION_SUMMARY,
-            genAppTypes.size() == 1 ? "" : "s",
             appType,
             JUDGES_REVIEW_MESSAGE
         );
