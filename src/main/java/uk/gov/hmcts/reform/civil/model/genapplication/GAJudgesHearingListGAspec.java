@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 
@@ -17,39 +16,37 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class GAJudgesHearingListGAspec {
 
-    private YesOrNo sameHearingPrefByAppAndResp;
-    private YesOrNo sameCourtLocationPrefByAppAndResp;
-    private YesOrNo sameHearingTimeEstByAppAndResp;
-    private YesOrNo sameHearingSupportReqByAppAndResp;
-
     private GAJudicialHearingType hearingPreferencesPreferredType;
     private GAHearingDuration judicialTimeEstimate;
     private List<SupportRequirements> judicialSupportRequirement;
     private String addlnInfoCourtStaff;
 
+    private String judgeHearingTimeEstimateText1;
+    private String judgeHearingCourtLocationText1;
+    private String hearingPreferencesPreferredTypeLabel1;
+    private String judgeHearingSupportReqText1;
+
     @JsonCreator
-    GAJudgesHearingListGAspec(@JsonProperty("sameHearingPrefByAppAndResp") YesOrNo sameHearingPrefByAppAndResp,
-                              @JsonProperty("sameCourtLocationPrefByAppAndResp")
-                                  YesOrNo sameCourtLocationPrefByAppAndResp,
-                              @JsonProperty("sameHearingSupportReqByAppAndResp")
-                                  YesOrNo sameHearingSupportReqByAppAndResp,
-                              @JsonProperty("sameHearingTimeEstByAppAndResp") YesOrNo sameHearingTimeEstByAppAndResp,
-                              @JsonProperty("hearingPreferencesPreferredType")
+    GAJudgesHearingListGAspec(@JsonProperty("hearingPreferencesPreferredType")
                                   GAJudicialHearingType hearingPreferencesPreferredType,
                               @JsonProperty("judicialTimeEstimate") GAHearingDuration judicialTimeEstimate,
                               @JsonProperty("judicialSupportRequirement")
                                   List<SupportRequirements> judicialSupportRequirement,
-                              @JsonProperty("addlnInfoCourtStaff") String addlnInfoCourtStaff) {
-
-        this.sameHearingPrefByAppAndResp = sameHearingPrefByAppAndResp;
-        this.sameCourtLocationPrefByAppAndResp = sameCourtLocationPrefByAppAndResp;
-        this.sameHearingTimeEstByAppAndResp = sameHearingTimeEstByAppAndResp;
-        this.sameHearingSupportReqByAppAndResp = sameHearingSupportReqByAppAndResp;
+                              @JsonProperty("addlnInfoCourtStaff") String addlnInfoCourtStaff,
+                              @JsonProperty("judgeHearingTimeEstimateText1") String judgeHearingTimeEstimateText1,
+                              @JsonProperty("judgeHearingCourtLocationText1") String judgeHearingCourtLocationText1,
+                              @JsonProperty("hearingPreferencesPreferredTypeLabel1")
+                                  String hearingPreferencesPreferredTypeLabel1,
+                              @JsonProperty("judgeHearingSupportReqText1") String judgeHearingSupportReqText1) {
 
         this.hearingPreferencesPreferredType = hearingPreferencesPreferredType;
         this.judicialSupportRequirement = judicialSupportRequirement;
         this.judicialTimeEstimate = judicialTimeEstimate;
         this.addlnInfoCourtStaff = addlnInfoCourtStaff;
+        this.judgeHearingTimeEstimateText1 = judgeHearingTimeEstimateText1;
+        this.judgeHearingCourtLocationText1 = judgeHearingCourtLocationText1;
+        this.hearingPreferencesPreferredTypeLabel1 = hearingPreferencesPreferredTypeLabel1;
+        this.judgeHearingSupportReqText1 = judgeHearingSupportReqText1;
 
     }
 }

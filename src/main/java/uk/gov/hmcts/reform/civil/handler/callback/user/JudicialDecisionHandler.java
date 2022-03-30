@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -50,6 +51,23 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
+
+    private static final String JUDICIAL_TIME_EST_TEXT_1 = "Applicant estimates "
+        + "%s. Respondent estimates %s.";
+    private static final String JUDICIAL_TIME_EST_TEXT_2 = " Both applicant and respondent estimate it would take %s.";
+
+    /*private static final String JUDICIAL_COURT_LOC_TEXT_1 = "Applicant estimates "
+        + "%s. Respondent estimates %s.";
+    private static final String JUDICIAL_COURT_LOC_TEXT_2 = " Both applicant and respondent
+    estimate it would take %s.";*/
+
+    private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
+        + "%s. Respondent prefers %s.";
+    private static final String JUDICIAL_PREF_TYPE_TEXT_2 = " Both applicant and respondent prefer %s.";
+
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = "Applicant require "
+        + "%s. Respondent require %s.";
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_2 = " Both applicant and respondent require %s.";
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -127,7 +145,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().getDisplayedValue()
+            && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
             .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
                         .getHearingPreferencesPreferredType().getDisplayedValue()))
             ? YES : NO;
@@ -139,30 +157,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
         }
 
-        caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                   .sameHearingPrefByAppAndResp(isAppAndRespSameHearingPref)
-                                                   .build());
-
-        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
-        Uncomment the below code once Hearing Preferred Location is implemented.*/
-
-        /*YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp() != null
-            && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
-            .equals(caseData.getRespondentsResponses().stream().findFirst().get().getValue().getGaHearingDetails()
-                        .getHearingPreferredLocation().getValue()))
-            ? YES : NO;*/
-
-        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp().getHearingDuration().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingDuration().getDisplayedValue()))
-            ? YES : NO;
-
         YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
@@ -170,10 +164,34 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
+        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
+        Uncomment the below code once Hearing Preferred Location is implemented.*/
+
+        /*YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingPreferredLocation().getValue()))
+            ? YES : NO;*/
+
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingDuration().getDisplayedValue()))
+            ? YES : NO;
+
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
-                                                   .sameCourtLocationPrefByAppAndResp(YES)
-                                                   .sameHearingTimeEstByAppAndResp(isAppAndRespSameTimeEst)
-                                                   .sameHearingSupportReqByAppAndResp(isAppAndRespSameSupportReq)
+                                                   .hearingPreferencesPreferredTypeLabel1(
+                                                       getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
+                                                   .judgeHearingCourtLocationText1(
+                                                       getJudgeHearingCourtLoc())
+                                                   .judgeHearingTimeEstimateText1(
+                                                       getJudgeHearingTimeEst(caseData, isAppAndRespSameTimeEst))
+                                                   .judgeHearingSupportReqText1(
+                                                       getJudgeHearingSupportReq(caseData, isAppAndRespSameSupportReq))
                                                    .build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -187,7 +205,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .getGaHearingDetails().getSupportRequirement() != null) {
 
             ArrayList<GAHearingSupportRequirements> applicantSupportReq
-                = caseData.getHearingDetailsResp().getSupportRequirement().stream().sorted()
+                = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
 
             ArrayList<GAHearingSupportRequirements> respondentSupportReq
@@ -346,6 +364,63 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
         return format(
             JUDICIAL_TIME_ESTIMATE, caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue());
+    }
+
+    private String getJudgeHearingPrefType(CaseData caseData, YesOrNo isAppAndRespSameHearingPref) {
+
+        return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
+            .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue())
+            : format(JUDICIAL_PREF_TYPE_TEXT_1, caseData.getGeneralAppHearingDetails()
+            .getHearingPreferencesPreferredType().getDisplayedValue(), caseData.getRespondentsResponses() == null
+            ? StringUtils.EMPTY : caseData.getRespondentsResponses()
+            .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferencesPreferredType()
+            .getDisplayedValue());
+    }
+
+    private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
+
+        return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData.getGeneralAppHearingDetails()
+            .getHearingDuration().getDisplayedValue())
+            : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
+            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ? StringUtils.EMPTY :
+            caseData.getRespondentsResponses()
+                .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue());
+    }
+
+    private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
+
+        List<String> applicantSupportReq
+            = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
+            .collect(Collectors.toList());
+
+        List<String> respondentSupportReq = Collections.emptyList();
+        if (caseData.getRespondentsResponses() != null) {
+            respondentSupportReq
+                = caseData.getRespondentsResponses().stream().iterator().next().getValue()
+                .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
+                .collect(Collectors.toList());
+        }
+
+        String appSupportReq = String.join(", ", applicantSupportReq);
+        String resSupportReq = String.join(", ", respondentSupportReq);
+
+        return isAppAndRespSameSupportReq == YES ? format(JUDICIAL_SUPPORT_REQ_TEXT_2, appSupportReq)
+            : format(JUDICIAL_SUPPORT_REQ_TEXT_1, appSupportReq, resSupportReq);
+    }
+
+    private String getJudgeHearingCourtLoc() {
+
+        return "TO-DO";
+
+        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
+        Uncomment the below code once Hearing Preferred Location is implemented.*/
+
+        /*return isAppAndRespSameCourtLocPref == YES ? format(JUDICIAL_COURT_LOC_TEXT_2, caseData
+            .getGeneralAppHearingDetails().getHearingPreferredLocation())
+            : format(JUDICIAL_COURT_LOC_TEXT_1, caseData.getGeneralAppHearingDetails()
+            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ?
+            StringUtils.EMPTY : caseData.getRespondentsResponses()
+                         .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferredLocation());*/
     }
 
     @Override
