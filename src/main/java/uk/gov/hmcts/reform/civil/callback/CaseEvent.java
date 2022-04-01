@@ -32,6 +32,8 @@ public enum CaseEvent {
 
     NOTIFY_GENERAL_APPLICATION_RESPONDENT(CAMUNDA),
 
+    CREATE_PDF_DOCUMENT(CAMUNDA),
+
     UPDATE_CASE_WITH_GA_STATE(CAMUNDA);
 
     private final UserType userType;
