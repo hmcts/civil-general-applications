@@ -150,8 +150,9 @@ withPipeline(type, product, component) {
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
-    after('smoketest:aat') {
-    }
+  after('smoketest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+  }
 
     onMaster() {
     }
