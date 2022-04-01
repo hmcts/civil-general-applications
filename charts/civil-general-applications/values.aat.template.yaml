@@ -67,7 +67,7 @@ idam-pr:
   enabled: true
   redirect_uris:
     XUI:
-      - https://civil-ga-service-xui-staging.aat.platform.hmcts.net/oauth2/callback
+      - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
 
 xui-webapp:
   enabled: true
@@ -75,7 +75,7 @@ xui-webapp:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
     image: hmctspublic.azurecr.io/xui/webapp:latest
-    ingressHost: xui-${SERVICE_FQDN}
+    ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
     environment:
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
       HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
@@ -105,9 +105,9 @@ ccd:
       enabled: true
 
   global:
-    ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
-    ccdDataStoreUrl: http://civil-general-applications-data-store-staging-aat.service.core-compute-aat.internal
-    ccdDefinitionStoreUrl: http://civil-general-applications-definition-store-staging-aat.service.core-compute-aat.internal
+    ccdApiGatewayIngress: http://civil-ga-gateway-staging-aat.service.core-compute-aat.internal
+    ccdDataStoreUrl: http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
+    ccdDefinitionStoreUrl: http://civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
     ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
     dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
     idamApiUrl: https://idam-api.aat.platform.hmcts.net
@@ -122,7 +122,7 @@ ccd:
         IDAM_SERVICE_KEY: ${CCD_API_GATEWAY_S2S_SECRET}
         IDAM_OAUTH2_CLIENT_SECRET: ${CCD_API_GATEWAY_IDAM_CLIENT_SECRET}
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
-      ingressHost: gateway-${SERVICE_FQDN}
+      ingressHost: civil-ga-gateway-staging-aat.service.core-compute-aat.internal
       ingressIP: ${INGRESS_IP}
       keyVaults: []
   ccd-data-store-api:
@@ -141,8 +141,9 @@ ccd:
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
-      ingressHost: civil-general-applications-data-store-staging-aat.service.core-compute-aat.internal
+      ingressHost: civil-ga-data-store-staging-aat.service.core-compute-aat.internal
   am-role-assignment-service:
     java:
       keyVaults:
@@ -157,14 +158,14 @@ ccd:
         DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
       keyVaults: []
-      ingressHost: civil-general-applications-definition-store-staging-aat.service.core-compute-aat.internal
+      ingressHost: civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
   ccd-user-profile-api:
     java:
       imagePullPolicy: Always
       enviroment:
         USER_PROFILE_DB_HOST: ${SERVICE_NAME}-postgresql
       keyVaults: []
-      ingressHost: ccd-user-profile-api-${SERVICE_FQDN}
+      ingressHost: civil-ga-xui-staging-aat.service.core-compute-aat.internal
 
   postgresql:
     persistence:
@@ -175,7 +176,7 @@ camunda-bpm:
   java:
     disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
-    ingressHost: camunda-${SERVICE_FQDN}
+    ingressHost: civil-ga-camunda-staging-aat.service.core-compute-aat.internal
     environment:
       CAMUNDA_API_AUTH_ENABLED: false
       CAMUNDA_DB_HOST: ${SERVICE_NAME}-postgresql
