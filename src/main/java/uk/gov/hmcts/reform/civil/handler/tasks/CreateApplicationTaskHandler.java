@@ -71,7 +71,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
-            .collect(Collectors.joining(","));
+            .collect(Collectors.joining(", "));
         return GeneralApplicationsDetails.builder()
             .generalApplicationType(collect)
             .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
