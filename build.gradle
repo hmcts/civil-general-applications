@@ -312,7 +312,7 @@ dependencies {
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
 
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.58'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.0.17'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.0.20'
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
