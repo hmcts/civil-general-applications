@@ -48,20 +48,19 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Value("${civil.response-pack-url}")
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
-    private static final String CONF_SINGLE_NOTIFIED = "<br/><p> The Court will make a decision on this application."
+    private static final String CONF_SINGLE_NOTIFIED = "<br/><p> You have made the following application:"
         + "<ul> <li>Extend time</li> </ul>"
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
-    private static final String CONFIRMATION = "<br/><p> The Court will make a decision on these applications."
+    private static final String CONFIRMATION = "<br/><p> You have made the following applications:"
         + "<ul> <li>Extend time</li><li>Summary judgment</li> </ul>"
         + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
         + "has been notified that you have submitted this application. ";
 
-    private static final String CONF_SINGLE_NOT_NOTIFIED = "<br/><p> The Court will make a decision on this "
-            + "application.<ul> <li>Extend time</li> </ul></p> <p> You have marked this application as urgent. </p> "
+    private static final String CONF_SINGLE_NOT_NOTIFIED = "<br/><p> You have made the following "
+            + "application:<ul> <li>Extend time</li> </ul></p> <p> You have marked this application as urgent. </p> "
             + "<p> The other party's legal representative has not been notified that you have submitted this "
             + "application. ";
-
 
     private CaseData getEmptyTestCase(CaseData caseData) {
         return caseData.toBuilder()

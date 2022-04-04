@@ -30,7 +30,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 @RequiredArgsConstructor
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
-    private static final String CONFIRMATION_SUMMARY = "<br/><p> The Court will make a decision on %s."
+    private static final String CONFIRMATION_SUMMARY = "<br/><p> You have made the following %s:"
         + "<ul> %s </ul>"
         + "</p> %s"
         + " %s ";
@@ -88,7 +88,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         );
         return format(
             CONFIRMATION_SUMMARY,
-            types.size() == 1 ? "this application" : "these applications",
+            types.size() == 1 ? "application" : "applications",
             collect,
             isApplicationUrgent ? URGENT_APPLICATION : " ",
             lastLine
