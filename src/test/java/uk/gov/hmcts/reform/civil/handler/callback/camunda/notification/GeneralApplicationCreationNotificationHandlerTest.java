@@ -15,16 +15,22 @@ import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -35,6 +41,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     GeneralApplicationCreationNotificationHandler.class,
@@ -73,11 +80,26 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                 CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
             handler.handle(params);
 
-            verify(notificationService).sendMail(
+            verify(notificationService, times(2)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-respondent-template-id",
                 getNotificationDataMap(),
                 "general-application-respondent-notification-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenInvokedTwice() {
+            CaseData caseData = getCaseData(true);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(2)).sendMail(
+                any(),
+                any(),
+                any(),
+                any()
             );
         }
 
@@ -100,8 +122,24 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
         }
 
         private CaseData getCaseData(boolean isMet) {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
             if (isMet) {
+
                 return new CaseDataBuilder()
+                    .generalAppApplnSolictor(GASolicitorDetailsGAspec.builder().id("id")
+                                                 .email(DUMMY_EMAIL).organisationIdentifier("org2").build())
+                    .generalAppRespondentSolictor(respondentSols)
                     .businessProcess(BusinessProcess.builder().status(STARTED)
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
                     .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
