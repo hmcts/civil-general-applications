@@ -60,8 +60,8 @@ withPipeline(type, product, component) {
     enableAksStagingDeployment()
 
     onPR {
-        loadVaultSecrets(secrets);
-      enableCleanupOfHelmReleaseOnSuccess();
+        loadVaultSecrets(secrets)
+        enableCleanupOfHelmReleaseOnSuccess()
     }
     onMaster {
         loadVaultSecrets(secrets)
@@ -101,10 +101,13 @@ withPipeline(type, product, component) {
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*LRspec.json"
           ./bin/import-bpmn-diagram.sh .
         """
-
+        env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-      env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+        env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
     after('smoketest:preview') {
@@ -112,12 +115,13 @@ withPipeline(type, product, component) {
     }
 
     before('functionalTest:preview') {
-        env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
-        env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-        env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
-        env.CIVIL_SERVICE_URL="http://civil-service-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-apps-ccd-definition-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+      env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+      env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
     after('functionalTest:preview') {
@@ -137,12 +141,18 @@ withPipeline(type, product, component) {
           ./bin/import-bpmn-diagram.sh .
         """
 
-        env.URL="https://civil-ccd-xui-staging.aat.platform.hmcts.net"
+        env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"
         env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-staging.service.core-compute-aat.internal"
+        env.CIVIL_SERVICE_URL="http://civil-service-aat.service.core-compute-aat.internal"
+        env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+        env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+        env.CCD_DATA_STORE_URL = "http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
+        env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
-    after('smoketest:aat') {
-    }
+  after('smoketest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+  }
 
     onMaster() {
     }

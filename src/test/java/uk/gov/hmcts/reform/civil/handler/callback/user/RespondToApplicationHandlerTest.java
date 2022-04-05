@@ -69,7 +69,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
-    private static final String CONFIRMATION_MESSAGE = "<br/><p> You have responded to the following application: </p>"
+    private static final String CONFIRMATION_MESSAGE = "<br/><p> In relation to the following application(s): </p>"
         + "<ul> <li>Summary judgment</li> </ul>"
         + " <p> The application and your response will be reviewed by a Judge. </p> ";
     private static final String ERROR = "The General Application has already received a response.";
