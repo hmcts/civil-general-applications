@@ -80,8 +80,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                         .getValue();
 
                 coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor1.getId(), respondentSolicitor1.getOrganisationIdentifier(),
-                                RESPONDENTSOLICITORONE);
+                        .assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
 
                 if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
 
@@ -89,8 +89,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                             .get(SECOND_SOLICITOR).getValue();
 
                     coreCaseUserService
-                            .assignCase(caseId, respondentSolicitor2.getId(), respondentSolicitor2.getOrganisationIdentifier(),
-                                    RESPONDENTSOLICITORTWO);
+                            .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
                 }
             }
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(

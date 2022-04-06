@@ -230,6 +230,7 @@ public class CaseDataBuilder {
                 .isMultiParty(application.getIsMultiParty())
                 .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
                 .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+                .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
                 .build();
     }
 }
