@@ -74,8 +74,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                    .types(singletonList(SUMMARY_JUDGEMENT))
                                    .build())
             .claimant1PartyName("Applicant1")
-            .generalAppRespondentSolictor(respondentSols)
-            .generalAppApplnSolictor(GASolicitorDetailsGAspec
+            .generalAppRespondentSolicitors(respondentSols)
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec
                                          .builder()
                                          .id("id")
                                          .email("TEST@gmail.com")

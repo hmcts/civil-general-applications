@@ -72,8 +72,8 @@ public class CaseDataBuilder {
 
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
-    protected GASolicitorDetailsGAspec generalAppApplnSolictor;
-    protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolictor;
+    protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -90,14 +90,14 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder generalAppApplnSolictor(GASolicitorDetailsGAspec generalAppApplnSolictor) {
-        this.generalAppApplnSolictor = generalAppApplnSolictor;
+    public CaseDataBuilder generalAppApplnSolicitor(GASolicitorDetailsGAspec generalAppApplnSolicitor) {
+        this.generalAppApplnSolicitor = generalAppApplnSolicitor;
         return this;
     }
 
-    public CaseDataBuilder generalAppRespondentSolictor(List<Element<GASolicitorDetailsGAspec>>
-                                                            generalAppRespondentSolictor) {
-        this.generalAppRespondentSolictor = generalAppRespondentSolictor;
+    public CaseDataBuilder generalAppRespondentSolicitors(List<Element<GASolicitorDetailsGAspec>>
+                                                            generalAppRespondentSolicitors) {
+        this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
         return this;
     }
 
@@ -175,8 +175,8 @@ public class CaseDataBuilder {
         return CaseData.builder()
                 .businessProcess(businessProcess)
             .ccdState(ccdState)
-            .generalAppApplnSolictor(generalAppApplnSolictor)
-            .generalAppRespondentSolictor(generalAppRespondentSolictor)
+            .generalAppApplnSolicitor(generalAppApplnSolicitor)
+            .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
                 .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
                 .legacyCaseReference(legacyCaseReference)

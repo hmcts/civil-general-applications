@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -68,37 +69,35 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         try {
 
-            GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolictor();
+            GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
 
             coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
-
-            GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolictor().get(
-                    FIRST_SOLICITOR)
-                .getValue();
-
-            coreCaseUserService
-                .assignCase(caseId, respondentSolicitor1.getId(), respondentSolicitor1.getOrganisationIdentifier(),
-                            RESPONDENTSOLICITORONE
-                );
-
-            if (caseData.getGeneralAppRespondentSolictor().size() > 1) {
-
-                GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolictor()
-                    .get(SECOND_SOLICITOR).getValue();
+            if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+                GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
+                                FIRST_SOLICITOR)
+                        .getValue();
 
                 coreCaseUserService
-                    .assignCase(caseId, respondentSolicitor2.getId(), respondentSolicitor2.getOrganisationIdentifier(),
-                                RESPONDENTSOLICITORTWO
-                    );
-            }
+                        .assignCase(caseId, respondentSolicitor1.getId(), respondentSolicitor1.getOrganisationIdentifier(),
+                                RESPONDENTSOLICITORONE);
 
+                if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+
+                    GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
+                            .get(SECOND_SOLICITOR).getValue();
+
+                    coreCaseUserService
+                            .assignCase(caseId, respondentSolicitor2.getId(), respondentSolicitor2.getOrganisationIdentifier(),
+                                    RESPONDENTSOLICITORTWO);
+                }
+            }
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
                 .build();
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.toString());
             throw e;
         }

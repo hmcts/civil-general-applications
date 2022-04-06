@@ -17,10 +17,10 @@ public class ApplicationNotificationUtil {
 
     public static boolean isNotificationCriteriaSatisfied(CaseData caseData) {
 
-        if (caseData.getGeneralAppRespondentSolictor() != null && caseData.getGeneralAppRespondentSolictor().stream()
+        if (caseData.getGeneralAppRespondentSolicitors() != null && caseData.getGeneralAppRespondentSolicitors().stream()
             .iterator().next().getValue().getEmail() != null) {
 
-            var recipient = caseData.getGeneralAppRespondentSolictor().get(0).getValue().getEmail();
+            var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
             return isWithNotice(caseData)
                 && isNonConsent(caseData)
                 && isNonUrgent(caseData)

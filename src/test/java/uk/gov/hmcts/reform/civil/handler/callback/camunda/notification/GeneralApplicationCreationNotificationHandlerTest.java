@@ -137,9 +137,9 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
             if (isMet) {
 
                 return new CaseDataBuilder()
-                    .generalAppApplnSolictor(GASolicitorDetailsGAspec.builder().id("id")
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                                  .email(DUMMY_EMAIL).organisationIdentifier("org2").build())
-                    .generalAppRespondentSolictor(respondentSols)
+                    .generalAppRespondentSolicitors(respondentSols)
                     .businessProcess(BusinessProcess.builder().status(STARTED)
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
                     .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())

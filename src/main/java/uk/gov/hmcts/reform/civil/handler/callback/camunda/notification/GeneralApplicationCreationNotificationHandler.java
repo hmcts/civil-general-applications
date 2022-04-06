@@ -60,7 +60,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
 
         if (isNotificationCriteriaSatisfied) {
 
-            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData.getGeneralAppRespondentSolictor();
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData.getGeneralAppRespondentSolicitors();
             respondentSolicitor.stream().forEach((RS) ->
                 sendNotificationToGeneralAppRespondent(caseData, RS.getValue().getEmail()));
         }
