@@ -11,7 +11,6 @@ public class EndBusinessProcessExternalTaskListener {
 
     private static final String TOPIC = "END_BUSINESS_PROCESS_GASPEC";
 
-    @SuppressWarnings("checkstyle:LineLength")
     @Autowired
     private EndBusinessProcessExternalTaskListener(
             EndGeneralApplicationBusinessProcessTaskHandler handler,

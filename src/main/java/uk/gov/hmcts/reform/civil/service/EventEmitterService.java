@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.RuntimeService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.event.DispatchBusinessProcessEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import static java.lang.String.format;
@@ -21,6 +24,30 @@ public class EventEmitterService {
     public void emitBusinessProcessCamundaEvent(Long caseId, GeneralApplication application, boolean dispatchProcess) {
         var businessProcess = application.getBusinessProcess();
         var camundaEvent = businessProcess.getCamundaEvent();
+        log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
+        try {
+            runtimeService.createMessageCorrelation(camundaEvent)
+                .setVariable("caseId", caseId)
+                .correlateStartMessage();
+
+            if (dispatchProcess) {
+                applicationEventPublisher.publishEvent(new DispatchBusinessProcessEvent(caseId, businessProcess));
+            }
+
+            log.info("Camunda event emitted successfully");
+        } catch (Exception ex) {
+            log.error(format("Emitting %s camunda event failed for case: %d, message: %s",
+                             camundaEvent, caseId, ex.getMessage()
+            ));
+        }
+    }
+
+    public void emitBusinessProcessCamundaGAEvent(CaseData caseData, boolean dispatchProcess) {
+        var caseId = caseData.getCcdCaseReference();
+        BusinessProcess businessProcess = BusinessProcess.builder()
+            .camundaEvent("JUDGE_MAKES_DECISION")
+            .status(BusinessProcessStatus.READY).build();
+        var camundaEvent = "JUDGE_MAKES_DECISION";
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         try {
             runtimeService.createMessageCorrelation(camundaEvent)

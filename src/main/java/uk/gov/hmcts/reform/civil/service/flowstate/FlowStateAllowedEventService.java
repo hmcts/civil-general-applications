@@ -18,6 +18,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
 
@@ -35,7 +36,7 @@ public class FlowStateAllowedEventService {
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
-                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE, GENERATE_JUDGES_FORM)
         )
     );
 

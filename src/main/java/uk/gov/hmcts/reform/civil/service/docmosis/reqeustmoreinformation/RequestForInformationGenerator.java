@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.reqeustmoreinformation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.requestforinformation.RequestForInformation;
@@ -14,6 +15,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 
@@ -47,16 +50,18 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Req
 
     @Override
     public RequestForInformation getTemplateData(CaseData caseData) {
-
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
+            .collect(Collectors.joining(", "));
         RequestForInformation.RequestForInformationBuilder requestForInformationBuilderBuilder =
             RequestForInformation.builder()
-            .claimNumber("TestClaimNumber")
-            .applicationType("TestApplicationType")
-            .claimantName("TestClaimantName")
-            .defendantName("TestDefendantName")
-            .issueDate(LocalDate.now())
-            .judgeComments("TestJudgeComment")
-            .submittedOn(LocalDate.now().plusDays(14));
+                .claimNumber(caseData.getCcdCaseReference().toString())
+                .applicationType(collect)
+                .claimantName(caseData.getClaimant1PartyName())
+                .defendantName(caseData.getDefendant1PartyName())
+                .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
+                .submittedOn(LocalDate.now().plusDays(14))
+                .issueDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate());
 
         return requestForInformationBuilderBuilder.build();
     }

@@ -20,12 +20,12 @@ public class RequestForInformation implements MappableObject {
     private final String claimNumber;
     private final String claimantName;
     private final String defendantName;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate issueDate;
     private final String applicationType;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate submittedOn;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate issueDate;
     private final String judgeComments;
 }

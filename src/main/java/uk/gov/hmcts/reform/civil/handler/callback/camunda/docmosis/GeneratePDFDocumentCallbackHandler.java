@@ -14,26 +14,24 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.reqeustmoreinformation.RequestForInformationGenerator;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_PDF_DOCUMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
 @RequiredArgsConstructor
 public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(CREATE_PDF_DOCUMENT);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
 
     private final RequestForInformationGenerator requestForInformationGenerator;
     private final ObjectMapper objectMapper;
-    private final Time time;
 
     @Override
     public String camundaActivityId(CallbackParams callbackParams) {
@@ -52,9 +50,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private CallbackResponse createPDFdocument(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        LocalDate issueDate = time.now().toLocalDate();
 
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder().issueDate(issueDate);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         CaseDocument requestInformation = requestForInformationGenerator.generate(
             caseDataBuilder.build(),
