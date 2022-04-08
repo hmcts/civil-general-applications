@@ -471,6 +471,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     writtenRepresentationBuilder = GAJudicialWrittenRepresentations.builder();
             writtenRepresentationBuilder.writtenOption(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS)
                     .writtenSequentailRepresentationsBy(writtenRepresentationDate)
+                    .sequentialApplicantMustRespondWithin(writtenRepresentationDate)
                     .writtenConcurrentRepresentationsBy(null);
 
             GAJudicialWrittenRepresentations gaJudicialWrittenRepresentations = writtenRepresentationBuilder.build();
