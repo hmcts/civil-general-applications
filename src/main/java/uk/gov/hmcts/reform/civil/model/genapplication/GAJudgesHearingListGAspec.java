@@ -19,6 +19,9 @@ public class GAJudgesHearingListGAspec {
     private GAJudicialHearingType hearingPreferencesPreferredType;
     private GAHearingDuration judicialTimeEstimate;
     private List<SupportRequirements> judicialSupportRequirement;
+    private String judgeSignLanguage;
+    private String judgeLanguageInterpreter;
+    private String judgeOtherSupport;
     private String addlnInfoCourtStaff;
 
     private String judgeHearingTimeEstimateText1;
@@ -32,6 +35,9 @@ public class GAJudgesHearingListGAspec {
                               @JsonProperty("judicialTimeEstimate") GAHearingDuration judicialTimeEstimate,
                               @JsonProperty("judicialSupportRequirement")
                                   List<SupportRequirements> judicialSupportRequirement,
+                              @JsonProperty("judgeSignLanguage") String judgeSignLanguage,
+                              @JsonProperty("judgeLanguageInterpreter") String judgeLanguageInterpreter,
+                              @JsonProperty("judgeOtherSupport") String judgeOtherSupport,
                               @JsonProperty("addlnInfoCourtStaff") String addlnInfoCourtStaff,
                               @JsonProperty("judgeHearingTimeEstimateText1") String judgeHearingTimeEstimateText1,
                               @JsonProperty("judgeHearingCourtLocationText1") String judgeHearingCourtLocationText1,
