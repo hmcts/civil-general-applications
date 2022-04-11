@@ -92,6 +92,7 @@ public class CaseData implements MappableObject {
     private final String judicialGOHearingDirections;
     private final String judicialHearingGeneralOrderHearingText;
     private final String judicialGeneralOrderHearingEstimationTimeText;
+    private final String judicialHearingGOHearingReqText;
 
     private final BusinessProcess businessProcess;
 
