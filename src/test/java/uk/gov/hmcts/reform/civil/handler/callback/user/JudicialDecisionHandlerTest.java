@@ -217,7 +217,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getOrderText()).isEqualTo("Draft order text entered by applicant."+PERSON_NOT_NOTIFIED_TEXT);
+            assertThat(makeAnOrder.getOrderText())
+                .isEqualTo("Draft order text entered by applicant." + PERSON_NOT_NOTIFIED_TEXT);
 
         }
 
