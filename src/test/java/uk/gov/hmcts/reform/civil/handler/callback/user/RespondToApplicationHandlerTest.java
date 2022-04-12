@@ -281,7 +281,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
 
-
         CaseData caseData = getCase(respondentSols, respondentsResponses);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
