@@ -144,8 +144,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
-                                                      .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-                                                      .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
+                .orderText(caseData.getGeneralAppDetailsOfOrder())
+                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+                .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();

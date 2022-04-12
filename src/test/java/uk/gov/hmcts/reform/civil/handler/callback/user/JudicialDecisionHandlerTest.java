@@ -246,6 +246,19 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
         }
 
+        @Test
+        void testAboutToStartForDefendant_orderText() {
+            CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getOrderText()).isEqualTo("Draft order text entered by applicant.");
+
+        }
+
         private GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             return responseCaseData.getJudicialDecisionMakeOrder();
@@ -268,6 +281,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                    .generalAppDetailsOfOrder("Draft order text entered by applicant.")
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                     .applicantPartyName("ApplicantPartyName")
                     .respondentsResponses(getRespodentResponses())
@@ -456,6 +470,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                     .parentClaimantIsApplicant(NO)
                     .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                    .generalAppDetailsOfOrder("Draft order text entered by applicant.")
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                     .applicantPartyName("ApplicantPartyName")
                     .respondentsResponses(getRespodentResponses())
@@ -577,6 +592,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     writtenRepresentationBuilder = GAJudicialWrittenRepresentations.builder();
             writtenRepresentationBuilder.writtenOption(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS)
                     .writtenSequentailRepresentationsBy(writtenRepresentationDate)
+                    .sequentialApplicantMustRespondWithin(writtenRepresentationDate)
                     .writtenConcurrentRepresentationsBy(null);
 
             GAJudicialWrittenRepresentations gaJudicialWrittenRepresentations = writtenRepresentationBuilder.build();
