@@ -25,7 +25,10 @@ public class JudicialDecisionService {
             && judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null) {
             LocalDate writtenSequentailRepresentationDate = judicialWrittenRepresentationsDate
                 .getWrittenSequentailRepresentationsBy();
-            if (LocalDate.now().isAfter(writtenSequentailRepresentationDate)) {
+            LocalDate sequentialApplicantMustRespondWithinDate = judicialWrittenRepresentationsDate
+                .getSequentialApplicantMustRespondWithin();
+            if (LocalDate.now().isAfter(writtenSequentailRepresentationDate)
+                || LocalDate.now().isAfter(sequentialApplicantMustRespondWithinDate)) {
                 errors.add(WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST);
             }
         }
