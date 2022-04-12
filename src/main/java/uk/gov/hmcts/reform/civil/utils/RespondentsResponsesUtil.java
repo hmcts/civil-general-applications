@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.utils;
 
+import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -15,22 +16,22 @@ public class RespondentsResponsesUtil {
         // Utilities class, no instances
     }
 
-    public static boolean isRespondentsResponseSatisfied(CaseData caseData, CaseData updatedCaseData) {
+    public static boolean isRespondentsResponseSatisfied(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder) {
 
-        if (caseData.getGeneralAppRespondentSolicitors() == null
-            || updatedCaseData.getRespondentsResponses() == null) {
+        if (caseData.getDefendantSolicitors() == null
+            || caseDataBuilder.build().getRespondentsResponses() == null) {
             return false;
         }
 
-        List<Element<GARespondentResponse>> respondentsResponses = updatedCaseData.getRespondentsResponses();
-        int noOfDefendantSolicitors = caseData.getGeneralAppRespondentSolicitors().size();
+        List<Element<GARespondentResponse>> respondentsResponses = caseDataBuilder.build().getRespondentsResponses();
+        List<Element<SolicitorDetails>> defendantSolicitors = caseData.getDefendantSolicitors();
 
-        if (noOfDefendantSolicitors == ONE_V_ONE
+        if (defendantSolicitors.size() == ONE_V_ONE
             && respondentsResponses != null && respondentsResponses.size() == ONE_V_ONE) {
             return true;
         }
 
-        if (noOfDefendantSolicitors == ONE_V_TWO && respondentsResponses != null) {
+        if (defendantSolicitors.size() == ONE_V_TWO && respondentsResponses != null) {
             return respondentsResponses.size() == ONE_V_TWO;
         }
 
