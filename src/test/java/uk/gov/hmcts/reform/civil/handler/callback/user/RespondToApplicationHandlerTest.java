@@ -10,7 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
-import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -26,12 +25,12 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -62,11 +61,10 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     ParentCaseUpdateHelper parentCaseUpdateHelper;
 
-    List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
-
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
+    private static final String DUMMY_EMAIL = "test@gmail.com";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
     private static final String CONFIRMATION_MESSAGE = "<br/><p> In relation to the following application(s): </p>"
@@ -257,7 +255,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                  .eventId("RESPOND_TO_APPLICATION")
                                  .build())
                     .build();
-            default :
+            default:
                 return CallbackParams.builder()
                     .type(CallbackType.MID)
                     .pageId("hearing-screen-response")
@@ -272,9 +270,17 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void shouldReturn_Awaiting_Respondent_Response_1Def_2Responses() {
 
-        respondentSols.add(element(SolicitorDetails.builder().caseRole("role").build()));
-        respondentsResponses.add(element(GARespondentResponse.builder().generalAppRespondent1Representative(YES).build()
-        ));
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
+
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
 
@@ -290,9 +296,16 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_2Def_2Responses() {
 
-        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
-        Collections.addAll(respondentSols, element(solicitorDetails), element(solicitorDetails));
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
 
         respondentsResponses.add(element(GARespondentResponse.builder()
                                              .generalAppRespondent1Representative(YES).build()));
@@ -311,9 +324,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response() {
 
-        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
-        Collections.addAll(respondentSols, element(solicitorDetails));
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
 
@@ -329,9 +345,16 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void shouldReturn_Awaiting_Respondent_Response_2Def_1Response() {
 
-        SolicitorDetails solicitorDetails = SolicitorDetails.builder().caseRole("role").build();
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
-        Collections.addAll(respondentSols, element(solicitorDetails), element(solicitorDetails));
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
 
@@ -470,12 +493,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             .build();
     }
 
-    private CaseData getCase(List<Element<SolicitorDetails>> defendantSolicitors,
+    private CaseData getCase(List<Element<GASolicitorDetailsGAspec>> respondentSols,
                              List<Element<GARespondentResponse>> respondentsResponses) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
-            .defendantSolicitors(defendantSolicitors)
+            .generalAppRespondentSolicitors(respondentSols)
             .respondentsResponses(respondentsResponses)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
