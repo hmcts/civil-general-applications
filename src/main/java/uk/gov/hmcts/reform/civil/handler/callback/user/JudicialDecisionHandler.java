@@ -144,9 +144,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
-                .orderText(caseData.getGeneralAppDetailsOfOrder())
-                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-                .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
+                                                      .orderText(caseData.getGeneralAppDetailsOfOrder())
+                                                      .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+                                                      .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
@@ -409,8 +409,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
             return "Applicant prefers ".concat(caseData
-                                                   .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue());
-
+                                                   .getGeneralAppHearingDetails().getHearingPreferencesPreferredType()
+                                                   .getDisplayedValue());
         }
 
         return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
@@ -436,7 +436,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
             .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ? StringUtils.EMPTY :
                          caseData.getRespondentsResponses()
-                             .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue());
+                             .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
+                             .getDisplayedValue());
     }
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
@@ -471,7 +472,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             resSupportReq = String.join(", ", respondentSupportReq);
         }
-
 
         return isAppAndRespSameSupportReq == YES ? format(JUDICIAL_SUPPORT_REQ_TEXT_2, appSupportReq)
             : format(JUDICIAL_SUPPORT_REQ_TEXT_1, applicantSupportReq.isEmpty() ? "no support" : appSupportReq,
