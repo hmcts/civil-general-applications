@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -168,6 +170,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getSupportRequirement() != null
             && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
@@ -429,23 +433,35 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
 
-        List<String> applicantSupportReq
-            = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
-            .collect(Collectors.toList());
+        List<String> applicantSupportReq = Collections.emptyList();
+        String appSupportReq = StringUtils.EMPTY;
+        String resSupportReq = StringUtils.EMPTY;
+
+        if (caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
+            applicantSupportReq
+                = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream()
+                .map(e -> e.getDisplayedValue()).collect(Collectors.toList());
+
+            appSupportReq = String.join(", ", applicantSupportReq);
+        }
 
         List<String> respondentSupportReq = Collections.emptyList();
-        if (caseData.getRespondentsResponses() != null) {
+        if (caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getSupportRequirement() != null) {
             respondentSupportReq
                 = caseData.getRespondentsResponses().stream().iterator().next().getValue()
                 .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
                 .collect(Collectors.toList());
+
+            resSupportReq = String.join(", ", respondentSupportReq);
         }
 
-        String appSupportReq = String.join(", ", applicantSupportReq);
-        String resSupportReq = String.join(", ", respondentSupportReq);
 
         return isAppAndRespSameSupportReq == YES ? format(JUDICIAL_SUPPORT_REQ_TEXT_2, appSupportReq)
-            : format(JUDICIAL_SUPPORT_REQ_TEXT_1, appSupportReq, resSupportReq);
+            : format(JUDICIAL_SUPPORT_REQ_TEXT_1, applicantSupportReq.isEmpty() ? "no support" : appSupportReq,
+                     respondentSupportReq.isEmpty() ? "no support" : resSupportReq);
     }
 
     private String getJudgeHearingCourtLoc() {
