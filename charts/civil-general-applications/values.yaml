@@ -3,7 +3,7 @@ ccd:
 
 postgresql:
   enabled: false
-  
+
 idam-pr:
   enabled: false
 
@@ -11,6 +11,9 @@ xui-webapp:
   enabled: false
 
 camunda-bpm:
+  enabled: false
+
+civil-service:
   enabled: false
 
 java:
