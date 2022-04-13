@@ -14,6 +14,7 @@ camunda-bpm:
   enabled: false
 
 java:
+  releaseNameOverride: chart-civil-general-applications
   applicationPort: 4550
   image: 'hmctspublic.azurecr.io/civil/general-applications:latest'
   ingressHost: civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
