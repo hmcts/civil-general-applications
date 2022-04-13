@@ -1,63 +1,41 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
-import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.config.CrossAccessUserConfiguration;
-import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
-import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
-import uk.gov.hmcts.reform.civil.service.UserService;
-import uk.gov.hmcts.reform.prd.client.OrganisationApi;
-import uk.gov.hmcts.reform.prd.model.Organisation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
-    private final OrganisationApi organisationApi;
-    private final CaseAccessDataStoreApi caseAccessDataStoreApi;
-    private final UserService userService;
     private final ObjectMapper mapper;
-    private final CrossAccessUserConfiguration crossAccessUserConfiguration;
-    private final AuthTokenGenerator authTokenGenerator;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
+    private static final int FIRST_SOLICITOR = 0;
+    private static final int SECOND_SOLICITOR = 1;
 
     private final CoreCaseUserService coreCaseUserService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -80,127 +58,48 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse assignSolicitorCaseRole(CallbackParams callbackParams) {
+
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+
         String caseId = caseData.getCcdCaseReference().toString();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
+        List<String> errors = new ArrayList<>();
 
-        CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
-            getCaaAccessToken(),
-            authTokenGenerator.generate(),
-            List.of(parentCaseId)
-        );
-
-        IdamUserDetails userDetails = caseData.getCivilServiceUserRoles();
-        String submitterId = userDetails.getId();
-        Optional<Organisation> org = findOrganisation(callbackParams.getParams().get(BEARER_TOKEN).toString());
-
-        List<CaseAssignedUserRole> applicantSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
-                || CA.getCaseRole().contentEquals(CaseRole.APPLICANTSOLICITORTWO.getFormattedName()))
-            .collect(Collectors.toList());
-
-        List<CaseAssignedUserRole> respondentSolicitors = userRoles.getCaseAssignedUserRoles().stream()
-            .filter(CA -> CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
-                || CA.getCaseRole().contentEquals(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()))
-            .collect(Collectors.toList());
-
-        if (applicantSolicitors.isEmpty() && respondentSolicitors.isEmpty()) {
-            throw new IllegalArgumentException("Applicant and Respondent Solicitors should not be Null");
-        }
-
-        if (org.isPresent()) {
-            String organisationId = org.get().getOrganisationIdentifier();
-            List<Element<SolicitorDetails>> applicantSols = new ArrayList<>();
-            List<Element<SolicitorDetails>> respondentSols = new ArrayList<>();
-
-            if (!applicantSolicitors.isEmpty() && applicantSolicitors.stream().anyMatch(AS -> AS.getUserId().equals(
-                submitterId))) {
-
-                caseDataBuilder.parentClaimantIsApplicant(YES);
-                Optional<CaseAssignedUserRole> submitter = applicantSolicitors.stream()
-                     .filter(user -> submitterId.equals(user.getUserId())).findFirst();
-                if (submitter.isPresent()) {
-                    if (APPLICANTSOLICITORONE.getFormattedName().equals(submitter.get().getCaseRole())) {
-                        caseDataBuilder.applicantPartyName(caseData.getClaimant1PartyName());
-                    } else if (APPLICANTSOLICITORTWO.getFormattedName().equals(submitter.get().getCaseRole())) {
-                        caseDataBuilder.applicantPartyName(caseData.getClaimant2PartyName());
-                    }
-                }
-
-                applicantSolicitors.stream().forEach((AS) -> {
-                    coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
-                    applicantSols.add(element(SolicitorDetails.builder().caseRole(AS.getCaseRole())
-                                                  .caseDataId(AS.getCaseDataId())
-                                                  .userId(AS.getUserId()).build()));
-                });
-
-                respondentSolicitors.stream().forEach((RS) -> {
-                    coreCaseUserService
-                        .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
-                                                  .caseDataId(RS.getCaseDataId())
-                                                  .userId(RS.getUserId()).build()));
-                });
-
-                caseDataBuilder.applicantSolicitors(applicantSols);
-                caseDataBuilder.defendantSolicitors(respondentSols);
-
-            } else if (!respondentSolicitors.isEmpty() && respondentSolicitors.stream()
-                .anyMatch(AS -> AS.getUserId().equals(submitterId))) {
-
-                caseDataBuilder.parentClaimantIsApplicant(NO);
-                Optional<CaseAssignedUserRole> submitter = respondentSolicitors.stream()
-                        .filter(user -> submitterId.equals(user.getUserId())).findFirst();
-                if (submitter.isPresent()) {
-                    if (RESPONDENTSOLICITORONE.getFormattedName().equals(submitter.get().getCaseRole())) {
-                        caseDataBuilder.applicantPartyName(caseData.getClaimant1PartyName());
-                    } else if (RESPONDENTSOLICITORTWO.getFormattedName().equals(submitter.get().getCaseRole())) {
-                        caseDataBuilder.applicantPartyName(caseData.getClaimant2PartyName());
-                    }
-                }
-
-                applicantSolicitors.stream().forEach((RS) -> {
-                    coreCaseUserService
-                        .assignCase(caseId, RS.getUserId(), organisationId, CaseRole.RESPONDENTSOLICITORONE);
-                    respondentSols.add(element(SolicitorDetails.builder().caseRole(RS.getCaseRole())
-                                                   .caseDataId(RS.getCaseDataId())
-                                                   .userId(RS.getUserId()).build()));
-                });
-
-                respondentSolicitors.stream().forEach((AS) -> {
-                    coreCaseUserService
-                        .assignCase(caseId, AS.getUserId(), organisationId, CaseRole.APPLICANTSOLICITORONE);
-                    applicantSols.add(element(SolicitorDetails.builder().caseRole(AS.getCaseRole())
-                                                  .caseDataId(AS.getCaseDataId())
-                                                  .userId(AS.getUserId()).build()));
-                });
-
-            }
-        }
-
-        return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper))
-            .build();
-
-    }
-
-    private String getCaaAccessToken() {
-        return userService.getAccessToken(
-            crossAccessUserConfiguration.getUserName(),
-            crossAccessUserConfiguration.getPassword()
-        );
-    }
-
-    public Optional<Organisation> findOrganisation(String authToken) {
         try {
-            return ofNullable(organisationApi.findUserOrganisation(authToken, authTokenGenerator.generate()));
 
-        } catch (FeignException.NotFound | FeignException.Forbidden ex) {
-            log.error("User not registered in MO", ex);
-            return Optional.empty();
+            GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
+
+            coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                                           applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+            );
+            if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+                GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
+                                FIRST_SOLICITOR)
+                        .getValue();
+
+                coreCaseUserService
+                        .assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+
+                if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+
+                    GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
+                            .get(SECOND_SOLICITOR).getValue();
+
+                    coreCaseUserService
+                            .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
+                }
+            }
+            return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
+                    errors)
+                .build();
+
+        } catch (Exception e) {
+            log.error(e.toString());
+            throw e;
         }
     }
 }

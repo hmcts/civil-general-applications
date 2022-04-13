@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
@@ -165,6 +166,8 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                     .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
                     .generalAppHearingDetails(GAHearingDetails.builder().build())
+                    .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
+                            .email("abc@gmail.com").build()))
                     .isMultiParty(NO)
                     .parentClaimantIsApplicant(YES)
                     .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()

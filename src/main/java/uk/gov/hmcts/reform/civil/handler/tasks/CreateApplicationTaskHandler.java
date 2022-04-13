@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @RequiredArgsConstructor
@@ -77,7 +78,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
             .caseLink(CaseLink.builder().caseReference(String.valueOf(
                 generalAppCaseData.getCcdCaseReference())).build())
-            .caseState(caseData.getCcdState().getDisplayedValue()).build();
+            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
     }
 
     private List<Element<GeneralApplicationsDetails>> addApplication(GeneralApplicationsDetails application,

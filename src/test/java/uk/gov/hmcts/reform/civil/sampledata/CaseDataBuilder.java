@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
@@ -71,6 +72,8 @@ public class CaseDataBuilder {
 
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
+    protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -84,6 +87,17 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalApplications(List<Element<GeneralApplication>> generalApplications) {
         this.generalApplications = generalApplications;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppApplnSolicitor(GASolicitorDetailsGAspec generalAppApplnSolicitor) {
+        this.generalAppApplnSolicitor = generalAppApplnSolicitor;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppRespondentSolicitors(List<Element<GASolicitorDetailsGAspec>>
+                                                            generalAppRespondentSolicitors) {
+        this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
         return this;
     }
 
@@ -161,6 +175,8 @@ public class CaseDataBuilder {
         return CaseData.builder()
                 .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .generalAppApplnSolicitor(generalAppApplnSolicitor)
+            .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
                 .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
                 .legacyCaseReference(legacyCaseReference)
@@ -214,6 +230,7 @@ public class CaseDataBuilder {
                 .isMultiParty(application.getIsMultiParty())
                 .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
                 .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+                .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
                 .build();
     }
 }
