@@ -94,6 +94,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
+    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
+            + "A person who was not notified of the application"
+            + " before the order was made may apply to have the order set aside or varied."
+            + " Any application under this paragraph must be made within 7 days";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -213,7 +217,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getOrderText()).isEqualTo("Draft order text entered by applicant.");
+            assertThat(makeAnOrder.getOrderText())
+                .isEqualTo("Draft order text entered by applicant." + PERSON_NOT_NOTIFIED_TEXT);
 
         }
 

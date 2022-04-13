@@ -76,10 +76,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_DIRECTIONS_TEXT = "A person who was not notified of the application "
-        + "before this order was made may apply to have the order set aside or varied.\n"
-        + "Any application under this paragraph must be made within 7 days after "
-        + "notification of the order.";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
@@ -87,9 +83,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
-    private static final String DIRECTIONS_IN_RELATION_TO_HEARING_TEXT = "A person who was not notified of the "
-        + "application before this order was made may apply to have this order set aside or varied. "
-        + "Any application under this paragraph must be made within 7 days after notification of the order.";
+    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
+        + "A person who was not notified of the application"
+        + " before the order was made may apply to have the order set aside or varied."
+        + " Any application under this paragraph must be made within 7 days";
 
     private final JudicialDecisionService judicialDecisionService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
@@ -133,15 +130,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
-                .orderText(caseData.getGeneralAppDetailsOfOrder())
+                .orderText(caseData.getGeneralAppDetailsOfOrder()
+                               + PERSON_NOT_NOTIFIED_TEXT)
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
 
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-            .directionInRelationToHearingText(DIRECTIONS_IN_RELATION_TO_HEARING_TEXT).build();
+            .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
-            .judicialGOHearingDirections(JUDICIAL_HEARING_DIRECTIONS_TEXT).build();
+            .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
 
         YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
