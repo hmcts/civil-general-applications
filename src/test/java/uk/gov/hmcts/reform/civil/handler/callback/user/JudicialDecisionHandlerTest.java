@@ -66,6 +66,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.service.JudicialDecisionService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -422,31 +424,57 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldNotReturnErrors_whenSequentialWrittenRepresentationDateIsInFuture() {
+
+            String expectedSequentialText = "The respondent may upload any written representations by 4pm on %s";
+            String expectedApplicantSequentialText =
+                "The applicant may upload any written representations by 4pm on %s";
+
             CallbackParams params = callbackParamsOf(
-                    getSequentialWrittenRepresentationDecision(LocalDate.now()),
-                    MID,
-                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+                getSequentialWrittenRepresentationDecision(LocalDate.now()),
+                MID,
+                VALIDATE_WRITTEN_REPRESENTATION_PAGE
             );
             when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
             assertThat(response.getErrors()).isEmpty();
+            assertThat(responseCaseData.getJudicialSequentialDateText())
+                .isEqualTo(String.format(expectedSequentialText, formatLocalDate(
+                    responseCaseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenSequentailRepresentationsBy(), DATE)));
+            assertThat(responseCaseData.getJudicialApplicanSequentialDateText())
+                .isEqualTo(String.format(expectedApplicantSequentialText, formatLocalDate(
+                    responseCaseData
+                        .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getSequentialApplicantMustRespondWithin(), DATE)));
         }
 
         @Test
         void shouldNotReturnErrors_whenConcurrentWrittenRepresentationDateIsInFuture() {
+
+            String expectedConcurrentText =
+                "The applicant and respondent must respond with written representations by 4pm on %s";
+
             CallbackParams params = callbackParamsOf(
-                    getConcurrentWrittenRepresentationDecision(LocalDate.now()),
-                    MID,
-                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+                getConcurrentWrittenRepresentationDecision(LocalDate.now()),
+                MID,
+                VALIDATE_WRITTEN_REPRESENTATION_PAGE
             );
             when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertThat(response.getErrors()).isEmpty();
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(responseCaseData.getJudicialConcurrentDateText())
+                .isEqualTo(String.format(expectedConcurrentText, formatLocalDate(
+                    responseCaseData
+                        .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenConcurrentRepresentationsBy(), DATE)));
         }
 
         @Test
