@@ -95,7 +95,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
         + "A person who was not notified of the application"
         + " before the order was made may apply to have the order set aside or varied."
-        + " Any application under this paragraph must be made within 7 days";
+        + " Any application under this paragraph must be made within 7 days.";
 
     private final JudicialDecisionService judicialDecisionService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
