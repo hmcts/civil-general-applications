@@ -97,7 +97,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
             + "A person who was not notified of the application"
             + " before the order was made may apply to have the order set aside or varied."
-            + " Any application under this paragraph must be made within 7 days";
+            + " Any application under this paragraph must be made within 7 days.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
