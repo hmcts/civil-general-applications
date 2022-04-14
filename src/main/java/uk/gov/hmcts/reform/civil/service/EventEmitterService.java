@@ -6,6 +6,7 @@ import org.camunda.bpm.engine.RuntimeService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.event.DispatchBusinessProcessEvent;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import static java.lang.String.format;
