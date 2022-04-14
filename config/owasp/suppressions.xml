@@ -23,6 +23,11 @@
     <cve>CVE-2021-42550</cve>
   </suppress>
   <suppress>
+    <cve>CVE-2013-4152</cve>
+    <cve>CVE-2013-7315</cve>
+    <cve>CVE-2014-0054</cve>
+  </suppress>
+  <suppress>
     <notes><![CDATA[
    file name: follow-redirects:1.14.7
    ]]></notes>
