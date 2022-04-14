@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -76,7 +77,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
-            + "application of %s dated %s and upon considering the information provided by the parties";
+        + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
@@ -87,6 +88,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         "The applicant may upload any written representations by 4pm on %s";
     private static final String JUDICIAL_CONCURRENT_DATE =
         "The applicant and respondent must respond with written representations by 4pm on %s";
+    private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
             + "[Insert Draft Order from application]\n\n"
             + "A person who was not notified of the application before this order was made may apply to have the "
@@ -99,14 +101,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private final JudicialDecisionService judicialDecisionService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
-            + " should be given, is required.";
+        + " should be given, is required.";
     public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
-            + " should be given, cannot be in past.";
+        + " should be given, cannot be in past.";
 
     public static final String REQUESTED_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the applicant must respond, "
-            + "is required.";
+        + "is required.";
     public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must respond, "
-            + "cannot be in past.";
+        + "cannot be in past.";
 
     private final ObjectMapper objectMapper;
 
@@ -126,10 +128,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         YesOrNo isCloaked = (caseData.getGeneralAppRespondentAgreement() != null
-                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppInformOtherParty() != null
-                && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-                ? YES : NO;
+            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            && caseData.getGeneralAppInformOtherParty() != null
+            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            ? YES : NO;
         caseDataBuilder.applicationIsCloaked(isCloaked);
 
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
@@ -168,6 +170,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
+            && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getSupportRequirement() != null
             && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
@@ -250,8 +255,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
         List<String> errors = judicialDecisionMakeOrder != null
-                ? validateUrgencyDates(judicialDecisionMakeOrder)
-                : Collections.emptyList();
+            ? validateUrgencyDates(judicialDecisionMakeOrder)
+            : Collections.emptyList();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)
@@ -279,8 +284,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
         List<String> errors = judicialRequestMoreInfo != null
-                ? validateDatesForRequestMoreInfoScreen(judicialRequestMoreInfo)
-                : Collections.emptyList();
+            ? validateDatesForRequestMoreInfoScreen(judicialRequestMoreInfo)
+            : Collections.emptyList();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)
@@ -370,6 +375,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
+            .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -378,8 +384,27 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private String getJudgeHearingPrePopulatedText(CaseData caseData) {
-        return format(JUDICIAL_HEARING_TYPE,
-                      caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue());
+        return format(
+            JUDICIAL_HEARING_TYPE,
+            caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue()
+        );
+    }
+
+    private String populateJudgeGOSupportRequirement(CaseData caseData) {
+
+        StringJoiner supportReq = new StringJoiner(", ");
+
+        if (caseData.getJudicialListForHearing().getJudicialSupportRequirement() != null) {
+            caseData.getJudicialListForHearing().getJudicialSupportRequirement()
+                .forEach(sr -> {
+                    supportReq.add(sr.getDisplayedValue());
+                });
+
+            return format(
+                JUDICIAL_HEARING_REQ, supportReq);
+        }
+
+        return "";
     }
 
     private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
@@ -408,44 +433,76 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingPrefType(CaseData caseData, YesOrNo isAppAndRespSameHearingPref) {
 
+        if (caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
+            return "Applicant prefers ".concat(caseData
+                                                   .getGeneralAppHearingDetails().getHearingPreferencesPreferredType()
+                                                   .getDisplayedValue());
+        }
+
         return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
             .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue())
             : format(JUDICIAL_PREF_TYPE_TEXT_1, caseData.getGeneralAppHearingDetails()
             .getHearingPreferencesPreferredType().getDisplayedValue(), caseData.getRespondentsResponses() == null
-            ? StringUtils.EMPTY : caseData.getRespondentsResponses()
+                         ? StringUtils.EMPTY : caseData.getRespondentsResponses()
             .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferencesPreferredType()
             .getDisplayedValue());
     }
 
     private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
 
+        if (caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
+            return "Applicant estimates ".concat(caseData.getGeneralAppHearingDetails()
+                                                     .getHearingDuration().getDisplayedValue());
+
+        }
+
         return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData.getGeneralAppHearingDetails()
             .getHearingDuration().getDisplayedValue())
             : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
             .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ? StringUtils.EMPTY :
-            caseData.getRespondentsResponses()
-                .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue());
+                         caseData.getRespondentsResponses()
+                             .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
+                             .getDisplayedValue());
     }
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
 
-        List<String> applicantSupportReq
-            = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
-            .collect(Collectors.toList());
+        List<String> applicantSupportReq = Collections.emptyList();
+        String appSupportReq = StringUtils.EMPTY;
+        String resSupportReq = StringUtils.EMPTY;
+
+        if (caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
+            applicantSupportReq
+                = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream()
+                .map(e -> e.getDisplayedValue()).collect(Collectors.toList());
+
+            appSupportReq = String.join(", ", applicantSupportReq);
+        }
+
+        if (caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
+            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
+
+        }
 
         List<String> respondentSupportReq = Collections.emptyList();
-        if (caseData.getRespondentsResponses() != null) {
+        if (caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getSupportRequirement() != null) {
             respondentSupportReq
                 = caseData.getRespondentsResponses().stream().iterator().next().getValue()
                 .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
                 .collect(Collectors.toList());
+
+            resSupportReq = String.join(", ", respondentSupportReq);
         }
 
-        String appSupportReq = String.join(", ", applicantSupportReq);
-        String resSupportReq = String.join(", ", respondentSupportReq);
-
         return isAppAndRespSameSupportReq == YES ? format(JUDICIAL_SUPPORT_REQ_TEXT_2, appSupportReq)
-            : format(JUDICIAL_SUPPORT_REQ_TEXT_1, appSupportReq, resSupportReq);
+            : format(JUDICIAL_SUPPORT_REQ_TEXT_1, applicantSupportReq.isEmpty() ? "no support" : appSupportReq,
+                     respondentSupportReq.isEmpty() ? "no support" : resSupportReq);
     }
 
     private String getJudgeHearingCourtLoc() {
