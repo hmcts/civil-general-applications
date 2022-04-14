@@ -194,24 +194,23 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         List<Element<GARespondentResponse>> respondentsResponses =
-            addResponse(buildResponse(caseData), caseData.getRespondentsResponses());
+            addApplication(buildApplication(caseData), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
-        CaseData updatedCaseData = caseDataBuilder.build();
 
-        CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
+        CaseState newState = isRespondentsResponseSatisfied(caseData, caseDataBuilder)
             ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
             : AWAITING_RESPONDENT_RESPONSE;
         parentCaseUpdateHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newState.toString())
-            .data(updatedCaseData.toMap(objectMapper))
+            .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
 
-    private List<Element<GARespondentResponse>> addResponse(GARespondentResponse gaRespondentResponseBuilder,
-                                                            List<Element<GARespondentResponse>> respondentsResponses) {
+    private List<Element<GARespondentResponse>> addApplication(GARespondentResponse gaRespondentResponseBuilder,
+                                                             List<Element<GARespondentResponse>> respondentsResponses) {
 
         List<Element<GARespondentResponse>> newApplication = ofNullable(respondentsResponses).orElse(newArrayList());
         newApplication.add(element(gaRespondentResponseBuilder));
@@ -220,7 +219,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     }
 
 
-    private GARespondentResponse buildResponse(CaseData caseData) {
+    private GARespondentResponse buildApplication(CaseData caseData) {
 
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
 
