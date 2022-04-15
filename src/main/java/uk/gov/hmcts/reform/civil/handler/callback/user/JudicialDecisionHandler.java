@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +41,14 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
@@ -114,6 +120,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "is required.";
     public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must respond, "
         + "cannot be in past.";
+    public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
 
     private final ObjectMapper objectMapper;
 
@@ -146,6 +153,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
+                 .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) == true ? YES : NO)
+                 .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) == true ? YES : NO)
                 .orderText(caseData.getGeneralAppDetailsOfOrder()
                                + PERSON_NOT_NOTIFIED_TEXT)
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
@@ -218,6 +227,30 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .build();
     }
 
+    private boolean checkApplicationTypeForParty(CaseData caseData) {
+
+        int noOfGeneralAppType = caseData.getGeneralAppType().getTypes().size();
+        List<GeneralApplicationTypes> gaTypes = caseData.getGeneralAppType().getTypes();
+
+        List<GeneralApplicationTypes> requireGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
+
+        return noOfGeneralAppType > 2 ? false
+            : noOfGeneralAppType == 2 ? !Collections.disjoint(gaTypes, requireGATypes)
+            : gaTypes.stream().anyMatch(t -> requireGATypes.contains(t));
+
+    }
+
+    private boolean checkApplicationTypeForDate(CaseData caseData) {
+        int noOfGeneralAppType = caseData.getGeneralAppType().getTypes().size();
+        List<GeneralApplicationTypes> gaTypes = caseData.getGeneralAppType().getTypes();
+
+        List<GeneralApplicationTypes> requireGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+
+        return noOfGeneralAppType > 2 ? false
+            : noOfGeneralAppType == 2 ? !Collections.disjoint(gaTypes, requireGATypes)
+            : gaTypes.stream().anyMatch(t -> requireGATypes.contains(t));
+    }
+
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
 
         if (caseData.getRespondentsResponses().stream().iterator().next().getValue()
@@ -260,9 +293,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse gaValidateMakeDecisionScreen(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
-        List<String> errors = judicialDecisionMakeOrder != null
-            ? validateUrgencyDates(judicialDecisionMakeOrder)
-            : Collections.emptyList();
+        List<String> errors = Collections.emptyList();
+        if (judicialDecisionMakeOrder != null) {
+            errors = validateUrgencyDates(judicialDecisionMakeOrder);
+            errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)
@@ -560,6 +595,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ?
             StringUtils.EMPTY : caseData.getRespondentsResponses()
                          .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferredLocation());*/
+    }
+
+    public List<String> validateJudgeOrderRequestDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+        List<String> errors = new ArrayList<>();
+
+        if (judicialDecisionMakeOrder.getMakeAnOrder() != null
+            && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+            && judicialDecisionMakeOrder.getJudgeApporveEditOptionDate() != null) {
+            LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getJudgeApporveEditOptionDate();
+            if (LocalDate.now().isAfter(directionsResponseByDate)) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+        return errors;
     }
 
     @Override
