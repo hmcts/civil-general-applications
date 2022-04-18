@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -46,9 +48,11 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.AMEND_A_STMT_OF_CASE;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
@@ -59,6 +63,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final int ONE_V_ONE = 0;
+    private static final String EMPTY_STRING = "";
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
@@ -66,10 +71,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_TIME_EST_TEXT_1 = "Applicant estimates "
         + "%s. Respondent estimates %s.";
     private static final String JUDICIAL_TIME_EST_TEXT_2 = " Both applicant and respondent estimate it would take %s.";
-    private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = " Applicant requires support with regards to "
+    private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = "Applicant requires support with regards to "
         + "vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\n Respondent requires support with "
-        + "regards to vulnerability \n";
+    private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\nRespondent requires support with "
+        + "regards to vulnerability\n";
 
     /*private static final String JUDICIAL_COURT_LOC_TEXT_1 = "Applicant estimates "
         + "%s. Respondent estimates %s.";
@@ -153,8 +158,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
         }
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
-                 .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) == true ? YES : NO)
-                 .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) == true ? YES : NO)
+                 .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
+                 .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) ? YES : NO)
                 .orderText(caseData.getGeneralAppDetailsOfOrder()
                                + PERSON_NOT_NOTIFIED_TEXT)
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
@@ -227,28 +232,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .build();
     }
 
+    /*Return True if General Application types are only Extend Time or/and Strike Out
+    Else, Return False*/
     private boolean checkApplicationTypeForParty(CaseData caseData) {
 
-        int noOfGeneralAppType = caseData.getGeneralAppType().getTypes().size();
-        List<GeneralApplicationTypes> gaTypes = caseData.getGeneralAppType().getTypes();
+        List<GeneralApplicationTypes> invalidGATypes = Arrays.asList(SUMMARY_JUDGEMENT, STAY_THE_CLAIM,
+                                                                     AMEND_A_STMT_OF_CASE, RELIEF_FROM_SANCTIONS);
 
-        List<GeneralApplicationTypes> requireGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
-
-        return noOfGeneralAppType > 2 ? false
-            : noOfGeneralAppType == 2 ? !Collections.disjoint(gaTypes, requireGATypes)
-            : gaTypes.stream().anyMatch(t -> requireGATypes.contains(t));
+        return caseData.getGeneralAppType().getTypes().stream().noneMatch(t -> invalidGATypes.contains(t));
 
     }
 
+    /*Return True if General Application types are only Extend Time or/and Stay the Claim
+    Else, Return False*/
     private boolean checkApplicationTypeForDate(CaseData caseData) {
-        int noOfGeneralAppType = caseData.getGeneralAppType().getTypes().size();
-        List<GeneralApplicationTypes> gaTypes = caseData.getGeneralAppType().getTypes();
 
-        List<GeneralApplicationTypes> requireGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+        List<GeneralApplicationTypes> invalidGATypes = Arrays.asList(STRIKE_OUT, SUMMARY_JUDGEMENT,
+                                                                     AMEND_A_STMT_OF_CASE, RELIEF_FROM_SANCTIONS);
 
-        return noOfGeneralAppType > 2 ? false
-            : noOfGeneralAppType == 2 ? !Collections.disjoint(gaTypes, requireGATypes)
-            : gaTypes.stream().anyMatch(t -> requireGATypes.contains(t));
+        return caseData.getGeneralAppType().getTypes().stream().noneMatch(t -> invalidGATypes.contains(t));
     }
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
@@ -524,21 +526,32 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         int responseCount = caseData.getRespondentsResponses() != null ? caseData.getRespondentsResponses().size() : 0;
 
-        Boolean hasRespondentVulnerabilityResponded = responseCount == 1
+        boolean hasRespondentVulnerabilityResponded = responseCount == 1
             ? caseData.getRespondentsResponses().get(ONE_V_ONE).getValue()
-            .getGaHearingDetails().getVulnerabilityQuestionsYesOrNo() == YES ? Boolean.TRUE : Boolean.FALSE
-            : Boolean.FALSE;
+            .getGaHearingDetails().getVulnerabilityQuestionsYesOrNo() == YES ? TRUE : FALSE
+            : FALSE;
 
-        return applicantVulnerabilityResponse == YES ? hasRespondentVulnerabilityResponded
-            ? JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+        if (applicantVulnerabilityResponse == YES && hasRespondentVulnerabilityResponded == TRUE) {
+            return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+                .concat(caseData.getGeneralAppHearingDetails()
+                            .getVulnerabilityQuestion()
+                            .concat(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT)
+                            .concat(caseData.getRespondentsResponses().stream().iterator().next().getValue()
+                                        .getGaHearingDetails().getVulnerabilityQuestion()));
+        }
+
+        return applicantVulnerabilityResponse == YES ? JUDICIAL_APPLICANT_VULNERABILITY_TEXT
             .concat(caseData.getGeneralAppHearingDetails()
-                        .getVulnerabilityQuestion()
-                        .concat(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT)
-                        .concat(caseData.getRespondentsResponses().stream().iterator().next().getValue()
-                                    .getGaHearingDetails().getVulnerabilityQuestion()))
-            : JUDICIAL_APPLICANT_VULNERABILITY_TEXT.concat(caseData.getGeneralAppHearingDetails()
-                                                               .getVulnerabilityQuestion()) : "No support required "
-            + "with regards to vulnerability";
+                        .getVulnerabilityQuestion())
+            : hasRespondentVulnerabilityResponded == TRUE
+            ? ltrim(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT).concat(caseData.getRespondentsResponses().stream()
+                                                                     .iterator().next().getValue()
+                                                              .getGaHearingDetails().getVulnerabilityQuestion())
+            : "No support required with regards to vulnerability";
+    }
+
+    private String ltrim(String str) {
+        return str.replaceAll("^\\s+", EMPTY_STRING);
     }
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
