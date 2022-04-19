@@ -51,7 +51,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
-    private static final String RESPONSE_MESSAGE = "# You have provided the requested info";
+    private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
         "<p> The application and your response will be reviewed by a Judge. </p>";
     private static final String CONFIRMATION_SUMMARY = "<br/><p> In relation to the following application(s): </p>"
