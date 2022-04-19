@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -138,6 +140,31 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnEmptyStringForNullSupportReq() {
+
+            List<Element<GARespondentResponse>> respondentResponse = null;
+
+            GAUrgencyRequirement urgentApp = null;
+
+            CallbackParams params = callbackParamsOf(getCaseDateWithNoSupportReq(respondentResponse,
+                                                                                 urgentApp), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(StringUtils.EMPTY);
+
+            assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
+                .isEqualTo(StringUtils.EMPTY);
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(StringUtils.EMPTY);
+
+        }
+
+        @Test
         void testAboutToStartForHearingScreenForUrgentApp() {
 
             String expecetedJudicialTimeEstimateText = "Applicant estimates 1 hour";
@@ -166,7 +193,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expecetedJudicialSupportReqText = "Applicant require(s) no support";
 
-            CallbackParams params = callbackParamsOf(getCaseDateWithNoSupportReq(), ABOUT_TO_START);
+            GAUrgencyRequirement urgentApp = GAUrgencyRequirement.builder().generalAppUrgency(YES).build();
+
+            List<Element<GARespondentResponse>> respondentResponse = getRespodentResponses(hasRespondentResponseVul);
+
+            CallbackParams params = callbackParamsOf(getCaseDateWithNoSupportReq(respondentResponse,
+                                                                                 urgentApp), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -671,7 +703,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData getCaseDateWithNoSupportReq() {
+        private CaseData getCaseDateWithNoSupportReq(List<Element<GARespondentResponse>> respondentResponse,
+                                                     GAUrgencyRequirement urgentApp) {
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -679,14 +712,14 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             hasRespondentResponseVul = NO;
 
             return CaseData.builder()
-                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppUrgencyRequirement(urgentApp)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .hearingDetailsResp(GAHearingDetails.builder()
                                         .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                         .hearingDuration(GAHearingDuration.HOUR_1)
                                         .supportRequirement(getApplicantResponses())
                                         .build())
-                .respondentsResponses(getRespodentResponses(hasRespondentResponseVul))
+                .respondentsResponses(respondentResponse)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                 .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                 .applicantPartyName("ApplicantPartyName")
@@ -889,7 +922,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expectedJudicialHearingTypeText = "Hearing type is %s";
             String expeceedJudicialTimeEstimateText = "Estimated length of hearing is %s";
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(), MID, VALIDATE_HEARING_ORDER_SCREEN);
+            List<SupportRequirements> judgeSupportReqChoices = new ArrayList<>();
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(judgeSupportReqChoices),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
@@ -902,6 +938,70 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudicialGeneralOrderHearingEstimationTimeText())
                 .isEqualTo(String.format(expeceedJudicialTimeEstimateText, responseCaseData
                     .getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()));
+        }
+
+        @Test
+        void shouldMatchJudgeGOSupportReqWithExpectedTextWithSeperator() {
+
+            List<SupportRequirements> judgeSupportReqChoices = new ArrayList<>();
+            judgeSupportReqChoices
+                .add(SupportRequirements.HEARING_LOOPS);
+            judgeSupportReqChoices
+                .add(SupportRequirements.OTHER_SUPPORT);
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(judgeSupportReqChoices),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            String expecetedJudicialSupportReqText = "Hearing requirements Hearing loop, Other support";
+
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response).isNotNull();
+
+            assertThat(responseCaseData.getJudicialHearingGOHearingReqText())
+                .isEqualTo(expecetedJudicialSupportReqText);
+
+        }
+
+        @Test
+        void shouldMatchJudgeGOSupportReqWithExpectedText() {
+
+            List<SupportRequirements> judgeSupportReqChoices = new ArrayList<>();
+            judgeSupportReqChoices
+                .add(SupportRequirements.HEARING_LOOPS);
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(judgeSupportReqChoices),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            String expecetedJudicialSupportReqText = "Hearing requirements Hearing loop";
+
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response).isNotNull();
+
+            assertThat(responseCaseData.getJudicialHearingGOHearingReqText())
+                .isEqualTo(expecetedJudicialSupportReqText);
+
+        }
+
+        @Test
+        void shouldReturnNullForJudgeGOSupportRequirement() {
+
+            List<SupportRequirements> judgeSupportReqChoices = null;
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(judgeSupportReqChoices),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response).isNotNull();
+
+            assertThat(responseCaseData.getJudicialHearingGOHearingReqText())
+                .isEqualTo("");
+
         }
 
         public CaseData getSequentialWrittenRepresentationDecision(LocalDate writtenRepresentationDate) {
@@ -1276,7 +1376,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
     }
 
-    public CaseData getHearingOrderApplnAndResp() {
+    public CaseData getHearingOrderApplnAndResp(List<SupportRequirements> judgeSupportReqChoices) {
 
         YesOrNo hasRespondentResponseVul = NO;
 
@@ -1285,6 +1385,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return CaseData.builder()
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                        .judicialSupportRequirement(judgeSupportReqChoices)
                                         .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
                                         .judicialTimeEstimate(GAHearingDuration.HOURS_2).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
