@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
 
@@ -66,6 +67,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.service.JudicialDecisionService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -94,6 +97,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             + "A person who was not notified of the application before this order was made may apply to have the "
             + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
             + "notification of the order.";
+    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
+            + "A person who was not notified of the application"
+            + " before the order was made may apply to have the order set aside or varied."
+            + " Any application under this paragraph must be made within 7 days.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -125,6 +132,46 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(getJudgeHearingSupportReqText(getHearingOrderApplnAndResp(), YES));
+
+        }
+
+        @Test
+        void testAboutToStartForHearingScreenForUrgentApp() {
+
+            String expecetedJudicialTimeEstimateText = "Applicant estimates 1 hour";
+            String expecetedJudicialPreferrenceText = "Applicant prefers In person";
+            String expecetedJudicialSupportReqText = "Applicant require(s) Hearing loop, Other support";
+
+            CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
+
+            assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
+                .isEqualTo(expecetedJudicialPreferrenceText);
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(expecetedJudicialSupportReqText);
+
+        }
+
+        @Test
+        void testHearingScreenSupportReqWithNoApplnHearingSupport() {
+
+            String expecetedJudicialSupportReqText = "Applicant require(s) no support";
+
+            CallbackParams params = callbackParamsOf(getCaseDateWithNoSupportReq(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(expecetedJudicialSupportReqText);
 
         }
 
@@ -213,7 +260,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getOrderText()).isEqualTo("Draft order text entered by applicant.");
+            assertThat(makeAnOrder.getOrderText())
+                .isEqualTo("Draft order text entered by applicant." + PERSON_NOT_NOTIFIED_TEXT);
 
         }
 
@@ -304,6 +352,85 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                             .build())
                     .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                     .build();
+        }
+
+        private CaseData getCaseDateForUrgentApp() {
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .hearingDetailsResp(GAHearingDetails.builder()
+                                        .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                        .hearingDuration(GAHearingDuration.HOUR_1)
+                                        .supportRequirement(getApplicantResponses())
+                                        .build())
+                .respondentsResponses(getRespodentResponses())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppHearingDetails(GAHearingDetails.builder()
+                                              .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                              .hearingDuration(GAHearingDuration.HOUR_1)
+                                              .supportRequirement(getApplicantResponses())
+                                              .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
+        }
+
+        private CaseData getCaseDateWithNoSupportReq() {
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .hearingDetailsResp(GAHearingDetails.builder()
+                                        .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                        .hearingDuration(GAHearingDuration.HOUR_1)
+                                        .supportRequirement(getApplicantResponses())
+                                        .build())
+                .respondentsResponses(getRespodentResponses())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppHearingDetails(GAHearingDetails.builder()
+                                              .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                              .hearingDuration(GAHearingDuration.HOUR_1)
+                                              .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
         }
 
         private CaseData getCloakedApplication() {
@@ -417,31 +544,57 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldNotReturnErrors_whenSequentialWrittenRepresentationDateIsInFuture() {
+
+            String expectedSequentialText = "The respondent may upload any written representations by 4pm on %s";
+            String expectedApplicantSequentialText =
+                "The applicant may upload any written representations by 4pm on %s";
+
             CallbackParams params = callbackParamsOf(
-                    getSequentialWrittenRepresentationDecision(LocalDate.now()),
-                    MID,
-                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+                getSequentialWrittenRepresentationDecision(LocalDate.now()),
+                MID,
+                VALIDATE_WRITTEN_REPRESENTATION_PAGE
             );
             when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
             assertThat(response.getErrors()).isEmpty();
+            assertThat(responseCaseData.getJudicialSequentialDateText())
+                .isEqualTo(String.format(expectedSequentialText, formatLocalDate(
+                    responseCaseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenSequentailRepresentationsBy(), DATE)));
+            assertThat(responseCaseData.getJudicialApplicanSequentialDateText())
+                .isEqualTo(String.format(expectedApplicantSequentialText, formatLocalDate(
+                    responseCaseData
+                        .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getSequentialApplicantMustRespondWithin(), DATE)));
         }
 
         @Test
         void shouldNotReturnErrors_whenConcurrentWrittenRepresentationDateIsInFuture() {
+
+            String expectedConcurrentText =
+                "The applicant and respondent must respond with written representations by 4pm on %s";
+
             CallbackParams params = callbackParamsOf(
-                    getConcurrentWrittenRepresentationDecision(LocalDate.now()),
-                    MID,
-                    VALIDATE_WRITTEN_REPRESENTATION_PAGE
+                getConcurrentWrittenRepresentationDecision(LocalDate.now()),
+                MID,
+                VALIDATE_WRITTEN_REPRESENTATION_PAGE
             );
             when(service.validateWrittenRepresentationsDates(any())).thenCallRealMethod();
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertThat(response.getErrors()).isEmpty();
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(responseCaseData.getJudicialConcurrentDateText())
+                .isEqualTo(String.format(expectedConcurrentText, formatLocalDate(
+                    responseCaseData
+                        .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenConcurrentRepresentationsBy(), DATE)));
         }
 
         @Test
@@ -567,7 +720,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
                     .parentClaimantIsApplicant(YES)
-                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                     .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
                     .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
@@ -841,6 +995,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                         .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
                                         .judicialTimeEstimate(GAHearingDuration.HOURS_2).build())

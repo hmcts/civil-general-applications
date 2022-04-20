@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
 import java.time.LocalDate;
@@ -54,11 +56,13 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
 
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        var recipient = caseData.getRespondentSolicitor1EmailAddress();
         boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(caseData);
 
         if (isNotificationCriteriaSatisfied) {
-            sendNotificationToGeneralAppRespondent(caseData, recipient);
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData.getGeneralAppRespondentSolicitors();
+            respondentSolicitor.stream().forEach((RS) ->
+                sendNotificationToGeneralAppRespondent(caseData, RS.getValue().getEmail()));
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
