@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
@@ -43,11 +44,16 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        CaseState newState = isNotificationCriteriaSatisfied(data)
+        if (INITIATE_GENERAL_APPLICATION.toString().equals(data.getBusinessProcess().getCamundaEvent()) && !"CratePDFDOcument".equals(data.getBusinessProcess().getActivityId())) {
+            CaseState newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-        parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
-        return evaluateReady(callbackParams, newState);
+            parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+            return evaluateReady(callbackParams, newState);
+        }
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(callbackParams.getRequest().getCaseDetails().getData())
+            .build();
     }
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
@@ -55,8 +61,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-                .state(newState.toString())
-                .data(output)
-                .build();
+            .state(newState.toString())
+            .data(output)
+            .build();
     }
 }
