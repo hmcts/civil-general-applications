@@ -156,7 +156,7 @@ task integration(type: Test) {
 task contract(type: Test) {
   useJUnitPlatform()
   description = "Runs pact contract tests"
-  group = "Verification"
+  group = "Delivery pipeline"
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
 }
