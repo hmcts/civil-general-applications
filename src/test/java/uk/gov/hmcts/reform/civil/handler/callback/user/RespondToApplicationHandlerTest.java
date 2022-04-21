@@ -289,6 +289,10 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
+        CaseData responseCaseData = getResponseCaseData(response);
+        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
+        assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
@@ -317,6 +321,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
+
+        CaseData responseCaseData = getResponseCaseData(response);
+        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
+        assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(2);
         assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
     }
 
@@ -363,6 +372,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
+
+        CaseData responseCaseData = getResponseCaseData(response);
+        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
+        assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
@@ -378,6 +392,37 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
+    }
+
+    @Test
+    void shouldReturn_Null_RespondentResponseAfterAddingToCollections() {
+
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+
+        CaseData responseCaseData = getResponseCaseData(response);
+        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
+        assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
+        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
+    }
+
+    private CaseData getResponseCaseData(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData;
     }
 
     private CaseData getCaseWithNullUnavailableDateFrom() {
