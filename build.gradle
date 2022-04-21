@@ -185,7 +185,7 @@ task awaitApplicationReadiness(type: Exec, description: 'Awaits until applicatio
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
+  //commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
 }
 
 def inStrictOrder(Task... tasks) {
@@ -196,7 +196,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task smoke(description: 'Runs the smoke tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
+ //dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
@@ -346,16 +346,16 @@ dependencies {
   testCompile  group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
   testCompile 'com.github.hmcts:fortify-client:1.2.2'
   //pact contract testing
-  //contractTestCompile group: 'au.com.dius', name: 'pact-jvm-consumer-junit5_2.12', version: versions.pact
-  //contractTestCompile group: 'au.com.dius', name: 'pact-jvm-consumer-java8_2.12', version: versions.pact
-  //contractTestCompile group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
+  contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-junit5_2.12', version: versions.pact
+  contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-java8_2.12', version: versions.pact
+  contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
 
-  //contractTestCompile("org.junit.jupiter:junit-jupiter-api:5.7.0")
-  //contractTestRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+  contractTestImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+  contractTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
   contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.3.2')
 
-  //contractTestCompile sourceSets.main.runtimeClasspath
-  //contractTestCompile sourceSets.test.runtimeClasspath
+  contractTestImplementation sourceSets.main.runtimeClasspath
+  contractTestImplementation sourceSets.test.runtimeClasspath
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.17.1'
@@ -409,7 +409,7 @@ pact {
     pactDirectory = 'target/pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_FULL_URL") ?: 'https://pact-broker.platform.hmcts.net/'
     if(pactBrokerUrl == 'https://civil-claims.pactflow.io/') {
-      excludes = ['civil_service-Idam_api']
+      excludes = ['civil_general_applications-Idam_api']
       pactBrokerToken = System.getenv("PACT_BROKER_TOKEN")
     }
     tags = [System.getenv("PACT_BRANCH_NAME") ?: getCheckedOutGitCommitHash(), 'latest']
