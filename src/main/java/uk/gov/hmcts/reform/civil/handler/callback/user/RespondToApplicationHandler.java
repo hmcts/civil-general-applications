@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -197,6 +198,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
             addResponse(buildResponse(caseData), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
+        caseDataBuilder.hearingDetailsResp(GAHearingDetails.builder().build());
+        caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
         CaseData updatedCaseData = caseDataBuilder.build();
 
         CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
