@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.service.EventEmitterService;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,20 +21,27 @@ import java.util.List;
 public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
 
     private final AwaitingResponseStatusSearchService caseSearchService;
-    private final CaseDetailsConverter caseDetailsConverter;
-    private final EventEmitterService eventEmitterService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
+    private final CoreCaseDataService coreCaseDataService;
+
 
     @Override
     public void handleTask(ExternalTask externalTask) {
-        log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), 0);
         List<CaseDetails> cases = caseSearchService.getAwaitingResponseCasesThatArePastDueDate();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
-        //cases.stream()
-        //    .map(caseDetailsConverter::toCaseData)
-        //    .map(a -> a.toBuilder().businessProcess(
-        //            BusinessProcess.builder().camundaEvent("").processInstanceId("").activityId("").build())
-        //            .build())
-        //    .forEach(mappedCase -> eventEmitterService.emitBusinessProcessCamundaEvent(mappedCase, true));
+
+        cases.forEach(this::fireEventForStateChange);
+    }
+
+    private void fireEventForStateChange(CaseDetails caseDetails) {
+        coreCaseDataService.triggerEvent(caseDetails.getId(), CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+/*        try {
+            applicationEventPublisher.publishEvent(
+                new MoveAwaitingResponseToJudicialDecisionStateEvent(caseDetails.getId()));
+        } catch (Exception e) {
+            log.error("Updating case with id: '{}' failed", caseDetails.getId(), e);
+        }*/
     }
 
     @Override
