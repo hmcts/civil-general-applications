@@ -107,14 +107,14 @@ class CoreCaseDataServiceTest {
             )).thenReturn(buildStartEventResponse());
 
             when(coreCaseDataApi.submitEventForCaseWorker(
-                eq(USER_AUTH_TOKEN),
-                eq(SERVICE_AUTH_TOKEN),
-                eq(USER_ID),
-                eq(JURISDICTION),
-                eq(CASE_TYPE),
-                eq(CASE_ID),
-                anyBoolean(),
-                any(CaseDataContent.class)
+                     eq(USER_AUTH_TOKEN),
+                     eq(SERVICE_AUTH_TOKEN),
+                     eq(USER_ID),
+                     eq(JURISDICTION),
+                     eq(CASE_TYPE),
+                     eq(CASE_ID),
+                     anyBoolean(),
+                     any(CaseDataContent.class)
                  )
             ).thenReturn(caseDetails);
         }
@@ -233,18 +233,18 @@ class CoreCaseDataServiceTest {
             when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
 
             when(coreCaseDataApi.startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
-                GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+                                                    GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
             )).thenReturn(buildStartEventResponse());
 
             when(coreCaseDataApi.submitForCaseworker(
-                    eq(USER_AUTH_TOKEN),
-                    eq(SERVICE_AUTH_TOKEN),
-                    eq(USER_ID),
-                    eq(JURISDICTION),
-                    eq(GENERAL_APPLICATION_CASE_TYPE),
-                    anyBoolean(),
-                    any(CaseDataContent.class)
-                )
+                     eq(USER_AUTH_TOKEN),
+                     eq(SERVICE_AUTH_TOKEN),
+                     eq(USER_ID),
+                     eq(JURISDICTION),
+                     eq(GENERAL_APPLICATION_CASE_TYPE),
+                     anyBoolean(),
+                     any(CaseDataContent.class)
+                 )
             ).thenReturn(caseDetails);
         }
 
@@ -255,8 +255,13 @@ class CoreCaseDataServiceTest {
 
             service.createGeneralAppCase(generalApplication.toMap(objectMapper));
 
-            verify(coreCaseDataApi).startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
-                JURISDICTION, GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+            verify(coreCaseDataApi).startForCaseworker(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                USER_ID,
+                JURISDICTION,
+                GENERAL_APPLICATION_CASE_TYPE,
+                GENERAL_APPLICATION_CREATION
             );
 
             verify(coreCaseDataApi).submitForCaseworker(
@@ -296,6 +301,37 @@ class CoreCaseDataServiceTest {
 
             assertThat(casesFound).isEqualTo(cases);
             verify(coreCaseDataApi).searchCases(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, CASE_TYPE, query.toString());
+            verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+        }
+    }
+
+    @Nested
+    class SearchGeneralApplications {
+
+        @Test
+        void shouldReturnGeneralApplications_WhenSearchingGeneralApplicationsAsSystemUpdateUser() {
+            Query query = new Query(QueryBuilders.matchQuery("field", "value"), emptyList(), 0);
+
+            List<CaseDetails> cases = List.of(CaseDetails.builder().id(1L).build());
+            SearchResult searchResult = SearchResult.builder().cases(cases).build();
+
+            when(coreCaseDataApi.searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            ))
+                .thenReturn(searchResult);
+
+            List<CaseDetails> casesFound = service.searchGeneralApplication(query).getCases();
+
+            assertThat(casesFound).isEqualTo(cases);
+            verify(coreCaseDataApi).searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            );
             verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
         }
     }

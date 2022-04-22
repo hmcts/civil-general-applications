@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +13,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptyList;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 
 @Api
@@ -60,6 +68,20 @@ public class TestingSupportController {
                                                 CaseEvent.CREATE_GENERAL_APPLICATION_CASE);
 
         return new ResponseEntity<>(startEventResponse.getCaseDetails(), HttpStatus.OK);
+    }
+
+    @GetMapping("/testing-support/applications/{state}")
+    public ResponseEntity<List<CaseDetails>> getApplicationsInAwaiting(@PathVariable("state") String state) {
+        Query query = new Query(QueryBuilders.matchQuery("state", state), emptyList(), 0);
+
+        SearchResult searchResult = coreCaseDataService.searchGeneralApplication(query);
+        List<CaseDetails> listOfCases = searchResult.getCases();
+        List<CaseDetails> collectedCases = listOfCases.stream().filter(a ->
+                        LocalDateTime.now().isAfter(
+                                LocalDateTime.parse(caseDetailsConverter.toCaseData(a).getGeneralAppDeadlineNotificationDate())))
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(collectedCases, HttpStatus.OK);
     }
 
     @Data
