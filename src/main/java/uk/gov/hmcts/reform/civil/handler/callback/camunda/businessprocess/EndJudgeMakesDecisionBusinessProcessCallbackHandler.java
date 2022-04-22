@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -17,8 +16,8 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
@@ -26,7 +25,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.*;
 
 @Service
 @RequiredArgsConstructor
-public class EndJudgeMakesDecisionBusinessProcessCallbackHander extends CallbackHandler {
+public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = List.of(END_JUDGE_BUSINESS_PROCESS_GASPEC);
 
@@ -53,7 +52,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHander extends Callback
         GAJudgeDecisionOption decision = data.getJudicialDecision().getDecision();
         String directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
 
-        if (decision == MAKE_AN_ORDER && !StringUtils.isBlank(directionsText)) {
+        if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         }
         if (decision == REQUEST_MORE_INFO) {
