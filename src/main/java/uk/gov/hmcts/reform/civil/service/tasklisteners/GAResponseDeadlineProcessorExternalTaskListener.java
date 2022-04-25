@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.handler.tasks.GAResponseDeadlineTaskHandler;
 
 @Component
-@ConditionalOnExpression("${polling.event.emitter.enabled:true}")
+@ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAResponseDeadlineProcessorExternalTaskListener {
 
     private static final String TOPIC = "GA_RESPONSE_DEADLINE_PROCESSOR";

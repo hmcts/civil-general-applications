@@ -162,8 +162,7 @@ public class CoreCaseDataService {
             systemUpdateUser.getUserId(),
             JURISDICTION,
             GENERAL_APPLICATION_CASE_TYPE,
-            eventId
-        );
+            eventId);
     }
 
     public CaseData submitForCaseWorker(CaseDataContent caseDataContent) {

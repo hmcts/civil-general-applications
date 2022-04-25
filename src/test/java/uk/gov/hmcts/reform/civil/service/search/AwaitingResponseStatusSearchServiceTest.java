@@ -1,26 +1,25 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
-import org.springframework.stereotype.Service;
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.hmcts.reform.civil.model.search.Query;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import static java.util.Collections.emptyList;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
-@Service
-public class AwaitingResponseStatusSearchService extends ElasticSearchService {
+class AwaitingResponseStatusSearchServiceTest extends ElasticSearchServiceTest {
 
-    public AwaitingResponseStatusSearchService(CoreCaseDataService coreCaseDataService) {
-        super(coreCaseDataService);
+    @BeforeEach
+    void setup() {
+        searchService = new AwaitingResponseStatusSearchService(coreCaseDataService);
     }
 
-    public Query query(int startIndex) {
-
+    @Override
+    protected Query buildQuery(int fromValue) {
         return new Query(
             matchQuery("state", AWAITING_RESPONDENT_RESPONSE.toString()),
             emptyList(),
-            startIndex
+            fromValue
         );
     }
 }

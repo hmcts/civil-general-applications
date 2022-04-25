@@ -107,14 +107,14 @@ class CoreCaseDataServiceTest {
             )).thenReturn(buildStartEventResponse());
 
             when(coreCaseDataApi.submitEventForCaseWorker(
-                     eq(USER_AUTH_TOKEN),
-                     eq(SERVICE_AUTH_TOKEN),
-                     eq(USER_ID),
-                     eq(JURISDICTION),
-                     eq(CASE_TYPE),
-                     eq(CASE_ID),
-                     anyBoolean(),
-                     any(CaseDataContent.class)
+                eq(USER_AUTH_TOKEN),
+                eq(SERVICE_AUTH_TOKEN),
+                eq(USER_ID),
+                eq(JURISDICTION),
+                eq(CASE_TYPE),
+                eq(CASE_ID),
+                anyBoolean(),
+                any(CaseDataContent.class)
                  )
             ).thenReturn(caseDetails);
         }
@@ -233,18 +233,18 @@ class CoreCaseDataServiceTest {
             when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
 
             when(coreCaseDataApi.startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
-                                                    GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+                GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
             )).thenReturn(buildStartEventResponse());
 
             when(coreCaseDataApi.submitForCaseworker(
-                     eq(USER_AUTH_TOKEN),
-                     eq(SERVICE_AUTH_TOKEN),
-                     eq(USER_ID),
-                     eq(JURISDICTION),
-                     eq(GENERAL_APPLICATION_CASE_TYPE),
-                     anyBoolean(),
-                     any(CaseDataContent.class)
-                 )
+                    eq(USER_AUTH_TOKEN),
+                    eq(SERVICE_AUTH_TOKEN),
+                    eq(USER_ID),
+                    eq(JURISDICTION),
+                    eq(GENERAL_APPLICATION_CASE_TYPE),
+                    anyBoolean(),
+                    any(CaseDataContent.class)
+                )
             ).thenReturn(caseDetails);
         }
 
@@ -255,13 +255,8 @@ class CoreCaseDataServiceTest {
 
             service.createGeneralAppCase(generalApplication.toMap(objectMapper));
 
-            verify(coreCaseDataApi).startForCaseworker(
-                USER_AUTH_TOKEN,
-                SERVICE_AUTH_TOKEN,
-                USER_ID,
-                JURISDICTION,
-                GENERAL_APPLICATION_CASE_TYPE,
-                GENERAL_APPLICATION_CREATION
+            verify(coreCaseDataApi).startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
+                JURISDICTION, GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
             );
 
             verify(coreCaseDataApi).submitForCaseworker(
