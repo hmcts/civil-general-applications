@@ -48,11 +48,9 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.AMEND_A_STMT_OF_CASE;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
@@ -236,21 +234,23 @@ public class JudicialDecisionHandler extends CallbackHandler {
     Else, Return False*/
     private boolean checkApplicationTypeForParty(CaseData caseData) {
 
-        List<GeneralApplicationTypes> invalidGATypes = Arrays.asList(SUMMARY_JUDGEMENT, STAY_THE_CLAIM,
-                                                                     AMEND_A_STMT_OF_CASE, RELIEF_FROM_SANCTIONS);
-
-        return caseData.getGeneralAppType().getTypes().stream().noneMatch(t -> invalidGATypes.contains(t));
+        if (caseData.getGeneralAppType() == null) {
+            return false;
+        }
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(t -> validGATypes.contains(t));
 
     }
 
-    /*Return True if General Application types are only Extend Time or/and Stay the Claim
+    /*Return True if General Application types are Extend Time or/and Stay the Claim
     Else, Return False*/
     private boolean checkApplicationTypeForDate(CaseData caseData) {
 
-        List<GeneralApplicationTypes> invalidGATypes = Arrays.asList(STRIKE_OUT, SUMMARY_JUDGEMENT,
-                                                                     AMEND_A_STMT_OF_CASE, RELIEF_FROM_SANCTIONS);
-
-        return caseData.getGeneralAppType().getTypes().stream().noneMatch(t -> invalidGATypes.contains(t));
+        if (caseData.getGeneralAppType() == null) {
+            return false;
+        }
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(t -> validGATypes.contains(t));
     }
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
@@ -301,8 +301,29 @@ public class JudicialDecisionHandler extends CallbackHandler {
             errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
         }
 
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
+
+        if (caseData.getJudicialDecisionMakeOrder() != null) {
+            makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
+        } else {
+            makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
+        }
+
+        caseDataBuilder
+            .judicialDecisionMakeOrder(makeAnOrderBuilder
+                                           .displayJudgeApporveEditOptionDate(
+                                               checkApplicationTypeForDate(caseData)
+                                                   && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                                                   ? YES : NO)
+                                           .displayJudgeApporveEditOptionParty(
+                                               checkApplicationTypeForParty(caseData)
+                                                   && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                                                   ? YES : NO).build());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)
+                .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
     }
 
