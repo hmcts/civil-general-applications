@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.variable.VariableMap;
@@ -15,15 +14,11 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
