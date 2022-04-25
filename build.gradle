@@ -75,7 +75,7 @@ allprojects {
       }
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: '1.6.10'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '1.6.10'
-      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.6.0'
+      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.6.21'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.6.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.6.10'
       // CVE-2020-29582
@@ -185,7 +185,7 @@ task awaitApplicationReadiness(type: Exec, description: 'Awaits until applicatio
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
-  //commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
+  commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
 }
 
 def inStrictOrder(Task... tasks) {
@@ -196,7 +196,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task smoke(description: 'Runs the smoke tests.') {
- //dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
+ dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
