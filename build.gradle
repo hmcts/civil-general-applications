@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.Exec
+
 plugins {
   id 'application'
   id 'checkstyle'
@@ -195,11 +197,16 @@ def inStrictOrder(Task... tasks) {
   return tasks
 }
 
+task runApiTests(type: Exec, description: 'Runs Api tests.') {
+  commandLine '/usr/bin/yarn', '--silent', 'test:api-unspec'
+}
+
 task smoke(description: 'Runs the smoke tests.') {
  //dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
+  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, installDependencies, checkDependenciesIntegrity, runApiTests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
