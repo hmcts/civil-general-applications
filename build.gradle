@@ -185,7 +185,7 @@ task awaitApplicationReadiness(type: Exec, description: 'Awaits until applicatio
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
-  //commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
+  commandLine '/usr/bin/yarn', '--silent', 'test:smoke'
 }
 
 def inStrictOrder(Task... tasks) {
@@ -196,7 +196,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task smoke(description: 'Runs the smoke tests.') {
- //dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
+ dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
@@ -329,7 +329,7 @@ dependencies {
   implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '3.0.1'
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.6.3'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.8.0'
 
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.3.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.3.1'
