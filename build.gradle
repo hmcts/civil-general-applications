@@ -198,7 +198,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:api-unspec'
+  commandLine '/usr/bin/yarn', '--silent', 'test:api'
 }
 
 task smoke(description: 'Runs the smoke tests.') {
