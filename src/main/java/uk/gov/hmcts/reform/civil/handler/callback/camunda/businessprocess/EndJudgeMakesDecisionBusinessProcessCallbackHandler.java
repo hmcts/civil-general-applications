@@ -9,19 +9,16 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +28,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final StateGeneratorService stateGeneratorService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -49,19 +47,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     }
 
     private CaseState getNewStateDependingOn(CaseData data) {
-        GAJudgeDecisionOption decision = data.getJudicialDecision().getDecision();
-        String directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-
-        if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
-            return AWAITING_DIRECTIONS_ORDER_DOCS;
-        }
-        if (decision == REQUEST_MORE_INFO) {
-            return AWAITING_ADDITIONAL_INFORMATION;
-        }
-        if (decision == MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
-            return AWAITING_WRITTEN_REPRESENTATIONS;
-        }
-        return data.getCcdState();
+        return stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(data);
     }
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
