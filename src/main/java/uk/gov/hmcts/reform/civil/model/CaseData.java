@@ -96,6 +96,8 @@ public class CaseData implements MappableObject {
     private final String judicialSequentialDateText;
     private final String judicialApplicanSequentialDateText;
     private final String judicialConcurrentDateText;
+    private final List<Element<Document>> generalAppWrittenRepUpload;
+    private final List<Element<Document>> gaWrittenRepDocList;
 
     private final BusinessProcess businessProcess;
 
