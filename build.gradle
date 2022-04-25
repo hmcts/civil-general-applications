@@ -163,10 +163,6 @@ task contract(type: Test) {
   classpath = sourceSets.contractTest.runtimeClasspath
 }
 
-//task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
-//  commandLine './bin/pull-latest-release-asset.sh', 'civil-ccd-definition', 'civil-e2e.zip'
-//}
-
 task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
   main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
   classpath += sourceSets.test.runtimeClasspath
