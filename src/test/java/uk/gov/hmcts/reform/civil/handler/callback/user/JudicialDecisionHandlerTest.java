@@ -39,7 +39,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
@@ -69,7 +70,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.RE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
-import static uk.gov.hmcts.reform.civil.service.JudicialDecisionService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
+import static uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
@@ -82,7 +83,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     JudicialDecisionHandler handler;
 
     @MockBean
-    JudicialDecisionService service;
+    JudicialDecisionWrittenRepService service;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -183,11 +184,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             List<String> applicantSupportReq
                 = caseData.getGeneralAppHearingDetails().getSupportRequirement()
-                .stream().map(e -> e.getDisplayedValue()).collect(Collectors.toList());
+                .stream().map(GAHearingSupportRequirements::getDisplayedValue).collect(Collectors.toList());
 
             List<String> respondentSupportReq
                 = caseData.getRespondentsResponses().stream().iterator().next().getValue()
-                .getGaHearingDetails().getSupportRequirement().stream().map(e -> e.getDisplayedValue())
+                .getGaHearingDetails().getSupportRequirement().stream()
+                .map(GAHearingSupportRequirements::getDisplayedValue)
                 .collect(Collectors.toList());
 
             String appSupportReq = String.join(", ", applicantSupportReq);
@@ -852,6 +854,36 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                             .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
                             .build())
                     .build();
+        }
+    }
+
+    @Nested
+    class AboutToSubmitHandling {
+
+        @Test
+        void shouldSetUpReadyBusinessProcess() {
+            CaseData caseData = getApplicationBusinessProcess();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+        }
+
+        private CaseData getApplicationBusinessProcess() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
         }
     }
 
