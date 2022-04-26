@@ -127,6 +127,7 @@ civil-service:
 idam-pr:
   releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
   enabled: true
+  debug: true
   redirect_uris:
     XUI:
       - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
