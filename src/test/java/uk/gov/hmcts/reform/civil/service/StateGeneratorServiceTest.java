@@ -88,5 +88,17 @@ public class StateGeneratorServiceTest {
 
         assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
     }
+
+    @Test
+    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndNullTextProvided() {
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
+            .build();
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+
+        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+    }
 }
 
