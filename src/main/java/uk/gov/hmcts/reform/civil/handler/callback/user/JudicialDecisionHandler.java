@@ -60,6 +60,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
+    private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
     private static final String EMPTY_STRING = "";
 
@@ -130,6 +131,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
+                callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder,
                 callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
                 callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
                 callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
@@ -148,20 +150,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
             ? YES : NO;
         caseDataBuilder.applicationIsCloaked(isCloaked);
-
-        GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
-        if (caseData.getJudicialDecisionMakeOrder() != null) {
-            makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
-        } else {
-            makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
-        }
-        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder
-                 .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
-                 .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) ? YES : NO)
-                .orderText(caseData.getGeneralAppDetailsOfOrder()
-                               + PERSON_NOT_NOTIFIED_TEXT)
-                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-                .dismissalOrderText(DISMISSAL_ORDER_TEXT).build());
+        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
 
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
@@ -228,6 +217,32 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+    public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData) {
+        GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
+        if (caseData.getJudicialDecisionMakeOrder() != null) {
+            makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
+        } else {
+            makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
+        }
+
+        makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
+            .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+            .dismissalOrderText(DISMISSAL_ORDER_TEXT);
+
+        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+        if (judicialDecisionMakeOrder != null) {
+            return makeAnOrderBuilder
+                .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
+                        .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
+                .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) && APPROVE_OR_EDIT
+                        .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO);
+        }
+
+        return makeAnOrderBuilder
+            .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
+            .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) ? YES : NO);
     }
 
     /*Return True if General Application types are only Extend Time or/and Strike Out
@@ -302,26 +317,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             errors = validateUrgencyDates(judicialDecisionMakeOrder);
             errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
 
-            GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
-
-            if (caseData.getJudicialDecisionMakeOrder() != null) {
-                makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
-            } else {
-                makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
-            }
-
             caseDataBuilder
-                .judicialDecisionMakeOrder(makeAnOrderBuilder
-                                               .displayJudgeApporveEditOptionDate(
-                                                   checkApplicationTypeForDate(caseData)
-                                                       && APPROVE_OR_EDIT
-                                                       .equals(judicialDecisionMakeOrder.getMakeAnOrder())
-                                                       ? YES : NO)
-                                               .displayJudgeApporveEditOptionParty(
-                                                   checkApplicationTypeForParty(caseData)
-                                                       && APPROVE_OR_EDIT
-                                                       .equals(judicialDecisionMakeOrder.getMakeAnOrder())
-                                                       ? YES : NO).build());
+                .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -345,6 +342,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
         }
         return errors;
+    }
+
+    private CallbackResponse gaValidateMakeAnOrder(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
     }
 
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
