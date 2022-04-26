@@ -238,7 +238,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return false;
         }
         List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
-        return caseData.getGeneralAppType().getTypes().stream().anyMatch(t -> validGATypes.contains(t));
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
 
     }
 
@@ -250,7 +250,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return false;
         }
         List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
-        return caseData.getGeneralAppType().getTypes().stream().anyMatch(t -> validGATypes.contains(t));
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 
     private Boolean checkIfAppAndRespHaveSameSupportReq(CaseData caseData) {
@@ -294,32 +294,35 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateMakeDecisionScreen(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
         List<String> errors = Collections.emptyList();
         if (judicialDecisionMakeOrder != null) {
             errors = validateUrgencyDates(judicialDecisionMakeOrder);
             errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
+
+            GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
+
+            if (caseData.getJudicialDecisionMakeOrder() != null) {
+                makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
+            } else {
+                makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
+            }
+
+            caseDataBuilder
+                .judicialDecisionMakeOrder(makeAnOrderBuilder
+                                               .displayJudgeApporveEditOptionDate(
+                                                   checkApplicationTypeForDate(caseData)
+                                                       && APPROVE_OR_EDIT
+                                                       .equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                                                       ? YES : NO)
+                                               .displayJudgeApporveEditOptionParty(
+                                                   checkApplicationTypeForParty(caseData)
+                                                       && APPROVE_OR_EDIT
+                                                       .equals(judicialDecisionMakeOrder.getMakeAnOrder())
+                                                       ? YES : NO).build());
         }
-
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
-
-        if (caseData.getJudicialDecisionMakeOrder() != null) {
-            makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
-        } else {
-            makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
-        }
-
-        caseDataBuilder
-            .judicialDecisionMakeOrder(makeAnOrderBuilder
-                                           .displayJudgeApporveEditOptionDate(
-                                               checkApplicationTypeForDate(caseData)
-                                                   && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
-                                                   ? YES : NO)
-                                           .displayJudgeApporveEditOptionParty(
-                                               checkApplicationTypeForParty(caseData)
-                                                   && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
-                                                   ? YES : NO).build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)

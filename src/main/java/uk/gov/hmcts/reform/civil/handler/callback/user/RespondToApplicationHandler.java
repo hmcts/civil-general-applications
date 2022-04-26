@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -51,7 +52,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
-    private static final String RESPONSE_MESSAGE = "# You have provided the requested info";
+    private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
         "<p> The application and your response will be reviewed by a Judge. </p>";
     private static final String CONFIRMATION_SUMMARY = "<br/><p> In relation to the following application(s): </p>"
@@ -197,6 +198,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
             addResponse(buildResponse(caseData), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
+        caseDataBuilder.hearingDetailsResp(GAHearingDetails.builder().build());
+        caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
         CaseData updatedCaseData = caseDataBuilder.build();
 
         CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
