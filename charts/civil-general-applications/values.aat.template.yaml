@@ -122,6 +122,7 @@ civil-service:
       FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
+      POLLING_EVENT_EMITTER_ENABLED: false
 
 idam-pr:
   releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
