@@ -304,7 +304,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldReturnNOForJudgeApproveEditOptionDateIfGATypeIsStayClaim() {
+        void shouldReturnYesForJudgeApproveEditOptionDateIfGATypeIsStayClaim() {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM));
 
@@ -314,8 +314,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
-                .isEqualTo(NO);
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
+                .isEqualTo(YES);
 
         }
 
@@ -331,7 +331,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
                 .isEqualTo(YES);
 
         }
@@ -348,13 +348,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
                 .isEqualTo(NO);
 
         }
 
         @Test
-        void shouldReturnNOForJudgeApporveEditOptionDateIfGATypesIsNotEitherExtendTimeORStayClaim() {
+        void shouldReturnYESForjudgeApproveEditOptionDateIfGATypesIsNotEitherExtendTimeORStayClaim() {
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -365,8 +365,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
-                .isEqualTo(NO);
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
+                .isEqualTo(YES);
 
         }
 
@@ -381,13 +381,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(YES);
 
         }
 
         @Test
-        void shouldReturnNOForJudgeApproveEditOptionPartyIfGATypeIsStrikeOut() {
+        void shouldReturnYesForJudgeApproveEditOptionPartyIfGATypeIsStrikeOut() {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
 
@@ -397,8 +397,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
-                .isEqualTo(NO);
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
+                .isEqualTo(YES);
 
         }
 
@@ -414,7 +414,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(YES);
 
         }
@@ -431,13 +431,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(NO);
 
         }
 
         @Test
-        void shouldReturnNOForJudgeApporveEditOptionPartyIfGATypesIsNotEitherExtendTimeORStrikeOut() {
+        void shouldReturnNOForjudgeApproveEditOptionDocIfGATypesIsNotEitherExtendTimeORStrikeOut() {
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -448,7 +448,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(YES);
 
         }
@@ -962,7 +962,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldReturnNOForJudgeApproveEditOptionDate() {
 
-            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM));
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
 
             CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
                                                      VALIDATE_MAKE_AN_ORDER);
@@ -971,7 +971,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
                 .isEqualTo(NO);
         }
 
@@ -988,7 +988,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionDate())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
                 .isEqualTo(YES);
         }
 
@@ -1005,12 +1005,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(NO);
         }
 
         @Test
-        void shouldReturnNOForJudgeApporveEditOptionParty() {
+        void shouldReturnNOForjudgeApproveEditOptionDoc() {
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1022,7 +1022,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDisplayJudgeApporveEditOptionParty())
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDoc())
                 .isEqualTo(YES);
         }
 

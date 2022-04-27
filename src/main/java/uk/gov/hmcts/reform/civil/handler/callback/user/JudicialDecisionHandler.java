@@ -234,25 +234,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
         if (judicialDecisionMakeOrder != null) {
             return makeAnOrderBuilder
-                .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
+                .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
                         .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
-                .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) && APPROVE_OR_EDIT
+                .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) && APPROVE_OR_EDIT
                         .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO);
         }
 
         return makeAnOrderBuilder
-            .displayJudgeApporveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
-            .displayJudgeApporveEditOptionParty(checkApplicationTypeForParty(caseData) ? YES : NO);
+            .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
+            .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) ? YES : NO);
     }
 
     /*Return True if General Application types are only Extend Time or/and Strike Out
     Else, Return False*/
-    private boolean checkApplicationTypeForParty(CaseData caseData) {
+    private boolean checkApplicationTypeForDoc(CaseData caseData) {
 
         if (caseData.getGeneralAppType() == null) {
             return false;
         }
-        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
 
     }
@@ -264,7 +264,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getGeneralAppType() == null) {
             return false;
         }
-        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STRIKE_OUT);
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 
@@ -647,8 +647,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (judicialDecisionMakeOrder.getMakeAnOrder() != null
             && APPROVE_OR_EDIT.equals(judicialDecisionMakeOrder.getMakeAnOrder())
-            && judicialDecisionMakeOrder.getJudgeApporveEditOptionDate() != null) {
-            LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getJudgeApporveEditOptionDate();
+            && judicialDecisionMakeOrder.getJudgeApproveEditOptionDate() != null) {
+            LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getJudgeApproveEditOptionDate();
             if (LocalDate.now().isAfter(directionsResponseByDate)) {
                 errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
             }

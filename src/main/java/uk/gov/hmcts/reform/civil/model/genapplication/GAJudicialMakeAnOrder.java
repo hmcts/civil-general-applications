@@ -23,10 +23,10 @@ public class GAJudicialMakeAnOrder {
     private String directionsText;
     private LocalDate directionsResponseByDate;
     private String reasonForDecisionText;
-    private LocalDate judgeApporveEditOptionDate;
-    private YesOrNo displayJudgeApporveEditOptionDate;
-    private YesOrNo displayJudgeApporveEditOptionParty;
-    private GAJudgeOrderClaimantOrDefenseFixedList judgeApporveEditOptionParty;
+    private LocalDate judgeApproveEditOptionDate;
+    private YesOrNo displayjudgeApproveEditOptionDate;
+    private YesOrNo displayjudgeApproveEditOptionDoc;
+    private GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
@@ -36,12 +36,12 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("directionsText") String directionsText,
                           @JsonProperty("directionsResponseByDate") LocalDate directionsResponseByDate,
                           @JsonProperty("reasonForDecisionText") String reasonForDecisionText,
-                          @JsonProperty("judgeApporveEditOptionDate") LocalDate judgeApporveEditOptionDate,
-                          @JsonProperty("displayJudgeApporveEditOptionDate") YesOrNo displayJudgeApporveEditOptionDate,
-                          @JsonProperty("displayJudgeApporveEditOptionParty")
-                              YesOrNo displayJudgeApporveEditOptionParty,
-                          @JsonProperty("judgeApporveEditOptionParty")
-                              GAJudgeOrderClaimantOrDefenseFixedList judgeApporveEditOptionParty) {
+                          @JsonProperty("judgeApproveEditOptionDate") LocalDate judgeApproveEditOptionDate,
+                          @JsonProperty("displayjudgeApproveEditOptionDate") YesOrNo displayjudgeApproveEditOptionDate,
+                          @JsonProperty("displayjudgeApproveEditOptionDoc")
+                              YesOrNo displayjudgeApproveEditOptionDoc,
+                          @JsonProperty("judgeApproveEditOptionDoc")
+                              GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -49,9 +49,9 @@ public class GAJudicialMakeAnOrder {
         this.directionsText = directionsText;
         this.directionsResponseByDate = directionsResponseByDate;
         this.reasonForDecisionText = reasonForDecisionText;
-        this.judgeApporveEditOptionDate = judgeApporveEditOptionDate;
-        this.displayJudgeApporveEditOptionDate = displayJudgeApporveEditOptionDate;
-        this.displayJudgeApporveEditOptionParty = displayJudgeApporveEditOptionParty;
-        this.judgeApporveEditOptionParty = judgeApporveEditOptionParty;
+        this.judgeApproveEditOptionDate = judgeApproveEditOptionDate;
+        this.displayjudgeApproveEditOptionDate = displayjudgeApproveEditOptionDate;
+        this.displayjudgeApproveEditOptionDoc = displayjudgeApproveEditOptionDoc;
+        this.judgeApproveEditOptionDoc = judgeApproveEditOptionDoc;
     }
 }
