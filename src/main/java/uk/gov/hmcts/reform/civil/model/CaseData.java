@@ -109,18 +109,4 @@ public class CaseData implements MappableObject {
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
     }
-
-    public String getJudicialDecisionMakeOrderDirectionsText() {
-        if (judicialDecisionMakeOrder == null) {
-            return null;
-        }
-        return judicialDecisionMakeOrder.getDirectionsText();
-    }
-
-    public GAJudgeDecisionOption getJudicialDecisionOption() {
-        if (judicialDecision == null) {
-            return null;
-        }
-        return judicialDecision.getDecision();
-    }
 }
