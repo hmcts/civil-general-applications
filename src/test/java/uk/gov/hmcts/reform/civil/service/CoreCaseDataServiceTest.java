@@ -301,6 +301,37 @@ class CoreCaseDataServiceTest {
     }
 
     @Nested
+    class SearchGeneralApplications {
+
+        @Test
+        void shouldReturnGeneralApplications_WhenSearchingGeneralApplicationsAsSystemUpdateUser() {
+            Query query = new Query(QueryBuilders.matchQuery("field", "value"), emptyList(), 0);
+
+            List<CaseDetails> cases = List.of(CaseDetails.builder().id(1L).build());
+            SearchResult searchResult = SearchResult.builder().cases(cases).build();
+
+            when(coreCaseDataApi.searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            ))
+                .thenReturn(searchResult);
+
+            List<CaseDetails> casesFound = service.searchGeneralApplication(query).getCases();
+
+            assertThat(casesFound).isEqualTo(cases);
+            verify(coreCaseDataApi).searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            );
+            verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+        }
+    }
+
+    @Nested
     class GetCase {
 
         @Test

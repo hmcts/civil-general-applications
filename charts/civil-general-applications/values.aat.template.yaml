@@ -58,6 +58,7 @@ java:
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
     TESTING_SUPPORT_ENABLED: true
     POLLING_EVENT_EMITTER_ENABLED: false
+    RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false
     LAUNCH_DARKLY_ENV: service-staging
     CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
     DOCUMENT_MANAGEMENT_SECURED: true
@@ -69,7 +70,7 @@ civil-service:
     releaseNameOverride: ${SERVICE_NAME}-civil-service
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
-    ingressHost: civil-service-${SERVICE_FQDN}
+    ingressHost: civil-ga-civil-service-staging-aat.service.core-compute-aat.internal
     keyVaults:
       civil:
         resourceGroup: civil
@@ -122,10 +123,12 @@ civil-service:
       FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
+      POLLING_EVENT_EMITTER_ENABLED: false
 
 idam-pr:
   releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
   enabled: true
+  debug: true
   redirect_uris:
     XUI:
       - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
