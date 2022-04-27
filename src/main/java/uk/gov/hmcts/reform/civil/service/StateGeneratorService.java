@@ -17,8 +17,19 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 public class StateGeneratorService {
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
-        GAJudgeDecisionOption decision = data.getJudicialDecisionOption();
-        String directionsText = data.getJudicialDecisionMakeOrderDirectionsText();
+        GAJudgeDecisionOption decision;
+        String directionsText;
+
+        if (data.getJudicialDecisionMakeOrder() != null) {
+            directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
+        } else {
+            directionsText = null;
+        }
+        if (data.getJudicialDecision() != null) {
+            decision = data.getJudicialDecision().getDecision();
+        } else {
+            decision = null;
+        }
 
         if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
