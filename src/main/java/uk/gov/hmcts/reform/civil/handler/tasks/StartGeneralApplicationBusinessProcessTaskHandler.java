@@ -57,7 +57,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         switch (businessProcess.getStatusOrDefault()) {
-            case FINISHED:
+            case READY:
             case DISPATCHED:
                 return updateBusinessProcess(caseId, externalTask, startEventResponse, businessProcess);
             case STARTED:

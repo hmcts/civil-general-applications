@@ -13,13 +13,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -75,6 +76,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String SET_JUDGE_BUSINESS_PROCESS = "ga-set-judge-buisness-process";
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
@@ -99,7 +101,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + " before the order was made may apply to have the order set aside or varied."
         + " Any application under this paragraph must be made within 7 days.";
 
-    private final JudicialDecisionService judicialDecisionService;
+    private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
         + " should be given, is required.";
     public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
@@ -119,7 +121,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
                 callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
                 callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
-                callbackKey(ABOUT_TO_SUBMIT), this::emptySubmittedCallbackResponse,
+                callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
                 callbackKey(SUBMITTED), this::buildConfirmation);
 
     }
@@ -306,6 +308,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return errors;
     }
 
+    private CaseData.CaseDataBuilder getSharedData(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        // second idam call is workaround for null pointer when hiding field in getIdamEmail callback
+        return caseData.toBuilder();
+    }
+
+    private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
+        CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
+        dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(dataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialDecision judicialDecision = caseData.getJudicialDecision();
@@ -351,7 +368,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         List<String> errors;
         errors = judicialWrittenRepresentationsDate != null
-            ? judicialDecisionService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
+            ? judicialDecisionWrittenRepService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
             : Collections.emptyList();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
