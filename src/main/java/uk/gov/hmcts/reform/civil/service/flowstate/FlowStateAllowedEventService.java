@@ -18,6 +18,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
@@ -33,7 +34,8 @@ public class FlowStateAllowedEventService {
     private static final Map<String, List<CaseEvent>> ALLOWED_EVENTS_ON_FLOW_STATE = Map.ofEntries(
         entry(DRAFT.fullName(), List.of(INITIATE_GENERAL_APPLICATION,
                                         RESPOND_TO_APPLICATION, JUDGE_MAKES_DECISION,
-                                        RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION)),
+                                        RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                                        RESPOND_TO_JUDGE_DIRECTIONS)),
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
