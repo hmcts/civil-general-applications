@@ -118,6 +118,9 @@ public class CaseData implements MappableObject {
     }
 
     public GAJudgeDecisionOption getJudicialDecisionOption() {
+        if (judicialDecision == null) {
+            return null;
+        }
         return judicialDecision.getDecision();
     }
 }
