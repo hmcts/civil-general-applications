@@ -22,9 +22,7 @@
     <cve>CVE-2021-22060</cve>
     <cve>CVE-2021-42550</cve>
   </suppress>
-  <suppress>
 
-  </suppress>
   <suppress>
     <notes><![CDATA[
    file name: follow-redirects:1.14.7
