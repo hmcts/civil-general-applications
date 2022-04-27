@@ -26,19 +26,19 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
-    ResponseToJudgeDirectionsOrder.class,
+    RespondToJudgeAddlnInfoHandler.class,
     CaseDetailsConverter.class,
     JacksonAutoConfiguration.class},
     properties = {"reference.database.enabled=false"})
-public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandlerTest {
+public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
-    ResponseToJudgeDirectionsOrder handler;
+    RespondToJudgeAddlnInfoHandler handler;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -53,14 +53,14 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(RESPOND_TO_JUDGE_DIRECTIONS);
+        assertThat(handler.handledEvents()).contains(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
     }
 
     @Test
     void shouldPopulateDocListAndReturnNullWrittenRepUpload() {
 
-        List<Element<Document>> generalAppDirOrderUpload = new ArrayList<>();
-        List<Element<Document>> gaDirectionDocList = new ArrayList<>();
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+        List<Element<Document>> gaAddlnInfoList = new ArrayList<>();
 
         Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
             .documentBinaryUrl(TEST_STRING)
@@ -70,10 +70,10 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
             .documentBinaryUrl(TEST_STRING)
             .documentHash(TEST_STRING).build();
 
-        generalAppDirOrderUpload.add(element(document1));
-        generalAppDirOrderUpload.add(element(document2));
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
 
-        CaseData caseData = getCase(generalAppDirOrderUpload, gaDirectionDocList);
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, gaAddlnInfoList);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -82,15 +82,15 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         var responseCaseData = getCaseData(response);
         assertThat(response).isNotNull();
-        assertThat(responseCaseData.getGeneralAppDirOrderUpload()).isEqualTo(null);
-        assertThat(responseCaseData.getGaDirectionDocList().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
+        assertThat(responseCaseData.getGaAddlnInfoList().size()).isEqualTo(2);
 
     }
 
     @Test
     void shouldPopulateDocListWithExitingDocElement() {
 
-        List<Element<Document>> generalAppDirOrderUpload = new ArrayList<>();
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
 
         Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
             .documentBinaryUrl(TEST_STRING)
@@ -100,15 +100,15 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
             .documentBinaryUrl(TEST_STRING)
             .documentHash(TEST_STRING).build();
 
-        generalAppDirOrderUpload.add(element(document1));
-        generalAppDirOrderUpload.add(element(document2));
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
 
-        List<Element<Document>> gaDirectionDocList = new ArrayList<>();
+        List<Element<Document>> gaAddlnInfoList = new ArrayList<>();
 
-        gaDirectionDocList.add(element(document1));
-        gaDirectionDocList.add(element(document2));
+        gaAddlnInfoList.add(element(document1));
+        gaAddlnInfoList.add(element(document2));
 
-        CaseData caseData = getCase(generalAppDirOrderUpload, gaDirectionDocList);
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, gaAddlnInfoList);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -117,8 +117,8 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         var responseCaseData = getCaseData(response);
         assertThat(response).isNotNull();
-        assertThat(responseCaseData.getGeneralAppDirOrderUpload()).isEqualTo(null);
-        assertThat(responseCaseData.getGaDirectionDocList().size()).isEqualTo(4);
+        assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
+        assertThat(responseCaseData.getGaAddlnInfoList().size()).isEqualTo(4);
 
     }
 
@@ -127,13 +127,13 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         return responseCaseData;
     }
 
-    private CaseData getCase(List<Element<Document>> generalAppDirOrderUpload,
-                             List<Element<Document>> gaDirectionDocList) {
+    private CaseData getCase(List<Element<Document>> generalAppAddlnInfoUpload,
+                             List<Element<Document>> gaAddlnInfoList) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
-            .generalAppDirOrderUpload(generalAppDirOrderUpload)
-            .gaDirectionDocList(gaDirectionDocList)
+            .generalAppAddlnInfoUpload(generalAppAddlnInfoUpload)
+            .gaAddlnInfoList(gaAddlnInfoList)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
                     .generalAppRespondent1Representative(YES)
