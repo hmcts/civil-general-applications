@@ -29,8 +29,7 @@ public class PaymentsService {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         if (generalAppPBADetails == null) {
             error = "PBA details not received.";
-        }
-        if (generalAppPBADetails != null && generalAppPBADetails.getFee() == null) {
+        } else if (generalAppPBADetails.getFee() == null) {
             error = "Fees are not set correctly.";
         }
         if (caseData.getGeneralAppApplnSolicitor() == null
