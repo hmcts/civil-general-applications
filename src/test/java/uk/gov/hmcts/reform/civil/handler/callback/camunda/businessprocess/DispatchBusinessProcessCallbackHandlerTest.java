@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -65,6 +66,7 @@ class DispatchBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest
     @Nested
     class AboutToSubmitCallback {
 
+        @Disabled("Disabled for trying purpose")
         @Test
         void shouldDispatchBusinessProcess_whenStatusIsReady() {
             CaseData caseData = CaseDataBuilder.builder()
