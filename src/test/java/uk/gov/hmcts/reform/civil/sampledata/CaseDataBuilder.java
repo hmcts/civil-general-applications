@@ -210,6 +210,7 @@ public class CaseDataBuilder {
                         .fee(Fee.builder().code("FE203").calculatedAmountInPence(BigDecimal.valueOf(27500)).build())
                         .pbaReference(CUSTOMER_REFERENCE).build())
                 .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
                 .build();
     }
 
