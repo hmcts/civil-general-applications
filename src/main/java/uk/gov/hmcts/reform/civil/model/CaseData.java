@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -108,19 +107,5 @@ public class CaseData implements MappableObject {
         return businessProcess == null
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
-    }
-
-    public String getJudicialDecisionMakeOrderDirectionsText() {
-        if (judicialDecisionMakeOrder == null) {
-            return null;
-        }
-        return judicialDecisionMakeOrder.getDirectionsText();
-    }
-
-    public GAJudgeDecisionOption getJudicialDecisionOption() {
-        if (judicialDecision == null) {
-            return null;
-        }
-        return judicialDecision.getDecision();
     }
 }
