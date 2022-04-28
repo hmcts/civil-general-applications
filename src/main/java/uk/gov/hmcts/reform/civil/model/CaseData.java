@@ -104,5 +104,4 @@ public class CaseData implements MappableObject {
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
     }
-
 }

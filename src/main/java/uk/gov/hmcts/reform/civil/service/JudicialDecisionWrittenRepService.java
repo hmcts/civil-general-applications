@@ -13,7 +13,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 
 @Service
 @RequiredArgsConstructor
-public class JudicialDecisionService {
+public class JudicialDecisionWrittenRepService {
 
     public static final String WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST =
         "The date entered cannot be in the past.";
