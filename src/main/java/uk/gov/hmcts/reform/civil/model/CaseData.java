@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
@@ -99,7 +98,6 @@ public class CaseData implements MappableObject {
     private final String judicialApplicanSequentialDateText;
     private final String judicialConcurrentDateText;
     private final LocalDate issueDate;
-    private final List<Element<CaseDocument>> makeDecisionDocuments;
 
     private final BusinessProcess businessProcess;
 
