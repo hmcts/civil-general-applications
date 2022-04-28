@@ -11,16 +11,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.civil.service.JudicialDecisionService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
+import static uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService.WRITTEN_REPRESENTATION_DATE_CANNOT_BE_IN_PAST;
 
 @SpringBootTest(classes = {
-    JudicialDecisionService.class,
+    JudicialDecisionWrittenRepService.class,
     JacksonAutoConfiguration.class,
 })
-public class JudicialDecisionServiceTest {
+public class JudicialDecisionWrittenRepServiceTest {
 
     @Autowired
-    private JudicialDecisionService service;
+    private JudicialDecisionWrittenRepService service;
 
     @Test
     void shouldReturnErrors_whenWrittenRepresentationSequentialRepresentationsDateIsInPast() {

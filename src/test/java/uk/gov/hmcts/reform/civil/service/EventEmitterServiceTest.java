@@ -68,6 +68,23 @@ class EventEmitterServiceTest {
     }
 
     @Test
+    void shouldSendMessageAndTriggerGAEvent_whenInvoked() {
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+        CaseData caseData = CaseData.builder()
+            .businessProcess(businessProcess)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+        verify(applicationEventPublisher).publishEvent(new DispatchBusinessProcessEvent(1L, businessProcess));
+    }
+
+    @Test
     void shouldSendMessageAndNotTriggerEvent_whenNotTrue() {
         when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
         var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
@@ -91,6 +108,24 @@ class EventEmitterServiceTest {
     }
 
     @Test
+    void shouldSendMessageAndNotTriggerGAEvent_whenNotTrue() {
+        when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+        CaseData caseData = CaseData.builder()
+            .businessProcess(businessProcess)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+
+    }
+
+    @Test
     void shouldHandleException_whenInvoked() {
         when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
         var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
@@ -106,6 +141,24 @@ class EventEmitterServiceTest {
         var caseId = caseData.getCcdCaseReference();
 
         eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplication, true);
+
+        verify(runtimeService).createMessageCorrelation("TEST_EVENT");
+        verify(messageCorrelationBuilder).setVariable("caseId", 1L);
+        verify(messageCorrelationBuilder).correlateStartMessage();
+    }
+
+    @Test
+    void shouldHandleException_whenInvokedGA() {
+        when(messageCorrelationBuilder.correlateStartMessage()).thenThrow(new RuntimeException());
+        var businessProcess = BusinessProcess.builder().camundaEvent("TEST_EVENT").build();
+
+        CaseData caseData = CaseData.builder()
+            .businessProcess(businessProcess)
+            .ccdCaseReference(1L)
+            .build();
+        var caseId = caseData.getCcdCaseReference();
+
+        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
 
         verify(runtimeService).createMessageCorrelation("TEST_EVENT");
         verify(messageCorrelationBuilder).setVariable("caseId", 1L);
