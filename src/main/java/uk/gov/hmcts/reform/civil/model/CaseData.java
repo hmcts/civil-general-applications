@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -97,7 +96,6 @@ public class CaseData implements MappableObject {
     private final String judicialSequentialDateText;
     private final String judicialApplicanSequentialDateText;
     private final String judicialConcurrentDateText;
-    private final LocalDate issueDate;
 
     private final BusinessProcess businessProcess;
 
