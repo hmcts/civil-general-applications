@@ -7,7 +7,7 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def generalappCCDBranch = "CIV-1548-apiTesting"
+def generalappCCDBranch = "master"
 
 AppPipelineConfig pipelineConf
 
@@ -61,7 +61,7 @@ withPipeline(type, product, component) {
 
     onPR {
         loadVaultSecrets(secrets)
-   //     enableCleanupOfHelmReleaseOnSuccess()
+        enableCleanupOfHelmReleaseOnSuccess()
     }
     onMaster {
         loadVaultSecrets(secrets)
