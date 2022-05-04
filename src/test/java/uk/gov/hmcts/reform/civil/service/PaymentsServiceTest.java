@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,7 @@ class PaymentsServiceTest {
         .contactInformation(List.of(ContactInformation.builder().build()))
         .build();
     private static final String CUSTOMER_REFERENCE = "12345";
+    private static final String FEE_NOT_SET_CORRECTLY_ERROR = "Fees are not set correctly.";
 
     @MockBean
     private PaymentsClient paymentsClient;
@@ -99,7 +101,64 @@ class PaymentsServiceTest {
             InvalidPaymentRequestException.class,
             () -> paymentsService.validateRequest(caseData)
         );
-        assertThat(exception.getMessage()).isEqualTo("Fees are not set correctly.");
+        assertThat(exception.getMessage()).isEqualTo(FEE_NOT_SET_CORRECTLY_ERROR);
+    }
+
+    @Test
+    void validateRequestShouldThrowAnError_whenFeeDetailsDoNotHaveFeeCode() {
+        CaseData caseData = CaseData.builder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder()
+                                               .calculatedAmountInPence(BigDecimal.valueOf(10800))
+                                               .version("1")
+                                               .build())
+                                      .build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
+
+        Exception exception = assertThrows(
+            InvalidPaymentRequestException.class,
+            () -> paymentsService.validateRequest(caseData)
+        );
+        assertThat(exception.getMessage()).isEqualTo(FEE_NOT_SET_CORRECTLY_ERROR);
+    }
+
+    @Test
+    void validateRequestShouldThrowAnError_whenFeeDetailsDoNotHaveFeeVersion() {
+        CaseData caseData = CaseData.builder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder()
+                                               .calculatedAmountInPence(BigDecimal.valueOf(10800))
+                                               .code("FEE0442")
+                                               .build())
+                                      .build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
+
+        Exception exception = assertThrows(
+            InvalidPaymentRequestException.class,
+            () -> paymentsService.validateRequest(caseData)
+        );
+        assertThat(exception.getMessage()).isEqualTo(FEE_NOT_SET_CORRECTLY_ERROR);
+    }
+
+    @Test
+    void validateRequestShouldThrowAnError_whenFeeDetailsDoNotHaveFeeAmount() {
+        CaseData caseData = CaseData.builder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder()
+                                               .code("FEE0442")
+                                               .version("1")
+                                               .build())
+                                      .build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
+
+        Exception exception = assertThrows(
+            InvalidPaymentRequestException.class,
+            () -> paymentsService.validateRequest(caseData)
+        );
+        assertThat(exception.getMessage()).isEqualTo(FEE_NOT_SET_CORRECTLY_ERROR);
     }
 
     @Test
