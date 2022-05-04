@@ -20,18 +20,18 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
@@ -43,7 +43,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
-@SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
 @RequiredArgsConstructor
 public class RespondToApplicationHandler extends CallbackHandler {
@@ -51,6 +50,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final IdamClient idamClient;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -72,6 +72,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         + " be before today.";
     public static final String APPLICATION_RESPONSE_PRESENT = "The General Application has already "
         +  "received a response.";
+    public static final String RESPONDENT_RESPONE_EXISTS = "This id has already been responded";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
 
     @Override
@@ -106,12 +107,23 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     public List<String> applicationExistsValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
 
         List<String> errors = new ArrayList<>();
         if (caseData.getCcdState() == CaseState
-                .APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            .APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
         ) {
             errors.add(APPLICATION_RESPONSE_PRESENT);
+        }
+        if (respondentResponse != null) {
+            Optional<Element<GARespondentResponse>> respondentResponseElement = respondentResponse.stream().findAny();
+            if (respondentResponseElement.isPresent()) {
+                String respondentResponseId = respondentResponseElement.get().getValue().getGaRespondentDetails();
+                if (respondentResponseId.equals(userDetails.getId())) {
+                    errors.add(RESPONDENT_RESPONE_EXISTS);
+                }
+            }
         }
         return errors;
     }
@@ -193,9 +205,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<Element<GARespondentResponse>> respondentsResponses =
-            addResponse(buildResponse(caseData), caseData.getRespondentsResponses());
+            addResponse(buildResponse(caseData, userDetails), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
         caseDataBuilder.hearingDetailsResp(GAHearingDetails.builder().build());
@@ -222,15 +235,15 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return newApplication;
     }
 
-
-    private GARespondentResponse buildResponse(CaseData caseData) {
+    private GARespondentResponse buildResponse(CaseData caseData, UserDetails userDetails) {
 
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
 
         gaRespondentResponseBuilder
             .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
                                                             .getGeneralAppRespondent1Representative())
-            .gaHearingDetails(caseData.getHearingDetailsResp()).build();
+            .gaHearingDetails(caseData.getHearingDetailsResp())
+            .gaRespondentDetails(userDetails.getId()).build();
 
         return gaRespondentResponseBuilder.build();
     }

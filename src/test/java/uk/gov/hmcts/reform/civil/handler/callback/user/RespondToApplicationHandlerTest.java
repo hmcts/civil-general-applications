@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -57,6 +58,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    IdamClient idamClient;
 
     @MockBean
     ParentCaseUpdateHelper parentCaseUpdateHelper;
@@ -544,6 +548,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         return CaseData.builder()
             .generalAppRespondentSolicitors(respondentSols)
             .respondentsResponses(respondentsResponses)
+            .gaRespondentDetails("1234")
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
                     .generalAppRespondent1Representative(YES)
