@@ -28,6 +28,7 @@ public class GAJudgesHearingListGAspec {
     private String judgeHearingCourtLocationText1;
     private String hearingPreferencesPreferredTypeLabel1;
     private String judgeHearingSupportReqText1;
+    private String judicialVulnerabilityText;
 
     @JsonCreator
     GAJudgesHearingListGAspec(@JsonProperty("hearingPreferencesPreferredType")
@@ -43,7 +44,8 @@ public class GAJudgesHearingListGAspec {
                               @JsonProperty("judgeHearingCourtLocationText1") String judgeHearingCourtLocationText1,
                               @JsonProperty("hearingPreferencesPreferredTypeLabel1")
                                   String hearingPreferencesPreferredTypeLabel1,
-                              @JsonProperty("judgeHearingSupportReqText1") String judgeHearingSupportReqText1) {
+                              @JsonProperty("judgeHearingSupportReqText1") String judgeHearingSupportReqText1,
+                              @JsonProperty("judicialVulnerabilityText") String judicialVulnerabilityText) {
 
         this.hearingPreferencesPreferredType = hearingPreferencesPreferredType;
         this.judicialSupportRequirement = judicialSupportRequirement;
@@ -53,6 +55,7 @@ public class GAJudgesHearingListGAspec {
         this.judgeHearingCourtLocationText1 = judgeHearingCourtLocationText1;
         this.hearingPreferencesPreferredTypeLabel1 = hearingPreferencesPreferredTypeLabel1;
         this.judgeHearingSupportReqText1 = judgeHearingSupportReqText1;
+        this.judicialVulnerabilityText = judicialVulnerabilityText;
 
     }
 }

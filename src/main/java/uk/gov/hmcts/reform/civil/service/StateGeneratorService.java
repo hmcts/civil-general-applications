@@ -6,14 +6,30 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.*;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 
 @Service
 public class StateGeneratorService {
+
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
-        GAJudgeDecisionOption decision = data.getJudicialDecision().getDecision();
-        String directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
+        GAJudgeDecisionOption decision;
+        String directionsText;
+
+        if (data.getJudicialDecisionMakeOrder() != null) {
+            directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
+        } else {
+            directionsText = null;
+        }
+        if (data.getJudicialDecision() != null) {
+            decision = data.getJudicialDecision().getDecision();
+        } else {
+            decision = null;
+        }
 
         if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;

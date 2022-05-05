@@ -207,9 +207,14 @@ public class CaseDataBuilder {
                                 .listItems(asList(DynamicListElement.builder().label("PBA0088192").build(),
                                         DynamicListElement.builder().label("PBA0078095").build()))
                                 .value(DynamicListElement.dynamicElement("PBA0078095")).build())
-                        .fee(Fee.builder().code("FE203").calculatedAmountInPence(BigDecimal.valueOf(27500)).build())
+                        .fee(Fee.builder()
+                                 .code("FE203")
+                                 .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                                 .version("1")
+                                 .build())
                         .pbaReference(CUSTOMER_REFERENCE).build())
                 .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
                 .build();
     }
 

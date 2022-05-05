@@ -9,13 +9,19 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.*;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
 )
 public class StateGeneratorServiceTest {
+
     @Autowired
     StateGeneratorService stateGeneratorService;
 
@@ -32,7 +38,7 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldReturn_AWAITING_WRITTEN_REPRESENTATIONS_WhenMakeOrderForWrittenRepresentationsSelected() {
+    public void shouldReturn_Awaiting_Written_Representation_WhenMakeOrderForWrittenRepresentationsSelected() {
         CaseData caseData = CaseData.builder()
             .judicialDecision(new GAJudicialDecision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS))
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().orderText("test").build())
@@ -44,7 +50,7 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldReturn_AWAITING_DIRECTIONS_ORDER_DOCS_WhenMakeOrderSelectedAndTextProvided() {
+    public void shouldReturn_Awaiting_Directions_Order_Docs_WhenMakeOrderSelectedAndTextProvided() {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
@@ -76,6 +82,18 @@ public class StateGeneratorServiceTest {
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("   ").build())
+            .build();
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+
+        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+    }
+
+    @Test
+    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndNullTextProvided() {
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);

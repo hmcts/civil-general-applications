@@ -14,11 +14,10 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.READY;
 
 @Slf4j
 @Aspect
@@ -46,7 +45,7 @@ public class EventEmitterAspect {
                     eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplicationElement, false);
                 }
             } else {
-                if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == FINISHED) {
+                if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == READY) {
                     eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
                 }
             }

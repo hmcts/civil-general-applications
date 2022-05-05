@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
@@ -28,7 +27,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -98,8 +96,12 @@ public class CaseData implements MappableObject {
     private final String judicialSequentialDateText;
     private final String judicialApplicanSequentialDateText;
     private final String judicialConcurrentDateText;
-    private final LocalDate issueDate;
-    private final List<Element<CaseDocument>> makeDecisionDocuments;
+    private final List<Element<Document>> generalAppWrittenRepUpload;
+    private final List<Element<Document>> gaWrittenRepDocList;
+    private final List<Element<Document>> generalAppDirOrderUpload;
+    private final List<Element<Document>> gaDirectionDocList;
+    private final List<Element<Document>> generalAppAddlnInfoUpload;
+    private final List<Element<Document>> gaAddlnInfoList;
 
     private final BusinessProcess businessProcess;
 

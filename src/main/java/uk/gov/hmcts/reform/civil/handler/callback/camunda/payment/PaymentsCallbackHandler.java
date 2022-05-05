@@ -97,7 +97,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                 errors.add(ERROR_MESSAGE);
             }
         } catch (InvalidPaymentRequestException e) {
-            log.error(String.format("Duplicate Payment error status code 400 for case: %s, response body: %s",
+            log.error(String.format("Error handling payment for general application: %s, response body: [%s]",
                     caseData.getCcdCaseReference(), e.getMessage()
             ));
             caseData = updateWithDuplicatePaymentError(caseData, e);
