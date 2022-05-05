@@ -24,7 +24,11 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -72,20 +76,20 @@ public class RespondToApplicationHandler extends CallbackHandler {
         + " be before today.";
     public static final String APPLICATION_RESPONSE_PRESENT = "The General Application has already "
         +  "received a response.";
-    public static final String RESPONDENT_RESPONE_EXISTS = "This id has already been responded";
+    public static final String RESPONDENT_RESPONSE_EXISTS = "The application has already been responded to.";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_START), this::isApplicationInJudicialReviewStage,
+            callbackKey(ABOUT_TO_START), this::applicationValidation,
             callbackKey(MID, "hearing-screen-response"), this::hearingScreenResponse,
             callbackKey(ABOUT_TO_SUBMIT), this::submitClaim,
             callbackKey(SUBMITTED), this::buildResponseConfirmation
         );
     }
 
-    private AboutToStartOrSubmitCallbackResponse isApplicationInJudicialReviewStage(CallbackParams callbackParams) {
+    private AboutToStartOrSubmitCallbackResponse applicationValidation(CallbackParams callbackParams) {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(applicationExistsValidation(callbackParams))
             .build();
@@ -121,7 +125,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             if (respondentResponseElement.isPresent()) {
                 String respondentResponseId = respondentResponseElement.get().getValue().getGaRespondentDetails();
                 if (respondentResponseId.equals(userDetails.getId())) {
-                    errors.add(RESPONDENT_RESPONE_EXISTS);
+                    errors.add(RESPONDENT_RESPONSE_EXISTS);
                 }
             }
         }
