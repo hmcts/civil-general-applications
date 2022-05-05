@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service;
 
-import joptsimple.internal.Strings;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Service
 @RequiredArgsConstructor
@@ -29,15 +29,17 @@ public class PaymentsService {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         if (generalAppPBADetails == null) {
             error = "PBA details not received.";
-        }
-        if (generalAppPBADetails != null && generalAppPBADetails.getFee() == null) {
+        } else if (generalAppPBADetails.getFee() == null
+            || generalAppPBADetails.getFee().getCalculatedAmountInPence() == null
+            || isBlank(generalAppPBADetails.getFee().getVersion())
+            || isBlank(generalAppPBADetails.getFee().getCode())) {
             error = "Fees are not set correctly.";
         }
-        if (caseData.getApplicant1OrganisationPolicy() == null
-                || caseData.getApplicant1OrganisationPolicy().getOrganisation() == null) {
+        if (caseData.getGeneralAppApplnSolicitor() == null
+                || isBlank(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier())) {
             error = "Applicant's organization details not received.";
         }
-        if (!Strings.isNullOrEmpty(error)) {
+        if (!isBlank(error)) {
             throw new InvalidPaymentRequestException(error);
         }
     }
@@ -49,7 +51,7 @@ public class PaymentsService {
     private CreditAccountPaymentRequest buildRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
-        var organisationId = caseData.getApplicant1OrganisationPolicy().getOrganisation().getOrganisationID();
+        var organisationId = caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
         var organisationName = organisationService.findOrganisationById(organisationId)
             .map(Organisation::getName)
             .orElseThrow(RuntimeException::new);

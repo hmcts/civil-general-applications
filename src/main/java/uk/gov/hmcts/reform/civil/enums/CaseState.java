@@ -24,7 +24,7 @@ public enum CaseState {
     AWAITING_DIRECTIONS_ORDER_DOCS("Directions Order Made"),
     ORDER_MADE("Order Made"),
     LISTING_FOR_A_HEARING("Listed for a Hearing"),
-    AWAITING_WRITTEN_REPRESENTATIONS("Written Representations Required"),
+    AWAITING_WRITTEN_REPRESENTATIONS("Awaiting Written Representations"),
     AWAITING_ADDITIONAL_INFORMATION("Additional Information Required"),
     APPLICATION_DISMISSED("Application Dismissed"),
     APPLICATION_CLOSED("Application Closed");
