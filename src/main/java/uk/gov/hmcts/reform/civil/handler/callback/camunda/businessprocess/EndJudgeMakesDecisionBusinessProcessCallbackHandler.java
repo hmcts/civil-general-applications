@@ -12,28 +12,27 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
-import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
 
 @Service
 @RequiredArgsConstructor
-public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler {
+public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(END_BUSINESS_PROCESS_GASPEC);
+    private static final List<CaseEvent> EVENTS = List.of(END_JUDGE_BUSINESS_PROCESS_GASPEC);
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final StateGeneratorService stateGeneratorService;
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return Map.of(callbackKey(ABOUT_TO_SUBMIT), this::endGeneralApplicationBusinessProcess);
+        return Map.of(callbackKey(ABOUT_TO_SUBMIT), this::endJudgeBusinessProcess);
     }
 
     @Override
@@ -41,13 +40,14 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         return EVENTS;
     }
 
-    private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
+    private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        CaseState newState = isNotificationCriteriaSatisfied(data)
-            ? AWAITING_RESPONDENT_RESPONSE
-            : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-        parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
-        return evaluateReady(callbackParams, newState);
+        parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+        return evaluateReady(callbackParams, getNewStateDependingOn(data));
+    }
+
+    private CaseState getNewStateDependingOn(CaseData data) {
+        return stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(data);
     }
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
