@@ -54,12 +54,10 @@ public class TestingSupportController {
     }
 
     @GetMapping("/testing-support/case/{caseId}")
-    public ResponseEntity<CaseDetails> getCaseData(@PathVariable("caseId") Long caseId) {
+    public ResponseEntity<CaseData> getCaseData(@PathVariable("caseId") Long caseId) {
 
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(String.valueOf(caseId),
-                                                CaseEvent.CREATE_GENERAL_APPLICATION_CASE);
-
-        return new ResponseEntity<>(startEventResponse.getCaseDetails(), HttpStatus.OK);
+        CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
+        return new ResponseEntity<>(caseData, HttpStatus.OK);
     }
 
     @Data
