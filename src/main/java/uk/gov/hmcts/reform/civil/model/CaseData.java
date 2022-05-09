@@ -104,7 +104,6 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaDirectionDocList;
     private final List<Element<Document>> generalAppAddlnInfoUpload;
     private final List<Element<Document>> gaAddlnInfoList;
-    private final LocalDate issueDate;
     private final List<Element<CaseDocument>> makeDecisionDocuments;
 
     private final BusinessProcess businessProcess;
