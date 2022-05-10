@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -28,14 +29,20 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
@@ -59,10 +66,22 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     CaseDetailsConverter caseDetailsConverter;
 
     @MockBean
+    IdamClient idamClient;
+
+    @MockBean
     ParentCaseUpdateHelper parentCaseUpdateHelper;
+
+    @BeforeEach
+        public void setUp() throws IOException {
+
+        when(idamClient.getUserDetails(anyString())).thenReturn(UserDetails.builder()
+                                                                    .id(STRING_CONSTANT)
+                                                                    .build());
+    }
 
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
 
+    private static final String STRING_CONSTANT = "1234";
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String DUMMY_EMAIL = "test@gmail.com";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -71,6 +90,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         + "<ul> <li>Summary judgment</li> </ul>"
         + " <p> The application and your response will be reviewed by a Judge. </p> ";
     private static final String ERROR = "The General Application has already received a response.";
+    private static final String RESPONDENT_ERROR = "The application has already been responded to.";
     public static final String TRIAL_DATE_FROM_REQUIRED = "Please enter the Date from if the trial has been fixed";
     public static final String INVALID_TRIAL_DATE_RANGE = "Trial Date From cannot be after Trial Date to. "
         + "Please enter valid range.";
@@ -115,6 +135,16 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(getCase(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
         errors.add(ERROR);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackChecksRespondendResponseBeforeProceeding() {
+        CallbackParams params = callbackParamsOf(getCaseWithRespondentResponse(), CallbackType.ABOUT_TO_START);
+        List<String> errors = new ArrayList<>();
+        errors.add(RESPONDENT_ERROR);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEqualTo(errors);
@@ -512,6 +542,16 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             .unavailableTrialDateFrom(UNAVAILABILITY_DATE_FROM_INVALID)
             .build();
         return wrapElements(invalidDates);
+    }
+
+    private CaseData getCaseWithRespondentResponse() {
+
+        respondentsResponses.add(element(GARespondentResponse.builder()
+                                             .generalAppRespondent1Representative(NO)
+                                             .gaRespondentDetails("1234").build()));
+        return CaseData.builder()
+            .respondentsResponses(respondentsResponses)
+            .build();
     }
 
     private CaseData getCase() {
