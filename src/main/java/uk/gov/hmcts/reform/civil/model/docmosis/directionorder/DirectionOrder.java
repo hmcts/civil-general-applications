@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.model.docmosis.writtenRepresentationSequentialOrder;
+package uk.gov.hmcts.reform.civil.model.docmosis.directionorder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode
-public class WrittenRepSequentialOrder implements MappableObject {
+public class DirectionOrder implements MappableObject {
 
     private final String claimNumber;
     private final String claimantName;
@@ -28,10 +28,6 @@ public class WrittenRepSequentialOrder implements MappableObject {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate applicationDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate uploadDeadlineDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate responseDeadlineDate;
+    private final String judgeDirection;
+    private final String reasonForDecision;
 }

@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.civil.service.docmosis.dismissalOrder;
+package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.dismissalOrder.DismissalOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.generalorder.GeneralOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
 
 @Service
 @RequiredArgsConstructor
-public class DismissalOrderGenerator implements TemplateDataGenerator<DismissalOrder> {
+public class GeneralOrderGenerator implements TemplateDataGenerator<GeneralOrder> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        DismissalOrder templateData = getTemplateData(caseData);
+        GeneralOrder templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -41,7 +41,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<DismissalO
         return documentManagementService.uploadDocument(
             authorisation,
             new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
-                    DocumentType.DISMISSAL_ORDER)
+                    DocumentType.GENERAL_ORDER)
         );
     }
 
@@ -50,11 +50,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<DismissalO
     }
 
     @Override
-    public DismissalOrder getTemplateData(CaseData caseData) {
-        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-        String collect = types.stream()
-            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
-
+    public GeneralOrder getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,22 +65,26 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<DismissalO
         }
         String defendantName = String.join(", ", defendentNames);
 
-        DismissalOrder.DismissalOrderBuilder dismissalOrderBuilder =
-            DismissalOrder.builder()
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        String collect = types.stream()
+            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
+
+        GeneralOrder.GeneralOrderBuilder generalOrderBuilder =
+            GeneralOrder.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
+                .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now());
 
-        return dismissalOrderBuilder.build();
+        return generalOrderBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        return DISMISSAL_ORDER;
+        return GENERAL_ORDER;
     }
 }

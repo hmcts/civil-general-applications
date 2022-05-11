@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.civil.service.docmosis.writtenRepresentationConcurrentOrder;
+package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.writtenRepresentationConcurrentOrder.WrittenRepConcurrentOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.dismissalorder.DismissalOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REP_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
 
 @Service
 @RequiredArgsConstructor
-public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDataGenerator<WrittenRepConcurrentOrder> {
+public class DismissalOrderGenerator implements TemplateDataGenerator<DismissalOrder> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        WrittenRepConcurrentOrder templateData = getTemplateData(caseData);
+        DismissalOrder templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -41,7 +41,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
         return documentManagementService.uploadDocument(
             authorisation,
             new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
-                    DocumentType.WRITTEN_REP_CONCURRENT)
+                    DocumentType.DISMISSAL_ORDER)
         );
     }
 
@@ -50,11 +50,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     }
 
     @Override
-    public WrittenRepConcurrentOrder getTemplateData(CaseData caseData) {
-        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-        String collect = types.stream()
-            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
-
+    public DismissalOrder getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,22 +65,26 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
         }
         String defendantName = String.join(", ", defendentNames);
 
-        WrittenRepConcurrentOrder.WrittenRepConcurrentOrderBuilder writtenRepConcurrentOrderBuilder =
-            WrittenRepConcurrentOrder.builder()
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        String collect = types.stream()
+            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
+
+        DismissalOrder.DismissalOrderBuilder dismissalOrderBuilder =
+            DismissalOrder.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                        .getWrittenConcurrentRepresentationsBy())
+                .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
+                .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now());
 
-        return writtenRepConcurrentOrderBuilder.build();
+        return dismissalOrderBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        return WRITTEN_REP_CONCURRENT;
+        return DISMISSAL_ORDER;
     }
 }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis;
 
 public enum DocmosisTemplates {
+    GENERAL_ORDER("GeneralOrder.docx", "General_order.pdf"),
     DIRECTION_ORDER("Directionorder.docx", "Direction_order.pdf"),
     DISMISSAL_ORDER("DismissalOrder.docx", "Dismissal_order.pdf"),
     REQUEST_FOR_INFORMATION("Requestforinformation.docx", "Request_for_information.pdf"),

@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.civil.service.docmosis.hearingOrder;
+package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.hearingOrder.HearingOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.writtenrepresentationconcurrentorder.WrittenRepConcurrentOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -19,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REP_CONCURRENT;
 
 @Service
 @RequiredArgsConstructor
-public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder> {
+public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDataGenerator<WrittenRepConcurrentOrder> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        HearingOrder templateData = getTemplateData(caseData);
+        WrittenRepConcurrentOrder templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -41,7 +41,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
         return documentManagementService.uploadDocument(
             authorisation,
             new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
-                    DocumentType.HEARING_ORDER)
+                    DocumentType.WRITTEN_REP_CONCURRENT)
         );
     }
 
@@ -50,11 +50,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
     }
 
     @Override
-    public HearingOrder getTemplateData(CaseData caseData) {
-        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-        String collect = types.stream()
-            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
-
+    public WrittenRepConcurrentOrder getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,22 +65,26 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
         }
         String defendantName = String.join(", ", defendentNames);
 
-        HearingOrder.HearingOrderBuilder hearingOrderBuilder =
-            HearingOrder.builder()
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        String collect = types.stream()
+            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
+
+        WrittenRepConcurrentOrder.WrittenRepConcurrentOrderBuilder writtenRepConcurrentOrderBuilder =
+            WrittenRepConcurrentOrder.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .hearingLocation("TEST")
-                .estimatedHearingLength(caseData.getJudicialGeneralOrderHearingEstimationTimeText())
+                .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                        .getWrittenConcurrentRepresentationsBy())
                 .submittedOn(LocalDate.now());
 
-        return hearingOrderBuilder.build();
+        return writtenRepConcurrentOrderBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        return HEARING_ORDER;
+        return WRITTEN_REP_CONCURRENT;
     }
 }
