@@ -13,5 +13,11 @@ variable "subscription" {}
 variable "deployment_namespace" {}
 
 variable "common_tags" {
-  type = "map"
+  type = map(string)
+}
+
+variable "appinsights_location" {
+  type        = string
+  default     = "UK South"
+  description = "Location for Application Insights"
 }
