@@ -39,6 +39,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private static final String GENERAL_APPLICATIONS = "generalApplications";
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
@@ -98,9 +99,11 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
         if (ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
             && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
+
             List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
             String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
                 .collect(Collectors.joining(", "));
+
             return GADetailsRespondentSol.builder()
                 .generalApplicationType(collect)
                 .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
@@ -169,6 +172,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         output.put(GENERAL_APPLICATIONS, generalApplications);
         output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, gaDetailsRespondentSol);
         return output;
     }
 }

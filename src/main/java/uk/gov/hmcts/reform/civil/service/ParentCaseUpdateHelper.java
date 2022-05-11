@@ -26,6 +26,7 @@ public class ParentCaseUpdateHelper {
 
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -36,6 +37,7 @@ public class ParentCaseUpdateHelper {
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = caseData.getGaDetailsRespondentSol();
+        List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo = caseData.getGaDetailsRespondentSolTwo();
 
         if (!isEmpty(respondentSpecficGADetails)) {
 
@@ -50,6 +52,24 @@ public class ParentCaseUpdateHelper {
                 .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))) {
 
                 respondentSpecficGADetails.stream()
+                    .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
+                    .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+            }
+        }
+
+        if (!isEmpty(respondentSpecficGADetailsTwo)) {
+
+            /*
+             * Check if the application exists in the respondentSpecficGADetailsTwo List which matches the applicationId
+             * as the current application with applicationId may not present in the respondentSpecficGADetailsTwo List
+             * due to requirement.
+             *
+             * Requirement - A Without Notice application should be hidden from any Legal Reps other than the Applicant
+             *  */
+            if (respondentSpecficGADetailsTwo.stream()
+                .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))) {
+
+                respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
             }
@@ -88,6 +108,7 @@ public class ParentCaseUpdateHelper {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSpecficGADetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSpecficGADetails);
         return output;
     }
 }

@@ -74,6 +74,7 @@ public class CaseDataBuilder {
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
+    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
@@ -117,6 +118,12 @@ public class CaseDataBuilder {
     public CaseDataBuilder gaDetailsRespondentSol(List<Element<GADetailsRespondentSol>>
                                                       gaDetailsRespondentSol) {
         this.gaDetailsRespondentSol = gaDetailsRespondentSol;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
+                                                      gaDetailsRespondentSolTwo) {
+        this.gaDetailsRespondentSolTwo = gaDetailsRespondentSolTwo;
         return this;
     }
 
@@ -195,6 +202,7 @@ public class CaseDataBuilder {
             .generalAppParentCaseLink(generalAppParentCaseLink)
             .generalApplicationsDetails(generalApplicationsDetails)
             .gaDetailsRespondentSol(gaDetailsRespondentSol)
+            .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
