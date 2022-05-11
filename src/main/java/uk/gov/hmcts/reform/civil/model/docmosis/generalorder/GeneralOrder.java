@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.model.docmosis.dismissalOrder;
+package uk.gov.hmcts.reform.civil.model.docmosis.generalorder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode
-public class DismissalOrder implements MappableObject {
+public class GeneralOrder implements MappableObject {
 
     private final String claimNumber;
     private final String claimantName;
@@ -28,6 +28,6 @@ public class DismissalOrder implements MappableObject {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate applicationDate;
-    private final String dismissalOrder;
+    private final String generalOrder;
     private final String reasonForDecision;
 }

@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.civil.service.docmosis.directionOrder;
+package uk.gov.hmcts.reform.civil.service.docmosis.directionorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.directionOrder.DirectionOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.directionorder.DirectionOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -51,10 +51,6 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<DirectionO
 
     @Override
     public DirectionOrder getTemplateData(CaseData caseData) {
-        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-        String collect = types.stream()
-            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
-
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -68,6 +64,10 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<DirectionO
             defendentNames.add(caseData.getDefendant2PartyName());
         }
         String defendantName = String.join(", ", defendentNames);
+
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        String collect = types.stream()
+            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
 
         DirectionOrder.DirectionOrderBuilder directionOrderBuilder =
             DirectionOrder.builder()

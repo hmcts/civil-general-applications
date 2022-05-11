@@ -11,12 +11,13 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.service.docmosis.directionOrder.DirectionOrderGenerator;
-import uk.gov.hmcts.reform.civil.service.docmosis.dismissalOrder.DismissalOrderGenerator;
-import uk.gov.hmcts.reform.civil.service.docmosis.hearingOrder.HearingOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
-import uk.gov.hmcts.reform.civil.service.docmosis.writtenRepresentationConcurrentOrder.WrittenRepresentationConcurrentOrderGenerator;
-import uk.gov.hmcts.reform.civil.service.docmosis.writtenRepresentationSequentialOrder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
@@ -37,6 +39,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
 
+    private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
     private final DirectionOrderGenerator directionOrderGenerator;
     private final DismissalOrderGenerator dismissalOrderGenerator;
@@ -65,7 +68,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        CaseDocument judgeDecision;
+        CaseDocument judgeDecision = null;
         if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null) {
             judgeDecision = directionOrderGenerator.generate(
@@ -89,7 +92,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             .getWrittenSequentailRepresentationsBy() != null
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getSequentialApplicantMustRespondWithin() != null) {
-                judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
+            judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
@@ -100,8 +103,16 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
-        } else {
+        } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
+            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
             judgeDecision = requestForInformationGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+            && caseData.getJudicialDecisionMakeOrder().getOrderText() != null) {
+            judgeDecision = generalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
