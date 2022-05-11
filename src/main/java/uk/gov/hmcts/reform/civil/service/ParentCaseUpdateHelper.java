@@ -64,13 +64,6 @@ public class ParentCaseUpdateHelper {
                 .getValue().setCaseState(newState);
         }
 
-        /*CaseData data = respondentSpecficGADetails == null
-            ? coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications)))
-            : coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseDataWithGADetailsForRespondentSol(caseData, generalApplications,
-                                                                                respondentSpecficGADetails)));*/
-
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
                                                                                 respondentSpecficGADetails)));
@@ -97,14 +90,4 @@ public class ParentCaseUpdateHelper {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSpecficGADetails);
         return output;
     }
-
-    /*private Map<String, Object> getUpdatedCaseDataWithGADetailsForRespondentSol(CaseData caseData,
-                                                   List<Element<GeneralApplicationsDetails>>
-                                                       generalApplicationsDetails,
-                                                   List<Element<GADetailsRespondentSol>> respondentSpecficGADetails) {
-        Map<String, Object> output = caseData.toMap(mapper);
-        output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSpecficGADetails);
-        return output;
-    }*/
 }

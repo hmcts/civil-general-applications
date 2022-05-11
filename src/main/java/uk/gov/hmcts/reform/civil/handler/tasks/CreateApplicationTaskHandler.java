@@ -76,13 +76,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             }
         }
 
-        /*data = respondentSpecficGADetails.isEmpty() ? coreCaseDataService.submitUpdate(caseId, coreCaseDataService.
-            caseDataContentFromStartEventResponse(startEventResponse,
-                                                  getUpdatedCaseData(caseData, generalApplications, applications)))
-            : coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseDataWithGADetailsForRespondentSol(caseData, generalApplications,
-                                                                                applications,
-                                                                                respondentSpecficGADetails)));*/
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
                                                                                 applications,
@@ -178,17 +171,4 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
         return output;
     }
-
-    /*private Map<String, Object> getUpdatedCaseDataWithGADetailsForRespondentSol(CaseData caseData,
-                                                   List<Element<GeneralApplication>> generalApplications,
-                                                   List<Element<GeneralApplicationsDetails>>
-                                                       generalApplicationsDetails,
-                                                   List<Element<GADetailsRespondentSol>>
-                                                       gaDetailsRespondentSol) {
-        Map<String, Object> output = caseData.toMap(mapper);
-        output.put(GENERAL_APPLICATIONS, generalApplications);
-        output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
-        return output;
-    }*/
 }
