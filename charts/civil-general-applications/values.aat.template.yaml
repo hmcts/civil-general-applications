@@ -24,6 +24,7 @@ postgresql:
 
 java:
   image: ${IMAGE_NAME}
+  imagePullPolicy: Always
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
     civil:
@@ -37,7 +38,7 @@ java:
         - cross-access-user-password
         - prd-admin-user-username
         - prd-admin-user-password
-        #- AppInsightsInstrumentationKey needs to be replaced with GA specific key
+        - AppInsightsInstrumentationKeyGeneralApplications
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
