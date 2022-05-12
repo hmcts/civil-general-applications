@@ -106,6 +106,7 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaDirectionDocList;
     private final List<Element<Document>> generalAppAddlnInfoUpload;
     private final List<Element<Document>> gaAddlnInfoList;
+    private final String gaRespondentDetails;
 
     @Builder.Default
     private final List<Element<CaseDocument>> makeDecisionDocuments = new ArrayList<>();

@@ -36,7 +36,8 @@ java:
         - cross-access-user-password
         - prd-admin-user-username
         - prd-admin-user-password
-        #- AppInsightsInstrumentationKey needs to be replaced with GA specific key
+        - name: AppInsightsInstrumentationKeyGeneralApplications
+          alias: azure.application-insights.instrumentation-key
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
@@ -61,6 +62,7 @@ java:
     RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false
     CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
     DOCUMENT_MANAGEMENT_SECURED: true
+    #AZURE_APPLICATIONINSIGHTS_INSTRUMENTATIONKEY: ${APPINSIGHT_GA_KEY}
 
 civil-service:
   enabled: true
