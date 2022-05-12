@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -12,6 +13,8 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -26,6 +29,7 @@ import java.util.List;
 
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 
 public class CaseDataBuilder {
 
@@ -35,7 +39,7 @@ public class CaseDataBuilder {
     public static final LocalDateTime RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.toLocalDate().plusDays(14)
         .atTime(23, 59, 59);
     public static final LocalDateTime APPLICANT_RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.plusDays(120);
-    public static final LocalDate CLAIM_ISSUED_DATE = now();
+    public static final LocalDate APPLICATION_SUBMITTED_DATE = now();
     public static final LocalDateTime DEADLINE = LocalDate.now().atStartOfDay().plusDays(14);
     public static final LocalDate PAST_DATE = now().minusDays(1);
     public static final LocalDateTime NOTIFICATION_DEADLINE = LocalDate.now().atStartOfDay().plusDays(1);
@@ -44,36 +48,27 @@ public class CaseDataBuilder {
 
     // Create Claim
     protected Long ccdCaseReference;
-
     protected String respondentSolicitor1EmailAddress;
-
     protected String legacyCaseReference;
-
     protected String generalAppDeadlineNotificationDate;
-
     protected GAInformOtherParty gaInformOtherParty;
-
     protected GAUrgencyRequirement gaUrgencyRequirement;
-
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
-
     protected GAPbaDetails gaPbaDetails;
-
     protected OrganisationPolicy applicant1OrganisationPolicy;
-
     protected CaseState ccdState;
-
     // Claimant Response
     protected BusinessProcess businessProcess;
-
     private GeneralAppParentCaseLink generalAppParentCaseLink;
-
     private YesOrNo parentClaimantIsApplicant;
 
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
+
+    //General Application
+    protected LocalDate submittedOn;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -270,5 +265,15 @@ public class CaseDataBuilder {
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
+    }
+
+    public CaseData.CaseDataBuilder generalOrderApplication() {
+        return CaseData.builder()
+            .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .orderText("test")
+                                           .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
+                                           .build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 }

@@ -77,7 +77,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
                 .defendantName(defendantName)
                 .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .hearingLocation("TEST")
+                .hearingLocation("TO-DO")
                 .estimatedHearingLength(caseData.getJudicialGeneralOrderHearingEstimationTimeText())
                 .submittedOn(LocalDate.now());
 
