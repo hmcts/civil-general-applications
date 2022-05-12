@@ -30,6 +30,9 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
@@ -70,13 +73,21 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
         CaseDocument judgeDecision = null;
         if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null) {
+            && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
+            judgeDecision = generalOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+            && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
             judgeDecision = directionOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() != null) {
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
             judgeDecision = dismissalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
@@ -110,13 +121,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getOrderText() != null) {
-            judgeDecision = generalOrderGenerator.generate(
-                caseDataBuilder.build(),
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-            );
         }
+
         caseDataBuilder.makeDecisionDocuments(wrapElements(judgeDecision));
 
         return AboutToStartOrSubmitCallbackResponse.builder()
