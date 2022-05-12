@@ -99,6 +99,9 @@ reference:
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
+  writtenRepConcurrentRepresentationTemplate: "df663c94-5e87-457a-9e85-723245da70f1"
+  writtenRepSequentialRepresentationTemplate: "ffd74057-0204-4185-95de-5bb715e80e6c"
+
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find

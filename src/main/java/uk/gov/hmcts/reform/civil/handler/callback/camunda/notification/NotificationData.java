@@ -9,6 +9,7 @@ public interface NotificationData {
     String CASE_REFERENCE = "claimReferenceNumber";
     String APPLICANT_REFERENCE = "claimantOrDefendant";
     String GA_NOTIFICATION_DEADLINE = "notificationDeadLine";
+    String GA_APPLICATION_TYPE = "generalAppType";
 
     Map<String, String> addProperties(CaseData caseData);
 

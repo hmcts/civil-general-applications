@@ -14,4 +14,10 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String generalApplicationRespondentEmailTemplate;
+
+    @NotEmpty
+    private String writtenRepSequentialRepresentationTemplate;
+
+    @NotEmpty
+    private String writtenRepConcurrentRepresentationTemplate;
 }
