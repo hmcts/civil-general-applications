@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REP_SEQUENTIAL;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_SEQUENTIAL;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
         return documentManagementService.uploadDocument(
             authorisation,
             new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
-                    DocumentType.WRITTEN_REP_SEQUENTIAL)
+                    DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
         );
     }
 
@@ -87,6 +87,6 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        return WRITTEN_REP_SEQUENTIAL;
+        return WRITTEN_REPRESENTATION_SEQUENTIAL;
     }
 }

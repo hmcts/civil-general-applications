@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REP_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
         return documentManagementService.uploadDocument(
             authorisation,
             new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
-                    DocumentType.WRITTEN_REP_CONCURRENT)
+                    DocumentType.WRITTEN_REPRESENTATION_CONCURRENT)
         );
     }
 
@@ -85,6 +85,6 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        return WRITTEN_REP_CONCURRENT;
+        return WRITTEN_REPRESENTATION_CONCURRENT;
     }
 }
