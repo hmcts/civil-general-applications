@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.civil.config.DocmosisConfiguration;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisRequest;
-import uk.gov.hmcts.reform.civil.model.docmosis.generalorder.GeneralOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -52,7 +52,8 @@ class DocumentGeneratorServiceTest {
 
     @Test
     void shouldInvokesTornado() {
-        GeneralOrder generalOrder = GeneralOrder.builder().submittedOn(LocalDate.now()).build();
+        JudgeDecisionPdfDocument judgeDecisionPdfDocument = JudgeDecisionPdfDocument.builder()
+            .submittedOn(LocalDate.now()).build();
 
         when(restTemplate.exchange(eq(configuration.getUrl() + API_RENDER),
                                    eq(HttpMethod.POST), argumentCaptor.capture(), eq(byte[].class)
@@ -62,7 +63,7 @@ class DocumentGeneratorServiceTest {
         when(tornadoResponse.getBody()).thenReturn(expectedResponse);
 
         DocmosisDocument docmosisDocument = documentGeneratorService
-            .generateDocmosisDocument(generalOrder, GENERAL_ORDER);
+            .generateDocmosisDocument(judgeDecisionPdfDocument, GENERAL_ORDER);
         assertThat(docmosisDocument.getBytes()).isEqualTo(expectedResponse);
 
         assertThat(argumentCaptor.getValue().getBody().getTemplateName()).isEqualTo(GENERAL_ORDER.getTemplate());

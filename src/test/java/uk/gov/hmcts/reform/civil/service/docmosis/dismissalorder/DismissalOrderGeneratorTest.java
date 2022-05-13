@@ -79,7 +79,8 @@ class DismissalOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.DISMISSAL_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(DISMISSAL_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                  eq(DISMISSAL_ORDER));
     }
 
     @Nested
@@ -95,7 +96,8 @@ class DismissalOrderGeneratorTest {
             assertThatFieldsAreCorrect_DismissalOrder(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_DismissalOrder(JudgeDecisionPdfDocument templateData, CaseData caseData) {
+        private void assertThatFieldsAreCorrect_DismissalOrder(JudgeDecisionPdfDocument templateData,
+                                                               CaseData caseData) {
             Assertions.assertAll(
                 "Dismissal Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),

@@ -79,7 +79,8 @@ class GeneralOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.GENERAL_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(GENERAL_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                  eq(GENERAL_ORDER));
     }
 
     @Nested

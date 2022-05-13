@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.hearingorder.HearingOrder;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
@@ -80,7 +79,8 @@ class HearingOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.HEARING_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(HEARING_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                  eq(HEARING_ORDER));
     }
 
     @Nested
