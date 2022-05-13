@@ -17,6 +17,7 @@ public class GAJudicialRequestMoreInfo {
     private GAJudgeRequestMoreInfoOption requestMoreInfoOption;
     private String judgeRequestMoreInfoText;
     private LocalDate judgeRequestMoreInfoByDate;
+    private String endDateForMoreInfoSubmission;
 
     @JsonCreator
     GAJudicialRequestMoreInfo(@JsonProperty("requestMoreInfoOption")
@@ -24,9 +25,11 @@ public class GAJudicialRequestMoreInfo {
                               @JsonProperty("judgeRequestMoreInfoText")
                                       String judgeRequestMoreInfoText,
                               @JsonProperty("judgeRequestMoreInfoByDate")
-                                      LocalDate judgeRequestMoreInfoByDate) {
+                                      LocalDate judgeRequestMoreInfoByDate,
+                              @JsonProperty("endDateForMoreInfoSubmission") String endDateForMoreInfoSubmission) {
         this.requestMoreInfoOption = requestMoreInfoOption;
         this.judgeRequestMoreInfoText = judgeRequestMoreInfoText;
         this.judgeRequestMoreInfoByDate = judgeRequestMoreInfoByDate;
+        this.endDateForMoreInfoSubmission = endDateForMoreInfoSubmission;
     }
 }
