@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.requestforinformation.RequestForInformation;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
@@ -80,7 +81,7 @@ class RequestForInformationGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.REQUEST_FOR_INFORMATION)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(RequestForInformation.class),
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
                                                                   eq(REQUEST_FOR_INFORMATION));
     }
 
@@ -97,7 +98,7 @@ class RequestForInformationGeneratorTest {
             assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_RequestForInformation(RequestForInformation templateData,
+        private void assertThatFieldsAreCorrect_RequestForInformation(JudgeDecisionPdfDocument templateData,
                                                                       CaseData caseData) {
             Assertions.assertAll(
                 "Request For Information Document data should be as expected",

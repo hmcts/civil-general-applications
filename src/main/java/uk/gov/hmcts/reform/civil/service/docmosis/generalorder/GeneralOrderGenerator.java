@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.generalorder.GeneralOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -23,13 +23,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENER
 
 @Service
 @RequiredArgsConstructor
-public class GeneralOrderGenerator implements TemplateDataGenerator<GeneralOrder> {
+public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        GeneralOrder templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -50,7 +50,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<GeneralOrder
     }
 
     @Override
-    public GeneralOrder getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,8 +69,8 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<GeneralOrder
         String collect = types.stream()
             .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
 
-        GeneralOrder.GeneralOrderBuilder generalOrderBuilder =
-            GeneralOrder.builder()
+        JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
+            JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
@@ -81,7 +81,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<GeneralOrder
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now());
 
-        return generalOrderBuilder.build();
+        return judgeDecisionPdfDocumentBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

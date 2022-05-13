@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.requestforinformation.RequestForInformation;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
@@ -23,13 +24,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUE
 
 @Service
 @RequiredArgsConstructor
-public class RequestForInformationGenerator implements TemplateDataGenerator<RequestForInformation> {
+public class RequestForInformationGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        RequestForInformation templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -50,7 +51,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Req
     }
 
     @Override
-    public RequestForInformation getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,8 +70,8 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Req
         String collect = types.stream()
             .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
 
-        RequestForInformation.RequestForInformationBuilder requestForInformationBuilderBuilder =
-            RequestForInformation.builder()
+        JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
+            JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
@@ -79,7 +80,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Req
                 .submittedOn(LocalDate.now())
                 .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate());
 
-        return requestForInformationBuilderBuilder.build();
+        return judgeDecisionPdfDocumentBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

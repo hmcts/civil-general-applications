@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.writtenrepresentationconcurrentorder.WrittenRepConcurrentOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
@@ -81,7 +82,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.WRITTEN_REPRESENTATION_CONCURRENT)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(WrittenRepConcurrentOrder.class),
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
                                                                   eq(WRITTEN_REPRESENTATION_CONCURRENT));
     }
 
@@ -98,7 +99,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             assertThatFieldsAreCorrect_WrittenRepresentationConcurrent(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_WrittenRepresentationConcurrent(WrittenRepConcurrentOrder templateData,
+        private void assertThatFieldsAreCorrect_WrittenRepresentationConcurrent(JudgeDecisionPdfDocument templateData,
                                                                                 CaseData caseData) {
             Assertions.assertAll(
                 "Written Representation Concurrent Document data should be as expected",
