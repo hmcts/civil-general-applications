@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -11,13 +10,11 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 
@@ -27,6 +24,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private final ListGeneratorService listGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
@@ -51,23 +49,11 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        List<String> claimantNames = new ArrayList<>();
-        claimantNames.add(caseData.getClaimant1PartyName());
-        if (caseData.getClaimant2PartyName() != null) {
-            claimantNames.add(caseData.getClaimant2PartyName());
-        }
-        String claimantName = String.join(", ", claimantNames);
+        String claimantName = listGeneratorService.claimantsName(caseData);
 
-        List<String> defendentNames = new ArrayList<>();
-        defendentNames.add(caseData.getDefendant1PartyName());
-        if (caseData.getDefendant2PartyName() != null) {
-            defendentNames.add(caseData.getDefendant2PartyName());
-        }
-        String defendantName = String.join(", ", defendentNames);
+        String defendantName = listGeneratorService.defendantsName(caseData);
 
-        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-        String collect = types.stream()
-            .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
+        String collect = listGeneratorService.applicationType(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
