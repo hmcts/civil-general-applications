@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_BUSINESS_DAY;
-import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_DAY;
 
 @ExtendWith(SpringExtension.class)
 public class GeneralAppsDeadlinesCalculatorTest {
@@ -67,16 +66,6 @@ public class GeneralAppsDeadlinesCalculatorTest {
 
             assertThat(responseDeadline).isEqualTo(expectedDeadline);
         }
-
-        @Test
-        void shouldReturnDeadlineWhenHourIsMoreThanOrEqualTo16_whenResponseDateIsWeekday() {
-            LocalDateTime weekdayDate = LocalDate.of(2022, 2, 14).atTime(END_OF_DAY);
-            LocalDateTime expectedDeadline = LocalDate.of(2022, 2, 17).atTime(END_OF_DAY);
-            LocalDateTime responseDeadline = calculator.calculateApplicantResponseDeadline(weekdayDate, 2);
-
-            assertThat(responseDeadline).isEqualTo(expectedDeadline);
-        }
-
     }
 
 }

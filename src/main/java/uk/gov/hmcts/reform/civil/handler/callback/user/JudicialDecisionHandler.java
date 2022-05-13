@@ -21,8 +21,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppsDeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

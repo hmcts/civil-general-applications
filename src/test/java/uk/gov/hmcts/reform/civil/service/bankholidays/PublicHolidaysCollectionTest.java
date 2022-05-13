@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class PublicHolidaysCollectionTest {
 
-
     private static final LocalDate BANK_HOLIDAY_1 = LocalDate.of(2020, 12, 24);
     private static final LocalDate BANK_HOLIDAY_2 = LocalDate.of(2020, 12, 25);
 
