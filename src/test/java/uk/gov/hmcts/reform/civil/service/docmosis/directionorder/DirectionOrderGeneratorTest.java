@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.directionorder.DirectionOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -79,7 +79,7 @@ class DirectionOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.DIRECTION_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(DirectionOrder.class), eq(DIRECTION_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(DIRECTION_ORDER));
     }
 
     @Nested
@@ -95,7 +95,7 @@ class DirectionOrderGeneratorTest {
             assertThatFieldsAreCorrect_DirectionOrder(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_DirectionOrder(DirectionOrder templateData, CaseData caseData) {
+        private void assertThatFieldsAreCorrect_DirectionOrder(JudgeDecisionPdfDocument templateData, CaseData caseData) {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),

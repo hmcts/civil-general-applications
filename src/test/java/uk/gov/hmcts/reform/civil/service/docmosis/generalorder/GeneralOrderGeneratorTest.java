@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.generalorder.GeneralOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -79,7 +79,7 @@ class GeneralOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.GENERAL_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(GeneralOrder.class), eq(GENERAL_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(GENERAL_ORDER));
     }
 
     @Nested
@@ -95,7 +95,7 @@ class GeneralOrderGeneratorTest {
             assertThatFieldsAreCorrect_GeneralOrder(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_GeneralOrder(GeneralOrder templateData, CaseData caseData) {
+        private void assertThatFieldsAreCorrect_GeneralOrder(JudgeDecisionPdfDocument templateData, CaseData caseData) {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),

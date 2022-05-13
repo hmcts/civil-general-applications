@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.writtenrepresentationconcurrentorder.WrittenRepConcurrentOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
@@ -23,13 +24,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITT
 
 @Service
 @RequiredArgsConstructor
-public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDataGenerator<WrittenRepConcurrentOrder> {
+public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        WrittenRepConcurrentOrder templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -50,7 +51,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     }
 
     @Override
-    public WrittenRepConcurrentOrder getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,8 +70,8 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
         String collect = types.stream()
             .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
 
-        WrittenRepConcurrentOrder.WrittenRepConcurrentOrderBuilder writtenRepConcurrentOrderBuilder =
-            WrittenRepConcurrentOrder.builder()
+        JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
+            JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
@@ -81,7 +82,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                                         .getWrittenConcurrentRepresentationsBy())
                 .submittedOn(LocalDate.now());
 
-        return writtenRepConcurrentOrderBuilder.build();
+        return judgeDecisionPdfDocumentBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

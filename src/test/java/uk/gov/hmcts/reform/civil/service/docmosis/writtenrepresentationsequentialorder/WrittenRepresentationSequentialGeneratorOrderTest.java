@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
-import uk.gov.hmcts.reform.civil.model.docmosis.writtenrepresentationsequentialorder.WrittenRepSequentialOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -81,7 +81,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(WrittenRepSequentialOrder.class),
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
                                                                   eq(WRITTEN_REPRESENTATION_SEQUENTIAL));
     }
 
@@ -98,7 +98,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             assertThatFieldsAreCorrect_WrittenRepresentationSequential(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_WrittenRepresentationSequential(WrittenRepSequentialOrder templateData,
+        private void assertThatFieldsAreCorrect_WrittenRepresentationSequential(JudgeDecisionPdfDocument templateData,
                                                                                 CaseData caseData) {
             Assertions.assertAll(
                 "Written Representation Sequential Document data should be as expected",

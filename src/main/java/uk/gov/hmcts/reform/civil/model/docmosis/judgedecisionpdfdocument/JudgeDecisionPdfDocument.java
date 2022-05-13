@@ -1,11 +1,10 @@
-package uk.gov.hmcts.reform.civil.model.docmosis.directionorder;
+package uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
@@ -14,8 +13,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 @AllArgsConstructor
-@EqualsAndHashCode
-public class DirectionOrder implements MappableObject {
+public class JudgeDecisionPdfDocument implements MappableObject {
 
     private final String claimNumber;
     private final String claimantName;
@@ -29,5 +27,17 @@ public class DirectionOrder implements MappableObject {
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate applicationDate;
     private final String judgeDirection;
+    private final String dismissalOrder;
+    private final String generalOrder;
+    private final String hearingLocation;
+    private final String estimatedHearingLength;
     private final String reasonForDecision;
+    private final LocalDate dateBy;
+    private final String judgeComments;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate uploadDeadlineDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate responseDeadlineDate;
 }

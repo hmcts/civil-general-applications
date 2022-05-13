@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.hearingorder.HearingOrder;
+import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -23,13 +24,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 
 @Service
 @RequiredArgsConstructor
-public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder> {
+public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        HearingOrder templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
 
@@ -50,7 +51,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
     }
 
     @Override
-    public HearingOrder getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
         List<String> claimantNames = new ArrayList<>();
         claimantNames.add(caseData.getClaimant1PartyName());
         if (caseData.getClaimant2PartyName() != null) {
@@ -69,8 +70,8 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
         String collect = types.stream()
             .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
 
-        HearingOrder.HearingOrderBuilder hearingOrderBuilder =
-            HearingOrder.builder()
+        JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
+            JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
@@ -81,7 +82,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<HearingOrder
                 .estimatedHearingLength(caseData.getJudicialGeneralOrderHearingEstimationTimeText())
                 .submittedOn(LocalDate.now());
 
-        return hearingOrderBuilder.build();
+        return judgeDecisionPdfDocumentBuilder.build();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
