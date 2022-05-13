@@ -79,7 +79,8 @@ class DirectionOrderGeneratorTest {
             BEARER_TOKEN,
             new PDF(fileName, bytes, DocumentType.DIRECTION_ORDER)
         );
-        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class), eq(DIRECTION_ORDER));
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                  eq(DIRECTION_ORDER));
     }
 
     @Nested
@@ -95,7 +96,8 @@ class DirectionOrderGeneratorTest {
             assertThatFieldsAreCorrect_DirectionOrder(templateData, caseData);
         }
 
-        private void assertThatFieldsAreCorrect_DirectionOrder(JudgeDecisionPdfDocument templateData, CaseData caseData) {
+        private void assertThatFieldsAreCorrect_DirectionOrder(JudgeDecisionPdfDocument templateData,
+                                                               CaseData caseData) {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
