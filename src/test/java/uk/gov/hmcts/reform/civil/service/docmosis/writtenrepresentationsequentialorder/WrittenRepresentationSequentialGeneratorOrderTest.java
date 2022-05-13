@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
+    @MockBean
+    private ListGeneratorService listGeneratorService;
     @Autowired
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
@@ -73,6 +76,10 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             new PDF(fileName, bytes, DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
         ))
             .thenReturn(CASE_DOCUMENT);
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
         CaseDocument caseDocument = writtenRepresentationSequentailOrderGenerator.generate(caseData, BEARER_TOKEN);
         assertThat(caseDocument).isNotNull().isEqualTo(CASE_DOCUMENT);
@@ -92,6 +99,11 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
                 .toBuilder().build();
+
+            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(caseData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
             var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData);
 

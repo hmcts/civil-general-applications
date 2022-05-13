@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ class HearingOrderGeneratorTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
+    @MockBean
+    ListGeneratorService listGeneratorService;
     @Autowired
     private HearingOrderGenerator hearingOrderGenerator;
 
@@ -71,6 +74,10 @@ class HearingOrderGeneratorTest {
             new PDF(fileName, bytes, DocumentType.HEARING_ORDER)
         ))
             .thenReturn(CASE_DOCUMENT);
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
         CaseDocument caseDocument = hearingOrderGenerator.generate(caseData, BEARER_TOKEN);
         assertThat(caseDocument).isNotNull().isEqualTo(CASE_DOCUMENT);
@@ -90,6 +97,11 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
             CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication().build().toBuilder()
                 .build();
+
+            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(caseData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
             var templateData = hearingOrderGenerator.getTemplateData(caseData);
 
