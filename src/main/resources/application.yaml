@@ -17,7 +17,7 @@ management:
       enabled: true
 spring:
   application:
-    name: civil-general-applications
+    name: civil-service
   main:
     allow-bean-definition-overriding: true
   cache:
