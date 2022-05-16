@@ -7,7 +7,7 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "feature/CIV-1817"
 
 AppPipelineConfig pipelineConf
 
