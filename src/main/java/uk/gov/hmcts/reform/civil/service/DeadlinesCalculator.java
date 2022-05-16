@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Service
@@ -20,5 +21,17 @@ public class DeadlinesCalculator {
             date = date.plusDays(1);
         }
         return date;
+    }
+
+    public LocalDateTime calculateApplicantResponseDeadline(LocalDateTime responseDate, int daysToAdd) {
+        LocalDateTime dateTime = responseDate;
+        if (checkIf4pmOrAfter(responseDate)) {
+            dateTime = responseDate.plusDays(1);
+        }
+        return calculateFirstWorkingDay(dateTime.toLocalDate()).plusDays(daysToAdd).atTime(END_OF_BUSINESS_DAY);
+    }
+
+    private boolean checkIf4pmOrAfter(LocalDateTime dateOfService) {
+        return dateOfService.getHour() >= 16;
     }
 }

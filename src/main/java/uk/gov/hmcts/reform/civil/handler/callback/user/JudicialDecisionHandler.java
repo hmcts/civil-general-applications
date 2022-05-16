@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
-import uk.gov.hmcts.reform.civil.service.GeneralAppsDeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
@@ -67,7 +67,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final int ONE_V_ONE = 0;
     private static final String EMPTY_STRING = "";
 
-    private final GeneralAppsDeadlinesCalculator deadlinesCalculator;
+    private final DeadlinesCalculator deadlinesCalculator;
     private static final int NUMBER_OF_DEADLINE_DAYS = 5;
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
@@ -372,9 +372,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (judicialRequestMoreInfo != null
             && SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
-            String endDateForMoreInfoSubmission = deadlinesCalculator
+            LocalDateTime deadlineForMoreInfoSubmission = deadlinesCalculator
                 .calculateApplicantResponseDeadline(
-                    LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS).toString();
+                    LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
 
             caseDataBuilder
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
@@ -382,7 +382,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                      .requestMoreInfoOption(caseData
                                                                                 .getJudicialDecisionRequestMoreInfo()
                                                                                 .getRequestMoreInfoOption())
-                                                     .endDateForMoreInfoSubmission(endDateForMoreInfoSubmission)
+                                                     .deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission)
                                                      .build());
         }
 
@@ -442,9 +442,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         throw new IllegalArgumentException("Missing data during submission of judicial decision");
                     }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
-                    LocalDateTime submissionEndDate = LocalDateTime.parse(caseData
-                                                                        .getJudicialDecisionRequestMoreInfo()
-                                                                        .getEndDateForMoreInfoSubmission());
+                    LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
+                                                                        .getDeadlineForMoreInfoSubmission();
                     confirmationHeader = "# You have requested a response";
                     //TODO: The LocalDate.now().plusDays(7) is a temporary evaluation. This date will be populated
                     //later based on the deadline calculator

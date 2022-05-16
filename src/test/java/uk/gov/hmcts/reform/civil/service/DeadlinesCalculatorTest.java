@@ -21,12 +21,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_BUSINESS_DAY;
 
 @ExtendWith(SpringExtension.class)
-public class GeneralAppsDeadlinesCalculatorTest {
+public class DeadlinesCalculatorTest {
 
     @Mock
     private BankHolidaysApi bankHolidaysApi;
 
-    private GeneralAppsDeadlinesCalculator calculator;
+    private DeadlinesCalculator calculator;
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -35,7 +35,7 @@ public class GeneralAppsDeadlinesCalculatorTest {
         );
         when(bankHolidaysApi.retrieveAll()).thenReturn(loadFixture());
 
-        calculator = new GeneralAppsDeadlinesCalculator(workingDayIndicator);
+        calculator = new DeadlinesCalculator(workingDayIndicator);
     }
 
     /**

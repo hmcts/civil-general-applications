@@ -42,7 +42,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppsDeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
 
@@ -80,7 +80,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     JudicialDecisionHandler.class,
-    GeneralAppsDeadlinesCalculator.class,
+    DeadlinesCalculator.class,
     JacksonAutoConfiguration.class},
     properties = {"reference.database.enabled=false"})
 public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
@@ -95,7 +95,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private Time time;
 
     @MockBean
-    private GeneralAppsDeadlinesCalculator deadlinesCalculator;
+    private DeadlinesCalculator deadlinesCalculator;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -1238,7 +1238,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldNotReturnErrors_EndDateForMoreInfoSubmissionIsPopulated() {
+        void shouldNotReturnErrors_DeadlineForMoreInfoSubmissionIsPopulated() {
             CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
                                                                       LocalDate.now().plusDays(1));
 
@@ -1248,7 +1248,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(response.getErrors()).isEmpty();
-            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getEndDateForMoreInfoSubmission())
+            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
                 .isEqualTo(deadline.toString());
         }
 
@@ -1389,12 +1389,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
                     GAJudicialRequestMoreInfo.builder()
                             .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
-                            .endDateForMoreInfoSubmission(LocalDateTime.now().toString())
+                            .deadlineForMoreInfoSubmission(LocalDateTime.now())
                             .build());
 
-            LocalDateTime submissionEndDate = LocalDateTime.parse(caseData
-                                                                      .getJudicialDecisionRequestMoreInfo()
-                                                                      .getEndDateForMoreInfoSubmission());
+            LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
+                .getDeadlineForMoreInfoSubmission();
 
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
