@@ -101,6 +101,7 @@ notifications:
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
   writtenRepConcurrentRepresentationTemplate: "df663c94-5e87-457a-9e85-723245da70f1"
   writtenRepSequentialRepresentationTemplate: "ffd74057-0204-4185-95de-5bb715e80e6c"
+  judgeListsForHearingEmailTemplate: "7a1d9e5b-4b1d-4765-b5de-d191d6c91a11"
 
 
 os-postcode-lookup:

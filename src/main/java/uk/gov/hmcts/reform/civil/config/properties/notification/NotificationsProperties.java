@@ -20,4 +20,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String writtenRepConcurrentRepresentationTemplate;
+
+    @NotEmpty
+    private String judgeListsForHearingEmailTemplate;
 }

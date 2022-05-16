@@ -21,7 +21,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATIO
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GA_APPLICANT_AND_RESPONDENT_FOR_WRITTEN_REPS;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
 
@@ -39,8 +38,8 @@ public class FlowStateAllowedEventService {
                                         JUDGE_MAKES_DECISION,
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
-                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO,
-                NOTIFY_GA_APPLICANT_AND_RESPONDENT_FOR_WRITTEN_REPS)),
+                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO
+        )),
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
