@@ -96,7 +96,6 @@ allprojects {
 
   repositories {
     mavenLocal()
-    jcenter()
     mavenCentral()
     maven {
       url "https://jitpack.io"
@@ -107,6 +106,7 @@ allprojects {
     maven {
       url "https://jitpack.io"
     }
+    jcenter()
   }
 }
 
@@ -321,9 +321,9 @@ dependencies {
 
   implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.67'
 
-  implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: '7.16.0'
+  implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: '7.17.0'
   implementation group: 'org.camunda.bpm.extension.rest', name: 'camunda-rest-client-spring-boot-starter', version: '0.0.4'
-  implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.16.0'
+  implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.17.0'
   implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.13.0'
   implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.2'
 
@@ -332,7 +332,7 @@ dependencies {
   implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '3.0.1'
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '3.0.2'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.6.3'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.8.1'
 
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.3.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.3.1'

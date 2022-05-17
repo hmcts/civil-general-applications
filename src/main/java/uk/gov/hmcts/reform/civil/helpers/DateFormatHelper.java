@@ -11,7 +11,7 @@ public class DateFormatHelper {
     public static final String DATE = "d MMMM yyyy";
     public static final String MANDATORY_SUFFIX = ".000Z";
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter
-        .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        .ofPattern("yyyy-MM-dd'T'HH:mm.SSS'Z'",
                    Locale.ENGLISH);
 
     private DateFormatHelper() {

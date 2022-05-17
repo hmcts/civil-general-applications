@@ -61,7 +61,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
-    private static final String DUMMY_DATE = "2022-02-15T12:00:00";
+    private static final String DUMMY_DATE = "2022-02-15T12:00";
     public static LocalDate NOTIFICATION_DEADLINE = LocalDate.parse(DUMMY_DATE + MANDATORY_SUFFIX, FORMATTER);
 
     @Nested
