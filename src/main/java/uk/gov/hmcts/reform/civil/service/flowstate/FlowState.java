@@ -22,8 +22,7 @@ public interface FlowState {
 
     enum Main implements FlowState {
         DRAFT,
-        APPLICATION_SUBMITTED,
-        START_NOTIFICATION_PROCESS_MAKE_DECISION;
+        APPLICATION_SUBMITTED;
 
         public static final String FLOW_NAME = "MAIN";
 
