@@ -18,27 +18,28 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GA_APPLICANT_FOR_LIST_FOR_HEARING;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.getRequiredGAType;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.getNotificationCriteria;
 
 @Service
 @RequiredArgsConstructor
-public class JudicialDecisionListForHearingNotificationHandler extends CallbackHandler implements NotificationData {
+public class JudicialDecisionNotificationHandler extends CallbackHandler implements NotificationData {
 
     private final ObjectMapper objectMapper;
     private final NotificationsProperties notificationProperties;
     private final NotificationService notificationService;
 
     private static final List<CaseEvent> EVENTS = List.of(
-        NOTIFY_GA_APPLICANT_FOR_LIST_FOR_HEARING
+        START_NOTIFICATION_PROCESS_MAKE_DECISION
     );
 
-    private static final String REFERENCE_TEMPLATE = "general-judicial-decision-list-hearing-notification-%s";
+    private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_SUBMIT), this::notifyApplicantForListForHearing
+            callbackKey(ABOUT_TO_SUBMIT), this::judicialDecisionNotification
         );
     }
 
@@ -47,12 +48,26 @@ public class JudicialDecisionListForHearingNotificationHandler extends CallbackH
         return EVENTS;
     }
 
-    private CallbackResponse notifyApplicantForListForHearing(CallbackParams callbackParams) {
+    private CallbackResponse judicialDecisionNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        System.out.println("*************List for hearing**********************");
+        switch (getNotificationCriteria(caseData)) {
+            case CONCURRENT_WRITTEN_REP:
+                caseData.getGeneralAppRespondentSolicitors().forEach((
+                                                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                        caseData, respondentSolicitor.getValue().getEmail(),
+                        notificationProperties.getWrittenRepConcurrentRepresentationTemplate()));
+                break;
+            case SEQUENTIAL_WRITTEN_REP:
+                caseData.getGeneralAppRespondentSolicitors().forEach((
+                                                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                        caseData, respondentSolicitor.getValue().getEmail(),
+                        notificationProperties.getWrittenRepSequentialRepresentationTemplate()));
+                break;
+            default: case NON_CRITERION:
 
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
