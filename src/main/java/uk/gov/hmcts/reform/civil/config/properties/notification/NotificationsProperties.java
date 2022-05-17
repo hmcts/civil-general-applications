@@ -23,4 +23,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String judgeListsForHearingEmailTemplate;
+
+    @NotEmpty
+    private String judgeRequestsMoreInformation;
 }
