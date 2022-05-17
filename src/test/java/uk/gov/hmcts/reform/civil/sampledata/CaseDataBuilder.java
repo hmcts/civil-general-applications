@@ -33,7 +33,7 @@ public class CaseDataBuilder {
     public static final Long CASE_ID = 1594901956117591L;
     public static final LocalDateTime SUBMITTED_DATE_TIME = LocalDateTime.now();
     public static final LocalDateTime RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.toLocalDate().plusDays(14)
-            .atTime(23, 59, 59);
+        .atTime(23, 59, 59);
     public static final LocalDateTime APPLICANT_RESPONSE_DEADLINE = SUBMITTED_DATE_TIME.plusDays(120);
     public static final LocalDate CLAIM_ISSUED_DATE = now();
     public static final LocalDateTime DEADLINE = LocalDate.now().atStartOfDay().plusDays(14);
@@ -96,7 +96,7 @@ public class CaseDataBuilder {
     }
 
     public CaseDataBuilder generalAppRespondentSolicitors(List<Element<GASolicitorDetailsGAspec>>
-                                                            generalAppRespondentSolicitors) {
+                                                              generalAppRespondentSolicitors) {
         this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
         return this;
     }
@@ -173,18 +173,18 @@ public class CaseDataBuilder {
 
     public CaseData build() {
         return CaseData.builder()
-                .businessProcess(businessProcess)
+            .businessProcess(businessProcess)
             .ccdState(ccdState)
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
-                .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
-                .legacyCaseReference(legacyCaseReference)
-                .generalApplications(generalApplications)
-                .generalAppInformOtherParty(gaInformOtherParty)
-                .generalAppUrgencyRequirement(gaUrgencyRequirement)
-                .generalAppRespondentAgreement(gaRespondentOrderAgreement)
-                .generalAppParentCaseLink(generalAppParentCaseLink)
+            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
+            .legacyCaseReference(legacyCaseReference)
+            .generalApplications(generalApplications)
+            .generalAppInformOtherParty(gaInformOtherParty)
+            .generalAppUrgencyRequirement(gaUrgencyRequirement)
+            .generalAppRespondentAgreement(gaRespondentOrderAgreement)
+            .generalAppParentCaseLink(generalAppParentCaseLink)
             .generalApplicationsDetails(generalApplicationsDetails)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
@@ -195,47 +195,80 @@ public class CaseDataBuilder {
 
     public CaseData buildMakePaymentsCaseData() {
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
-                .organisationID("OrgId").build();
+            .organisationID("OrgId").build();
 
         return build().toBuilder()
-                .ccdCaseReference(1644495739087775L)
-                .ccdCaseReference(1644495739087775L)
-                .legacyCaseReference("000DC001")
-                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-                .generalAppPBADetails(GAPbaDetails.builder()
-                        .applicantsPbaAccounts(DynamicList.builder()
-                                .listItems(asList(DynamicListElement.builder().label("PBA0088192").build(),
-                                        DynamicListElement.builder().label("PBA0078095").build()))
-                                .value(DynamicListElement.dynamicElement("PBA0078095")).build())
-                        .fee(Fee.builder()
-                                 .code("FE203")
-                                 .calculatedAmountInPence(BigDecimal.valueOf(27500))
-                                 .version("1")
-                                 .build())
-                        .pbaReference(CUSTOMER_REFERENCE).build())
-                .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
-                .build();
+            .ccdCaseReference(1644495739087775L)
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(
+                                DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(
+                        Fee.builder()
+                            .code("FE203")
+                            .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                            .version("1")
+                            .build())
+                    .pbaReference(CUSTOMER_REFERENCE).build())
+            .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
     }
 
     public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
         return CaseData.builder()
-                .generalAppType(application.getGeneralAppType())
-                .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
-                .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
-                .generalAppPBADetails(application.getGeneralAppPBADetails())
-                .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
-                .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
-                .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
-                .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
-                .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
-                .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
-                .generalAppHearingDetails(application.getGeneralAppHearingDetails())
-                .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
-                .isMultiParty(application.getIsMultiParty())
-                .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
-                .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
-                .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
-                .build();
+            .generalAppType(application.getGeneralAppType())
+            .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+            .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+            .generalAppPBADetails(application.getGeneralAppPBADetails())
+            .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+            .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+            .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
+            .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+            .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+            .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+            .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+            .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+            .isMultiParty(application.getIsMultiParty())
+            .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
+            .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+            .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
+            .build();
+    }
+
+    public CaseData buildFeeValidationCaseData(Fee fee) {
+        uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
+            .organisationID("OrgId").build();
+
+        return build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(fee)
+                    .pbaReference(CUSTOMER_REFERENCE).build())
+            .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
     }
 }
