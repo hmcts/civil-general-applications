@@ -94,7 +94,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
+    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon reading the "
         + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
