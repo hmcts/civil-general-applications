@@ -19,8 +19,8 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.getRequiredGAType;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.getNotificationCriteria;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.getRequiredGAType;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 
 @Service
 @RequiredArgsConstructor
@@ -52,18 +52,18 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        switch (getNotificationCriteria(caseData)) {
+        switch (notificationCriterion(caseData)) {
             case CONCURRENT_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
-                                                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
-                        caseData, respondentSolicitor.getValue().getEmail(),
-                        notificationProperties.getWrittenRepConcurrentRepresentationTemplate()));
+                    respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getWrittenRepConcurrentRepresentationTemplate()));
                 break;
             case SEQUENTIAL_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
-                                                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
-                        caseData, respondentSolicitor.getValue().getEmail(),
-                        notificationProperties.getWrittenRepSequentialRepresentationTemplate()));
+                    respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getWrittenRepSequentialRepresentationTemplate()));
                 break;
             default: case NON_CRITERION:
 

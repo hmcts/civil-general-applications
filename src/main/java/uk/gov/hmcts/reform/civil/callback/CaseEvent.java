@@ -43,8 +43,6 @@ public enum CaseEvent {
 
     UPDATE_CASE_WITH_GA_STATE(CAMUNDA);
 
-
-
     private final UserType userType;
 
     public boolean isCamundaEvent() {

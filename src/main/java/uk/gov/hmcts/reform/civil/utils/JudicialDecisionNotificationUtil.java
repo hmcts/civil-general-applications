@@ -2,12 +2,13 @@ package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 
+import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.respondentIsPresent;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
@@ -18,18 +19,16 @@ public class JudicialDecisionNotificationUtil {
         // Utilities class, no instance
     }
 
-    public static NotificationCriterion getNotificationCriteria(CaseData caseData) {
+    private static final String FOR_SUMMARY_JUDGEMENT = "for summary judgment";
+    private static final String TO_STRIKE_OUT = "to strike out";
+    private static final String TO_STAY_THE_CLAIM = "to stay the claim";
+    private static final String TO_EXTEND_TIME = "to extend time";
 
-        if (isNotificationCriteriaSatisfiedForWrittenReps(caseData)
-            && isApplicationForConcurrentWrittenRep(caseData)
-            && respondentIsPresent(caseData)) {
-            return CONCURRENT_WRITTEN_REP;
-        } else if (isNotificationCriteriaSatisfiedForWrittenReps(caseData)
-            && isApplicationForSequentialWrittenRep(caseData)
-            && respondentIsPresent(caseData)) {
-            return SEQUENTIAL_WRITTEN_REP;
-        }
-        return NON_CRITERION;
+    public static NotificationCriterion notificationCriterion(CaseData caseData) {
+        return
+            isApplicationForConcurrentWrittenRep(caseData) ? CONCURRENT_WRITTEN_REP :
+            isApplicationForSequentialWrittenRep(caseData) ? SEQUENTIAL_WRITTEN_REP :
+            NON_CRITERION;
     }
 
     private static GAJudgeWrittenRepresentationsOptions writtenOptions(CaseData caseData) {
@@ -40,26 +39,43 @@ public class JudicialDecisionNotificationUtil {
             .orElse(null);
     }
 
-    private static boolean isNotificationCriteriaSatisfiedForWrittenReps(CaseData caseData) {
-        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
-        return (isApplicationForConcurrentWrittenRep(caseData) || isApplicationForSequentialWrittenRep(caseData))
-            && isApplicantPresent;
+    public static String getRequiredGAType(List<GeneralApplicationTypes> applicationTypes) {
+
+        for (GeneralApplicationTypes type : applicationTypes) {
+            return
+                type.equals(GeneralApplicationTypes.STRIKE_OUT) ? TO_STRIKE_OUT :
+                type.equals(GeneralApplicationTypes.SUMMARY_JUDGEMENT) ? FOR_SUMMARY_JUDGEMENT :
+                type.equals(GeneralApplicationTypes.STAY_THE_CLAIM) ? TO_STAY_THE_CLAIM :
+                type.equals(GeneralApplicationTypes.EXTEND_TIME) ? TO_EXTEND_TIME : null;
+        }
+        return null;
     }
 
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
+        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
         return writtenOptions(caseData) != null
-            && (writtenOptions(caseData)
-            .equals(
-                GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS
-            ));
+            && (writtenOptions(caseData).equals(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS))
+            && isApplicantPresent
+            && isRespondentPresent(caseData);
     }
 
     private static boolean isApplicationForSequentialWrittenRep(CaseData caseData) {
+        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
         return writtenOptions(caseData) != null
-            && (writtenOptions(caseData)
-            .equals(
-                GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS
-            ));
+            && (writtenOptions(caseData).equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS))
+            && isApplicantPresent
+            && isRespondentPresent(caseData);
+    }
+
+    private static boolean isRespondentPresent(CaseData caseData) {
+        var respondents  = Optional
+            .ofNullable(
+                caseData
+                    .getGeneralAppRespondentSolicitors())
+            .stream().flatMap(
+                List::stream
+            ).filter(e -> !e.getValue().getEmail().isEmpty()).findFirst().orElse(null);
+        return respondents != null;
     }
 
 }
