@@ -45,7 +45,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 class HearingOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
-    private static final String REFERENCE_NUMBER = "000DC001";
+    private static final Long REFERENCE_NUMBER = 1594901956117591L;
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
     private static final String fileName = format(HEARING_ORDER.getDocumentTitle(), REFERENCE_NUMBER);
     private static final CaseDocument CASE_DOCUMENT = CaseDocument.builder()
@@ -118,9 +118,9 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
                 () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
-                () -> assertEquals(templateData.getHearingLocation(), "TO-DO"),
+                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
-                                   caseData.getJudicialGeneralOrderHearingEstimationTimeText())
+                                   caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue())
             );
         }
 

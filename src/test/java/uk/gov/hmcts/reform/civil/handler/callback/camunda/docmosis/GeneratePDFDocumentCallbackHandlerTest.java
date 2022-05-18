@@ -111,7 +111,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -128,7 +128,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getDirectionOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -145,7 +145,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getDismissalOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.DISMISSAL_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -162,7 +162,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getHearingOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -179,7 +179,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getWrittenRepSequentialDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -196,7 +196,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getWrittenRepConcurrentDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
@@ -213,7 +213,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getMakeDecisionDocuments().get(0).getValue())
+            assertThat(updatedData.getRequestForInformationDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }

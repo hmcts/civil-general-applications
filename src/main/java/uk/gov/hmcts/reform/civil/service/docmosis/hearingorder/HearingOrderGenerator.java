@@ -44,7 +44,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate, CaseData caseData) {
-        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getLegacyCaseReference());
+        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getCcdCaseReference());
     }
 
     @Override
@@ -63,8 +63,10 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .defendantName(defendantName)
                 .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .hearingLocation("TO-DO")
-                .estimatedHearingLength(caseData.getJudicialGeneralOrderHearingEstimationTimeText())
+                .hearingLocation(caseData.getJudicialListForHearing()
+                                     .getHearingPreferencesPreferredType().getDisplayedValue())
+                .estimatedHearingLength(caseData.getJudicialListForHearing()
+                                            .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now());
 
         return judgeDecisionPdfDocumentBuilder.build();

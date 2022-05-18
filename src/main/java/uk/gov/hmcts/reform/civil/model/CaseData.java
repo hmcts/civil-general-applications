@@ -112,8 +112,21 @@ public class CaseData implements MappableObject {
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
 
+    //PDF Documents
     @Builder.Default
-    private final List<Element<CaseDocument>> makeDecisionDocuments = new ArrayList<>();
+    private final List<Element<CaseDocument>> generalOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> directionOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> requestForInformationDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> hearingOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
 
     private final BusinessProcess businessProcess;
 

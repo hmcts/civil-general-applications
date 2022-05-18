@@ -44,7 +44,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate, CaseData caseData) {
-        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getLegacyCaseReference());
+        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getCcdCaseReference());
     }
 
     @Override

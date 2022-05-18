@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -370,9 +371,9 @@ public class CaseDataBuilder {
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
-            .judicialHearingGOHearingReqText("test")
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                         .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
+                                        .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
                                         .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }

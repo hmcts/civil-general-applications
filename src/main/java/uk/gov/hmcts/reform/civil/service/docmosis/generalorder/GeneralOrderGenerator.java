@@ -44,7 +44,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate, CaseData caseData) {
-        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getLegacyCaseReference());
+        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getCcdCaseReference());
     }
 
     @Override

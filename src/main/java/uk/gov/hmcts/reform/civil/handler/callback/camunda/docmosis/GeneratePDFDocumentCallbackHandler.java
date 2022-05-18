@@ -79,6 +79,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.generalOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
@@ -86,18 +87,21 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.directionOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
             judgeDecision = dismissalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.dismissalOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
             && caseData.getJudicialHearingGOHearingReqText() != null && caseData.getJudicialListForHearing() != null) {
             judgeDecision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getWrittenSequentailRepresentationsBy() != null
@@ -107,6 +111,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+            caseDataBuilder.writtenRepSequentialDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
             && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getWrittenConcurrentRepresentationsBy() != null) {
@@ -114,6 +119,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.writtenRepConcurrentDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
@@ -121,9 +127,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            caseDataBuilder.requestForInformationDocument(wrapElements(judgeDecision));
         }
-
-        caseDataBuilder.makeDecisionDocuments(wrapElements(judgeDecision));
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
