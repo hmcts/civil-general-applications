@@ -8,6 +8,7 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Data
@@ -17,6 +18,7 @@ public class GAJudicialRequestMoreInfo {
     private GAJudgeRequestMoreInfoOption requestMoreInfoOption;
     private String judgeRequestMoreInfoText;
     private LocalDate judgeRequestMoreInfoByDate;
+    private LocalDateTime deadlineForMoreInfoSubmission;
 
     @JsonCreator
     GAJudicialRequestMoreInfo(@JsonProperty("requestMoreInfoOption")
@@ -24,9 +26,12 @@ public class GAJudicialRequestMoreInfo {
                               @JsonProperty("judgeRequestMoreInfoText")
                                       String judgeRequestMoreInfoText,
                               @JsonProperty("judgeRequestMoreInfoByDate")
-                                      LocalDate judgeRequestMoreInfoByDate) {
+                                      LocalDate judgeRequestMoreInfoByDate,
+                              @JsonProperty("deadlineForMoreInfoSubmission")
+                                      LocalDateTime deadlineForMoreInfoSubmission) {
         this.requestMoreInfoOption = requestMoreInfoOption;
         this.judgeRequestMoreInfoText = judgeRequestMoreInfoText;
         this.judgeRequestMoreInfoByDate = judgeRequestMoreInfoByDate;
+        this.deadlineForMoreInfoSubmission = deadlineForMoreInfoSubmission;
     }
 }
