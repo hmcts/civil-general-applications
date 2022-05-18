@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.Time;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,6 +80,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     JudicialDecisionHandler.class,
+    DeadlinesCalculator.class,
     JacksonAutoConfiguration.class},
     properties = {"reference.database.enabled=false"})
 public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
@@ -86,6 +90,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     JudicialDecisionWrittenRepService service;
+
+    @MockBean
+    private Time time;
+
+    @MockBean
+    private DeadlinesCalculator deadlinesCalculator;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -1153,6 +1163,16 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class MidEventForRequestMoreInfoScreenDateValidity {
 
+        LocalDateTime responseDate = LocalDateTime.now();
+        LocalDateTime deadline = LocalDateTime.now().plusDays(5);
+
+        @BeforeEach
+        void setup() {
+            when(time.now()).thenReturn(responseDate);
+            when(deadlinesCalculator.calculateApplicantResponseDeadline(
+                any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
+        }
+
         private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
         public static final String REQUESTED_MORE_INFO_BY_DATE_REQUIRED = "The date, by which the applicant must "
                 + "respond, is required.";
@@ -1215,6 +1235,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldNotReturnErrors_DeadlineForMoreInfoSubmissionIsPopulated() {
+            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
+                                                                      LocalDate.now().plusDays(1));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
+                .isEqualTo(deadline.toString());
         }
 
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
@@ -1353,7 +1388,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = getApplication(
                     GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
                     GAJudicialRequestMoreInfo.builder()
-                            .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY).build());
+                            .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                            .deadlineForMoreInfoSubmission(LocalDateTime.now())
+                            .build());
+
+            LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
+                .getDeadlineForMoreInfoSubmission();
+
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
             var response = (SubmittedCallbackResponse) handler.handle(params);
@@ -1361,7 +1402,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getConfirmationHeader()).isEqualTo("# You have requested a response");
             assertThat(response.getConfirmationBody()).isEqualTo("<br/><p>The parties will be notified. "
                     + "They will need to provide a response by "
-                    + DATE_FORMATTER_SUBMIT_CALLBACK.format(LocalDate.now().plusDays(7)) + "</p>");
+                    + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate) + "</p>");
         }
 
         @Test
