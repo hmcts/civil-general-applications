@@ -445,8 +445,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
                                                                         .getDeadlineForMoreInfoSubmission();
                     confirmationHeader = "# You have requested a response";
-                    //TODO: The LocalDate.now().plusDays(7) is a temporary evaluation. This date will be populated
-                    //later based on the deadline calculator
                     body = "<br/><p>The parties will be notified. They will need to provide a response by "
                         + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate)
                             + "</p>";
