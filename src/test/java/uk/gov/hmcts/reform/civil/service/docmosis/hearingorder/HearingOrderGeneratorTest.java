@@ -118,7 +118,8 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
                 () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
-                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue()),
+                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
+                    .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
                                    caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue())
             );

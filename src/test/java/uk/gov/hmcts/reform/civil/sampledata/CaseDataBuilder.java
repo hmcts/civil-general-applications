@@ -371,6 +371,7 @@ public class CaseDataBuilder {
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
+            .judicialHearingGOHearingReqText("test")
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                         .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
                                         .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
