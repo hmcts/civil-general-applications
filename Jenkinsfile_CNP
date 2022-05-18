@@ -7,7 +7,7 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "sprint1integration"
 
 AppPipelineConfig pipelineConf
 
@@ -142,8 +142,8 @@ withPipeline(type, product, component) {
         """
 
         env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-staging.service.core-compute-aat.internal"
-        env.CIVIL_SERVICE_URL="http://civil-service-aat.service.core-compute-aat.internal"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-staging.service.core-compute-aat.internal"
+        env.CIVIL_SERVICE_URL="http://civil-ga-civil-service-staging-aat.service.core-compute-aat.internal"
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
         env.CCD_DATA_STORE_URL = "http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"

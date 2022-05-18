@@ -13,12 +13,15 @@ public class GARespondentResponse implements MappableObject {
 
     private GAHearingDetails gaHearingDetails;
     private final YesOrNo generalAppRespondent1Representative;
+    private final String gaRespondentDetails;
 
     @JsonCreator
     GARespondentResponse(@JsonProperty("gaHearingDetails") GAHearingDetails gaHearingDetails,
                          @JsonProperty("generalAppRespondent1Representative")
-                             YesOrNo generalAppRespondent1Representative) {
+                             YesOrNo generalAppRespondent1Representative,
+                         @JsonProperty("gaRespondentDetails") String gaRespondentDetails) {
         this.gaHearingDetails = gaHearingDetails;
         this.generalAppRespondent1Representative = generalAppRespondent1Representative;
+        this.gaRespondentDetails = gaRespondentDetails;
     }
 }

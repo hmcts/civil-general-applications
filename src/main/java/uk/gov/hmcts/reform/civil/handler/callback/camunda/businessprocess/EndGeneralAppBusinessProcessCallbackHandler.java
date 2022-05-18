@@ -44,8 +44,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseState newState = isNotificationCriteriaSatisfied(data)
-                ? AWAITING_RESPONDENT_RESPONSE
-                : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+            ? AWAITING_RESPONDENT_RESPONSE
+            : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
         return evaluateReady(callbackParams, newState);
     }
@@ -55,8 +55,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-                .state(newState.toString())
-                .data(output)
-                .build();
+            .state(newState.toString())
+            .data(output)
+            .build();
     }
 }

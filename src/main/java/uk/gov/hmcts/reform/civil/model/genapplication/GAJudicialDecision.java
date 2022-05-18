@@ -15,7 +15,7 @@ public class GAJudicialDecision {
     private final GAJudgeDecisionOption decision;
 
     @JsonCreator
-    GAJudicialDecision(@JsonProperty("decision") GAJudgeDecisionOption decision) {
+    public GAJudicialDecision(@JsonProperty("decision") GAJudgeDecisionOption decision) {
         this.decision = decision;
     }
 }
