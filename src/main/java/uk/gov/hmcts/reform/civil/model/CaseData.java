@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
@@ -76,6 +77,8 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> generalAppEvidenceDocument;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
+    private final List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
+    private final List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     private final GAJudicialDecision judicialDecision;
     private final List<Element<SolicitorDetails>> applicantSolicitors;
     private final List<Element<SolicitorDetails>> defendantSolicitors;

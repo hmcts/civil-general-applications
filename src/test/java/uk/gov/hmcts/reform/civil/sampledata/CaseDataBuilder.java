@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
@@ -74,6 +75,8 @@ public class CaseDataBuilder {
 
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
+    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
+    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
@@ -114,6 +117,18 @@ public class CaseDataBuilder {
     public CaseDataBuilder generalApplicationsDetails(List<Element<GeneralApplicationsDetails>>
                                                           generalApplicationsDetails) {
         this.generalApplicationsDetails = generalApplicationsDetails;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsRespondentSol(List<Element<GADetailsRespondentSol>>
+                                                      gaDetailsRespondentSol) {
+        this.gaDetailsRespondentSol = gaDetailsRespondentSol;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
+                                                      gaDetailsRespondentSolTwo) {
+        this.gaDetailsRespondentSolTwo = gaDetailsRespondentSolTwo;
         return this;
     }
 
@@ -191,6 +206,8 @@ public class CaseDataBuilder {
             .generalAppRespondentAgreement(gaRespondentOrderAgreement)
             .generalAppParentCaseLink(generalAppParentCaseLink)
             .generalApplicationsDetails(generalApplicationsDetails)
+            .gaDetailsRespondentSol(gaDetailsRespondentSol)
+            .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
