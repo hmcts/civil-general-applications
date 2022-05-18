@@ -115,9 +115,6 @@ public class CaseData implements MappableObject {
     @Builder.Default
     private final List<Element<CaseDocument>> makeDecisionDocuments = new ArrayList<>();
 
-    @Builder.Default
-    private final List<Element<CaseDocument>> makeDecisionDocuments = new ArrayList<>();
-
     private final BusinessProcess businessProcess;
 
     public boolean hasNoOngoingBusinessProcess() {
