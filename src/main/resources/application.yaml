@@ -113,7 +113,7 @@ notifications:
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
   writtenRepConcurrentRepresentationEmailTemplate: "df663c94-5e87-457a-9e85-723245da70f1"
   writtenRepSequentialRepresentationEmailTemplate: "ffd74057-0204-4185-95de-5bb715e80e6c"
-  judgeListsForHearingEmailTemplateEmailTemplate: "7a1d9e5b-4b1d-4765-b5de-d191d6c91a11"
+  judgeListsForHearingEmailTemplate: "7a1d9e5b-4b1d-4765-b5de-d191d6c91a11"
   judgeRequestsMoreInformationEmailTemplate: "caf1abe9-8401-4a65-b9a8-fbecf00d8009"
   judgeDismissesOrderEmailTemplate: "96f708e8-0a03-40ef-9278-a5dcfa3277fa"
   judgeApprovesOrderToStrikeOutEmailTemplate: "953fec69-d1f8-4339-b781-89fd9620bddd"
