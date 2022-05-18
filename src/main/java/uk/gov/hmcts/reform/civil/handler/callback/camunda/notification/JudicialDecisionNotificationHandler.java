@@ -19,8 +19,8 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 
 @Service
 @RequiredArgsConstructor
@@ -55,39 +55,60 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         switch (notificationCriterion(caseData)) {
             case CONCURRENT_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
-                    respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                    respondentSolicitor) -> sendNotificationForJudicialDecision(
                     caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getWrittenRepConcurrentRepresentationEmailTemplate()));
-                sendNotificationToGeneralAppRespondent(caseData,
+                    notificationProperties.getRespondentWrittenRepConcurrentRepresentationEmailTemplate()));
+                sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getWrittenRepConcurrentRepresentationEmailTemplate());
+                    notificationProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate());
                 break;
             case SEQUENTIAL_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
-                    respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
+                    respondentSolicitor) -> sendNotificationForJudicialDecision(
                     caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getWrittenRepSequentialRepresentationEmailTemplate()));
-                sendNotificationToGeneralAppRespondent(caseData,
+                    notificationProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate()));
+                sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getWrittenRepSequentialRepresentationEmailTemplate());
+                    notificationProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate());
+                break;
+            case APPLICANT_WRITTEN_REP_CONCURRENT:
+                sendNotificationForJudicialDecision(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate());
+                break;
+            case APPLICANT_WRITTEN_REP_SEQUENTIAL:
+                sendNotificationForJudicialDecision(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate());
+                break;
+            case JUDGE_DISMISSED_APPLICATION:
+                sendNotificationForJudicialDecision(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate());
                 break;
             case LIST_FOR_HEARING:
-                sendNotificationToGeneralAppRespondent(caseData,
+                sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getJudgeListsForHearingEmailTemplate());
+                    notificationProperties.getJudgeListsForHearingApplicantEmailTemplate());
                 break;
+                
             case REQUEST_MORE_INFO:
-                sendNotificationToGeneralAppRespondent(caseData,
+                sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeRequestsMoreInformationEmailTemplate());
                 break;
             case JUDGES_DIRECTION_GIVEN:
-                sendNotificationToGeneralAppRespondent(caseData,
+                sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeGivesDirectionsEmailTemplate());
                 break;
-            default: case NON_CRITERION:
 
+            case JUDGE_APPROVED_THE_ORDER:
+                sendNotificationForJudicialDecision(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeApprovesOrderForSummaryStayTheClaimExtendEmailTemplate());
+                break;
+            default: case NON_CRITERION:
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -95,7 +116,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             .build();
     }
 
-    private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String template) {
+    private void sendNotificationForJudicialDecision(CaseData caseData, String recipient, String template) {
         notificationService.sendMail(
             recipient,
             template,

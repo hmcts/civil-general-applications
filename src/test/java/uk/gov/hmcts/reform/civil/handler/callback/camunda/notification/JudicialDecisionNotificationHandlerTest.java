@@ -63,7 +63,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void setup() {
             when(notificationsProperties.getWrittenRepConcurrentRepresentationEmailTemplate())
                 .thenReturn("general-application-apps-judicial-notification-template-id");
-            when(notificationsProperties.getWrittenRepSequentialRepresentationEmailTemplate())
+            when(notificationsProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate())
                 .thenReturn("general-application-apps-judicial-notification-template-id");
         }
 

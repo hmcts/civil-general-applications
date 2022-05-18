@@ -16,17 +16,29 @@ public class NotificationsProperties {
     private String generalApplicationRespondentEmailTemplate;
 
     @NotEmpty
-    private String writtenRepSequentialRepresentationEmailTemplate;
+    private String respondentWrittenRepConcurrentRepresentationEmailTemplate;
 
     @NotEmpty
-    private String writtenRepConcurrentRepresentationEmailTemplate;
+    private String applicantWrittenRepConcurrentRepresentationEmailTemplate;
 
     @NotEmpty
-    private String judgeListsForHearingEmailTemplate;
+    private String respondentWrittenRepSequentialRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String applicantWrittenRepSequentialRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String judgeListsForHearingApplicantEmailTemplate;
 
     @NotEmpty
     private String judgeRequestsMoreInformationEmailTemplate;
 
     @NotEmpty
     private String judgeGivesDirectionsEmailTemplate;
+
+    @NotEmpty
+    private String judgeDismissesOrderApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeApprovesOrderForSummaryStayTheClaimExtendEmailTemplate;
 }
