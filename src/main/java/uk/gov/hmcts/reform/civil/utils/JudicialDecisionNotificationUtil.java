@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -10,7 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGES_DIRECTION_GIVEN;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 
 public class JudicialDecisionNotificationUtil {
@@ -23,11 +27,15 @@ public class JudicialDecisionNotificationUtil {
     private static final String TO_STRIKE_OUT = "to strike out";
     private static final String TO_STAY_THE_CLAIM = "to stay the claim";
     private static final String TO_EXTEND_TIME = "to extend time";
+    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
         return
             isApplicationForConcurrentWrittenRep(caseData) ? CONCURRENT_WRITTEN_REP :
             isApplicationForSequentialWrittenRep(caseData) ? SEQUENTIAL_WRITTEN_REP :
+            isListForHearing(caseData) ? LIST_FOR_HEARING :
+            isRequestMoreInfo(caseData) ? REQUEST_MORE_INFO :
+            isGiveDirectionsOnOrder(caseData) ? JUDGES_DIRECTION_GIVEN :
             NON_CRITERION;
     }
 
@@ -39,7 +47,7 @@ public class JudicialDecisionNotificationUtil {
             .orElse(null);
     }
 
-    public static String getRequiredGAType(List<GeneralApplicationTypes> applicationTypes) {
+    public static String requiredGAType(List<GeneralApplicationTypes> applicationTypes) {
 
         for (GeneralApplicationTypes type : applicationTypes) {
             return
@@ -76,6 +84,33 @@ public class JudicialDecisionNotificationUtil {
                 List::stream
             ).filter(e -> !e.getValue().getEmail().isEmpty()).findFirst().orElse(null);
         return respondents != null;
+    }
+
+    private static boolean isRequestMoreInfo(CaseData caseData) {
+        return isJudicialDecisionEvent(caseData)
+            && caseData.getJudicialDecision().getDecision() != null
+            && caseData.getJudicialDecision().getDecision()
+            .equals(GAJudgeDecisionOption.REQUEST_MORE_INFO);
+    }
+
+    private static boolean isListForHearing(CaseData caseData) {
+        return
+            isJudicialDecisionEvent(caseData)
+            && caseData.getJudicialDecision().getDecision() != null
+            && caseData.getJudicialDecision().getDecision()
+            .equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+    }
+
+    private static boolean isGiveDirectionsOnOrder(CaseData caseData) {
+        return isJudicialDecisionEvent(caseData)
+            && !caseData.getJudicialGOHearingDirections().isEmpty();
+    }
+
+    private static boolean isJudicialDecisionEvent(CaseData caseData) {
+        return
+            caseData.getBusinessProcess().getCamundaEvent() != null
+            && caseData.getBusinessProcess().getCamundaEvent()
+            .equals(JUDGES_DECISION);
     }
 
 }

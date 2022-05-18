@@ -61,19 +61,37 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
-            when(notificationsProperties.getWrittenRepConcurrentRepresentationTemplate())
+            when(notificationsProperties.getWrittenRepConcurrentRepresentationEmailTemplate())
+                .thenReturn("general-application-apps-judicial-notification-template-id");
+            when(notificationsProperties.getWrittenRepSequentialRepresentationEmailTemplate())
                 .thenReturn("general-application-apps-judicial-notification-template-id");
         }
 
         @Test
-        void notificationShouldSendWhenInvokedTwice() {
+        void notificationShouldSendThriceForConcurrentWrittenRepsWhenInvoked() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForConcurrentWrittenOption())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationProperties(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendThriceForSequentialWrittenRepsWhenInvoked() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForSequentialWrittenOption())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationProperties(),
@@ -99,6 +117,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .generalAppType(GAApplicationType.builder().types(applicationType()).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                         GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())

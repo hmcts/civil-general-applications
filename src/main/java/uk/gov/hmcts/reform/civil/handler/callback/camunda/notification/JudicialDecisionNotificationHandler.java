@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.getRequiredGAType;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 
 @Service
@@ -57,13 +57,34 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                 caseData.getGeneralAppRespondentSolicitors().forEach((
                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
                     caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getWrittenRepConcurrentRepresentationTemplate()));
+                    notificationProperties.getWrittenRepConcurrentRepresentationEmailTemplate()));
+                sendNotificationToGeneralAppRespondent(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getWrittenRepConcurrentRepresentationEmailTemplate());
                 break;
             case SEQUENTIAL_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
                     respondentSolicitor) -> sendNotificationToGeneralAppRespondent(
                     caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getWrittenRepSequentialRepresentationTemplate()));
+                    notificationProperties.getWrittenRepSequentialRepresentationEmailTemplate()));
+                sendNotificationToGeneralAppRespondent(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getWrittenRepSequentialRepresentationEmailTemplate());
+                break;
+            case LIST_FOR_HEARING:
+                sendNotificationToGeneralAppRespondent(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeListsForHearingEmailTemplate());
+                break;
+            case REQUEST_MORE_INFO:
+                sendNotificationToGeneralAppRespondent(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeRequestsMoreInformationEmailTemplate());
+                break;
+            case JUDGES_DIRECTION_GIVEN:
+                sendNotificationToGeneralAppRespondent(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeGivesDirectionsEmailTemplate());
                 break;
             default: case NON_CRITERION:
 
@@ -87,7 +108,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
-            GA_APPLICATION_TYPE, Objects.requireNonNull(getRequiredGAType(caseData.getGeneralAppType().getTypes()))
+            GA_APPLICATION_TYPE, Objects.requireNonNull(requiredGAType(caseData.getGeneralAppType().getTypes()))
         );
     }
 
