@@ -1,26 +1,29 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICANT_WRITTEN_REP_SEQUENTIAL;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICANT_WRITTEN_REP_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICANT_WRITTEN_REP_SEQUENTIAL;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_MOVES_TO_WITH_NOTICE;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_UNCLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGES_DIRECTION_GIVEN;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 
 public class JudicialDecisionNotificationUtil {
@@ -42,11 +45,9 @@ public class JudicialDecisionNotificationUtil {
             isWrittenRepForApplicantConcurrent(caseData) ? APPLICANT_WRITTEN_REP_CONCURRENT :
             isWrittenRepForApplicantSequential(caseData) ? APPLICANT_WRITTEN_REP_SEQUENTIAL :
             isListForHearing(caseData) ? LIST_FOR_HEARING :
-            isRequestMoreInfo(caseData) ? REQUEST_MORE_INFO :
-            isGiveDirectionsOnOrder(caseData) ? JUDGES_DIRECTION_GIVEN :
+            isApplicationUncloaked(caseData) ? APPLICATION_UNCLOAK :
+            isApplicationAmendedWithNotice(caseData) ? APPLICATION_MOVES_TO_WITH_NOTICE :
             isJudicialDismissal(caseData) ? JUDGE_DISMISSED_APPLICATION :
-            isJudgesApproval(caseData) ? JUDGE_APPROVED_THE_ORDER :
-
             NON_CRITERION;
     }
 
@@ -73,7 +74,9 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
         boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
         return
-            (Objects.requireNonNull(writtenOptions(caseData))
+            isJudicialDecisionEvent(caseData)
+            && Objects.nonNull(writtenOptions(caseData))
+            && ((writtenOptions(caseData))
             .equals(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS))
             && isApplicantPresent
             && isRespondentPresent(caseData);
@@ -82,7 +85,9 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isApplicationForSequentialWrittenRep(CaseData caseData) {
         boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
         return
-            (Objects.requireNonNull(writtenOptions(caseData))
+            isJudicialDecisionEvent(caseData)
+            && Objects.nonNull(writtenOptions(caseData))
+            && ((writtenOptions(caseData))
             .equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS))
             && isApplicantPresent
             && isRespondentPresent(caseData);
@@ -99,23 +104,27 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
-    private static boolean isRequestMoreInfo(CaseData caseData) {
+    private static boolean isApplicationUncloaked(CaseData caseData) {
         return isJudicialDecisionEvent(caseData)
-            && Objects.requireNonNull(caseData.getJudicialDecision().getDecision())
-            .equals(GAJudgeDecisionOption.REQUEST_MORE_INFO);
+            && Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(YesOrNo.NO);
     }
 
     private static boolean isListForHearing(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.requireNonNull(caseData.getJudicialDecision().getDecision())
-            .equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+            &&  Objects.nonNull(judicialDecision)
+            && judicialDecision.equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
 
-    private static boolean isGiveDirectionsOnOrder(CaseData caseData) {
+    private static boolean isApplicationAmendedWithNotice(CaseData caseData) {
         return isJudicialDecisionEvent(caseData)
-            && Objects.requireNonNull(caseData.getJudicialDecisionMakeOrder().getMakeAnOrder())
-            .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
+            && caseData.getGeneralAppRespondentAgreement() != null
+            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            && caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 
     private static boolean isJudicialDismissal(CaseData caseData) {
@@ -125,30 +134,29 @@ public class JudicialDecisionNotificationUtil {
             .equals(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION);
     }
 
-    private static boolean isJudgesApproval(CaseData caseData) {
-        return
-            isJudicialDecisionEvent(caseData)
-            && Objects.requireNonNull(caseData.getJudicialDecisionMakeOrder().getMakeAnOrder())
-            .equals(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT);
-    }
-
-    private static boolean isWrittenRepForApplicantSequential(CaseData caseData) {
-        return
-            !isRespondentPresent(caseData)
-            && (Objects.requireNonNull(writtenOptions(caseData))
-            .equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS));
-    }
-
     private static boolean isWrittenRepForApplicantConcurrent(CaseData caseData) {
         return
-            !isRespondentPresent(caseData)
+            isJudicialDecisionEvent(caseData)
+            && !isRespondentPresent(caseData)
+            && Objects.nonNull(writtenOptions(caseData))
             && (Objects.requireNonNull(writtenOptions(caseData))
             .equals(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS));
     }
 
-    private static boolean isJudicialDecisionEvent(CaseData caseData) {
+    private static boolean isWrittenRepForApplicantSequential(CaseData caseData) {
         return
-            Objects.nonNull(caseData.getBusinessProcess().getCamundaEvent())
+            isJudicialDecisionEvent(caseData)
+            && !isRespondentPresent(caseData)
+            && Objects.nonNull(writtenOptions(caseData))
+            && (Objects.requireNonNull(writtenOptions(caseData))
+            .equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS));
+    }
+
+    private static boolean isJudicialDecisionEvent(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
+        return
+            Objects.nonNull(judicialDecision)
             && caseData.getBusinessProcess().getCamundaEvent()
             .equals(JUDGES_DECISION);
     }

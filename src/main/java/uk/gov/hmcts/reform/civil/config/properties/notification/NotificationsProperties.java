@@ -16,6 +16,9 @@ public class NotificationsProperties {
     private String generalApplicationRespondentEmailTemplate;
 
     @NotEmpty
+    private String withNoticeUpdateRespondentEmailTemplate;
+
+    @NotEmpty
     private String respondentWrittenRepConcurrentRepresentationEmailTemplate;
 
     @NotEmpty
@@ -28,17 +31,11 @@ public class NotificationsProperties {
     private String applicantWrittenRepSequentialRepresentationEmailTemplate;
 
     @NotEmpty
-    private String judgeListsForHearingApplicantEmailTemplate;
-
-    @NotEmpty
-    private String judgeRequestsMoreInformationEmailTemplate;
-
-    @NotEmpty
-    private String judgeGivesDirectionsEmailTemplate;
-
-    @NotEmpty
     private String judgeDismissesOrderApplicantEmailTemplate;
 
     @NotEmpty
-    private String judgeApprovesOrderForSummaryStayTheClaimExtendEmailTemplate;
+    private String judgeListsForHearingApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeUncloaksApplicationApplicantEmailTemplate;
 }

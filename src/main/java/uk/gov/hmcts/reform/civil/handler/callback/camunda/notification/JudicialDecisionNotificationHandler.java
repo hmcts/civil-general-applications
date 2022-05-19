@@ -53,6 +53,11 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         switch (notificationCriterion(caseData)) {
+            case APPLICATION_MOVES_TO_WITH_NOTICE:
+                sendNotificationForJudicialDecision(caseData,
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getWithNoticeUpdateRespondentEmailTemplate());
+                break;
             case CONCURRENT_WRITTEN_REP:
                 caseData.getGeneralAppRespondentSolicitors().forEach((
                     respondentSolicitor) -> sendNotificationForJudicialDecision(
@@ -91,22 +96,10 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeListsForHearingApplicantEmailTemplate());
                 break;
-                
-            case REQUEST_MORE_INFO:
+            case APPLICATION_UNCLOAK:
                 sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getJudgeRequestsMoreInformationEmailTemplate());
-                break;
-            case JUDGES_DIRECTION_GIVEN:
-                sendNotificationForJudicialDecision(caseData,
-                    caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getJudgeGivesDirectionsEmailTemplate());
-                break;
-
-            case JUDGE_APPROVED_THE_ORDER:
-                sendNotificationForJudicialDecision(caseData,
-                    caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getJudgeApprovesOrderForSummaryStayTheClaimExtendEmailTemplate());
+                    notificationProperties.getJudgeUncloaksApplicationApplicantEmailTemplate());
                 break;
             default: case NON_CRITERION:
         }
@@ -128,7 +121,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
-            CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
+            CASE_REFERENCE, Objects.requireNonNull(caseData.getGeneralAppParentCaseLink().getCaseReference()),
             GA_APPLICATION_TYPE, Objects.requireNonNull(requiredGAType(caseData.getGeneralAppType().getTypes()))
         );
     }
