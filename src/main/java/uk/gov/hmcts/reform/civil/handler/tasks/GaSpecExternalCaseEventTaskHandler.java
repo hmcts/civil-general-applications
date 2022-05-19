@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class CaseEventTaskHandler implements BaseExternalTaskHandler {
+public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandler  {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -33,7 +33,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
+        StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId,
                                                                                 variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
@@ -41,7 +41,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
 
         String flowState = externalTask.getVariable(FLOW_STATE);
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
-        data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
+        data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
     @Override

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 
 import java.util.List;
@@ -111,12 +112,13 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isListForHearing(CaseData caseData) {
-        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecision())
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
             .map(GAJudicialDecision::getDecision).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
-            &&  Objects.nonNull(judicialDecision)
-            && judicialDecision.equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+            && (decision != null)
+            && caseData.getJudicialDecision().getDecision()
+                .equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
 
     private static boolean isApplicationAmendedWithNotice(CaseData caseData) {
@@ -128,9 +130,12 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isJudicialDismissal(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecisionMakeOrder())
+            .map(GAJudicialMakeAnOrder::getMakeAnOrder).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.requireNonNull(caseData.getJudicialDecisionMakeOrder().getMakeAnOrder())
+            && Objects.nonNull(judicialDecision)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
             .equals(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION);
     }
 

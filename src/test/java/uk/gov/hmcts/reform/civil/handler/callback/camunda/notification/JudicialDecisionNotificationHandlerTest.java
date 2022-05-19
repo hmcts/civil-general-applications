@@ -85,69 +85,68 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(SAMPLE_TEMPLATE);
         }
 
-//        @Test
-//        void notificationShouldSendThriceForConcurrentWrittenRepsWhenInvoked() {
-//            CallbackParams params = CallbackParamsBuilder
-//                .builder().of(ABOUT_TO_SUBMIT,
-//                              caseDataForConcurrentWrittenOption())
-//                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-//            handler.handle(params);
-//
-//            verify(notificationService, times(3)).sendMail(
-//                DUMMY_EMAIL,
-//                "general-application-apps-judicial-notification-template-id",
-//                notificationProperties(),
-//                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-//            );
-//        }
+        @Test
+        void notificationShouldSendThriceForConcurrentWrittenRepsWhenInvoked() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForConcurrentWrittenOption())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
 
-//        @Test
-//        void notificationShouldSendThriceForSequentialWrittenRepsWhenInvoked() {
-//            CallbackParams params = CallbackParamsBuilder
-//                .builder().of(ABOUT_TO_SUBMIT,
-//                              caseDataForSequentialWrittenOption())
-//                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-//            handler.handle(params);
-//
-//            verify(notificationService, times(3)).sendMail(
-//                DUMMY_EMAIL,
-//                "general-application-apps-judicial-notification-template-id",
-//                notificationProperties(),
-//                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-//            );
-//        }
-//
-//        @Test
-//        void notificationShouldSendForSequentialWrittenRepsWhenInvoked() {
-//            CallbackParams params = CallbackParamsBuilder
-//                .builder().of(ABOUT_TO_SUBMIT,
-//                              caseDataForSequentialWrittenRepRespondentNotPresent())
-//                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-//            handler.handle(params);
-//
-//            verify(notificationService).sendMail(
-//                DUMMY_EMAIL,
-//                "general-application-apps-judicial-notification-template-id",
-//                notificationProperties(),
-//                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-//            );
-//        }
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationProperties(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
 
-//        @Test
-//        void notificationShouldSendForConcurrentWrittenRepsWhenInvoked() {
-//            CallbackParams params = CallbackParamsBuilder
-//                .builder().of(ABOUT_TO_SUBMIT,
-//                              caseDataForConcurrentWrittenRepRespondentNotPresent())
-//                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-//            handler.handle(params);
-//
-//            verify(notificationService).sendMail(
-//                DUMMY_EMAIL,
-//                "general-application-apps-judicial-notification-template-id",
-//                notificationProperties(),
-//                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-//            );
-//        }
+        @Test
+        void notificationShouldSendThriceForSequentialWrittenRepsWhenInvoked() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForSequentialWrittenOption())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationProperties(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendForSequentialWrittenRepsWhenInvoked() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForSequentialWrittenRepRespondentNotPresent())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationProperties(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendForConcurrentWrittenRepsWhenInvoked() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForConcurrentWrittenRepRespondentNotPresent())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationProperties(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
 
         @Test
         void notificationShouldSendForDismissal() {
@@ -182,57 +181,75 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData caseDataForConcurrentWrittenOption() {
-            return CaseData.builder()
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build())
+            return
+            CaseData.builder()
                 .generalAppRespondentSolicitors(respondentSolicitors())
-                .generalAppType(GAApplicationType.builder().types(applicationType()).build())
+                .judicialDecision(GAJudicialDecision.builder()
+                .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                 .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                 .caseReference(CASE_REFERENCE.toString()).build())
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                     GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS).build())
-                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppType(GAApplicationType.builder()
+                .types(applicationType()).build())
                 .build();
         }
 
         private CaseData caseDataForSequentialWrittenOption() {
             return CaseData.builder()
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
-                .generalAppRespondentSolicitors(respondentSolicitors())
-                .generalAppType(GAApplicationType.builder().types(applicationType()).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                         GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationType()).build())
                 .build();
         }
 
         private CaseData caseDataForSequentialWrittenRepRespondentNotPresent() {
             return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
-                .generalAppType(GAApplicationType.builder().types(applicationType()).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                         GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationType()).build())
                 .build();
         }
 
         private CaseData caseDataForConcurrentWrittenRepRespondentNotPresent() {
             return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
-                .generalAppType(GAApplicationType.builder().types(applicationType()).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                         GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationType()).build())
                 .build();
         }
 
