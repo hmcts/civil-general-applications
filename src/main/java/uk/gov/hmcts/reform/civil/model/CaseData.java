@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
@@ -28,7 +29,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
@@ -53,6 +56,7 @@ public class CaseData implements MappableObject {
     private final String legacyCaseReference;
     private final String respondentSolicitor1EmailAddress;
     private final LocalDateTime notificationDeadline;
+    private final LocalDate submittedOn;
     private final String generalAppDeadlineNotificationDate;
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
@@ -106,6 +110,23 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> generalAppAddlnInfoUpload;
     private final List<Element<Document>> gaAddlnInfoList;
     private final String gaRespondentDetails;
+    private final LocalDate issueDate;
+
+    //PDF Documents
+    @Builder.Default
+    private final List<Element<CaseDocument>> generalOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> directionOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> requestForInformationDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> hearingOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
 
     private final BusinessProcess businessProcess;
 
