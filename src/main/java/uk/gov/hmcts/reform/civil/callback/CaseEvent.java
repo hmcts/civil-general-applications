@@ -40,6 +40,8 @@ public enum CaseEvent {
 
     NOTIFY_GENERAL_APPLICATION_RESPONDENT(CAMUNDA),
 
+    GENERATE_JUDGES_FORM(CAMUNDA),
+
     UPDATE_CASE_WITH_GA_STATE(CAMUNDA);
 
     private final UserType userType;
