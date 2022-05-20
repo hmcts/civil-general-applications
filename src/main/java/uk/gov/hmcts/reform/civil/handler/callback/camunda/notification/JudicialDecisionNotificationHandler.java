@@ -129,7 +129,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                 LocalDate.parse(concurrentDateText
                                     + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
         caseData.getGeneralAppRespondentSolicitors().forEach(
-                 respondentSolicitor -> sendNotificationForJudicialDecision(
+            respondentSolicitor -> sendNotificationForJudicialDecision(
             caseData, respondentSolicitor.getValue().getEmail(),
             notificationProperties.getRespondentWrittenRepConcurrentRepresentationEmailTemplate()));
         sendNotificationForJudicialDecision(caseData,
@@ -147,7 +147,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                 LocalDate.parse(sequentialDateText
                                     + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
         caseData.getGeneralAppRespondentSolicitors().forEach(
-             respondentSolicitor -> sendNotificationForJudicialDecision(
+            respondentSolicitor -> sendNotificationForJudicialDecision(
             caseData, respondentSolicitor.getValue().getEmail(),
             notificationProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate()));
         sendNotificationForJudicialDecision(caseData,
