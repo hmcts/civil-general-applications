@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -19,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
@@ -29,7 +29,6 @@ import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.n
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 
 @Service
-@Builder
 @RequiredArgsConstructor
 public class JudicialDecisionNotificationHandler extends CallbackHandler implements NotificationData {
 
@@ -122,58 +121,52 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void concurrentWrittenRepNotification(CaseData caseData) {
+        var concurrentDateText = Optional.ofNullable(caseData.getJudicialConcurrentDateText()).orElse(null);
         customProps.put(
             GA_JUDICIAL_CONCURRENT_DATE_TEXT,
-            Objects.nonNull(caseData.getJudicialConcurrentDateText())
+            Objects.nonNull(concurrentDateText)
                 ? DateFormatHelper.formatLocalDate(
-                LocalDate.parse(caseData.getJudicialConcurrentDateText()
+                LocalDate.parse(concurrentDateText
                                     + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
-        caseData.getGeneralAppRespondentSolicitors().forEach((
-                 respondentSolicitor) -> sendNotificationForJudicialDecision(
+        caseData.getGeneralAppRespondentSolicitors().forEach(
+                 respondentSolicitor -> sendNotificationForJudicialDecision(
             caseData, respondentSolicitor.getValue().getEmail(),
             notificationProperties.getRespondentWrittenRepConcurrentRepresentationEmailTemplate()));
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate());
-        customProps.values().remove(Objects.nonNull(
-            caseData.getJudicialConcurrentDateText()) ? DateFormatHelper.formatLocalDate(
-            LocalDate.parse(caseData.getJudicialConcurrentDateText()
-                                + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
+        customProps.remove(GA_JUDICIAL_CONCURRENT_DATE_TEXT);
     }
 
     private void sequentialWrittenRepNotification(CaseData caseData) {
+        var sequentialDateText = Optional.ofNullable(caseData.getJudicialSequentialDateText()).orElse(null);
         customProps.put(
-            GA_JUDICIAL_CONCURRENT_DATE_TEXT,
-            Objects.nonNull(caseData.getJudicialSequentialDateText())
+            GA_JUDICIAL_SEQUENTIAL_DATE_TEXT,
+            Objects.nonNull(sequentialDateText)
                 ? DateFormatHelper.formatLocalDate(
-                LocalDate.parse(caseData.getJudicialSequentialDateText()
+                LocalDate.parse(sequentialDateText
                                     + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
-        caseData.getGeneralAppRespondentSolicitors().forEach((
-             respondentSolicitor) -> sendNotificationForJudicialDecision(
+        caseData.getGeneralAppRespondentSolicitors().forEach(
+             respondentSolicitor -> sendNotificationForJudicialDecision(
             caseData, respondentSolicitor.getValue().getEmail(),
             notificationProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate()));
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate());
-        customProps.values().remove(Objects.nonNull(caseData.getJudicialSequentialDateText())
-                                        ? DateFormatHelper.formatLocalDate(
-            LocalDate.parse(caseData.getJudicialSequentialDateText()
-                                + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
+        customProps.remove(GA_JUDICIAL_SEQUENTIAL_DATE_TEXT);
     }
 
     private void applicantWrittenRepConcurrentNotification(CaseData caseData) {
+        var concurrentDateText = Optional.ofNullable(caseData.getJudicialConcurrentDateText()).orElse(null);
         customProps.put(
             GA_JUDICIAL_CONCURRENT_DATE_TEXT,
-            Objects.nonNull(caseData.getJudicialConcurrentDateText())
+            Objects.nonNull(concurrentDateText)
                 ? DateFormatHelper.formatLocalDate(
-                LocalDate.parse(caseData.getJudicialConcurrentDateText()
+                LocalDate.parse(concurrentDateText
                                     + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate());
-        customProps.values().remove(Objects.nonNull(caseData.getJudicialConcurrentDateText())
-                                        ? DateFormatHelper.formatLocalDate(
-            LocalDate.parse(caseData.getJudicialConcurrentDateText()
-                                + MANDATORY_SUFFIX, FORMATTER), DATE) : null);
+        customProps.remove(GA_JUDICIAL_CONCURRENT_DATE_TEXT);
     }
 }

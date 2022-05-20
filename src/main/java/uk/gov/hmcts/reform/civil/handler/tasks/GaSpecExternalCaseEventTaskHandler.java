@@ -34,7 +34,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId,
-                                                                                variables.getCaseEvent());
+                                                variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
@@ -54,14 +54,14 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
 
     private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
                                               BusinessProcess businessProcess) {
-        Map<String, Object> data = startGaEventResponse.getCaseDetails().getData();
-        data.put("businessProcess", businessProcess);
+        Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
+        objectDataMap.put("businessProcess", businessProcess);
 
         return CaseDataContent.builder()
             .eventToken(startGaEventResponse.getToken())
             .event(Event.builder().id(startGaEventResponse.getEventId())
                        .build())
-            .data(data)
+            .data(objectDataMap)
             .build();
     }
 }
