@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -40,16 +41,25 @@ public class JudicialDecisionNotificationUtil {
     private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
-        return
-            isApplicationForConcurrentWrittenRep(caseData) ? CONCURRENT_WRITTEN_REP :
-            isApplicationForSequentialWrittenRep(caseData) ? SEQUENTIAL_WRITTEN_REP :
-            isWrittenRepForApplicantConcurrent(caseData) ? APPLICANT_WRITTEN_REP_CONCURRENT :
-            isWrittenRepForApplicantSequential(caseData) ? APPLICANT_WRITTEN_REP_SEQUENTIAL :
-            isListForHearing(caseData) ? LIST_FOR_HEARING :
-            isApplicationUncloaked(caseData) ? APPLICATION_UNCLOAK :
-            isApplicationAmendedWithNotice(caseData) ? APPLICATION_MOVES_TO_WITH_NOTICE :
-            isJudicialDismissal(caseData) ? JUDGE_DISMISSED_APPLICATION :
-            NON_CRITERION;
+
+        if (isApplicationForConcurrentWrittenRep(caseData)) {
+            return CONCURRENT_WRITTEN_REP;
+        } else if (isApplicationForSequentialWrittenRep(caseData)) {
+            return SEQUENTIAL_WRITTEN_REP;
+        } else if (isWrittenRepForApplicantConcurrent(caseData)) {
+            return APPLICANT_WRITTEN_REP_CONCURRENT;
+        } else if (isWrittenRepForApplicantSequential(caseData)) {
+            return APPLICANT_WRITTEN_REP_SEQUENTIAL;
+        } else if (isListForHearing(caseData)) {
+            return LIST_FOR_HEARING;
+        } else if (isApplicationUncloaked(caseData)) {
+            return APPLICATION_UNCLOAK;
+        } else if (isApplicationAmendedWithNotice(caseData)) {
+            return APPLICATION_MOVES_TO_WITH_NOTICE;
+        } else if (isJudicialDismissal(caseData)) {
+            return JUDGE_DISMISSED_APPLICATION;
+        }
+        return NON_CRITERION;
     }
 
     private static GAJudgeWrittenRepresentationsOptions writtenOptions(CaseData caseData) {
@@ -63,11 +73,18 @@ public class JudicialDecisionNotificationUtil {
     public static String requiredGAType(List<GeneralApplicationTypes> applicationTypes) {
 
         for (GeneralApplicationTypes type : applicationTypes) {
-            return
-                type.equals(GeneralApplicationTypes.STRIKE_OUT) ? TO_STRIKE_OUT :
-                type.equals(GeneralApplicationTypes.SUMMARY_JUDGEMENT) ? FOR_SUMMARY_JUDGEMENT :
-                type.equals(GeneralApplicationTypes.STAY_THE_CLAIM) ? TO_STAY_THE_CLAIM :
-                type.equals(GeneralApplicationTypes.EXTEND_TIME) ? TO_EXTEND_TIME : null;
+            if (type.equals(GeneralApplicationTypes.STRIKE_OUT)) {
+                return TO_STRIKE_OUT;
+            }
+            if (type.equals(GeneralApplicationTypes.SUMMARY_JUDGEMENT)) {
+                return FOR_SUMMARY_JUDGEMENT;
+            }
+            if (type.equals(GeneralApplicationTypes.STAY_THE_CLAIM)) {
+                return TO_STAY_THE_CLAIM;
+            }
+            if (type.equals(GeneralApplicationTypes.EXTEND_TIME)) {
+                return TO_EXTEND_TIME;
+            }
         }
         return null;
     }
@@ -123,9 +140,9 @@ public class JudicialDecisionNotificationUtil {
 
     private static boolean isApplicationAmendedWithNotice(CaseData caseData) {
         return isJudicialDecisionEvent(caseData)
-            && caseData.getGeneralAppRespondentAgreement() != null
+            && Objects.nonNull(caseData.getGeneralAppRespondentAgreement())
+            && Objects.nonNull(caseData.getGeneralAppInformOtherParty())
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            && caseData.getGeneralAppInformOtherParty() != null
             && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 
@@ -158,8 +175,8 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {
-        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecision())
-            .map(GAJudicialDecision::getDecision).orElse(null);
+        var judicialDecision = Optional.ofNullable(caseData.getBusinessProcess())
+            .map(BusinessProcess::getCamundaEvent).orElse(null);
         return
             Objects.nonNull(judicialDecision)
             && caseData.getBusinessProcess().getCamundaEvent()

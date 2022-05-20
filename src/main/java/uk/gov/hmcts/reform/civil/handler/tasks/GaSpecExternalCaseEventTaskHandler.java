@@ -39,8 +39,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
-        String flowState = externalTask.getVariable(FLOW_STATE);
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
@@ -53,29 +52,16 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         return variables;
     }
 
-    private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess,
-                                            String flowState) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
+    private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
+                                              BusinessProcess businessProcess) {
+        Map<String, Object> data = startGaEventResponse.getCaseDetails().getData();
         data.put("businessProcess", businessProcess);
 
         return CaseDataContent.builder()
-            .eventToken(startEventResponse.getToken())
-            .event(Event.builder().id(startEventResponse.getEventId())
-                       .summary(getSummary(startEventResponse.getEventId(), flowState))
-                       .description(getDescription(startEventResponse.getEventId(), data))
+            .eventToken(startGaEventResponse.getToken())
+            .event(Event.builder().id(startGaEventResponse.getEventId())
                        .build())
             .data(data)
             .build();
-    }
-
-    private String getSummary(String eventId, String state) {
-
-        return null;
-    }
-
-    private String getDescription(String eventId, Map data) {
-
-        return null;
     }
 }

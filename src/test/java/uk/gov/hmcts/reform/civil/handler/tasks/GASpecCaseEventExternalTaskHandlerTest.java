@@ -105,7 +105,7 @@ class GASpecCaseEventExternalTaskHandlerTest {
             when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
             gaSpecCaseEventTaskHandler.execute(mockTask, externalTaskService);
-            
+
             verify(coreCaseDataService).startGaUpdate(CASE_ID, INITIATE_GENERAL_APPLICATION);
             verify(coreCaseDataService).submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class));
             verify(externalTaskService).complete(mockTask, variables);

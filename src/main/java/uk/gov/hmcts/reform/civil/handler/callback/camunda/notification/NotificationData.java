@@ -10,6 +10,7 @@ public interface NotificationData {
     String APPLICANT_REFERENCE = "claimantOrDefendant";
     String GA_NOTIFICATION_DEADLINE = "notificationDeadLine";
     String GA_APPLICATION_TYPE = "generalAppType";
+    String GA_JUDICIAL_CONCURRENT_DATE_TEXT = "generalAppJudicialConcurrentDate";
 
     Map<String, String> addProperties(CaseData caseData);
 
