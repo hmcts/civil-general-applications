@@ -212,7 +212,8 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
             status,
             "exception message",
             Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
-            body
+            body,
+            null
         );
     }
 }
