@@ -37,7 +37,7 @@ class OrganisationServiceTest {
     private final FeignException notFoundFeignException = new FeignException.NotFound(
         "not found message",
         Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
-        "not found response body".getBytes(UTF_8), null);
+        "not found response body".getBytes(UTF_8));
     private final Organisation expectedOrganisation = Organisation.builder()
         .organisationIdentifier(ORG_ID)
         .build();

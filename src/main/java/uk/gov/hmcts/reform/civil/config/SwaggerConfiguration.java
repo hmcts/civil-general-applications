@@ -10,7 +10,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import uk.gov.hmcts.reform.civil.Application;
 
-@EnableWebMvc
 @Configuration
 @EnableSwagger2
 public class SwaggerConfiguration {
