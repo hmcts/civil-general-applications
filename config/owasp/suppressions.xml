@@ -39,13 +39,13 @@
   </suppress>
   <suppress>
     <notes>
-
+    Spring statemachine core 3.2.0 which is the latest version still got the vulnerability
     </notes>
     <cve>CVE-2022-22965</cve>
   </suppress>
   <suppress>
     <notes>
-      springfox latest library still got vulnerabile spring plugin core 2.0.0
+      springfox 3.0.0 latest library still got the vulnerability including spring plugin core 2.0.0
     </notes>
     <cve>CVE-2022-22968</cve>
   </suppress>
