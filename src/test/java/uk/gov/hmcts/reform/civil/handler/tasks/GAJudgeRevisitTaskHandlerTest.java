@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
@@ -55,20 +57,21 @@ class GAJudgeRevisitTaskHandlerTest {
     @Autowired
     private GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
 
-    private CaseDetails caseDetailsDirectionOrder1;
-    private CaseDetails caseDetailsDirectionOrder2;
-    private CaseDetails caseDetails3;
-    private CaseDetails caseDetails4;
-
-    private final LocalDateTime dateBy = LocalDateTime.now();
-    private final LocalDateTime dateByInFuture = LocalDateTime.now().plusDays(2);
+    private CaseDetails caseDetailsDirectionOrder;
+    private CaseDetails caseDetailsWrittenRepresentation;
+    private CaseDetails caseDetailRequestForInformation;
 
     @BeforeEach
     void init() {
-        caseDetailsDirectionOrder1 = CaseDetails.builder().id(1L).data(
-            Map.of("makeAnOrder", GIVE_DIRECTIONS_WITHOUT_HEARING, "directionsResponseByDate", dateBy)).build();
-        caseDetailsDirectionOrder2 = CaseDetails.builder().id(2L).data(
-            Map.of("makeAnOrder", GIVE_DIRECTIONS_WITHOUT_HEARING, "directionsResponseByDate", dateByInFuture)).build();
+        caseDetailsDirectionOrder = CaseDetails.builder().id(1L).data(
+            Map.of("judicialDecisionMakeOrder", CaseDataBuilder.builder()
+                .directionOrderApplication1().build())).build();
+        caseDetailsWrittenRepresentation = CaseDetails.builder().id(1594901956117591L).data(
+            Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", CaseDataBuilder.builder()
+                .writtenRepresentationConcurrentApplication().build())).build();
+        caseDetailRequestForInformation = CaseDetails.builder().id(1594901956117591L).data(
+            Map.of("getJudicialDecisionRequestMoreInfo", CaseDataBuilder.builder()
+                .requestForInforationApplication().build())).build();
     }
 
     @Test
@@ -84,13 +87,12 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFound() {
-        when(directionOrderSearchService.getGeneralApplications()).thenReturn(List.of(caseDetailsDirectionOrder1));
+        when(directionOrderSearchService.getGeneralApplications()).thenReturn(List.of(caseDetailsDirectionOrder));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(directionOrderSearchService).getGeneralApplications();
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
-        verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -99,9 +101,5 @@ class GAJudgeRevisitTaskHandlerTest {
     @Test
     void getMaxAttemptsShouldAlwaysReturn1() {
         assertThat(gaJudgeRevisitTaskHandler.getMaxAttempts()).isEqualTo(1);
-    }
-
-    private CaseDataBuilder directionOrder(LocalDate date){
-        CaseDataBuilder.builder().generalApplications(Ga)
     }
 }

@@ -333,8 +333,19 @@ public class CaseDataBuilder {
                                            .directionsText("Test Direction")
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING)
+                                           .directionsResponseByDate(LocalDate.now())
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData.CaseDataBuilder directionOrderApplication1() {
+        return CaseData.builder()
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .directionsText("Test Direction")
+                                           .reasonForDecisionText("Test Reason")
+                                           .makeAnOrder(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING)
+                                           .directionsResponseByDate(LocalDate.now())
+                                           .build());
     }
 
     public CaseData.CaseDataBuilder dismissalOrderApplication() {
