@@ -215,4 +215,8 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
+  <suppress>
+    <notes>tomcat embed core high severe dependency from spring boot 1.5.12</notes>
+    <cve>CVE-2022-29885</cve>
+  </suppress>
 </suppressions>
