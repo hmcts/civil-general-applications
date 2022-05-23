@@ -52,6 +52,10 @@
     <vulnerabilityName>1007023</vulnerabilityName>
   </suppress>
   <suppress>
+    <notes>Even after latest spring state machine upgrade 3.2.0 the vulnerability exist</notes>
+    <cve>CVE-2014-0225</cve>
+  </suppress>
+  <suppress>
     <notes><![CDATA[Awaiting openid dependencies version bump in nimbus-jose-jwt]]></notes>
     <cve>CVE-2007-1651</cve>
     <cve>CVE-2007-1652</cve>
