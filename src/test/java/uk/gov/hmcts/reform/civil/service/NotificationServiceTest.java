@@ -11,8 +11,8 @@ import uk.gov.service.notify.NotificationClientException;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(classes =
     NotificationService.class

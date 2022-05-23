@@ -26,8 +26,22 @@
     <cve>CVE-2013-4152</cve>
     <cve>CVE-2013-7315</cve>
     <cve>CVE-2014-0054</cve>
+  </suppress>
+  <suppress>
+    <notes>CVE-2016-1000027 cant be fixed since spring has conveyed its a known warning in their documentation
+      details are available to it from here https://nvd.nist.gov/vuln/detail/CVE-2016-1000027</notes>
     <cve>CVE-2016-1000027</cve>
+  </suppress>
+  <suppress>
+    <notes>
+
+    </notes>
     <cve>CVE-2022-22965</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      springfox latest library still got vulnerabile spring plugin core 2.0.0
+    </notes>
     <cve>CVE-2022-22968</cve>
   </suppress>
   <suppress>
