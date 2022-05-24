@@ -41,6 +41,11 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 
 public class CaseDataBuilder {
@@ -332,20 +337,10 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .directionsText("Test Direction")
                                            .reasonForDecisionText("Test Reason")
-                                           .makeAnOrder(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING)
+                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
-    }
-
-    public CaseData.CaseDataBuilder directionOrderApplication1() {
-        return CaseData.builder()
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
-                                           .directionsText("Test Direction")
-                                           .reasonForDecisionText("Test Reason")
-                                           .makeAnOrder(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING)
-                                           .directionsResponseByDate(LocalDate.now())
-                                           .build());
     }
 
     public CaseData.CaseDataBuilder dismissalOrderApplication() {
@@ -364,7 +359,7 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .dismissalOrderText("Test Dismissal")
                                            .reasonForDecisionText("Test Reason")
-                                           .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION)
+                                           .makeAnOrder(DISMISS_THE_APPLICATION)
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -405,6 +400,7 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build())
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
+                    .writtenOption(SEQUENTIAL_REPRESENTATIONS)
                     .writtenSequentailRepresentationsBy(LocalDate.now())
                     .sequentialApplicantMustRespondWithin(LocalDate.now()
                                                               .plusDays(5)).build())
@@ -426,6 +422,7 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build())
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
+                    .writtenOption(CONCURRENT_REPRESENTATIONS)
                     .writtenConcurrentRepresentationsBy(LocalDate.now())
                     .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
@@ -445,6 +442,7 @@ public class CaseDataBuilder {
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);

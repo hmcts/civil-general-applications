@@ -20,6 +20,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAIT
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -69,7 +70,12 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
                 && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                               .getWrittenConcurrentRepresentationsBy()))
+                                               .getWrittenConcurrentRepresentationsBy())
+            || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
+                && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                                               .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                               .getSequentialApplicantMustRespondWithin()))
             .collect(Collectors.toList());
     }
 

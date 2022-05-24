@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.GAResponseDeadlineTaskHandler;
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAResponseDeadlineProcessorExternalTaskListener {
 
-    private static final String TOPIC = "GA_RESPONSE_DEADLINE_PROCESSOR";
+    private static final String TOPIC = "GAResponseDeadlineProcessor";
 
     @Autowired
     private GAResponseDeadlineProcessorExternalTaskListener(GAResponseDeadlineTaskHandler taskHandler,
