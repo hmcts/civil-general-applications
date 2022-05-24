@@ -215,4 +215,16 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
+  <suppress>
+    <notes>tomcat embed core high severe dependency from spring boot 1.5.12</notes>
+    <cve>CVE-2022-29885</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      spring-beans-5.3.18.jar has got a vulnerability which is part of the spring boot version 1.5.12 which
+      we cant upgrade at the moment due to dependency with springfox not working with it
+    </notes>
+    <cve>CVE-2022-22970</cve>
+    <cve>CVE-2022-22971</cve>
+  </suppress>
 </suppressions>
