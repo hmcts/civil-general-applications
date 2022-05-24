@@ -111,6 +111,15 @@ reference:
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
+  respondentWrittenRepConcurrentRepresentationEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
+  applicantWrittenRepConcurrentRepresentationEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
+  respondentWrittenRepSequentialRepresentationEmailTemplate : "ffd74057-0204-4185-95de-5bb715e80e6c"
+  applicantWrittenRepSequentialRepresentationEmailTemplate : "56d4ad11-ee6d-4ef7-9b83-cce78377f01b"
+  judgeListsForHearingApplicantEmailTemplate: "7a1d9e5b-4b1d-4765-b5de-d191d6c91a11"
+  judgeUncloaksApplicationApplicantEmailTemplate: "caf1abe9-8401-4a65-b9a8-fbecf00d8009"
+  judgeDismissesOrderApplicantEmailTemplate: "96f708e8-0a03-40ef-9278-a5dcfa3277fa"
+  withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
+
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
