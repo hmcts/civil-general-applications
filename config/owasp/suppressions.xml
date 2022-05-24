@@ -93,7 +93,7 @@
   </suppress>
   <suppress>
     <notes><![CDATA[
-            Related Nim-lang
+            Related Nim-lang 
         ]]></notes>
     <cve>CVE-2020-23171</cve>
   </suppress>
