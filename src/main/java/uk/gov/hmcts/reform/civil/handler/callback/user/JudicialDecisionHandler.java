@@ -21,9 +21,11 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +67,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final int ONE_V_ONE = 0;
     private static final String EMPTY_STRING = "";
 
+    private final DeadlinesCalculator deadlinesCalculator;
+    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
+
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
 
@@ -94,7 +99,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon the "
+    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon reading the "
         + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
@@ -151,7 +156,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
             ? YES : NO;
         caseDataBuilder.applicationIsCloaked(isCloaked);
-        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
+        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
@@ -220,17 +225,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .build();
     }
 
-    public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData) {
+    public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
+                                                                                 CallbackParams callbackParams) {
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
-        if (caseData.getJudicialDecisionMakeOrder() != null) {
+        if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
+
+            makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText() == null
+                                             ? caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT
+                                             : caseData.getJudicialDecisionMakeOrder().getOrderText())
+                .judgeRecitalText(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
+                                        ? DISMISSAL_ORDER_TEXT
+                                        : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
+            makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
+                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+                .dismissalOrderText(DISMISSAL_ORDER_TEXT);
         }
-
-        makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
-            .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-            .dismissalOrderText(DISMISSAL_ORDER_TEXT);
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
         if (judicialDecisionMakeOrder != null) {
@@ -319,7 +332,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
 
             caseDataBuilder
-                .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
+                .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -349,7 +362,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData).build());
+        caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
@@ -358,13 +371,32 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
         List<String> errors = judicialRequestMoreInfo != null
             ? validateDatesForRequestMoreInfoScreen(judicialRequestMoreInfo)
             : Collections.emptyList();
 
+        if (judicialRequestMoreInfo != null
+            && SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
+            LocalDateTime deadlineForMoreInfoSubmission = deadlinesCalculator
+                .calculateApplicantResponseDeadline(
+                    LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
+
+            caseDataBuilder
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
+                                                     .builder()
+                                                     .requestMoreInfoOption(caseData
+                                                                                .getJudicialDecisionRequestMoreInfo()
+                                                                                .getRequestMoreInfoOption())
+                                                     .deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission)
+                                                     .build());
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .errors(errors)
+                .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
     }
 
@@ -418,11 +450,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         throw new IllegalArgumentException("Missing data during submission of judicial decision");
                     }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
+                    LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
+                                                                        .getDeadlineForMoreInfoSubmission();
                     confirmationHeader = "# You have requested a response";
-                    //TODO: The LocalDate.now().plusDays(7) is a temporary evaluation. This date will be populated
-                    //later based on the deadline calculator
                     body = "<br/><p>The parties will be notified. They will need to provide a response by "
-                            + DATE_FORMATTER_SUBMIT_CALLBACK.format(LocalDate.now().plusDays(7))
+                        + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate)
                             + "</p>";
                 }
             } else {
