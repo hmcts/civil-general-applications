@@ -15,6 +15,10 @@
     <cve>CVE-2013-4152</cve>
   </suppress>
   <suppress>
+    <notes>
+      CVE-2013-7315: Vulnerability in Spring MVC in Spring Framework before 3.2.4 and 4.0.0.M1
+      CVE-2014-0054: Vulnerability in Spring MVC in Spring Framework before 3.2.8 and 4.0.0 before 4.0.2
+    </notes>
     <cve>CVE-2013-7315</cve>
     <cve>CVE-2014-0054</cve>
   </suppress>
@@ -74,9 +78,5 @@
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
-  </suppress>
-  <suppress>
-    <notes>tomcat embed core high severe dependency from spring boot 1.5.12</notes>
-    <cve>CVE-2022-29885</cve>
   </suppress>
 </suppressions>
