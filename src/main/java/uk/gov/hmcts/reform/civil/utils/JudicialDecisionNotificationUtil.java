@@ -15,21 +15,18 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.AMEND_A_STMT_OF_CASE;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICANT_WRITTEN_REP_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICANT_WRITTEN_REP_SEQUENTIAL;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_MOVES_TO_WITH_NOTICE;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_UNCLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
@@ -46,20 +43,37 @@ public class JudicialDecisionNotificationUtil {
 
         if (isApplicationForConcurrentWrittenRep(caseData)) {
             return CONCURRENT_WRITTEN_REP;
-        } else if (isApplicationForSequentialWrittenRep(caseData)) {
+        }
+        if (isApplicationForSequentialWrittenRep(caseData)) {
             return SEQUENTIAL_WRITTEN_REP;
-        } else if (isWrittenRepForApplicantConcurrent(caseData)) {
+        }
+        if (isWrittenRepForApplicantConcurrent(caseData)) {
             return APPLICANT_WRITTEN_REP_CONCURRENT;
-        } else if (isWrittenRepForApplicantSequential(caseData)) {
+        }
+        if (isWrittenRepForApplicantSequential(caseData)) {
             return APPLICANT_WRITTEN_REP_SEQUENTIAL;
-        } else if (isListForHearing(caseData)) {
+        }
+        if (isListForHearing(caseData)) {
             return LIST_FOR_HEARING;
-        } else if (isApplicationUncloaked(caseData)) {
-            return APPLICATION_UNCLOAK;
-        } else if (isApplicationAmendedWithNotice(caseData)) {
-            return APPLICATION_MOVES_TO_WITH_NOTICE;
-        } else if (isJudicialDismissal(caseData)) {
+        }
+        if (isJudicialDismissal(caseData)
+            && !isApplicationUncloaked(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
+        }
+        if (isJudicialApproval(caseData)
+            && !isApplicationUncloaked(caseData)) {
+            return JUDGE_APPROVED_THE_ORDER;
+        }
+        if (isApplicationUncloaked(caseData)
+            && isJudicialDismissal(caseData)) {
+            return JUDGE_DISMISSED_APPLICATION_CLOAK;
+        }
+        if (isApplicationUncloaked(caseData)
+            && isJudicialApproval(caseData)) {
+            return JUDGE_APPROVED_THE_ORDER_CLOAK;
+        }
+        if (isApplicationAmendedWithNotice(caseData)) {
+            return APPLICATION_MOVES_TO_WITH_NOTICE;
         }
         return NON_CRITERION;
     }
@@ -72,33 +86,10 @@ public class JudicialDecisionNotificationUtil {
             .orElse(null);
     }
 
-    public static String requiredGAType(List<GeneralApplicationTypes> applicationTypes) {
-        StringBuilder sb = new StringBuilder();
-        for (GeneralApplicationTypes type : applicationTypes) {
-
-            switch (type) {
-                case STRIKE_OUT:
-                    sb.append(" [").append(STRIKE_OUT.getDisplayedValue()).append("] ");
-                    break;
-                case SUMMARY_JUDGEMENT:
-                    sb.append(" [").append(SUMMARY_JUDGEMENT.getDisplayedValue()).append("] ");
-                    break;
-                case STAY_THE_CLAIM:
-                    sb.append(" [").append(STAY_THE_CLAIM.getDisplayedValue()).append("] ");
-                    break;
-                case EXTEND_TIME:
-                    sb.append(" [").append(EXTEND_TIME.getDisplayedValue()).append("] ");
-                    break;
-                case AMEND_A_STMT_OF_CASE:
-                    sb.append(" [").append(AMEND_A_STMT_OF_CASE.getDisplayedValue()).append("] ");
-                    break;
-                case RELIEF_FROM_SANCTIONS:
-                    sb.append(" [").append(RELIEF_FROM_SANCTIONS.getDisplayedValue()).append("] ");
-                    break;
-                default: return null;
-            }
-        }
-        return sb.toString();
+    public static String requiredGAType(CaseData caseData) {
+        List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
+        return types.stream().map(GeneralApplicationTypes::getDisplayedValue)
+            .collect(Collectors.joining(", "));
     }
 
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
@@ -135,9 +126,14 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isApplicationUncloaked(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
         return isJudicialDecisionEvent(caseData)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
-            && caseData.getApplicationIsCloaked().equals(YesOrNo.NO);
+            && Objects.nonNull(decision)
+            && caseData.getJudicialDecision()
+            .getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+            && caseData.getApplicationIsCloaked().equals(YesOrNo.YES);
     }
 
     private static boolean isListForHearing(CaseData caseData) {
@@ -152,7 +148,6 @@ public class JudicialDecisionNotificationUtil {
 
     private static boolean isApplicationAmendedWithNotice(CaseData caseData) {
         return isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(caseData.getGeneralAppRespondentAgreement())
             && Objects.nonNull(caseData.getGeneralAppInformOtherParty())
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
@@ -166,6 +161,16 @@ public class JudicialDecisionNotificationUtil {
             && Objects.nonNull(judicialDecision)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
             .equals(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION);
+    }
+
+    private static boolean isJudicialApproval(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecisionMakeOrder())
+            .map(GAJudicialMakeAnOrder::getMakeAnOrder).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && Objects.nonNull(judicialDecision)
+                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
+                .equals(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT);
     }
 
     private static boolean isWrittenRepForApplicantConcurrent(CaseData caseData) {

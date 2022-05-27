@@ -119,6 +119,7 @@ notifications:
   judgeUncloaksApplicationApplicantEmailTemplate: "caf1abe9-8401-4a65-b9a8-fbecf00d8009"
   judgeDismissesOrderApplicantEmailTemplate: "96f708e8-0a03-40ef-9278-a5dcfa3277fa"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
+  judgeHasOrderedTheApplicationApprovedEmailTemplate: "5ccc25e7-be62-4815-a87b-2c5387451962"
 
 
 os-postcode-lookup:

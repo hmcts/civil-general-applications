@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsPro
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,14 +85,20 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeListsForHearingApplicantEmailTemplate());
                 break;
-            case APPLICATION_UNCLOAK:
+            case JUDGE_APPROVED_THE_ORDER:
+                applicationApprovedNotification(caseData);
+                break;
+            case  JUDGE_APPROVED_THE_ORDER_CLOAK:
+                applicationApprovedNotification(caseData);
                 sendNotificationForJudicialDecision(caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeUncloaksApplicationApplicantEmailTemplate());
                 break;
-            default: case NON_CRITERION:
+            case  JUDGE_DISMISSED_APPLICATION_CLOAK:
+                judgeDismissedOrderApplicationCloak(caseData);
+                break;
+            default:case NON_CRITERION:
         }
-
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
@@ -111,7 +118,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         customProps.put(CASE_REFERENCE,
             Objects.requireNonNull(caseData.getGeneralAppParentCaseLink().getCaseReference()));
         customProps.put(GA_APPLICATION_TYPE,
-            Objects.requireNonNull(requiredGAType(caseData.getGeneralAppType().getTypes())));
+            Objects.requireNonNull(requiredGAType(caseData)));
         return customProps;
     }
 
@@ -157,5 +164,40 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate());
         customProps.remove(GA_JUDICIAL_CONCURRENT_DATE_TEXT);
+    }
+
+    private void applicationApprovedNotification(CaseData caseData) {
+        var respondentSolicitors =
+            Optional.ofNullable(caseData.getGeneralAppRespondentSolicitors())
+               .stream().flatMap(Collection::stream);
+        if (respondentSolicitors.findFirst().isPresent()) {
+            caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> sendNotificationForJudicialDecision(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate()
+                ));
+        } else {
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                notificationProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate()
+            );
+        }
+    }
+
+    private void judgeDismissedOrderApplicationCloak(CaseData caseData) {
+        var respondentSolicitors =
+            Optional.ofNullable(caseData.getGeneralAppRespondentSolicitors())
+                .stream().flatMap(Collection::stream);
+        respondentSolicitors.forEach(
+            respondentSolicitor -> sendNotificationForJudicialDecision(
+                caseData, respondentSolicitor.getValue().getEmail(),
+                notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()));
+        sendNotificationForJudicialDecision(caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getJudgeUncloaksApplicationApplicantEmailTemplate());
+        sendNotificationForJudicialDecision(caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate());
     }
 }

@@ -85,6 +85,8 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getWithNoticeUpdateRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate())
+                .thenReturn(SAMPLE_TEMPLATE);
         }
 
         @Test
@@ -190,7 +192,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService).sendMail(
+            verify(notificationService, times(2)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfApplicationUncloakedForApproveOrEdit() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationUncloakedJudgeApproveOrEdit())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(2)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -242,6 +260,38 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfJudicialApproval() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialApprovalOfApplication())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(2)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfApplicationUncloakedDismissed() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationUncloakedIsDismissed())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(4)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -349,7 +399,46 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData caseDataForApplicationUncloaked() {
             return CaseData.builder()
-                .applicationIsCloaked(YesOrNo.NO)
+                .applicationIsCloaked(YesOrNo.YES)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStrikeOut()).build())
+                .build();
+        }
+
+        private CaseData caseDataForApplicationUncloakedJudgeApproveOrEdit() {
+            return CaseData.builder()
+                .applicationIsCloaked(YesOrNo.YES)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStrikeOut()).build())
+                .build();
+        }
+
+        private CaseData caseDataForApplicationUncloakedIsDismissed() {
+            return CaseData.builder()
+                .applicationIsCloaked(YesOrNo.YES)
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
                 .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
@@ -406,6 +495,21 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
+        private CaseData caseDataForJudicialApprovalOfApplication() {
+            return CaseData.builder()
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToAmendStatmentOfClaim()).build())
+                .build();
+        }
+
         private List<Element<GASolicitorDetailsGAspec>> respondentSolicitors() {
             return Arrays.asList(element(GASolicitorDetailsGAspec.builder().id(ID)
                                              .email(DUMMY_EMAIL).organisationIdentifier(ORG_ID).build()),
@@ -418,7 +522,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue() + "] "
+                GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue()
             );
         }
 
@@ -432,7 +536,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue() + "] "
+                GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue()
             );
         }
 
@@ -440,7 +544,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.STRIKE_OUT.getDisplayedValue() + "] "
+                GeneralApplicationTypes.STRIKE_OUT.getDisplayedValue()
             );
         }
 
@@ -454,7 +558,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue() + "] "
+                GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue()
             );
         }
 
@@ -468,7 +572,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.EXTEND_TIME.getDisplayedValue() + "] "
+                GeneralApplicationTypes.EXTEND_TIME.getDisplayedValue()
             );
         }
 
@@ -482,7 +586,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue() + "] "
+                GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue()
             );
         }
 
@@ -496,7 +600,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                " [" + GeneralApplicationTypes.RELIEF_FROM_SANCTIONS.getDisplayedValue() + "] "
+                GeneralApplicationTypes.RELIEF_FROM_SANCTIONS.getDisplayedValue()
             );
         }
 

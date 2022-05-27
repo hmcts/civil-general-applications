@@ -38,4 +38,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String judgeUncloaksApplicationApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeHasOrderedTheApplicationApprovedEmailTemplate;
 }
