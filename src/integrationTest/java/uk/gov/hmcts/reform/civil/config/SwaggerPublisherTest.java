@@ -26,10 +26,8 @@ class SwaggerPublisherTest extends BaseIntegrationTest {
             .andReturn()
             .getResponse()
             .getContentAsByteArray();
-
         try (OutputStream outputStream = Files.newOutputStream(Paths.get("/tmp/swagger-specs.json"))) {
             outputStream.write(specs);
         }
-
     }
 }
