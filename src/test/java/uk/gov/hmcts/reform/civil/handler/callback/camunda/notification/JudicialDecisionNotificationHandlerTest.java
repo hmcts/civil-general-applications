@@ -246,7 +246,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -326,7 +326,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -342,7 +342,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -474,7 +474,6 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         private CaseData caseDataForApplicationUncloakedIsDismissed() {
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
-                .generalAppRespondentSolicitors(respondentSolicitors())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .judicialDecision(GAJudicialDecision.builder()

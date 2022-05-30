@@ -199,13 +199,6 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void judgeApprovedOrderApplicationCloak(CaseData caseData) {
-        if (areRespondentSolicitorsPresent(caseData)) {
-            caseData.getGeneralAppRespondentSolicitors().forEach(
-                respondentSolicitor -> sendNotificationForJudicialDecision(
-                    caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate()
-                ));
-        }
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getJudgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate());
@@ -213,14 +206,6 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void judgeDismissedOrderApplicationCloak(CaseData caseData) {
-        if (areRespondentSolicitorsPresent(caseData)) {
-            caseData.getGeneralAppRespondentSolicitors().forEach(
-                respondentSolicitor -> sendNotificationForJudicialDecision(
-                    caseData, respondentSolicitor.getValue().getEmail(),
-                    notificationProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate()
-                ));
-        }
-
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getJudgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate());
