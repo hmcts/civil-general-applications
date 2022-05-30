@@ -21,11 +21,9 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
@@ -57,7 +55,8 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     private static final Long CASE_REFERENCE = 111111L;
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
-    private static final String DUMMY_DATE = "2022-02-15T12:00";
+    private static final String DUMMY_DATE =
+        "The respondent may upload any written representations by 4pm on 1 February 2023";
     private static final String CASE_EVENT = "START_NOTIFICATION_PROCESS_MAKE_DECISION";
     private static final String ORG_ID = "1";
     private static final String ID = "1";
@@ -81,11 +80,17 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeListsForHearingApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeUncloaksApplicationApplicantEmailTemplate())
+            when(notificationsProperties.getJudgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getWithNoticeUpdateRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeListsForHearingRespondentEmailTemplate())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeDismissesOrderRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
         }
 
@@ -116,22 +121,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesSummeryJudgement(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendForSequentialWrittenRepsWhenInvoked() {
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForSequentialWrittenRepRespondentNotPresent())
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-            verify(notificationService).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStayTheClaim(),
+                notificationPropertiesToGetReliefFromSanctions(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -144,7 +134,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -192,10 +182,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStrikeOut(),
+                notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -208,42 +198,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(2)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStrikeOut(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendIfApplicationAmendedWithNotice() {
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForApplicationIsAmendedWithNotice())
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesSummeryJudgement(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendIfApplicationToGetReliefFromSanctions() {
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForReliefFromSanctions())
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-
-            verify(notificationService).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToGetReliefFromSanctions(),
+                notificationPropertiesToStayTheClaim(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -272,7 +230,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -288,10 +246,106 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(4)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfSequentialWrittenRepsArePresentInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForSequentialWrittenRepInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendForApplicationsApprovedWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedWhenRespondentsAreInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendForApplicationListForHearingWhenRespondentsAreAvailableInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForListForHearingRespondentsAreInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenApplicationIsDismissedByJudgeWhenRespondentsAreAvailableInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForCaseDismissedByJudgeRespondentsAreInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeApprovesOrderApplicationIsCloak() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeDismissedTheApplicationIsCloak() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -332,22 +386,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     GAJudicialWrittenRepresentations.builder().writtenOption(
                         GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
                 .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeSummeryJudgement()).build())
-                .build();
-        }
-
-        private CaseData caseDataForSequentialWrittenRepRespondentNotPresent() {
-            return CaseData.builder()
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build())
-                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
-                                              .caseReference(CASE_REFERENCE.toString()).build())
-                .judicialDecisionMakeAnOrderForWrittenRepresentations(
-                    GAJudicialWrittenRepresentations.builder().writtenOption(
-                        GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
-                .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeToStayTheClaim()).build())
+                                    .types(applicationTypeToGetReliefFromSanctions()).build())
                 .build();
         }
 
@@ -355,6 +394,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
                 .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
@@ -410,7 +450,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeToStrikeOut()).build())
+                                    .types(applicationTypeSummeryJudgement()).build())
                 .build();
         }
 
@@ -427,7 +467,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeToStrikeOut()).build())
+                                    .types(applicationTypeToStayTheClaim()).build())
                 .build();
         }
 
@@ -446,36 +486,6 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStrikeOut()).build())
-                .build();
-        }
-
-        private CaseData caseDataForApplicationIsAmendedWithNotice() {
-            return CaseData.builder().generalAppRespondentAgreement(GARespondentOrderAgreement
-                .builder().hasAgreed(YesOrNo.NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder()
-                                                .isWithNotice(YesOrNo.YES).build())
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build())
-                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
-                                              .caseReference(CASE_REFERENCE.toString()).build())
-                .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeSummeryJudgement()).build())
-                .build();
-        }
-
-        private CaseData caseDataForReliefFromSanctions() {
-            return CaseData.builder().generalAppRespondentAgreement(GARespondentOrderAgreement
-                                                                        .builder().hasAgreed(YesOrNo.NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder()
-                                                .isWithNotice(YesOrNo.YES).build())
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build())
-                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
-                                              .caseReference(CASE_REFERENCE.toString()).build())
-                .generalAppType(GAApplicationType.builder()
-                                    .types(applicationTypeToGetReliefFromSanctions()).build())
                 .build();
         }
 
@@ -508,6 +518,121 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToAmendStatmentOfClaim()).build())
                 .build();
+        }
+
+        private CaseData caseDataForSequentialWrittenRepInList() {
+            return
+                CaseData.builder()
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeAnOrderForWrittenRepresentations(
+                        GAJudicialWrittenRepresentations.builder().writtenOption(
+                            GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForApplicationsApprovedWhenRespondentsAreInList() {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                                   .makeAnOrder(
+                                                       GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForListForHearingRespondentsAreInList() {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForCaseDismissedByJudgeRespondentsAreInList() {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
+                        GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION
+                    ).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList() {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
+                        GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT
+                    ).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .applicationIsCloaked(YesOrNo.YES)
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList() {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
+                        GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION
+                    ).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeSummeryJudgement()).build())
+                    .applicationIsCloaked(YesOrNo.YES)
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
         }
 
         private List<Element<GASolicitorDetailsGAspec>> respondentSolicitors() {

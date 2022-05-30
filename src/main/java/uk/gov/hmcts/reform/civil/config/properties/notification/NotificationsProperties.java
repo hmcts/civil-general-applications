@@ -37,8 +37,17 @@ public class NotificationsProperties {
     private String judgeListsForHearingApplicantEmailTemplate;
 
     @NotEmpty
-    private String judgeUncloaksApplicationApplicantEmailTemplate;
+    private String judgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate;
 
     @NotEmpty
     private String judgeHasOrderedTheApplicationApprovedEmailTemplate;
+
+    @NotEmpty
+    private String judgeListsForHearingRespondentEmailTemplate;
+
+    @NotEmpty
+    private String judgeDismissesOrderRespondentEmailTemplate;
 }
