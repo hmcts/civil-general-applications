@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
@@ -115,12 +113,6 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
-    public static String dateStringExtracted(String dateStr) {
-        Pattern pattern = Pattern.compile("[0-9]{2}\\s\\w+\\s[0-9]{4}$");
-        Matcher matcher = pattern.matcher(dateStr);
-        return matcher.find() ? matcher.group() : null;
-    }
-
     public static boolean isApplicationUnCloaked(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecision())
             .map(GAJudicialDecision::getDecision).orElse(null);
@@ -141,13 +133,6 @@ public class JudicialDecisionNotificationUtil {
             && caseData.getJudicialDecision().getDecision()
                 .equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
-    //TODO
-    /* when judges screen becomes available
-    private static boolean isApplicationAmendedWithNotice(CaseData caseData) {
-        return isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(caseData.getGeneralAppInformOtherParty())
-            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
-    } */
 
     private static boolean isJudicialDismissal(CaseData caseData) {
         var judicialDecision = Optional.ofNullable(caseData.getJudicialDecisionMakeOrder())

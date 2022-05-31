@@ -55,8 +55,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     private static final Long CASE_REFERENCE = 111111L;
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
-    private static final String DUMMY_DATE =
-        "The respondent may upload any written representations by 4pm on 1 February 2023";
+    private static final String DUMMY_DATE = "2022-11-12";
     private static final String CASE_EVENT = "START_NOTIFICATION_PROCESS_MAKE_DECISION";
     private static final String ORG_ID = "1";
     private static final String ID = "1";
