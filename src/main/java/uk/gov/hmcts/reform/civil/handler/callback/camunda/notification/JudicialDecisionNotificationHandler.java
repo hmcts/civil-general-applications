@@ -139,33 +139,19 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void sequentialWrittenRepNotification(CaseData caseData) {
-        var sequentialDateTextApplicant = Optional.ofNullable(caseData
-                                                         .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                         .getWrittenSequentailRepresentationsBy()).orElse(null);
 
         var sequentialDateTextRespondent = Optional.ofNullable(caseData
-                                                                  .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                                  .getSequentialApplicantMustRespondWithin()).orElse(null);
+                                                        .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                        .getSequentialApplicantMustRespondWithin()).orElse(null);
 
-        // sequentialApplicantMustRespondWithin
         customProps.put(
-            GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_APPLICANT,
-            Objects.nonNull(sequentialDateTextApplicant)
-            ? DateFormatHelper
-                .formatLocalDate(
-                    LocalDate.parse(
-                        sequentialDateTextApplicant.toString(),
-                        JUDICIAL_FORMATTER), DATE) : null
-        );
-customProps.put(
-    GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT,
-            Objects.nonNull(sequentialDateTextRespondent)
-                ? DateFormatHelper
-                .formatLocalDate(
-                    LocalDate.parse(
-                        sequentialDateTextRespondent.toString(),
-                        JUDICIAL_FORMATTER), DATE) : null
-
+            GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT,
+                    Objects.nonNull(sequentialDateTextRespondent)
+                        ? DateFormatHelper
+                        .formatLocalDate(
+                            LocalDate.parse(
+                                sequentialDateTextRespondent.toString(),
+                                JUDICIAL_FORMATTER), DATE) : null
         );
 
         if (areRespondentSolicitorsPresent(caseData)) {
@@ -182,7 +168,7 @@ customProps.put(
             notificationProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate()
         );
 
-        customProps.remove(GA_JUDICIAL_SEQUENTIAL_DATE_TEXT);
+        customProps.remove(GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT);
     }
 
     private void applicationApprovedNotification(CaseData caseData) {
