@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -44,6 +45,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATIO
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
@@ -55,6 +57,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
     private final IdamClient idamClient;
+    private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -90,8 +93,19 @@ public class RespondToApplicationHandler extends CallbackHandler {
     }
 
     private AboutToStartOrSubmitCallbackResponse applicationValidation(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        caseDataBuilder
+            .hearingDetailsResp(
+                GAHearingDetails
+                    .builder()
+                    .hearingPreferredLocation(fromList(locationRefDataService.getCourtLocations(authToken)))
+                    .build());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(applicationExistsValidation(callbackParams))
+            .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
 
