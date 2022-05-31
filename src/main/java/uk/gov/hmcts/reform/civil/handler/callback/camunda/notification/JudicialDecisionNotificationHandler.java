@@ -10,9 +10,11 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +22,10 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.dateStringExtracted;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
@@ -104,11 +110,17 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void concurrentWrittenRepNotification(CaseData caseData) {
-        var concurrentDateText = Optional.ofNullable(caseData.getJudicialConcurrentDateText()).orElse(null);
+        var concurrentDateText = Optional.ofNullable(caseData
+                                                         .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                         .getWrittenConcurrentRepresentationsBy()).orElse(null);
         customProps.put(
             GA_JUDICIAL_CONCURRENT_DATE_TEXT,
             Objects.nonNull(concurrentDateText)
-                ? dateStringExtracted(concurrentDateText) : null
+                ? DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        concurrentDateText.toString(),
+                        JUDICIAL_FORMATTER), DATE) : null
         );
         if (areRespondentSolicitorsPresent(caseData)) {
             caseData.getGeneralAppRespondentSolicitors().forEach(
@@ -127,11 +139,33 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void sequentialWrittenRepNotification(CaseData caseData) {
-        var sequentialDateText = Optional.ofNullable(caseData.getJudicialSequentialDateText()).orElse(null);
+        var sequentialDateTextApplicant = Optional.ofNullable(caseData
+                                                         .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                         .getWrittenSequentailRepresentationsBy()).orElse(null);
+
+        var sequentialDateTextRespondent = Optional.ofNullable(caseData
+                                                                  .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                                  .getSequentialApplicantMustRespondWithin()).orElse(null);
+
+        // sequentialApplicantMustRespondWithin
         customProps.put(
-            GA_JUDICIAL_SEQUENTIAL_DATE_TEXT,
-            Objects.nonNull(sequentialDateText)
-                ? dateStringExtracted(sequentialDateText) : null
+            GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_APPLICANT,
+            Objects.nonNull(sequentialDateTextApplicant)
+            ? DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        sequentialDateTextApplicant.toString(),
+                        JUDICIAL_FORMATTER), DATE) : null
+        );
+customProps.put(
+    GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT,
+            Objects.nonNull(sequentialDateTextRespondent)
+                ? DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        sequentialDateTextRespondent.toString(),
+                        JUDICIAL_FORMATTER), DATE) : null
+
         );
 
         if (areRespondentSolicitorsPresent(caseData)) {
