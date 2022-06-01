@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
@@ -325,7 +326,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -341,7 +342,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -439,6 +440,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         private CaseData caseDataForApplicationUncloaked() {
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -456,6 +458,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         private CaseData caseDataForApplicationUncloakedJudgeApproveOrEdit() {
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -473,6 +476,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         private CaseData caseDataForApplicationUncloakedIsDismissed() {
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -594,6 +598,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         private CaseData caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList() {
             return
                 CaseData.builder()
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
@@ -616,6 +621,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return
                 CaseData.builder()
                     .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
                     .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
