@@ -11,18 +11,25 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.NotificationService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,7 +61,12 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.APPLICANT_REFERENCE;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CASE_REFERENCE;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.GA_NOTIFICATION_DEADLINE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
 @Service
@@ -133,6 +145,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
 
     private final ObjectMapper objectMapper;
+    private final NotificationService notificationService;
+    private final NotificationsProperties notificationProperties;
+
+    private static final String REFERENCE_TEMPLATE = "general-application-respondent-notification-%s";
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -164,7 +180,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
 
-        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
+        // karthick
+        // please use generalAppHearingDetails
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
@@ -179,13 +197,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
         }
 
-        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+        // generalAppHearingDetails
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
             && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
             .getSupportRequirement() != null
-            && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
@@ -200,7 +218,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .getHearingPreferredLocation().getValue()))
             ? YES : NO;*/
 
-        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+        // generalAppHearingDetails
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
@@ -422,11 +441,47 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
+        CaseData caseData = callbackParams.getCaseData();
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+
+        if (caseData.getMakeAppVisibleToRespondents() != null && caseData.getMakeAppVisibleToRespondents()
+            .getMakeAppAvailableCheck().stream().findFirst().get().getDisplayedValue()
+            .equals(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox.getDisplayedValue())) {
+
+            dataBuilder.generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build()).build();
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData.getGeneralAppRespondentSolicitors();
+            respondentSolicitor.stream().forEach((RS) ->
+                                                     sendNotificationToGeneralAppRespondent(caseData, RS.getValue()
+                                                         .getEmail()));
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient) {
+        notificationService.sendMail(
+            recipient,
+            notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
+            addProperties(caseData),
+            String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
+        );
+    }
+
+    public Map<String, String> addProperties(CaseData caseData) {
+        return Map.of(
+            APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
+            CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
+            GA_NOTIFICATION_DEADLINE, DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        caseData
+                            .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
+                        FORMATTER
+                    ), DATE)
+        );
     }
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
