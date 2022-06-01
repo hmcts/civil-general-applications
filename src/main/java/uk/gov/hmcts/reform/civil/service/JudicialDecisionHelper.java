@@ -16,42 +16,17 @@ public class JudicialDecisionHelper {
             ? YES : NO;
     }
 
-    public YesOrNo isApplicantAndRespondentHearingPrefSame(CaseData caseData) {
-        return (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingPreferencesPreferredType().getDisplayedValue()))
-            ? YES : NO;
-    }
-
-    public YesOrNo isApplicantAndRespondentSupportReqSame(CaseData caseData) {
-        return (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingPreferencesPreferredType().getDisplayedValue()))
-            ? YES : NO;
-    }
-
     public boolean isApplicantAndRespondentLocationPrefSame(CaseData caseData) {
-        return caseData.getGeneralAppHearingDetails() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getGeneralAppHearingDetails().getHearingPreferredLocation().getValue().getLabel()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingPreferredLocation().getValue().getLabel());
-    }
-
-    public YesOrNo isApplicantAndRespondentHearingDurationSame(CaseData caseData) {
-        return (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingDuration().getDisplayedValue()))
-            ? YES : NO;
+        if (caseData.getGeneralAppHearingDetails() == null
+            || caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
+            || caseData.getRespondentsResponses() == null) {
+            return false;
+        }
+        String applicantLocation = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
+            .getValue().getLabel();
+        long count = caseData.getRespondentsResponses().stream()
+            .filter(e -> !applicantLocation.equals(
+                e.getValue().getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel())).count();
+        return count == 0;
     }
 }

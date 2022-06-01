@@ -172,7 +172,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
 
-        YesOrNo isAppAndRespSameHearingPref = helper.isApplicantAndRespondentHearingPrefSame(caseData);
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingPreferencesPreferredType().getDisplayedValue()))
+            ? YES : NO;
 
         GAJudgesHearingListGAspec.GAJudgesHearingListGAspecBuilder gaJudgesHearingListGAspecBuilder;
         if (caseData.getJudicialListForHearing() != null) {
@@ -181,7 +187,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
         }
 
-        YesOrNo isAppAndRespSameSupportReq = helper.isApplicantAndRespondentSupportReqSame(caseData);
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getSupportRequirement() != null
+            && caseData.getHearingDetailsResp().getSupportRequirement() != null
+            && checkIfAppAndRespHaveSameSupportReq(caseData))
+            ? YES : NO;
 
         /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
         Uncomment the below code once Hearing Preferred Location is implemented.*/
@@ -195,7 +209,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
             first.ifPresent(dynamicLocationList::setValue);
         }
-        YesOrNo isAppAndRespSameTimeEst = helper.isApplicantAndRespondentHearingDurationSame(caseData);
+
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+            && caseData.getRespondentsResponses() != null
+            && caseData.getRespondentsResponses().size() == 1
+            && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
+            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
+                        .getHearingDuration().getDisplayedValue()))
+            ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
                                                    .hearingPreferredLocation(dynamicLocationList)
