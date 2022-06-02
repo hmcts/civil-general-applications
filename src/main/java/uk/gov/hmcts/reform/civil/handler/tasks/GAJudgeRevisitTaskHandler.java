@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
@@ -59,12 +59,13 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
-        coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
     }
 
     private List<CaseDetails> getWrittenRepCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitWrittenRepCases = writtenRepresentationSearchService
             .getGeneralApplications();
+
         return judgeReadyToRevisitWrittenRepCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
@@ -82,6 +83,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     private List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitDirectionOrderCases = directionOrderSearchService
             .getGeneralApplications();
+
         return judgeReadyToRevisitDirectionOrderCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
                 .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
@@ -94,6 +96,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     private List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = requestForInformationrSearchService
             .getGeneralApplications();
+
         return judgeReadyToRevisitRequestForInfoCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a)
                 .getJudicialDecisionRequestMoreInfo()
