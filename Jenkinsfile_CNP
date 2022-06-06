@@ -8,7 +8,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 
-def generalappCCDBranch = "feature/CIV-1690"
+def generalappCCDBranch = "master"
 
 AppPipelineConfig pipelineConf
 
