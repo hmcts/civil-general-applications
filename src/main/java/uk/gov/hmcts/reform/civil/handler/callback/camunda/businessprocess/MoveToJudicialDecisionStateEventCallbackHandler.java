@@ -25,7 +25,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MoveToJudicialDecisionStateEventCallbackHandlerTest extends CallbackHandler {
+public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHandler {
 
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 

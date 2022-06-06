@@ -18,12 +18,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 
 public class JudicialDecisionNotificationUtil {
@@ -60,6 +62,12 @@ public class JudicialDecisionNotificationUtil {
         if (isApplicationUnCloaked(caseData)
             && isJudicialApproval(caseData)) {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
+        }
+        if (isDirectionOrder(caseData)) {
+            return DIRECTION_ORDER;
+        }
+        if (isRequestForInfomration(caseData)) {
+            return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
     }
@@ -152,6 +160,26 @@ public class JudicialDecisionNotificationUtil {
                 && Objects.nonNull(judicialDecision)
                 && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
                 .equals(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT);
+    }
+
+    private static boolean isDirectionOrder(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecisionMakeOrder())
+            .map(GAJudicialMakeAnOrder::getMakeAnOrder).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+            && Objects.nonNull(judicialDecision)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
+                .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
+    }
+
+    private static boolean isRequestForInfomration(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && (decision != null)
+                && caseData.getJudicialDecision().getDecision()
+                .equals(GAJudgeDecisionOption.REQUEST_MORE_INFO);
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {

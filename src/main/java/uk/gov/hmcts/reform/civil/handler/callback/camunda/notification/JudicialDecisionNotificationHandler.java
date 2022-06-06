@@ -81,6 +81,12 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             case  JUDGE_DISMISSED_APPLICATION_CLOAK:
                 judgeDismissedOrderApplicationCloak(caseData);
                 break;
+            case DIRECTION_ORDER:
+                applicationDirectionOrder(caseData);
+                break;
+            case REQUEST_FOR_INFORMATION:
+                applicationRequestForInformation(caseData);
+                break;
             default:case NON_CRITERION:
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -158,7 +164,6 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
                     notificationProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate()
                 ));
         }
-
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
@@ -166,6 +171,38 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         );
 
         customProps.remove(GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT);
+    }
+
+    private void applicationRequestForInformation(CaseData caseData) {
+
+        var requestForInformationDeadline = Optional.ofNullable(caseData
+                                                                   .getJudicialDecisionRequestMoreInfo()
+                                                                    .getJudgeRequestMoreInfoByDate()).orElse(null);
+
+        customProps.put(
+            GA_REQUEST_FOR_INFORMATION_DEADLINE,
+            Objects.nonNull(requestForInformationDeadline)
+                ? DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        requestForInformationDeadline.toString(),
+                        JUDICIAL_FORMATTER), DATE) : null
+        );
+
+        if (areRespondentSolicitorsPresent(caseData)) {
+            caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> sendNotificationForJudicialDecision(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getRespondentRequestForInformationEmailTemplate()
+                ));
+        }
+        sendNotificationForJudicialDecision(
+            caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getApplicantRequestForInformationEmailTemplate()
+        );
+
+        customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
     }
 
     private void applicationApprovedNotification(CaseData caseData) {
@@ -212,6 +249,22 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()
+        );
+    }
+
+    private void applicationDirectionOrder(CaseData caseData) {
+        if (areRespondentSolicitorsPresent(caseData)) {
+            caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> sendNotificationForJudicialDecision(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getRespondentDirectionOrderEmailTemplate()
+                ));
+        }
+
+        sendNotificationForJudicialDecision(
+            caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getApplicantDirectionOrderEmailTemplate()
         );
     }
 
