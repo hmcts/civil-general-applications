@@ -12,7 +12,7 @@ dependencies:
     version: 3.7.2
     repository: '@hmctspublic'
   - name: civil-service
-    version: 0.0.13
+    version: 0.0.14
     repository: '@hmctspublic'
     condition: civil-service.enabled
   - name: ccd
