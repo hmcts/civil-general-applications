@@ -45,11 +45,17 @@ public class StateGeneratorService {
     }
 
     private boolean isCaseDismissed(CaseData caseData) {
-        return caseData.getJudicialDecisionMakeOrder() != null &&
-            caseData.getJudicialDecisionMakeOrder()
-            .getMakeAnOrder() != null
-            && caseData.getJudicialDecisionMakeOrder()
-            .getMakeAnOrder()
-            .equals(DISMISS_THE_APPLICATION);
+        boolean isJudicialDecisionNotNull = caseData.getJudicialDecisionMakeOrder() != null
+            && caseData
+                .getJudicialDecisionMakeOrder()
+                .getMakeAnOrder() != null;
+
+        boolean isJudicialDecisionMakeOrderIsDismissed = isJudicialDecisionNotNull
+            && caseData
+                .getJudicialDecisionMakeOrder()
+                .getMakeAnOrder()
+                .equals(DISMISS_THE_APPLICATION);
+
+        return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
     }
 }
