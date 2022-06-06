@@ -25,7 +25,7 @@ public class StateGeneratorService {
         Boolean hasDismissedCase = Boolean.FALSE;
         if (data.getJudicialDecisionMakeOrder() != null) {
             directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-            hasDismissedCase = getCaseDismissed(data.getJudicialDecisionMakeOrder());
+            hasDismissedCase = hasCaseDismissed(data.getJudicialDecisionMakeOrder());
         } else {
             directionsText = null;
         }
@@ -47,12 +47,17 @@ public class StateGeneratorService {
         return data.getCcdState();
     }
 
-    private Boolean getCaseDismissed(GAJudicialMakeAnOrder gaJudicialMakeAnOrder){
+    /**
+     * Method created to check if the case has been dismissed
+     * @param gaJudicialMakeAnOrder
+     * @return Boolean
+     */
+    private Boolean hasCaseDismissed(GAJudicialMakeAnOrder gaJudicialMakeAnOrder) {
         if (gaJudicialMakeAnOrder.getMakeAnOrder() != null
             && gaJudicialMakeAnOrder
             .getMakeAnOrder()
             .getDisplayedValue()
-            .equals(DISMISS_THE_APPLICATION.getDisplayedValue())){
+            .equals(DISMISS_THE_APPLICATION.getDisplayedValue())) {
             return Boolean.TRUE;
         }
         return Boolean.FALSE;
