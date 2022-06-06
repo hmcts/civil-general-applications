@@ -48,8 +48,9 @@ public class StateGeneratorService {
     }
 
     /**
-     * Method created to check if the case has been dismissed
-     * @param gaJudicialMakeAnOrder
+     * Method created to check if the case has been dismissed.
+     *
+     * @param gaJudicialMakeAnOrder information from Judicial Make and order.
      * @return Boolean
      */
     private Boolean hasCaseDismissed(GAJudicialMakeAnOrder gaJudicialMakeAnOrder) {
