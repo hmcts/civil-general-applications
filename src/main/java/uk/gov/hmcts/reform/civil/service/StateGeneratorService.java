@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
@@ -22,10 +21,8 @@ public class StateGeneratorService {
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
         GAJudgeDecisionOption decision;
         String directionsText;
-        boolean hasDismissedCase = false;
         if (data.getJudicialDecisionMakeOrder() != null) {
             directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-            hasDismissedCase = hasCaseDismissed(data.getJudicialDecisionMakeOrder());
         } else {
             directionsText = null;
         }
@@ -35,7 +32,7 @@ public class StateGeneratorService {
             decision = null;
         }
 
-        if (Boolean.TRUE.equals(hasDismissedCase)) {
+        if (isCaseDismissed(data)) {
             return APPLICATION_DISMISSED;
         } else if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -47,9 +44,11 @@ public class StateGeneratorService {
         return data.getCcdState();
     }
 
-    private boolean hasCaseDismissed(GAJudicialMakeAnOrder gaJudicialMakeAnOrder) {
-        return gaJudicialMakeAnOrder.getMakeAnOrder() != null
-            && gaJudicialMakeAnOrder
+    private boolean isCaseDismissed(CaseData caseData) {
+        return caseData.getJudicialDecisionMakeOrder() != null &&
+            caseData.getJudicialDecisionMakeOrder()
+            .getMakeAnOrder() != null
+            && caseData.getJudicialDecisionMakeOrder()
             .getMakeAnOrder()
             .equals(DISMISS_THE_APPLICATION);
     }
