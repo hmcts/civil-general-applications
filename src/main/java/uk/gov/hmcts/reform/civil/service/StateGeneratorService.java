@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
@@ -24,10 +25,7 @@ public class StateGeneratorService {
         Boolean hasDismissedCase = Boolean.FALSE;
         if (data.getJudicialDecisionMakeOrder() != null) {
             directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-            hasDismissedCase = data
-                .getJudicialDecisionMakeOrder()
-                .getMakeAnOrder()
-                .getDisplayedValue().equals(DISMISS_THE_APPLICATION.getDisplayedValue()) ? Boolean.TRUE : Boolean.FALSE;
+            hasDismissedCase = getCaseDismissed(data.getJudicialDecisionMakeOrder());
         } else {
             directionsText = null;
         }
@@ -47,5 +45,16 @@ public class StateGeneratorService {
             return AWAITING_WRITTEN_REPRESENTATIONS;
         }
         return data.getCcdState();
+    }
+
+    private Boolean getCaseDismissed(GAJudicialMakeAnOrder gaJudicialMakeAnOrder){
+        if (gaJudicialMakeAnOrder.getMakeAnOrder() != null
+            && gaJudicialMakeAnOrder
+            .getMakeAnOrder()
+            .getDisplayedValue()
+            .equals(DISMISS_THE_APPLICATION.getDisplayedValue())){
+            return Boolean.TRUE;
+        }
+        return Boolean.FALSE;
     }
 }
