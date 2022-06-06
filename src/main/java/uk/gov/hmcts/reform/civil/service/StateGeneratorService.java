@@ -51,7 +51,6 @@ public class StateGeneratorService {
         return gaJudicialMakeAnOrder.getMakeAnOrder() != null
             && gaJudicialMakeAnOrder
             .getMakeAnOrder()
-            .getDisplayedValue()
-            .equals(DISMISS_THE_APPLICATION.getDisplayedValue());
+            .equals(DISMISS_THE_APPLICATION);
     }
 }
