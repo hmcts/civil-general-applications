@@ -27,7 +27,8 @@ public enum CaseState {
     AWAITING_WRITTEN_REPRESENTATIONS("Awaiting Written Representations"),
     AWAITING_ADDITIONAL_INFORMATION("Additional Information Required"),
     APPLICATION_DISMISSED("Application Dismissed"),
-    APPLICATION_CLOSED("Application Closed");
+    APPLICATION_CLOSED("Application Closed"),
+    RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION("Respond to judge for Written Representations");
 
     private final String displayedValue;
 }
