@@ -13,6 +13,9 @@ public class DateFormatHelper {
     public static final DateTimeFormatter FORMATTER = DateTimeFormatter
         .ofPattern("yyyy-MM-dd'T'HH:mm.SSS'Z'",
                    Locale.ENGLISH);
+    public static final DateTimeFormatter JUDICIAL_FORMATTER = DateTimeFormatter
+        .ofPattern("yyyy-MM-dd",
+                   Locale.ENGLISH);
 
     private DateFormatHelper() {
         //NO-OP

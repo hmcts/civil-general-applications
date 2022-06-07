@@ -14,4 +14,40 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String generalApplicationRespondentEmailTemplate;
+
+    @NotEmpty
+    private String withNoticeUpdateRespondentEmailTemplate;
+
+    @NotEmpty
+    private String respondentWrittenRepConcurrentRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String applicantWrittenRepConcurrentRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String respondentWrittenRepSequentialRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String applicantWrittenRepSequentialRepresentationEmailTemplate;
+
+    @NotEmpty
+    private String judgeDismissesOrderApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeListsForHearingApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeHasOrderedTheApplicationApprovedEmailTemplate;
+
+    @NotEmpty
+    private String judgeListsForHearingRespondentEmailTemplate;
+
+    @NotEmpty
+    private String judgeDismissesOrderRespondentEmailTemplate;
 }
