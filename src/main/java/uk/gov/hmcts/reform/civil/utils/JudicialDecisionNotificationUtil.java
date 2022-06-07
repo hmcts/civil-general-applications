@@ -63,7 +63,8 @@ public class JudicialDecisionNotificationUtil {
             && isJudicialApproval(caseData)) {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
         }
-        if (isDirectionOrder(caseData)) {
+        if (isDirectionOrder(caseData)
+            && !isApplicationUnCloaked(caseData)) {
             return DIRECTION_ORDER;
         }
         if (isRequestForInfomration(caseData)) {
