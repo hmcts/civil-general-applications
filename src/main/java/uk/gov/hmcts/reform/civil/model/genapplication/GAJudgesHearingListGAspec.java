@@ -8,6 +8,7 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class GAJudgesHearingListGAspec {
 
     private GAJudicialHearingType hearingPreferencesPreferredType;
+    private DynamicList hearingPreferredLocation;
     private GAHearingDuration judicialTimeEstimate;
     private List<SupportRequirements> judicialSupportRequirement;
     private String judgeSignLanguage;
@@ -33,6 +35,7 @@ public class GAJudgesHearingListGAspec {
     @JsonCreator
     GAJudgesHearingListGAspec(@JsonProperty("hearingPreferencesPreferredType")
                                   GAJudicialHearingType hearingPreferencesPreferredType,
+                              @JsonProperty("hearingPreferredLocation") DynamicList hearingPreferredLocation,
                               @JsonProperty("judicialTimeEstimate") GAHearingDuration judicialTimeEstimate,
                               @JsonProperty("judicialSupportRequirement")
                                   List<SupportRequirements> judicialSupportRequirement,
@@ -48,6 +51,7 @@ public class GAJudgesHearingListGAspec {
                               @JsonProperty("judicialVulnerabilityText") String judicialVulnerabilityText) {
 
         this.hearingPreferencesPreferredType = hearingPreferencesPreferredType;
+        this.hearingPreferredLocation = hearingPreferredLocation;
         this.judicialSupportRequirement = judicialSupportRequirement;
         this.judicialTimeEstimate = judicialTimeEstimate;
         this.addlnInfoCourtStaff = addlnInfoCourtStaff;
