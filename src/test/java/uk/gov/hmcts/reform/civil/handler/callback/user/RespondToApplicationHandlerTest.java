@@ -22,12 +22,15 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -35,13 +38,19 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -70,6 +79,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     ParentCaseUpdateHelper parentCaseUpdateHelper;
+
+    @MockBean
+    protected GeneralAppLocationRefDataService locationRefDataService;
 
     @BeforeEach
         public void setUp() throws IOException {
@@ -117,7 +129,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void buildResponseConfirmationReturnsCorrectMessage() {
-        CallbackParams params = callbackParamsOf(getCase(), CallbackType.SUBMITTED);
+        CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
         var response = (SubmittedCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_MESSAGE);
@@ -125,14 +138,16 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void generalAppRespondent1RepGivesCorrectValueWhenInvoked() {
-        YesOrNo repAgreed = getCase().getGeneralAppRespondent1Representative()
-            .getGeneralAppRespondent1Representative();
+        YesOrNo repAgreed = getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .getGeneralAppRespondent1Representative().getGeneralAppRespondent1Representative();
         assertThat(repAgreed).isEqualTo(YES);
     }
 
     @Test
     void aboutToStartCallbackChecksApplicationStateBeforeProceeding() {
-        CallbackParams params = callbackParamsOf(getCase(), CallbackType.ABOUT_TO_START);
+        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
+        CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
         errors.add(ERROR);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -142,12 +157,30 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void aboutToStartCallbackChecksRespondendResponseBeforeProceeding() {
+        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
         CallbackParams params = callbackParamsOf(getCaseWithRespondentResponse(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
         errors.add(RESPONDENT_ERROR);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackAddsLocationDetails() {
+        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
+        CallbackParams params = callbackParamsOf(getCase(AWAITING_RESPONDENT_RESPONSE),
+                                                 CallbackType.ABOUT_TO_START);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(response.getErrors()).isEmpty();
+        assertThat(data.getHearingDetailsResp()).isNotNull();
+        DynamicList dynamicList = getLocationDynamicList(data);
+        assertThat(dynamicList).isNotNull();
+        assertThat(locationsFromDynamicList(dynamicList))
+            .containsOnly("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH");
     }
 
     @Test
@@ -289,7 +322,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                 return CallbackParams.builder()
                     .type(CallbackType.MID)
                     .pageId("hearing-screen-response")
-                    .caseData(getCase())
+                    .caseData(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))
                     .request(CallbackRequest.builder()
                                  .eventId("RESPOND_TO_APPLICATION")
                                  .build())
@@ -413,7 +446,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void shouldReturn_Awaiting_Respondent_Response_For_NoDef_NoResponse() {
 
-        CaseData caseData = getCase();
+        CaseData caseData = getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -451,8 +484,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     private CaseData getResponseCaseData(AboutToStartOrSubmitCallbackResponse response) {
-        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        return responseCaseData;
+        return objectMapper.convertValue(response.getData(), CaseData.class);
     }
 
     private CaseData getCaseWithNullUnavailableDateFrom() {
@@ -554,7 +586,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             .build();
     }
 
-    private CaseData getCase() {
+    private CaseData getCase(CaseState state) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
@@ -573,7 +605,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                  .status(BusinessProcessStatus.STARTED)
                                  .activityId(ACTIVITY_ID)
                                  .build())
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .ccdState(state)
             .build();
     }
 
@@ -599,7 +631,21 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                  .status(BusinessProcessStatus.STARTED)
                                  .activityId(ACTIVITY_ID)
                                  .build())
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .build();
+    }
+
+    private DynamicList getLocationDynamicList(CaseData responseCaseData) {
+        return responseCaseData.getHearingDetailsResp().getHearingPreferredLocation();
+    }
+
+    private List<String> locationsFromDynamicList(DynamicList dynamicList) {
+        return dynamicList.getListItems().stream()
+            .map(DynamicListElement::getLabel)
+            .collect(Collectors.toList());
+    }
+
+    protected List<String> getSampleCourLocations() {
+        return new ArrayList<>(Arrays.asList("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH"));
     }
 }

@@ -16,12 +16,16 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
@@ -32,12 +36,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
@@ -56,12 +62,17 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
+
+    private final GeneralAppLocationRefDataService locationRefDataService;
+    private final JudicialDecisionHelper helper;
+
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -150,11 +161,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        YesOrNo isCloaked = (caseData.getGeneralAppRespondentAgreement() != null
-            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            && caseData.getGeneralAppInformOtherParty() != null
-            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-            ? YES : NO;
+
+        YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
         caseDataBuilder.applicationIsCloaked(isCloaked);
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
@@ -191,14 +199,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
         Uncomment the below code once Hearing Preferred Location is implemented.*/
-
-        /*YesOrNo isAppAndRespSameCourtLocPref = (caseData.getHearingDetailsResp() != null
-            && caseData.getRespondentsResponses() != null
-            && caseData.getRespondentsResponses().size() == 1
-            && caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue()
-            .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingPreferredLocation().getValue()))
-            ? YES : NO;*/
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        DynamicList dynamicLocationList = fromList(locationRefDataService.getCourtLocations(authToken));
+        boolean isAppAndRespSameCourtLocPref = helper.isApplicantAndRespondentLocationPrefSame(caseData);
+        if (isAppAndRespSameCourtLocPref) {
+            String applicationLocationLabel = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
+                .getValue().getLabel();
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+            first.ifPresent(dynamicLocationList::setValue);
+        }
 
         YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
             && caseData.getRespondentsResponses() != null
@@ -209,6 +219,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
+                                                   .hearingPreferredLocation(dynamicLocationList)
                                                    .hearingPreferencesPreferredTypeLabel1(
                                                        getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
                                                    .judgeHearingCourtLocationText1(

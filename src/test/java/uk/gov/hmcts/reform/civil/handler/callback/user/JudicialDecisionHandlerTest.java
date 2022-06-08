@@ -29,6 +29,8 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
@@ -43,6 +45,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
 
@@ -51,6 +55,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -92,6 +97,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     JudicialDecisionWrittenRepService service;
 
     @MockBean
+    JudicialDecisionHelper helper;
+
+    @MockBean
+    GeneralAppLocationRefDataService locationRefDataService;
+
+    @MockBean
     private Time time;
 
     @MockBean
@@ -130,7 +141,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expecetedJudicialTimeEstimateText = " Both applicant and respondent estimate it would take %s.";
             String expecetedJudicialPreferrenceText = " Both applicant and respondent prefer %s.";
-
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
@@ -252,7 +262,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
                     + "application of ApplicantPartyName dated %s and upon considering the information "
                     + "provided by the parties";
-
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -270,7 +280,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
                     + "application of ApplicantPartyName dated %s and upon considering the information "
                     + "provided by the parties";
-
+            when(helper.isApplicationCloaked(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -288,7 +298,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
                     + "application of ApplicantPartyName dated %s and upon considering the information "
                     + "provided by the parties";
-
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -303,6 +313,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_orderText() {
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -541,6 +552,26 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getJudicialVulnerabilityText())
                 .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldPrepopulateLocationIfApplicantAndRespondentHaveSameLocationPref() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            when(locationRefDataService.getCourtLocations(any()))
+                .thenReturn(List.of("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH"));
+            when(helper.isApplicantAndRespondentLocationPrefSame(any())).thenReturn(true);
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getHearingPreferredLocation()).isNotNull();
+            assertThat(responseCaseData.getHearingPreferredLocation().getValue()).isNotNull();
+            assertThat(responseCaseData.getHearingPreferredLocation().getValue().getLabel())
+                .isEqualTo("ABCD - RG0 0AL");
 
         }
 
@@ -1485,6 +1516,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                           .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                           .hearingDuration(GAHearingDuration.HOUR_1)
                                           .supportRequirement(getApplicantResponses())
+                                          .hearingPreferredLocation(getLocationDynamicList())
                                           .build())
             .generalAppType(
                 GAApplicationType
@@ -1518,6 +1550,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                                    .hearingDuration(GAHearingDuration.HOUR_1)
                                                    .supportRequirement(respSupportReq)
+                                                   .hearingPreferredLocation(getLocationDynamicList())
                                                    .build()).build()
             ));
 
@@ -1579,6 +1612,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     public YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getApplicationIsCloaked();
+    }
+
+    public DynamicList getLocationDynamicList() {
+        DynamicListElement location1 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("ABCD - RG0 0AL").build();
+        DynamicListElement location2 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("PQRS - GU0 0EE").build();
+        DynamicListElement location3 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("WXYZ - EW0 0HE").build();
+        DynamicListElement location4 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("LMNO - NE0 0BH").build();
+
+        return DynamicList.builder()
+            .listItems(List.of(location1, location2, location3, location4))
+            .value(location1).build();
     }
 }
 

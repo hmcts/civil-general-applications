@@ -65,6 +65,9 @@ genApp:
     keywords:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
+  lrd:
+    endpoint: /refdata/location/court-venues
+
 
 payments:
   api:
@@ -179,6 +182,10 @@ fees:
   api:
     url: http://localhost:8765
 
+genApp:
+  lrd:
+    url: http://localhost:8765
+
 payments:
   api:
     url: http://localhost:8765
@@ -238,6 +245,10 @@ management:
 fees:
   api:
     url: http://fake-fees-register-api
+
+genApp:
+  lrd:
+    url: http://fake-rd-location-ref-api
 
 payments:
   api:
