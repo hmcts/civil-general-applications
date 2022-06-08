@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
@@ -113,7 +113,7 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(directionOrderSearchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -127,7 +127,7 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(writtenRepresentationSearchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -141,7 +141,7 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(writtenRepresentationSearchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(3L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        verify(coreCaseDataService).triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -155,7 +155,7 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(requestForInformationrSearchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
