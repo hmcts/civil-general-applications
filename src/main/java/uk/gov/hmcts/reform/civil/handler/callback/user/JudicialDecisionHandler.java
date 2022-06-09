@@ -87,6 +87,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_TIME_EST_TEXT_1 = "Applicant estimates "
         + "%s. Respondent estimates %s.";
     private static final String JUDICIAL_TIME_EST_TEXT_2 = " Both applicant and respondent estimate it would take %s.";
+    private static final String JUDICIAL_TIME_EST_TEXT_3 = "Applicant estimates "
+        + "%s. Respondent1 estimates %s. Respondent2 estimates %s.";
     private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = "Applicant requires support with regards to "
         + "vulnerability\n";
     private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\nRespondent requires support with "
@@ -100,11 +102,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
         + "%s. Respondent prefers %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = " Both applicant and respondent prefer %s.";
-
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = "Applicant require "
         + "%s. Respondent require %s.";
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_2 = " Both applicant and respondent require %s.";
-
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
@@ -584,6 +584,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .getDisplayedValue());
         }
 
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
+            return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
+                .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue())
+                : format(JUDICIAL_PREF_TYPE_TEXT_1, caseData.getGeneralAppHearingDetails()
+                .getHearingPreferencesPreferredType().getDisplayedValue(), caseData.getRespondentsResponses() == null
+                             ? StringUtils.EMPTY : caseData.getRespondentsResponses()
+                .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferencesPreferredType()
+                .getDisplayedValue());
+        }
+
         return StringUtils.EMPTY;
     }
 
@@ -604,6 +614,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 ? StringUtils.EMPTY : caseData.getRespondentsResponses()
                 .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
                 .getDisplayedValue());
+        }
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
+            String responden1HearingDetail = caseData.getRespondentsResponses().get(0)
+                .getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            String responden2HearingDetail = caseData.getRespondentsResponses().get(1)
+                .getValue().getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            return format(JUDICIAL_TIME_EST_TEXT_3, caseData.getGeneralAppHearingDetails()
+                .getHearingDuration().getDisplayedValue(), responden1HearingDetail, responden2HearingDetail);
         }
 
         return StringUtils.EMPTY;
