@@ -10,12 +10,10 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.now;
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
 
 @Slf4j
@@ -49,9 +47,9 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
     private List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
         List<CaseDetails> awaitingResponseCases = caseSearchService.getGeneralApplications();
         return awaitingResponseCases.stream()
-            .filter(a -> !isEmpty(caseDetailsConverter.toCaseData(a).getGeneralAppDeadlineNotificationDate())
-                && now().isAfter(LocalDateTime.parse(
-                caseDetailsConverter.toCaseData(a).getGeneralAppDeadlineNotificationDate())))
+            .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
+                && now().isAfter(
+                caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate()))
             .collect(Collectors.toList());
     }
 

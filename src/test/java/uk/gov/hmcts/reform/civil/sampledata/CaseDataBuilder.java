@@ -62,7 +62,7 @@ public class CaseDataBuilder {
     protected Long ccdCaseReference;
     protected String respondentSolicitor1EmailAddress;
     protected String legacyCaseReference;
-    protected String generalAppDeadlineNotificationDate;
+    protected LocalDateTime generalAppNotificationDeadlineDate;
     protected GAInformOtherParty gaInformOtherParty;
     protected GAUrgencyRequirement gaUrgencyRequirement;
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
@@ -89,8 +89,8 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder generalAppDeadlineNotificationDate(String generalAppDeadlineNotificationDate) {
-        this.generalAppDeadlineNotificationDate = generalAppDeadlineNotificationDate;
+    public CaseDataBuilder generalAppNotificationDeadline(LocalDateTime generalAppNotificationDeadline) {
+        this.generalAppNotificationDeadlineDate = generalAppNotificationDeadline;
         return this;
     }
 
@@ -211,7 +211,7 @@ public class CaseDataBuilder {
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
-            .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
+            .generalAppNotificationDeadlineDate(generalAppNotificationDeadlineDate)
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .build();
     }
@@ -257,7 +257,7 @@ public class CaseDataBuilder {
             .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
             .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
             .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
-            .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+            .generalAppNotificationDeadlineDate(application.getGeneralAppDeadlineNotification())
             .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
             .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
             .generalAppHearingDetails(application.getGeneralAppHearingDetails())

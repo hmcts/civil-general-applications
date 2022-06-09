@@ -10,9 +10,6 @@ public class DateFormatHelper {
     public static final String DATE_TIME_AT = "h:mma 'on' d MMMM yyyy";
     public static final String DATE = "d MMMM yyyy";
     public static final String MANDATORY_SUFFIX = ".000Z";
-    public static final DateTimeFormatter FORMATTER = DateTimeFormatter
-        .ofPattern("yyyy-MM-dd'T'HH:mm.SSS'Z'",
-                   Locale.ENGLISH);
 
     private DateFormatHelper() {
         //NO-OP
