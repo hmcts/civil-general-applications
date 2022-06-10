@@ -88,7 +88,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             .formatLocalDate(
                 LocalDate.parse(
                     caseData
-                        .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
+                        .getGeneralAppNotificationDeadlineDate() + MANDATORY_SUFFIX,
                     FORMATTER), DATE)
         );
     }
