@@ -672,6 +672,48 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldHaveVulTextWithRespondent2Respond() {
+
+            String expecetedVulnerabilityText =
+                "\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, NO, NO, YES),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldHaveVulTextWithRespondent1Respond() {
+
+            String expecetedVulnerabilityText =
+                "\n\nRespondent1 requires support with regards to vulnerability\ndummy1";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, NO, YES, NO),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
         void shouldHaveVulTextWithApplicantRespond() {
 
             String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\n"
