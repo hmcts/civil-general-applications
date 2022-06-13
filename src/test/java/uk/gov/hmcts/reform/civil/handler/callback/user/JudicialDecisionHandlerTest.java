@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
@@ -139,8 +140,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForHearingGeneralOrderRecital() {
 
-            String expecetedJudicialTimeEstimateText = " Both applicant and respondent estimate it would take %s.";
-            String expecetedJudicialPreferrenceText = " Both applicant and respondent prefer %s.";
+            String expecetedJudicialTimeEstimateText = "Both applicant and respondent estimate it would take %s.";
+            String expecetedJudicialPreferrenceText = "Both applicant and respondent prefer %s.";
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
@@ -161,6 +162,73 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(getJudgeHearingSupportReqText(getHearingOrderApplnAndResp(types, NO, YES), YES));
+
+        }
+
+        @Test
+        void testAboutToStartForHearingDetails() {
+
+            String expecetedJudicialTimeEstimateText =
+                "Applicant estimates %s. Respondent1 estimates %s. Respondent2 estimates %s.";
+            String expecetedJudicialPreferrenceText =
+                "Applicant prefers %s. Respondent1 prefers %s. Respondent2 prefers %s.";
+            String expecetedJudicialSupportText =
+                "Applicant require %s. Respondent1 require %s. Respondent2 require %s.";
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(
+                getHearingOrderApplnAndResp1and2(types, NO, YES, YES),
+                ABOUT_TO_START
+            );
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(String.format(
+                    expecetedJudicialTimeEstimateText,
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getGeneralAppHearingDetails().getHearingDuration()
+                        .getDisplayedValue(),
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+                        .getHearingDuration().getDisplayedValue(),
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+                        .getHearingDuration().getDisplayedValue()
+                ));
+
+            assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
+                .isEqualTo(String.format(
+                    expecetedJudicialPreferrenceText,
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getGeneralAppHearingDetails().getHearingPreferencesPreferredType()
+                        .getDisplayedValue(),
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+                        .getHearingPreferencesPreferredType().getDisplayedValue(),
+                    getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                        .getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+                        .getHearingPreferencesPreferredType().getDisplayedValue()
+                ));
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(String.format(expecetedJudicialSupportText,
+                                         getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                                             .getGeneralAppHearingDetails()
+                                             .getSupportRequirement().get(0).getDisplayedValue(),
+                                         getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                                             .getRespondentsResponses().get(0).getValue()
+                                             .getGaHearingDetails().getSupportRequirement()
+                                             .get(0).getDisplayedValue(),
+                                         getHearingOrderApplnAndResp1and2(types, NO, YES, YES)
+                                             .getRespondentsResponses().get(1).getValue()
+                                             .getGaHearingDetails().getSupportRequirement()
+                                             .get(0).getDisplayedValue()
+                ));
 
         }
 
@@ -505,7 +573,94 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, YES), ABOUT_TO_START);
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, YES),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldHaveVulTextWithRespondent1and2Respond() {
+
+            String expecetedVulnerabilityText = "\n\nRespondent1 requires support with regards to vulnerability\n"
+                + "dummy1\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, NO, YES, YES),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldHaveVulTextWithApplicantRespondent1and2Respond() {
+
+            String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
+                + "\n\nRespondent1 requires support with regards to vulnerability\n"
+                + "dummy1\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, YES, YES, YES),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldHaveVulTextWithApplicantRespondent1Respond() {
+
+            String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
+                + "\n\nRespondent1 requires support with regards to vulnerability\n"
+                + "dummy1";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, YES, YES, NO),
+                                                     ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudicialVulnerabilityText())
+                .isEqualTo(expecetedVulnerabilityText);
+
+        }
+
+        @Test
+        void shouldHaveVulTextWithApplicantRespondent2Respond() {
+
+            String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
+                + "\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp1and2(types, YES, NO, YES),
+                                                     ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -1533,6 +1688,53 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             .build();
     }
 
+    public CaseData getHearingOrderApplnAndResp1and2(List<GeneralApplicationTypes> types, YesOrNo vulQuestion,
+                                                YesOrNo hasRespondentResponseVul, YesOrNo hasRespondentResponseVul2) {
+        List<Element<GASolicitorDetailsGAspec>> respondentSolicitors = new ArrayList<>();
+        respondentSolicitors
+            .add(element(GASolicitorDetailsGAspec.builder().id("1L").build()));
+        respondentSolicitors
+            .add(element(GASolicitorDetailsGAspec.builder().id("2L").build()));
+
+        return CaseData.builder()
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .hearingDuration(GAHearingDuration.HOUR_1)
+                                    .supportRequirement(getApplicantResponses())
+                                    .build())
+            .respondentsResponses(getRespodentResponses1nad2(hasRespondentResponseVul, hasRespondentResponseVul2))
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+            .applicantPartyName("ApplicantPartyName")
+            .generalAppRespondentSolicitors(respondentSolicitors)
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppHearingDetails(GAHearingDetails.builder()
+                                          .vulnerabilityQuestionsYesOrNo(vulQuestion)
+                                          .vulnerabilityQuestion("dummy")
+                                          .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                          .hearingDuration(GAHearingDuration.HOUR_1)
+                                          .supportRequirement(getApplicant1Responses())
+                                          .hearingPreferredLocation(getLocationDynamicList())
+                                          .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
+    }
+
     public List<Element<GARespondentResponse>> getRespodentResponses(YesOrNo vulQuestion) {
 
         List<GAHearingSupportRequirements> respSupportReq = new ArrayList<>();
@@ -1557,12 +1759,57 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return respondentsResponses;
     }
 
+    public List<Element<GARespondentResponse>> getRespodentResponses1nad2(YesOrNo vulQuestion1, YesOrNo vulQuestion2) {
+
+        List<GAHearingSupportRequirements> respSupportReq1 = new ArrayList<>();
+        respSupportReq1
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        List<GAHearingSupportRequirements> respSupportReq2 = new ArrayList<>();
+        respSupportReq2
+            .add(GAHearingSupportRequirements.LANGUAGE_INTERPRETER);
+
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .vulnerabilityQuestionsYesOrNo(vulQuestion1)
+                                                   .vulnerabilityQuestion("dummy1")
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .supportRequirement(respSupportReq1)
+                                                   .hearingPreferredLocation(getLocationDynamicList())
+                                                   .build())
+                             .gaRespondentDetails("1L").build()));
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .vulnerabilityQuestionsYesOrNo(vulQuestion2)
+                                                   .vulnerabilityQuestion("dummy2")
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.MINUTES_30)
+                                                   .supportRequirement(respSupportReq2)
+                                                   .hearingPreferredLocation(getLocationDynamicList())
+                                                   .build())
+                             .gaRespondentDetails("2L").build()));
+
+        return respondentsResponses;
+    }
+
     public List<GAHearingSupportRequirements> getApplicantResponses() {
         List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
         applSupportReq
             .add(GAHearingSupportRequirements.HEARING_LOOPS);
         applSupportReq
             .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        return applSupportReq;
+    }
+
+    public List<GAHearingSupportRequirements> getApplicant1Responses() {
+        List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
+        applSupportReq
+            .add(GAHearingSupportRequirements.HEARING_LOOPS);
 
         return applSupportReq;
     }
