@@ -4,12 +4,14 @@ import org.apache.commons.lang.StringUtils;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 
 import java.util.List;
@@ -67,7 +69,7 @@ public class JudicialDecisionNotificationUtil {
             && !isApplicationUnCloaked(caseData)) {
             return DIRECTION_ORDER;
         }
-        if (isRequestForInfomration(caseData)) {
+        if (isRequestForInformation(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
@@ -173,14 +175,14 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInfomration(CaseData caseData) {
-        var decision = Optional.ofNullable(caseData.getJudicialDecision())
-            .map(GAJudicialDecision::getDecision).orElse(null);
+    private static boolean isRequestForInformation(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
+            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
-                && (decision != null)
-                && caseData.getJudicialDecision().getDecision()
-                .equals(GAJudgeDecisionOption.REQUEST_MORE_INFO);
+                && Objects.nonNull(decision)
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
+                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION);
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {
