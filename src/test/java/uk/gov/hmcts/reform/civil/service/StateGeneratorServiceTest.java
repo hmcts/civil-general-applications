@@ -14,6 +14,8 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
@@ -117,6 +119,19 @@ public class StateGeneratorServiceTest {
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
 
         assertThat(caseState).isEqualTo(APPLICATION_DISMISSED);
+    }
+
+    @Test
+    public void shouldReturnListingForHearingWhenTheDecisionHasBeenMade() {
+
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(LIST_FOR_A_HEARING))
+            .build();
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+
+        assertThat(caseState).isEqualTo(LISTING_FOR_A_HEARING);
     }
 }
 
