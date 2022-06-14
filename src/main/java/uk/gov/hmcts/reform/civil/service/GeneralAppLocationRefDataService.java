@@ -68,7 +68,6 @@ public class GeneralAppLocationRefDataService {
     }
 
     private String getDisplayEntry(LocationRefData location) {
-        return concat(concat(concat(location.getSiteName(), " - "), concat(location.getCourtAddress(), " - ")),
-                      location.getPostcode());
+        return concat(concat(location.getSiteName(), " - "), location.getPostcode());
     }
 }
