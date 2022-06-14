@@ -45,7 +45,6 @@ public class ApplicationNotificationUtilTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(informOtherParty).build())
                 .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
                         .email(recipient).build()))
-                .respondentSolicitor1EmailAddress(recipient)
                 .build();
     }
 }
