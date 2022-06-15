@@ -186,7 +186,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
         caseDataBuilder.applicationIsCloaked(isCloaked);
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
-
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
@@ -591,7 +590,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private String getJudgeHearingPrefType(CaseData caseData, YesOrNo isAppAndRespSameHearingPref) {
-        String respondet1HearingType = null;
+        String respondent1HearingType = null;
         String respondent2HearingType = null;
 
         if (caseData.getGeneralAppUrgencyRequirement() != null
@@ -612,29 +611,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElementOptional;
-                respondenceElementOptional = respondentResponce.stream()
-                    .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                Optional<Element<GARespondentResponse>> responseElementOptiona2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (respondenceElementOptional.isPresent()) {
-                    respondet1HearingType = respondenceElementOptional.get().getValue()
-                        .getGaHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue();
-                }
-                if (responseElementOptiona2.isPresent()) {
-                    respondent2HearingType = responseElementOptiona2.get().getValue()
-                        .getGaHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue();
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional1.isPresent()) {
+                respondent1HearingType = responseElementOptional1.get().getValue()
+                    .getGaHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue();
+            }
+            if (responseElementOptional2.isPresent()) {
+                respondent2HearingType = responseElementOptional2.get().getValue()
+                    .getGaHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue();
             }
             return format(JUDICIAL_PREF_TYPE_TEXT_3, caseData.getGeneralAppHearingDetails()
-                .getHearingPreferencesPreferredType().getDisplayedValue(),
-                          respondet1HearingType, respondent2HearingType);
+                              .getHearingPreferencesPreferredType().getDisplayedValue(),
+                          respondent1HearingType, respondent2HearingType
+            );
         }
 
         return StringUtils.EMPTY;
@@ -661,25 +651,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> responseElementOptional = respondentResponce.stream()
-                    .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (responseElementOptional.isPresent()) {
-                    respondet1HearingDuration = responseElementOptional.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
-                }
-                if (respondenceElemetnOptiona2.isPresent()) {
-                    respondent2HearingDuration = respondenceElemetnOptiona2.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional1.isPresent()) {
+                respondet1HearingDuration = responseElementOptional1.get().getValue()
+                    .getGaHearingDetails().getHearingDuration().getDisplayedValue();
             }
+            if (responseElementOptional2.isPresent()) {
+                respondent2HearingDuration = responseElementOptional2.get().getValue()
+                    .getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            }
+
             return format(JUDICIAL_TIME_EST_TEXT_3, caseData.getGeneralAppHearingDetails()
                 .getHearingDuration().getDisplayedValue(), respondet1HearingDuration, respondent2HearingDuration);
         }
@@ -687,7 +669,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private String getJudgeVulnerabilityText(CaseData caseData) {
-
         YesOrNo applicantVulnerabilityResponse = caseData.getGeneralAppHearingDetails()
             .getVulnerabilityQuestionsYesOrNo();
 
@@ -719,120 +700,80 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (applicantVulnerabilityResponse == YES && hasRespondent1VulnerabilityResponded == TRUE
             && hasRespondent2VulnerabilityResponded == TRUE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptional1 = respondentResponce.stream()
-                    .filter(res1 -> res1.getValue() != null && res1.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptional2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (respondenceElemetnOptional1.isPresent() && respondenceElemetnOptional2.isPresent()) {
-                    return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
-                        .concat(caseData.getGeneralAppHearingDetails()
-                                    .getVulnerabilityQuestion()
-                                    .concat(JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT)
-                                    .concat(respondenceElemetnOptional1.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion())
-                                    .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
-                                    .concat(respondenceElemetnOptional2.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion()));
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional1.isPresent() && responseElementOptional2.isPresent()) {
+                return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+                    .concat(caseData.getGeneralAppHearingDetails()
+                                .getVulnerabilityQuestion()
+                                .concat(JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT)
+                                .concat(responseElementOptional1.get().getValue()
+                                            .getGaHearingDetails().getVulnerabilityQuestion())
+                                .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
+                                .concat(responseElementOptional2.get().getValue()
+                                            .getGaHearingDetails().getVulnerabilityQuestion()));
             }
         }
 
         if (applicantVulnerabilityResponse == NO && hasRespondent1VulnerabilityResponded == TRUE
             && hasRespondent2VulnerabilityResponded == TRUE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptional1 = respondentResponce.stream()
-                    .filter(res1 -> res1.getValue() != null && res1.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptional2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (respondenceElemetnOptional1.isPresent() && respondenceElemetnOptional2.isPresent()) {
-                    return JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT
-                                    .concat(respondenceElemetnOptional1.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion())
-                                    .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
-                                    .concat(respondenceElemetnOptional2.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion());
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional1.isPresent() && responseElementOptional2.isPresent()) {
+                return JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT
+                    .concat(responseElementOptional1.get().getValue()
+                                .getGaHearingDetails().getVulnerabilityQuestion())
+                    .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
+                    .concat(responseElementOptional2.get().getValue()
+                                .getGaHearingDetails().getVulnerabilityQuestion());
             }
         }
 
         if (applicantVulnerabilityResponse == YES && hasRespondent1VulnerabilityResponded == TRUE
             && hasRespondent2VulnerabilityResponded == FALSE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona1 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                if (respondenceElemetnOptiona1.isPresent()) {
-                    return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
-                        .concat(caseData.getGeneralAppHearingDetails()
-                                    .getVulnerabilityQuestion()
-                                    .concat(JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT)
-                                    .concat(respondenceElemetnOptiona1.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion()));
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional1.isPresent()) {
+                return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+                    .concat(caseData.getGeneralAppHearingDetails()
+                                .getVulnerabilityQuestion()
+                                .concat(JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT)
+                                .concat(responseElementOptional1.get().getValue()
+                                            .getGaHearingDetails().getVulnerabilityQuestion()));
             }
         }
 
         if (applicantVulnerabilityResponse == YES && hasRespondent1VulnerabilityResponded == FALSE
             && hasRespondent2VulnerabilityResponded == TRUE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (respondenceElemetnOptiona2.isPresent()) {
-                    return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
-                        .concat(caseData.getGeneralAppHearingDetails()
-                                    .getVulnerabilityQuestion()
-                                    .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
-                                    .concat(respondenceElemetnOptiona2.get().getValue()
-                                                .getGaHearingDetails().getVulnerabilityQuestion()));
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional2.isPresent()) {
+                return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+                    .concat(caseData.getGeneralAppHearingDetails()
+                                .getVulnerabilityQuestion()
+                                .concat(JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT)
+                                .concat(responseElementOptional2.get().getValue()
+                                            .getGaHearingDetails().getVulnerabilityQuestion()));
             }
         }
 
         if (applicantVulnerabilityResponse == NO && hasRespondent1VulnerabilityResponded == FALSE
             && hasRespondent2VulnerabilityResponded == TRUE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                if (respondenceElemetnOptiona2.isPresent()) {
-                    return JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT
-                        .concat(respondenceElemetnOptiona2.get().getValue()
-                                    .getGaHearingDetails().getVulnerabilityQuestion());
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
+            if (responseElementOptional2.isPresent()) {
+                return JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT
+                    .concat(responseElementOptional2.get().getValue()
+                                .getGaHearingDetails().getVulnerabilityQuestion());
             }
         }
 
         if (applicantVulnerabilityResponse == NO && hasRespondent1VulnerabilityResponded == TRUE
             && hasRespondent2VulnerabilityResponded == FALSE) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona1 = respondentResponce.stream()
-                    .filter(res1 -> res1.getValue() != null && res1.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                if (respondenceElemetnOptiona1.isPresent()) {
-                    return JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT
-                        .concat(respondenceElemetnOptiona1.get().getValue()
-                                    .getGaHearingDetails().getVulnerabilityQuestion());
-                }
+            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
+            if (responseElementOptional1.isPresent()) {
+                return JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT
+                    .concat(responseElementOptional1.get().getValue()
+                                .getGaHearingDetails().getVulnerabilityQuestion());
             }
         }
         return applicantVulnerabilityResponse == YES ? JUDICIAL_APPLICANT_VULNERABILITY_TEXT
@@ -851,7 +792,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
-
         List<String> applicantSupportReq = Collections.emptyList();
         String appSupportReq = StringUtils.EMPTY;
         String resSupportReq = StringUtils.EMPTY;
@@ -893,33 +833,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
-            List<Element<GARespondentResponse>> respondentResponce = caseData.getRespondentsResponses();
-            String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
-            String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
-            if (respondentResponce != null) {
-                Optional<Element<GARespondentResponse>> responseElementOptional = respondentResponce.stream()
-                    .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
-                        .equals(respondent1Id)).findFirst();
-                Optional<Element<GARespondentResponse>> respondenceElemetnOptiona2 = respondentResponce.stream()
-                    .filter(res2 -> res2.getValue() != null && res2.getValue().getGaRespondentDetails()
-                        .equals(respondent2Id)).findFirst();
-                List<String> respondent1SupportReq = Collections.emptyList();
-                if (responseElementOptional.isPresent()) {
-                    respondent1SupportReq = responseElementOptional.get().getValue().getGaHearingDetails()
-                        .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
-                        .collect(Collectors.toList());
+            Optional<Element<GARespondentResponse>> response1 = response1(caseData);
+            Optional<Element<GARespondentResponse>> response2 = response2(caseData);
+            List<String> respondent1SupportReq = Collections.emptyList();
+            if (response1.isPresent()) {
+                respondent1SupportReq = response1.get().getValue().getGaHearingDetails()
+                    .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
+                    .collect(Collectors.toList());
 
-                    resSupportReq = String.join(", ", respondent1SupportReq);
-                }
-                List<String> respondent2SupportReq = Collections.emptyList();
-                if (respondenceElemetnOptiona2.isPresent()) {
-                    respondent2SupportReq = respondenceElemetnOptiona2.get().getValue().getGaHearingDetails()
-                        .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
-                        .collect(Collectors.toList());
-
-                    res2SupportReq = String.join(", ", respondent2SupportReq);
-                }
+                resSupportReq = String.join(", ", respondent1SupportReq);
             }
+            List<String> respondent2SupportReq = Collections.emptyList();
+            if (response2.isPresent()) {
+                respondent2SupportReq = response2.get().getValue().getGaHearingDetails()
+                    .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
+                    .collect(Collectors.toList());
+
+                res2SupportReq = String.join(", ", respondent2SupportReq);
+            }
+
             return format(JUDICIAL_SUPPORT_REQ_TEXT_3, appSupportReq, resSupportReq, res2SupportReq);
         }
         return StringUtils.EMPTY;
@@ -959,4 +891,23 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return EVENTS;
     }
 
+    private Optional<Element<GARespondentResponse>> response1(CaseData caseData) {
+        List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
+        String respondent1Id = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId();
+        Optional<Element<GARespondentResponse>> responseElementOptional1;
+        responseElementOptional1 = respondentResponse.stream()
+            .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
+                .equals(respondent1Id)).findAny();
+        return responseElementOptional1;
+    }
+
+    private Optional<Element<GARespondentResponse>> response2(CaseData caseData) {
+        List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
+        String respondent2Id = caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId();
+        Optional<Element<GARespondentResponse>> responseElementOptional2;
+        responseElementOptional2 = respondentResponse.stream()
+            .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
+                .equals(respondent2Id)).findAny();
+        return responseElementOptional2;
+    }
 }
