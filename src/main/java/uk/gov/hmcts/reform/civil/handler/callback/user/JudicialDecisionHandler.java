@@ -165,7 +165,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
         caseDataBuilder.applicationIsCloaked(isCloaked);
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
-
+        caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
+                                                 .builder()
+                                                 .isWithNotice(caseData
+                                                                                        .getGeneralAppInformOtherParty()
+                                                                                        .getIsWithNotice())
+                                                 .build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
