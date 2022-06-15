@@ -91,4 +91,8 @@
     <notes>springfox swagger latest version still uses spring plugin core 1.2.0 which got vulnerability</notes>
     <cve>CVE-2022-22970</cve>
   </suppress>
+  <suppress until="2022-07-01">
+    <notes>Latest supported springboot 2.5.14 version inherited still got the vulnerability for oauth2 client</notes>
+    <cve>CVE-2022-22978</cve>
+  </suppress>
 </suppressions>

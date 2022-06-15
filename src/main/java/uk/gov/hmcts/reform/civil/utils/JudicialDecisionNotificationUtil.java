@@ -5,12 +5,14 @@ import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 
 import java.util.List;
@@ -19,12 +21,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 
 public class JudicialDecisionNotificationUtil {
@@ -61,6 +65,13 @@ public class JudicialDecisionNotificationUtil {
         if (isApplicationUnCloaked(caseData)
             && isJudicialApproval(caseData)) {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
+        }
+        if (isDirectionOrder(caseData)
+            && !isApplicationUnCloaked(caseData)) {
+            return DIRECTION_ORDER;
+        }
+        if (isRequestForInformation(caseData)) {
+            return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
     }
@@ -158,6 +169,26 @@ public class JudicialDecisionNotificationUtil {
                 && Objects.nonNull(judicialDecision)
                 && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
                 .equals(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT);
+    }
+
+    private static boolean isDirectionOrder(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getJudicialDecisionMakeOrder())
+            .map(GAJudicialMakeAnOrder::getMakeAnOrder).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+            && Objects.nonNull(judicialDecision)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder()
+                .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
+    }
+
+    private static boolean isRequestForInformation(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
+            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && Objects.nonNull(decision)
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
+                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION);
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {

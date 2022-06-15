@@ -50,4 +50,16 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String judgeDismissesOrderRespondentEmailTemplate;
+
+    @NotEmpty
+    private String applicantDirectionOrderEmailTemplate;
+
+    @NotEmpty
+    private String respondentDirectionOrderEmailTemplate;
+
+    @NotEmpty
+    private String applicantRequestForInformationEmailTemplate;
+
+    @NotEmpty
+    private String respondentRequestForInformationEmailTemplate;
 }

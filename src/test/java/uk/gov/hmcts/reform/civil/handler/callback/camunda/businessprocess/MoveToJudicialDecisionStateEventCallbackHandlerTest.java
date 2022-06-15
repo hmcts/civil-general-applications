@@ -24,16 +24,16 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-    MoveToJudicialDecisionStateEventCallbackHandlerTest.class,
+    MoveToJudicialDecisionStateEventCallbackHandler.class,
     ParentCaseUpdateHelper.class
 })
-class MoveToJudicialDecisionStateEventCallbackHandlerTestTest extends BaseCallbackHandlerTest {
+class MoveToJudicialDecisionStateEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @Autowired
-    private MoveToJudicialDecisionStateEventCallbackHandlerTest handler;
+    private MoveToJudicialDecisionStateEventCallbackHandler handler;
 
     @Nested
     class AboutToSubmitCallback {
