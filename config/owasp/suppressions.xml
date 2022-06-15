@@ -79,4 +79,16 @@
     <packageUrl regex="true">^pkg:maven/com\.google\.code\.gson/gson@.*$</packageUrl>
     <cve>CVE-2022-25647</cve>
   </suppress>
+  <suppress until="2022-07-01">
+    <notes>Latest spring statemachine core 3.5.0 still got the vulnerabilities</notes>
+    <cve>CVE-2015-5211</cve>
+  </suppress>
+  <suppress until="2022-07-01">
+    <notes>Latest supported springboot 2.5.14 version inherited still got the vulnerability for oauth2 client</notes>
+    <cve>CVE-2022-22976</cve>
+  </suppress>
+  <suppress until="2022-07-01">
+    <notes>springfox swagger latest version still uses spring plugin core 1.2.0 which got vulnerability</notes>
+    <cve>CVE-2022-22970</cve>
+  </suppress>
 </suppressions>
