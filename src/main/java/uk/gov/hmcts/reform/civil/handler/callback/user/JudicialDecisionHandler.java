@@ -100,7 +100,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "regards to vulnerability\n";
     private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent2 requires support with "
         + "regards to vulnerability\n";
-
+    private static final String JUDICIAL_PREF_LOC_TEXT_1 = "Applicant prefers Location"
+        + "%s. Respondent prefers Location %s.";
+    private static final String JUDICIAL_PREF_LOC_TEXT_2 = "Both applicant and respondent prefer Location %s.";
+    private static final String JUDICIAL_PREF_LOC_TEXT_3 = "Applicant prefers Location "
+        + "%s. Respondent1 prefers Location %s. Respondent2 prefers Location %s.";
     /*private static final String JUDICIAL_COURT_LOC_TEXT_1 = "Applicant estimates "
         + "%s. Respondent estimates %s.";
     private static final String JUDICIAL_COURT_LOC_TEXT_2 = " Both applicant and respondent
@@ -243,7 +247,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .hearingPreferencesPreferredTypeLabel1(
                                                        getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
                                                    .judgeHearingCourtLocationText1(
-                                                       getJudgeHearingCourtLoc())
+                                                       getJudgeHearingCourtLoc(caseData,isAppAndRespSameCourtLocPref))
                                                    .judgeHearingTimeEstimateText1(
                                                        getJudgeHearingTimeEst(caseData, isAppAndRespSameTimeEst))
                                                    .judgeHearingSupportReqText1(
@@ -857,7 +861,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return StringUtils.EMPTY;
     }
 
-    private String getJudgeHearingCourtLoc() {
+    private String getJudgeHearingCourtLoc(CaseData caseData, boolean isAppAndRespSameCourtLocPref) {
 
         return "TO-DO";
 
