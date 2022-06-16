@@ -1456,7 +1456,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_RequestMoreInformation(null,
-                    LocalDate.now().minusDays(1));
+                    LocalDate.now());
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1483,38 +1483,41 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
                                                                LocalDate judgeRequestMoreInfoByDate) {
             List<GeneralApplicationTypes> types = List.of(
-                    (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
-                    .parentClaimantIsApplicant(YES)
-                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
-                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
-                    .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
-                    .applicantPartyName("ApplicantPartyName")
-                    .generalAppRespondent1Representative(
-                            GARespondentRepresentative.builder()
-                                    .generalAppRespondent1Representative(YES)
-                                    .build())
-                    .generalAppType(
-                            GAApplicationType
-                                    .builder()
-                                    .types(types).build())
-                    .businessProcess(BusinessProcess
-                            .builder()
-                            .camundaEvent(CAMUNDA_EVENT)
-                            .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                            .status(BusinessProcessStatus.STARTED)
-                            .activityId(ACTIVITY_ID)
-                            .build())
-                    .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
-                            .makeAnOrder(APPROVE_OR_EDIT)
-                            .build())
-                    .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
-                            .requestMoreInfoOption(option)
-                            .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
-                            .build())
-                    .build();
+                .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
+                .parentClaimantIsApplicant(YES)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(APPROVE_OR_EDIT)
+                                               .build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .requestMoreInfoOption(option)
+                                                     .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
+                                                     .judgeRequestMoreInfoText("Test")
+                                                     .deadlineForMoreInfoSubmission(LocalDateTime.now().plusDays(5))
+                                                     .build())
+                .build();
         }
     }
 
@@ -1597,18 +1600,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void callbackHandlingForRequestInfoFromApplicant() {
             CaseData caseData = getApplication(
-                    GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
-                    GAJudicialRequestMoreInfo.builder()
-                            .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
-                            .judgeRequestMoreInfoByDate(LocalDate.now()).build());
+                GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
+                GAJudicialRequestMoreInfo.builder()
+                    .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                    .judgeRequestMoreInfoText("Test")
+                    .judgeRequestMoreInfoByDate(LocalDate.now()).build()
+            );
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
             var response = (SubmittedCallbackResponse) handler.handle(params);
 
             assertThat(response.getConfirmationHeader()).isEqualTo("# You have requested more information");
             assertThat(response.getConfirmationBody()).isEqualTo("<br/><p>The applicant will be notified. "
-                    + "They will need to provide a response by "
-                    + DATE_FORMATTER_SUBMIT_CALLBACK.format(LocalDate.now()) + "</p>");
+                                                                     + "They will need to provide a response by "
+                                                                     + DATE_FORMATTER_SUBMIT_CALLBACK
+                .format(LocalDate.now()) + "</p>");
         }
 
         @Test
@@ -1638,18 +1644,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = getApplication(
                     GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
                     null);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            Assertions.assertThrows(IllegalArgumentException.class, () -> handler.handle(params));
-        }
-
-        @Test
-        void callbackHandlingForRequestMoreInfoWithNullJudgeRequestMoreInfoByDate() {
-            CaseData caseData = getApplication(
-                    GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
-                    GAJudicialRequestMoreInfo.builder()
-                            .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
-                            .judgeRequestMoreInfoByDate(null).build());
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
             Assertions.assertThrows(IllegalArgumentException.class, () -> handler.handle(params));

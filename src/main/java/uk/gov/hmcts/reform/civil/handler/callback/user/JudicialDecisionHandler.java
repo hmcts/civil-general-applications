@@ -189,9 +189,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
                                                  .builder()
                                                  .isWithNotice(caseData
-                                                                                        .getGeneralAppInformOtherParty()
-                                                                                        .getIsWithNotice())
-                                                 .build());
+                                                                   .getGeneralAppInformOtherParty()
+                                                                   .getIsWithNotice())
+                                                            .build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
@@ -415,7 +415,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
         List<String> errors = judicialRequestMoreInfo != null
-            ? validateDatesForRequestMoreInfoScreen(judicialRequestMoreInfo)
+            ? validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo)
             : Collections.emptyList();
 
         if (judicialRequestMoreInfo != null
@@ -440,9 +440,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .build();
     }
 
-    public List<String> validateDatesForRequestMoreInfoScreen(GAJudicialRequestMoreInfo judicialRequestMoreInfo) {
+    public List<String> validateDatesForRequestMoreInfoScreen(CaseData caseData,
+                                                              GAJudicialRequestMoreInfo judicialRequestMoreInfo) {
         List<String> errors = new ArrayList<>();
-        if (REQUEST_MORE_INFORMATION.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
+        if (REQUEST_MORE_INFO.equals(caseData.getJudicialDecision().getDecision())
+            && REQUEST_MORE_INFORMATION.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())
+            || judicialRequestMoreInfo.getRequestMoreInfoOption() == null) {
             if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() == null) {
                 errors.add(REQUESTED_MORE_INFO_BY_DATE_REQUIRED);
             } else {
@@ -480,7 +483,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (REQUEST_MORE_INFO.equals(judicialDecision.getDecision())) {
             GAJudicialRequestMoreInfo requestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
             if (requestMoreInfo != null) {
-                if (REQUEST_MORE_INFORMATION.equals(requestMoreInfo.getRequestMoreInfoOption())) {
+                if (REQUEST_MORE_INFORMATION.equals(requestMoreInfo.getRequestMoreInfoOption())
+                    || requestMoreInfo.getRequestMoreInfoOption().getDisplayedValue().isEmpty()) {
                     if (requestMoreInfo.getJudgeRequestMoreInfoByDate() != null) {
                         confirmationHeader = "# You have requested more information";
                         body = "<br/><p>The applicant will be notified. They will need to provide a response by "

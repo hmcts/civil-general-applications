@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
@@ -181,8 +182,17 @@ public class JudicialDecisionNotificationUtil {
         return
             isJudicialDecisionEvent(caseData)
                 && Objects.nonNull(decision)
-                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
-                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION);
+                && caseData.getJudicialDecision()
+                .getDecision().equals(REQUEST_MORE_INFO)
+                && (caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption().getDisplayedValue().isEmpty()
+                || caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption().equals(
+                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION))
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoByDate() != null;
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {
