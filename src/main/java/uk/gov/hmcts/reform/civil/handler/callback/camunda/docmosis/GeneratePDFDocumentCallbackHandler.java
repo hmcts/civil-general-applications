@@ -96,7 +96,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             );
             caseDataBuilder.dismissalOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
-            && caseData.getJudicialHearingGOHearingReqText() != null && caseData.getJudicialListForHearing() != null) {
+            && caseData.getJudicialListForHearing() != null) {
             judgeDecision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
