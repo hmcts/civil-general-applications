@@ -460,13 +460,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
 
-        if (caseData.getMakeAppVisibleToRespondents() != null && caseData.getMakeAppVisibleToRespondents()
-            .getMakeAppAvailableCheck().stream().findFirst().isPresent()) {
-
-            if (caseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck().stream().findFirst().get()
+        if (caseData.getMakeAppVisibleToRespondents() != null) {
+            Optional<MakeAppAvailableCheckGAspec> makeAppVisible = caseData.getMakeAppVisibleToRespondents()
+                .getMakeAppAvailableCheck().stream().findFirst();
+            if (makeAppVisible.isPresent() && makeAppVisible.get()
                 .getDisplayedValue().equals(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox.getDisplayedValue())) {
 
                 dataBuilder.generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build()).build();
+
             }
         }
 

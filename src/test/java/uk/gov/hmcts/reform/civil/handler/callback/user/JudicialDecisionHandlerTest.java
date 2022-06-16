@@ -1533,12 +1533,19 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
         }
 
         private CaseData getApplicationBusinessProcess() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+
             return CaseData.builder()
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                  .makeAppAvailableCheck(makeAppAvailableCheck).build())
                 .businessProcess(BusinessProcess
                                      .builder()
                                      .camundaEvent(CAMUNDA_EVENT)
