@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
@@ -21,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
@@ -147,13 +145,9 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isMakeAppVisibleToRespondentsSelected(CaseData caseData) {
         Optional<MakeAppAvailableCheckGAspec> makeAppVisible = caseData.getMakeAppVisibleToRespondents()
             .getMakeAppAvailableCheck().stream().findFirst();
-        if (makeAppVisible.isPresent() && makeAppVisible.get()
-            .getDisplayedValue().equals(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox.getDisplayedValue())) {
 
-            return true;
-
-        }
-        return false;
+        return makeAppVisible.isPresent() && makeAppVisible.get()
+            .getDisplayedValue().equals(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox.getDisplayedValue());
     }
 
     private static boolean isListForHearing(CaseData caseData) {
