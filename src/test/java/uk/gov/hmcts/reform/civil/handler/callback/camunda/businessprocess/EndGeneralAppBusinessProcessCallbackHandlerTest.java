@@ -199,7 +199,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .generalAppPBADetails(GAPbaDetails.builder().build())
                     .generalAppDetailsOfOrder(STRING_CONSTANT)
                     .generalAppReasonsOfOrder(STRING_CONSTANT)
-                    .respondentSolicitor1EmailAddress("respondent@email.com")
                     .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                     .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
                     .generalAppHearingDetails(GAHearingDetails.builder().build())

@@ -148,7 +148,6 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                             .builder()
                             .caseReference(CASE_REFERENCE.toString())
                             .build())
-                    .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
                     .generalAppDeadlineNotificationDate(DUMMY_DATE)
                     .build();
             } else {
@@ -159,7 +158,6 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                     .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                     .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .ccdCaseReference(CASE_REFERENCE)
-                    .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
                     .generalAppDeadlineNotificationDate(DUMMY_DATE)
                     .build();
             }

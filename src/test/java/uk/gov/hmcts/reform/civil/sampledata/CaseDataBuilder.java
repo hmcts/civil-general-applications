@@ -65,7 +65,6 @@ public class CaseDataBuilder {
 
     // Create Claim
     protected Long ccdCaseReference;
-    protected String respondentSolicitor1EmailAddress;
     protected String legacyCaseReference;
     protected LocalDateTime generalAppDeadlineNotificationDate;
     protected GAInformOtherParty gaInformOtherParty;
@@ -138,11 +137,6 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder respondentSolicitor1EmailAddress(String respondentSolicitor1EmailAddress) {
-        this.respondentSolicitor1EmailAddress = respondentSolicitor1EmailAddress;
-        return this;
-    }
-
     public CaseDataBuilder businessProcess(BusinessProcess businessProcess) {
         this.businessProcess = businessProcess;
         return this;
@@ -204,7 +198,6 @@ public class CaseDataBuilder {
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
-            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
             .legacyCaseReference(legacyCaseReference)
             .generalApplications(generalApplications)
             .generalAppInformOtherParty(gaInformOtherParty)
@@ -261,7 +254,6 @@ public class CaseDataBuilder {
             .generalAppPBADetails(application.getGeneralAppPBADetails())
             .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
             .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
-            .respondentSolicitor1EmailAddress(application.getRespondentSolicitor1EmailAddress())
             .generalAppNotificationDeadlineDate(application.getGeneralAppDateDeadline())
             .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
             .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())

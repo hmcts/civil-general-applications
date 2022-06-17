@@ -54,7 +54,6 @@ public class CaseData implements MappableObject {
     private final String generalAppDetailsOfOrder;
     private final String generalAppReasonsOfOrder;
     private final String legacyCaseReference;
-    private final String respondentSolicitor1EmailAddress;
     private final LocalDateTime notificationDeadline;
     private final LocalDate submittedOn;
     private final LocalDateTime generalAppNotificationDeadlineDate;
