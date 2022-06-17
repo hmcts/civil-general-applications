@@ -70,7 +70,10 @@ public class JudicialDecisionNotificationUtil {
             && !isApplicationUnCloaked(caseData)) {
             return DIRECTION_ORDER;
         }
-        if (isRequestForInformation(caseData)) {
+        if (isRequestForInformationWithouNotice(caseData)) {
+            return REQUEST_FOR_INFORMATION;
+        }
+        if (isRequestForInformationWithNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
@@ -176,7 +179,7 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInformation(CaseData caseData) {
+    private static boolean isRequestForInformationWithouNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
@@ -184,11 +187,25 @@ public class JudicialDecisionNotificationUtil {
                 && Objects.nonNull(decision)
                 && caseData.getJudicialDecision()
                 .getDecision().equals(REQUEST_MORE_INFO)
-                && (caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().getDisplayedValue().isEmpty()
-                || caseData.getJudicialDecisionRequestMoreInfo()
+                && caseData.getJudicialDecisionRequestMoreInfo()
                 .getRequestMoreInfoOption().equals(
-                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION))
+                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION)
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoByDate() != null;
+    }
+
+    private static boolean isRequestForInformationWithNotice(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
+            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && Objects.isNull(decision)
+                && caseData.getJudicialDecision()
+                .getDecision().equals(REQUEST_MORE_INFO)
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption() == null
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo()

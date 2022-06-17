@@ -282,10 +282,26 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void notificationShouldSendIfJudicialRequestForInformation() {
+        void notificationShouldSendIfJudicialRequestForInformationWithouNotice() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialRequestForInformationOfApplication())
+                              caseDataForJudicialRequestForInformationWithoutNoticeOfApplication())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStayTheClaim(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfJudicialRequestForInformationWithNotice() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialRequestForInformationWithNoticeOfApplication())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -625,12 +641,30 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudicialRequestForInformationOfApplication() {
+        private CaseData caseDataForJudicialRequestForInformationWithoutNoticeOfApplication() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                     .judgeRequestMoreInfoText("Test")
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now()).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStayTheClaim()).build())
+                .build();
+        }
+
+        private CaseData caseDataForJudicialRequestForInformationWithNoticeOfApplication() {
+            return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .judgeRequestMoreInfoText("Test")
                                                      .judgeRequestMoreInfoByDate(LocalDate.now()).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
