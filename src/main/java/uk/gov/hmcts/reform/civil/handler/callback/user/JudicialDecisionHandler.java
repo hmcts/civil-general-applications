@@ -484,7 +484,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             GAJudicialRequestMoreInfo requestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
             if (requestMoreInfo != null) {
                 if (REQUEST_MORE_INFORMATION.equals(requestMoreInfo.getRequestMoreInfoOption())
-                    || requestMoreInfo.getRequestMoreInfoOption().getDisplayedValue().isEmpty()) {
+                    || requestMoreInfo.getRequestMoreInfoOption() == null) {
                     if (requestMoreInfo.getJudgeRequestMoreInfoByDate() != null) {
                         confirmationHeader = "# You have requested more information";
                         body = "<br/><p>The applicant will be notified. They will need to provide a response by "
