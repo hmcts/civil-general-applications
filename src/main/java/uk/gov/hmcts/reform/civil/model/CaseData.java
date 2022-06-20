@@ -57,7 +57,7 @@ public class CaseData implements MappableObject {
     private final String legacyCaseReference;
     private final LocalDateTime notificationDeadline;
     private final LocalDate submittedOn;
-    private final String generalAppDeadlineNotificationDate;
+    private final LocalDateTime generalAppNotificationDeadlineDate;
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
