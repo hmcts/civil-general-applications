@@ -57,13 +57,13 @@ class GAResponseDeadlineTaskHandlerTest {
     @BeforeEach
     void init() {
         caseDetails1 = CaseDetails.builder().id(1L).data(
-            Map.of("generalAppDeadlineNotificationDate", deadlineCrossed.toString())).build();
+            Map.of("generalAppNotificationDeadlineDate", deadlineCrossed.toString())).build();
         caseDetails2 = CaseDetails.builder().id(2L).data(
-            Map.of("generalAppDeadlineNotificationDate", deadlineCrossed.toString())).build();
+            Map.of("generalAppNotificationDeadlineDate", deadlineCrossed.toString())).build();
         caseDetails3 = CaseDetails.builder().id(3L).data(
-            Map.of("generalAppDeadlineNotificationDate", deadlineInFuture.toString())).build();
+            Map.of("generalAppNotificationDeadlineDate", deadlineInFuture.toString())).build();
         caseDetails4 = CaseDetails.builder().id(4L).data(
-            Map.of("generalAppDeadlineNotificationDate", EMPTY)).build();
+            Map.of("generalAppNotificationDeadlineDate", EMPTY)).build();
     }
 
     @Test

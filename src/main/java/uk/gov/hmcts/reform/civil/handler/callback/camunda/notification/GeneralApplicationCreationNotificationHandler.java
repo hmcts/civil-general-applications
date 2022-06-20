@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +23,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.FORMATTER;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.MANDATORY_SUFFIX;
 import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
@@ -85,11 +82,8 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
-            .formatLocalDate(
-                LocalDate.parse(
-                    caseData
-                        .getGeneralAppDeadlineNotificationDate() + MANDATORY_SUFFIX,
-                    FORMATTER), DATE)
+            .formatLocalDateTime(caseData
+                        .getGeneralAppNotificationDeadlineDate(), DATE)
         );
     }
 }
