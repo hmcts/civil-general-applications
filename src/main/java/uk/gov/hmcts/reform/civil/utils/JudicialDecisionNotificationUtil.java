@@ -20,9 +20,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DIRECTION_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DIRECTION_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
@@ -53,13 +54,13 @@ public class JudicialDecisionNotificationUtil {
             && !isApplicationUnCloaked(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
         }
-        if (isJudicialApproval(caseData)
-            && !isApplicationUnCloaked(caseData)) {
-            return JUDGE_APPROVED_THE_ORDER;
-        }
         if (isApplicationUnCloaked(caseData)
             && isJudicialDismissal(caseData)) {
             return JUDGE_DISMISSED_APPLICATION_CLOAK;
+        }
+        if (isJudicialApproval(caseData)
+            && !isApplicationUnCloaked(caseData)) {
+            return JUDGE_APPROVED_THE_ORDER;
         }
         if (isApplicationUnCloaked(caseData)
             && isJudicialApproval(caseData)) {
@@ -67,7 +68,11 @@ public class JudicialDecisionNotificationUtil {
         }
         if (isDirectionOrder(caseData)
             && !isApplicationUnCloaked(caseData)) {
-            return DIRECTION_ORDER;
+            return JUDGE_DIRECTION_ORDER;
+        }
+        if (isDirectionOrder(caseData)
+            && isApplicationUnCloaked(caseData)) {
+            return JUDGE_DIRECTION_ORDER_CLOAK;
         }
         if (isRequestForInformation(caseData)) {
             return REQUEST_FOR_INFORMATION;

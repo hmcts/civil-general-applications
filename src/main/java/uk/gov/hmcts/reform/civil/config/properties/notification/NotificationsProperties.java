@@ -62,4 +62,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String respondentRequestForInformationEmailTemplate;
+
+    @NotEmpty
+    private String respondentRequestForInformationEmailTempla;
 }

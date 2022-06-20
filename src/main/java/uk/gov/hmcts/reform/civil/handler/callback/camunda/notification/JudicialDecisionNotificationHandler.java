@@ -66,9 +66,6 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             case SEQUENTIAL_WRITTEN_REP:
                 sequentialWrittenRepNotification(caseData);
                 break;
-            case JUDGE_DISMISSED_APPLICATION:
-                applicationDismissedByJudge(caseData);
-                break;
             case LIST_FOR_HEARING:
                 applicationListForHearing(caseData);
                 break;
@@ -78,11 +75,17 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             case  JUDGE_APPROVED_THE_ORDER_CLOAK:
                 judgeApprovedOrderApplicationCloak(caseData);
                 break;
+            case JUDGE_DISMISSED_APPLICATION:
+                applicationDismissedByJudge(caseData);
+                break;
             case  JUDGE_DISMISSED_APPLICATION_CLOAK:
                 judgeDismissedOrderApplicationCloak(caseData);
                 break;
-            case DIRECTION_ORDER:
+            case JUDGE_DIRECTION_ORDER:
                 applicationDirectionOrder(caseData);
+                break;
+            case JUDGE_DIRECTION_ORDER_CLOAK:
+                applicationDirectionOrderCloak(caseData);
                 break;
             case REQUEST_FOR_INFORMATION:
                 applicationRequestForInformation(caseData);
@@ -216,7 +219,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
-            notificationProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate()
+            notificationProperties.getApplicationUncloakEmailTempla()
         );
     }
 
@@ -248,7 +251,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
-            notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()
+            notificationProperties.getApplicationUncloakEmailTempla()
         );
     }
 
@@ -264,7 +267,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
-            notificationProperties.getApplicantDirectionOrderEmailTemplate()
+            notificationProperties.getApplicationUncloakEmailTempla()
         );
     }
 
@@ -279,5 +282,13 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
         sendNotificationForJudicialDecision(caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             notificationProperties.getJudgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate());
+    }
+
+    private void applicationDirectionOrderCloak(CaseData caseData) {
+        sendNotificationForJudicialDecision(
+            caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getApplicantDirectionOrderEmailTemplate()
+        );
     }
 }
