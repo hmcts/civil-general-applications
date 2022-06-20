@@ -1555,6 +1555,40 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
+        private CaseData getApplicationBusinessProcessMultiParty() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+
+            return CaseData.builder()
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(makeAppAvailableCheck).build())
+                .respondentsResponses(getRespodentResponses1nad2(YES, YES))
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        @Test
+        void shouldUnCloakApplication_multiParty() {
+            CaseData caseData = getApplicationBusinessProcessMultiParty();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
         @Test
         void shouldUnCloakApplication() {
             CaseData caseData = getApplicationBusinessProcess();

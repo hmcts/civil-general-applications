@@ -283,7 +283,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -300,24 +300,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(3)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStayTheClaim(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForGiveDirection_MultiParty() {
-
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEditMultiParty(GIVE_DIRECTIONS_WITHOUT_HEARING))
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -679,7 +662,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .applicationIsCloaked(YesOrNo.YES)
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(makeAppAvailableCheck).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(judgeDecision).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
