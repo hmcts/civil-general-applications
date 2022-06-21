@@ -941,19 +941,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         YesOrNo hasRespondent1PreferredLocation = hasPreferredLocation(responseElementOptional1);
         YesOrNo hasRespondent2PreferredLocation = hasPreferredLocation(responseElementOptional2);
-        if (hasRespondent1PreferredLocation == YES && hasRespondent2PreferredLocation == YES) {
+
+        if (responseElementOptional1.isPresent() && responseElementOptional2.isPresent()
+            && hasRespondent1PreferredLocation == YES && hasRespondent2PreferredLocation == YES) {
             return concat(concat(format(JUDICIAL_PREF_COURT_LOC_RESP1_TEXT, responseElementOptional1.get()
                               .getValue().getGaHearingDetails().getHearingPreferredLocation()
                               .getValue().getLabel()), " "),
                           format(JUDICIAL_PREF_COURT_LOC_RESP2_TEXT, responseElementOptional2.get().getValue()
                     .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel()));
         }
-        if (hasRespondent1PreferredLocation == YES) {
+        if (responseElementOptional1.isPresent() && hasRespondent1PreferredLocation == YES) {
             return format(JUDICIAL_PREF_COURT_LOC_RESP1_TEXT, responseElementOptional1.get().getValue()
                 .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel());
 
         }
-        if (hasRespondent2PreferredLocation == YES) {
+        if (responseElementOptional2.isPresent() && hasRespondent2PreferredLocation == YES) {
             return format(JUDICIAL_PREF_COURT_LOC_RESP2_TEXT, responseElementOptional2.get().getValue()
                 .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel());
         }
