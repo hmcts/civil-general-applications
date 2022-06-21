@@ -830,8 +830,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             );
         }
 
-        boolean isMultiRespondents = caseData.getRespondentsResponses().size() == 2;
-        if (caseData.getRespondentsResponses() != null && isMultiRespondents) {
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
             Optional<Element<GARespondentResponse>> response1 = response1(caseData);
             Optional<Element<GARespondentResponse>> response2 = response2(caseData);
 
