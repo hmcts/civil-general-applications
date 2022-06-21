@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
@@ -224,11 +225,11 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForApproveOrEdit() {
+        void notificationShouldSendIfApplicationUncloakedForDismissApplication() {
 
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEdit(APPROVE_OR_EDIT))
+                              caseDataForJudgeUncloaked(DISMISS_THE_APPLICATION))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -241,11 +242,11 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForDismissApplication() {
+        void notificationShouldSendIfApplicationUncloakedForDismissApplicationForMultiParty() {
 
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEdit(DISMISS_THE_APPLICATION))
+                              caseDataForJudgeUncloakedForMultiParty(DISMISS_THE_APPLICATION))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -258,49 +259,15 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForGiveDirection() {
+        void notificationShouldSendIfApplicationUncloakedForApproveOrEditMultiParty() {
 
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEdit(GIVE_DIRECTIONS_WITHOUT_HEARING))
+                              caseDataForJudgeUncloakedForMultiParty(APPROVE_OR_EDIT))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
             verify(notificationService).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStayTheClaim(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForApproveOrEdit_MultiParty() {
-
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEditMultiParty(APPROVE_OR_EDIT))
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStayTheClaim(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendIfApplicantUnNotifyAndJudgeUncloakedForDismissApplication_MultiParty() {
-
-            CallbackParams params = CallbackParamsBuilder
-                .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeUncloakedApproveOrEditMultiParty(DISMISS_THE_APPLICATION))
-                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
-            handler.handle(params);
-
-            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -492,7 +459,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -508,7 +475,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -625,14 +592,20 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudgeUncloakedApproveOrEdit(GAJudgeMakeAnOrderOption judgeDecision) {
+        private CaseData caseDataForJudgeUncloakedForMultiParty(GAJudgeMakeAnOrderOption judgeDecision) {
             List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
                                                                                   .ConsentAgreementCheckBox);
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
+                .respondentsResponses(respondentsResponses)
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(makeAppAvailableCheck).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(judgeDecision).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -647,17 +620,9 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudgeUncloakedApproveOrEditMultiParty(GAJudgeMakeAnOrderOption judgeDecision) {
+        private CaseData caseDataForJudgeUncloaked(GAJudgeMakeAnOrderOption judgeDecision) {
             List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
                                                                                   .ConsentAgreementCheckBox);
-
-            List<Element<GASolicitorDetailsGAspec>> gaSolicitorDetailsGASpecs = new ArrayList<>();
-
-            gaSolicitorDetailsGASpecs.add(element(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build()));
-            gaSolicitorDetailsGASpecs.add(element(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build()));
-
             return CaseData.builder()
                 .applicationIsCloaked(YesOrNo.YES)
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
@@ -665,11 +630,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(judgeDecision).build())
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                              .email(DUMMY_EMAIL).build())
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
-                .generalAppRespondentSolicitors(gaSolicitorDetailsGASpecs)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
                 .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())

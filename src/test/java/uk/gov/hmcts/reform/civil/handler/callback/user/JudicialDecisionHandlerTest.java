@@ -1555,53 +1555,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData getApplicationBusinessProcessMultiParty() {
-            List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-
-            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
-                                                                                  .ConsentAgreementCheckBox);
-
-            return CaseData.builder()
-                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
-                                                 .makeAppAvailableCheck(makeAppAvailableCheck).build())
-                .respondentsResponses(getRespodentResponses1nad2(YES, YES))
-                .businessProcess(BusinessProcess
-                                     .builder()
-                                     .camundaEvent(CAMUNDA_EVENT)
-                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
-                                     .status(BusinessProcessStatus.FINISHED)
-                                     .activityId(ACTIVITY_ID)
-                                     .build())
-                .build();
-        }
-
-        @Test
-        void shouldUnCloakApplication_multiParty() {
-            CaseData caseData = getApplicationBusinessProcessMultiParty();
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
-            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
-        }
-
-        @Test
-        void shouldUnCloakApplication() {
-            CaseData caseData = getApplicationBusinessProcess();
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
-            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
-        }
-
         @Test
         void shouldUnCloakApplicationForApproveOrEdit() {
             CaseData caseData = getUnCloakCaseData(APPROVE_OR_EDIT);
@@ -1612,6 +1565,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(APPROVE_OR_EDIT.getDisplayedValue());
             assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
         }
 
@@ -1625,6 +1580,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(DISMISS_THE_APPLICATION.getDisplayedValue());
             assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
         }
 
@@ -1638,6 +1595,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(GIVE_DIRECTIONS_WITHOUT_HEARING.getDisplayedValue());
             assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
         }
 
@@ -1672,6 +1631,78 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
             assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(NO);
+        }
+
+        @Test
+        void shouldCloakApplicationForGiveDirectionForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(GIVE_DIRECTIONS_WITHOUT_HEARING);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(GIVE_DIRECTIONS_WITHOUT_HEARING.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldCloakApplicationForApproveOrEditForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(APPROVE_OR_EDIT);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(APPROVE_OR_EDIT.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldCloakApplicationForDismissAppForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(DISMISS_THE_APPLICATION);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(DISMISS_THE_APPLICATION.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        private CaseData getCloakCaseDataForMultiParty(GAJudgeMakeAnOrderOption judgeDecision) {
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+
+            return CaseData.builder()
+                .respondentsResponses(respondentsResponses)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(judgeDecision)
+                                               .build())
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(makeAppAvailableCheck).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
         }
 
         private CaseData getCloakCaseData() {
