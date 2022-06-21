@@ -943,6 +943,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppDetailsOfOrder("Draft order text entered by applicant.")
                 .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                 .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .respondentsResponses(getRespodentResponses(hasRespondentResponseVul))
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().isWithNotice(YES).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
@@ -1451,7 +1452,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsNull() {
-            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION, null);
+            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION, null, NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1463,7 +1464,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsInPast() {
             CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    LocalDate.now().minusDays(1));
+                    LocalDate.now().minusDays(1), YES);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1476,7 +1477,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotReturnErrors_whenRequestedMoreInfoAndTheDateIsInFuture() {
             CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    LocalDate.now().plusDays(1));
+                    LocalDate.now().plusDays(1), YES);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1488,7 +1489,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_RequestMoreInformation(null,
-                    LocalDate.now());
+                    LocalDate.now(), NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1500,7 +1501,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotReturnErrors_DeadlineForMoreInfoSubmissionIsPopulated() {
             CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                                                                      LocalDate.now().plusDays(1));
+                                                                      LocalDate.now().plusDays(1), NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1513,13 +1514,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
-                                                               LocalDate judgeRequestMoreInfoByDate) {
+                                                               LocalDate judgeRequestMoreInfoByDate, YesOrNo hasAgree) {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
                 .parentClaimantIsApplicant(YES)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(hasAgree).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().build())
                 .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))

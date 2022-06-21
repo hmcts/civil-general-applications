@@ -186,14 +186,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
         caseDataBuilder.applicationIsCloaked(isCloaked);
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
-        caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
-                                                 .builder()
-                                                 .isWithNotice(caseData
-                                                                   .getGeneralAppInformOtherParty()
-                                                                   .getIsWithNotice())
-                                                            .build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
+        if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
+            caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
+                                                                .builder()
+                                                                .isWithNotice(caseData
+                                                                                  .getGeneralAppInformOtherParty()
+                                                                                  .getIsWithNotice())
+                                                                .build());
+        } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+            caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
+                                                                .builder()
+                                                                .isWithNotice(YES)
+                                                                .build());
+        }
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
