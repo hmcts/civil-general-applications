@@ -795,7 +795,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         List<String> applicantSupportReq = Collections.emptyList();
         String appSupportReq = StringUtils.EMPTY;
         String resSupportReq = StringUtils.EMPTY;
-        String res2SupportReq = StringUtils.EMPTY;
 
         if (caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
             applicantSupportReq
@@ -808,7 +807,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
             return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
-
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
@@ -832,27 +830,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
             );
         }
 
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
+        boolean isMultiRespondents = caseData.getRespondentsResponses().size() == 2;
+        if (caseData.getRespondentsResponses() != null && isMultiRespondents) {
             Optional<Element<GARespondentResponse>> response1 = response1(caseData);
             Optional<Element<GARespondentResponse>> response2 = response2(caseData);
-            List<String> respondent1SupportReq = Collections.emptyList();
-            if (response1.isPresent()) {
-                respondent1SupportReq = response1.get().getValue().getGaHearingDetails()
+
+            return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
+                    appSupportReq,
+                    retrieveSupportRequirementsFromResponse(response1),
+                    retrieveSupportRequirementsFromResponse(response2));
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private String retrieveSupportRequirementsFromResponse(Optional<Element<GARespondentResponse>> response) {
+        if (response.isPresent()
+                && response.get().getValue().getGaHearingDetails().getSupportRequirement() != null) {
+            return response.get().getValue().getGaHearingDetails()
                     .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
-                    .collect(Collectors.toList());
-
-                resSupportReq = String.join(", ", respondent1SupportReq);
-            }
-            List<String> respondent2SupportReq = Collections.emptyList();
-            if (response2.isPresent()) {
-                respondent2SupportReq = response2.get().getValue().getGaHearingDetails()
-                    .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
-                    .collect(Collectors.toList());
-
-                res2SupportReq = String.join(", ", respondent2SupportReq);
-            }
-
-            return format(JUDICIAL_SUPPORT_REQ_TEXT_3, appSupportReq, resSupportReq, res2SupportReq);
+                    .collect(Collectors.joining(", "));
         }
         return StringUtils.EMPTY;
     }
