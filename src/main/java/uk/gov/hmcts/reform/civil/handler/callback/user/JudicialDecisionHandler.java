@@ -188,6 +188,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
+
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
             caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
                                                                 .builder()
