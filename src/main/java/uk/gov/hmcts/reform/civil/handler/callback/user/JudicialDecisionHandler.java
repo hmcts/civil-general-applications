@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
+import static org.apache.logging.log4j.util.Strings.concat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -100,16 +101,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "regards to vulnerability\n";
     private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent2 requires support with "
         + "regards to vulnerability\n";
-    private static final String JUDICIAL_PREF_LOC_TEXT_1 = "Applicant prefers Location"
-        + "%s. Respondent prefers Location %s.";
-    private static final String JUDICIAL_PREF_LOC_TEXT_2 = "Both applicant and respondent prefer Location %s.";
-    private static final String JUDICIAL_PREF_LOC_TEXT_3 = "Applicant prefers Location "
-        + "%s. Respondent1 prefers Location %s. Respondent2 prefers Location %s.";
-    /*private static final String JUDICIAL_COURT_LOC_TEXT_1 = "Applicant estimates "
-        + "%s. Respondent estimates %s.";
-    private static final String JUDICIAL_COURT_LOC_TEXT_2 = " Both applicant and respondent
-    estimate it would take %s.";*/
-
+    private static final String JUDICIAL_PREF_COURT_LOC_APP_RESP_DIFF_TEXT =
+        "Applicant prefers Location %s. Respondent prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT =
+        "Respondent1 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT =
+        "Respondent2 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT =
+        "Both applicant and respondent prefer Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
         + "%s. Respondent prefers %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = "Both applicant and respondent prefer %s.";
@@ -261,7 +261,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .hearingPreferencesPreferredTypeLabel1(
                                                        getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
                                                    .judgeHearingCourtLocationText1(
-                                                       getJudgeHearingCourtLoc(caseData,isAppAndRespSameCourtLocPref))
+                                                       getJudgeHearingCourtLoc(caseData, isAppAndRespSameCourtLocPref))
                                                    .judgeHearingTimeEstimateText1(
                                                        getJudgeHearingTimeEst(caseData, isAppAndRespSameTimeEst))
                                                    .judgeHearingSupportReqText1(
@@ -829,8 +829,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
-            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
 
+            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
@@ -881,17 +881,29 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingCourtLoc(CaseData caseData, boolean isAppAndRespSameCourtLocPref) {
 
-        return "TO-DO";
+        if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
+            && caseData.getRespondentsResponses() != null) {
+            return generateRespondentCourtDirectionText(caseData);
+        }
 
-        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
-        Uncomment the below code once Hearing Preferred Location is implemented.*/
+        if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null
+            && caseData.getRespondentsResponses() == null) {
+            return format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
+                .getHearingPreferredLocation().getValue().getLabel());
+        }
 
-        /*return isAppAndRespSameCourtLocPref == YES ? format(JUDICIAL_COURT_LOC_TEXT_2, caseData
-            .getGeneralAppHearingDetails().getHearingPreferredLocation())
-            : format(JUDICIAL_COURT_LOC_TEXT_1, caseData.getGeneralAppHearingDetails()
-            .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null ?
-            StringUtils.EMPTY : caseData.getRespondentsResponses()
-                         .stream().iterator().next().getValue().getGaHearingDetails().getHearingPreferredLocation());*/
+        if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null
+            && caseData.getRespondentsResponses() != null) {
+
+            if (caseData.getRespondentsResponses().size() == 1 && isAppAndRespSameCourtLocPref) {
+                return format(JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT, caseData.getGeneralAppHearingDetails()
+                    .getHearingPreferredLocation().getValue().getLabel());
+            }
+            return concat(concat(format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
+                              .getHearingPreferredLocation().getValue().getLabel()), " "),
+                          generateRespondentCourtDirectionText(caseData));
+        }
+        return StringUtils.EMPTY;
     }
 
     public List<String> validateJudgeOrderRequestDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
@@ -931,5 +943,47 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .filter(res -> res.getValue() != null && res.getValue().getGaRespondentDetails()
                 .equals(respondent2Id)).findAny();
         return responseElementOptional2;
+    }
+
+    private String generateRespondentCourtDirectionText(CaseData caseData) {
+        Optional<Element<GARespondentResponse>> responseElementOptional1 = Optional.empty();
+        Optional<Element<GARespondentResponse>> responseElementOptional2 = Optional.empty();
+
+        if (caseData.getGeneralAppRespondentSolicitors() != null
+            && caseData.getGeneralAppRespondentSolicitors().size() > 0) {
+            responseElementOptional1 = response1(caseData);
+        }
+        if (caseData.getGeneralAppRespondentSolicitors() != null
+            && caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+            responseElementOptional2 = response2(caseData);
+        }
+        YesOrNo hasRespondent1PreferredLocation = hasPreferredLocation(responseElementOptional1);
+        YesOrNo hasRespondent2PreferredLocation = hasPreferredLocation(responseElementOptional2);
+        if (hasRespondent1PreferredLocation == YES && hasRespondent2PreferredLocation == YES) {
+            return concat(concat(format(JUDICIAL_PREF_COURT_LOC_RESP1_TEXT, responseElementOptional1.get()
+                              .getValue().getGaHearingDetails().getHearingPreferredLocation()
+                              .getValue().getLabel()), " "),
+                          format(JUDICIAL_PREF_COURT_LOC_RESP2_TEXT, responseElementOptional2.get().getValue()
+                    .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel()));
+        }
+        if (hasRespondent1PreferredLocation == YES) {
+            return format(JUDICIAL_PREF_COURT_LOC_RESP1_TEXT, responseElementOptional1.get().getValue()
+                .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel());
+
+        }
+        if (hasRespondent2PreferredLocation == YES) {
+            return format(JUDICIAL_PREF_COURT_LOC_RESP2_TEXT, responseElementOptional2.get().getValue()
+                .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel());
+        }
+        return StringUtils.EMPTY;
+    }
+
+    private YesOrNo hasPreferredLocation(Optional<Element<GARespondentResponse>> responseElementOptional) {
+        if (responseElementOptional.isPresent() && responseElementOptional.get().getValue().getGaHearingDetails()
+            != null && responseElementOptional.get().getValue().getGaHearingDetails().getHearingPreferredLocation()
+            != null) {
+            return YES;
+        }
+        return NO;
     }
 }
