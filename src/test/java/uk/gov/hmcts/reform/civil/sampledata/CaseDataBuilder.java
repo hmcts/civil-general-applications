@@ -66,7 +66,7 @@ public class CaseDataBuilder {
     // Create Claim
     protected Long ccdCaseReference;
     protected String legacyCaseReference;
-    protected String generalAppDeadlineNotificationDate;
+    protected LocalDateTime generalAppDeadlineNotificationDate;
     protected GAInformOtherParty gaInformOtherParty;
     protected GAUrgencyRequirement gaUrgencyRequirement;
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
@@ -93,7 +93,7 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder generalAppDeadlineNotificationDate(String generalAppDeadlineNotificationDate) {
+    public CaseDataBuilder generalAppDeadlineNotificationDate(LocalDateTime generalAppDeadlineNotificationDate) {
         this.generalAppDeadlineNotificationDate = generalAppDeadlineNotificationDate;
         return this;
     }
@@ -209,7 +209,7 @@ public class CaseDataBuilder {
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
-            .generalAppDeadlineNotificationDate(generalAppDeadlineNotificationDate)
+            .generalAppNotificationDeadlineDate(generalAppDeadlineNotificationDate)
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .build();
     }
@@ -254,7 +254,7 @@ public class CaseDataBuilder {
             .generalAppPBADetails(application.getGeneralAppPBADetails())
             .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
             .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
-            .generalAppDeadlineNotificationDate(application.getGeneralAppDeadlineNotification())
+            .generalAppNotificationDeadlineDate(application.getGeneralAppDateDeadline())
             .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
             .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
             .generalAppHearingDetails(application.getGeneralAppHearingDetails())

@@ -37,6 +37,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +78,7 @@ public class CreateApplicationTaskHandlerTest {
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
-    private static final String DUMMY_DATE = "2022-02-22T15:59:59";
+    private static final LocalDateTime DUMMY_DATE = LocalDateTime.parse("2022-02-22T15:59:59");
 
     List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
     List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
@@ -201,9 +202,9 @@ public class CreateApplicationTaskHandlerTest {
 
             when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
             Map<String, Object> map = generalApplication.toMap(objectMapper);
-            map.put("generalAppDeadlineNotificationDate",
+            map.put("generalAppNotificationDeadlineDate",
                     generalApplication
-                        .getGeneralAppDeadlineNotification());
+                        .getGeneralAppDateDeadline());
 
             when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
 
@@ -231,7 +232,7 @@ public class CreateApplicationTaskHandlerTest {
                                                 .isWithNotice(YES)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
-                .generalAppDeadlineNotification(DUMMY_DATE)
+                .generalAppDateDeadline(DUMMY_DATE)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
                                                   .reasonsForUrgency(STRING_CONSTANT)
@@ -258,7 +259,7 @@ public class CreateApplicationTaskHandlerTest {
                                                 .isWithNotice(NO)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
-                .generalAppDeadlineNotification(DUMMY_DATE)
+                .generalAppDateDeadline(DUMMY_DATE)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
                                                   .reasonsForUrgency(STRING_CONSTANT)
@@ -322,9 +323,9 @@ public class CreateApplicationTaskHandlerTest {
             when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
 
             Map<String, Object> map = generalApplication.toMap(objectMapper);
-            map.put("generalAppDeadlineNotificationDate",
+            map.put("generalAppNotificationDeadlineDate",
                     generalApplication
-                        .getGeneralAppDeadlineNotification());
+                        .getGeneralAppDateDeadline());
 
             when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
 
