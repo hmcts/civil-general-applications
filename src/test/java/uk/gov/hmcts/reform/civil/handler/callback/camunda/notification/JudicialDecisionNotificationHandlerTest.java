@@ -291,7 +291,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendIfJudicialDirectionOrder() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialDirectionOrderOfApplication(NO, YES))
+                              caseDataForJudicialDirectionOrderOfApplication(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -307,7 +307,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationUncloakShouldSendIfJudicialDirectionOrder() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialDirectionOrderOfApplication(NO, NO))
+                              caseDataForJudicialDirectionOrderOfApplication(YES, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -604,7 +604,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .applicationIsCloaked(YES)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
-                                               .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
+                                               .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
