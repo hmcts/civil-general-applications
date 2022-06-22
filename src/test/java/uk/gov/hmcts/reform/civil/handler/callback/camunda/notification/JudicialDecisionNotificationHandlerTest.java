@@ -71,37 +71,37 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
-            when(notificationsProperties.getRespondentWrittenRepConcurrentRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepSequentialRepresentationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepSequentialRepresentationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeDismissesOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeListsForHearingApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate())
+            when(notificationsProperties.getJudgeDismissesOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getWithNoticeUpdateRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate())
+            when(notificationsProperties.getJudgeForApproveRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate())
+            when(notificationsProperties.getJudgeForApprovedCaseApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeListsForHearingRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeDismissesOrderRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantDirectionOrderEmailTemplate())
+            when(notificationsProperties.getJudgeForDirectionOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentDirectionOrderEmailTemplate())
+            when(notificationsProperties.getJudgeForDirectionOrderRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantRequestForInformationEmailTemplate())
+            when(notificationsProperties.getJudgeRequestForInformationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentRequestForInformationEmailTemplate())
+            when(notificationsProperties.getJudgeRequestForInformationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
         }
 

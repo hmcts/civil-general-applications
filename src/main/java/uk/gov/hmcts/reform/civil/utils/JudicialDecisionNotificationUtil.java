@@ -51,27 +51,27 @@ public class JudicialDecisionNotificationUtil {
             return LIST_FOR_HEARING;
         }
         if (isJudicialDismissal(caseData)
-            && !isApplicationUnCloaked(caseData)) {
+            && !isApplicationCloaked(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
         }
-        if (isApplicationUnCloaked(caseData)
+        if (isApplicationCloaked(caseData)
             && isJudicialDismissal(caseData)) {
             return JUDGE_DISMISSED_APPLICATION_CLOAK;
         }
         if (isJudicialApproval(caseData)
-            && !isApplicationUnCloaked(caseData)) {
+            && !isApplicationCloaked(caseData)) {
             return JUDGE_APPROVED_THE_ORDER;
         }
-        if (isApplicationUnCloaked(caseData)
+        if (isApplicationCloaked(caseData)
             && isJudicialApproval(caseData)) {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
         }
         if (isDirectionOrder(caseData)
-            && !isApplicationUnCloaked(caseData)) {
+            && !isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER;
         }
         if (isDirectionOrder(caseData)
-            && isApplicationUnCloaked(caseData)) {
+            && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
         if (isRequestForInformation(caseData)) {
@@ -129,7 +129,7 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
-    public static boolean isApplicationUnCloaked(CaseData caseData) {
+    public static boolean isApplicationCloaked(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecision())
             .map(GAJudicialDecision::getDecision).orElse(null);
         return isJudicialDecisionEvent(caseData)
