@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
+import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -75,6 +77,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_O
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
@@ -424,6 +427,81 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expecetedJudicialSupportReqText = "Applicant require(s) Hearing loop, Other support";
 
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
+
+            assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
+                .isEqualTo(expecetedJudicialPreferrenceText);
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(expecetedJudicialSupportReqText);
+
+        }
+
+        public CaseData getCaseDateWithHearingScreeen1V1(List<GeneralApplicationTypes> types, YesOrNo vulQuestion,
+                                                         YesOrNo hasRespondentResponseVul) {
+
+            return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .respondentsResponses(getRespodentResponses(hasRespondentResponseVul))
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppHearingDetails(GAHearingDetails.builder()
+                                              .vulnerabilityQuestionsYesOrNo(vulQuestion)
+                                              .vulnerabilityQuestion("dummy")
+                                              .hearingPreferencesPreferredType(GAHearingType.VIDEO)
+                                              .hearingDuration(GAHearingDuration.MINUTES_45)
+                                              .supportRequirement(getApplicantResponses1V1())
+                                              .hearingPreferredLocation(getLocationDynamicList())
+                                              .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
+        }
+
+        public List<GAHearingSupportRequirements> getApplicantResponses1V1() {
+            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
+            applSupportReq
+                .add(GAHearingSupportRequirements.DISABLED_ACCESS);
+            applSupportReq
+                .add(GAHearingSupportRequirements.SIGN_INTERPRETER);
+
+            return applSupportReq;
+        }
+
+        @Test
+        void shouldMatchHearingReqForDifferentPreferences() {
+
+            String expecetedJudicialTimeEstimateText = "Applicant estimates 45 minutes. Respondent estimates 1 hour.";
+            String expecetedJudicialPreferrenceText = "Applicant prefers Video conference hearing. Respondent "
+                + "prefers In person.";
+            String expecetedJudicialSupportReqText = "Applicant require Disabled access, Sign language interpreter. "
+                + "Respondent require Other support, Hearing loop.";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getCaseDateWithHearingScreeen1V1(types, NO, YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -1727,7 +1805,177 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         private CaseData getApplicationBusinessProcess() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+
             return CaseData.builder()
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                  .makeAppAvailableCheck(makeAppAvailableCheck).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        @Test
+        void shouldUnCloakApplicationForApproveOrEdit() {
+            CaseData caseData = getUnCloakCaseData(APPROVE_OR_EDIT);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(APPROVE_OR_EDIT.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldUnCloakApplicationForDismissApplication() {
+            CaseData caseData = getUnCloakCaseData(DISMISS_THE_APPLICATION);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(DISMISS_THE_APPLICATION.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldUnCloakApplicationForGiveDirection() {
+            CaseData caseData = getUnCloakCaseData(GIVE_DIRECTIONS_WITHOUT_HEARING);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(GIVE_DIRECTIONS_WITHOUT_HEARING.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        private CaseData getUnCloakCaseData(GAJudgeMakeAnOrderOption judgeDecision) {
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+            return CaseData.builder()
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(makeAppAvailableCheck).build())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(judgeDecision)
+                                               .build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        @Test
+        void shouldCloakApplication() {
+            CaseData caseData = getCloakCaseData();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(NO);
+        }
+
+        @Test
+        void shouldCloakApplicationForGiveDirectionForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(GIVE_DIRECTIONS_WITHOUT_HEARING);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(GIVE_DIRECTIONS_WITHOUT_HEARING.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldCloakApplicationForApproveOrEditForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(APPROVE_OR_EDIT);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(APPROVE_OR_EDIT.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldCloakApplicationForDismissAppForMultiParty1V2() {
+            CaseData caseData = getCloakCaseDataForMultiParty(DISMISS_THE_APPLICATION);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+            assertThat(responseCaseData.getJudicialDecisionMakeOrder().getMakeAnOrder().getDisplayedValue())
+                .isEqualTo(DISMISS_THE_APPLICATION.getDisplayedValue());
+            assertThat(responseCaseData.getGeneralAppInformOtherParty().getIsWithNotice()).isEqualTo(YES);
+        }
+
+        private CaseData getCloakCaseDataForMultiParty(GAJudgeMakeAnOrderOption judgeDecision) {
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+            respondentsResponses.add(element(GARespondentResponse.builder().build()));
+
+            List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = List.of(MakeAppAvailableCheckGAspec
+                                                                                  .ConsentAgreementCheckBox);
+
+            return CaseData.builder()
+                .respondentsResponses(respondentsResponses)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(judgeDecision)
+                                               .build())
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(makeAppAvailableCheck).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        private CaseData getCloakCaseData() {
+
+            return CaseData.builder()
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                 .businessProcess(BusinessProcess
                                      .builder()
                                      .camundaEvent(CAMUNDA_EVENT)
@@ -1752,7 +2000,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void callbackHandlingForMakeAnOrder() {
-            CaseData caseData = getApplication(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build(), null);
+            CaseData caseData = getApplication(GAJudicialDecision.builder()
+                                                   .decision(MAKE_AN_ORDER).build(), null);
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
             var response = (SubmittedCallbackResponse) handler.handle(params);

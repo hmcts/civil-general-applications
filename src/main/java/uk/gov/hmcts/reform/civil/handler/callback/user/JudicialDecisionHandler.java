@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -206,7 +208,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
 
-        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
@@ -221,13 +223,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
         }
 
-        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
             && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
             .getSupportRequirement() != null
-            && caseData.getHearingDetailsResp().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
@@ -244,7 +245,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             first.ifPresent(dynamicLocationList::setValue);
         }
 
-        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
@@ -473,7 +474,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
+        CaseData caseData = callbackParams.getCaseData();
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+
+        if (caseData.getMakeAppVisibleToRespondents() != null) {
+            Optional<MakeAppAvailableCheckGAspec> makeAppVisible = caseData.getMakeAppVisibleToRespondents()
+                .getMakeAppAvailableCheck().stream().findFirst();
+            if (makeAppVisible.isPresent() && makeAppVisible.get()
+                .getDisplayedValue().equals(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox.getDisplayedValue())) {
+
+                dataBuilder.generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build()).build();
+
+            }
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
