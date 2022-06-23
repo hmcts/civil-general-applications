@@ -231,8 +231,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
-        /*Hearing Preferred Location in both applicant and respondent haven't yet implemented.
-        Uncomment the below code once Hearing Preferred Location is implemented.*/
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = fromList(locationRefDataService.getCourtLocations(authToken));
         boolean isAppAndRespSameCourtLocPref = helper.isApplicantAndRespondentLocationPrefSame(caseData);
@@ -887,14 +885,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
                 .getHearingPreferredLocation().getValue().getLabel());
         }
-
+        if (isAppAndRespSameCourtLocPref) {
+            return format(JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT, caseData.getGeneralAppHearingDetails()
+                .getHearingPreferredLocation().getValue().getLabel());
+        }
         if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null
             && caseData.getRespondentsResponses() != null) {
 
-            if (caseData.getRespondentsResponses().size() == 1 && isAppAndRespSameCourtLocPref) {
-                return format(JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT, caseData.getGeneralAppHearingDetails()
-                    .getHearingPreferredLocation().getValue().getLabel());
-            }
             return concat(concat(format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
                               .getHearingPreferredLocation().getValue().getLabel()), " "),
                           generateRespondentCourtDirectionText(caseData)).trim();
