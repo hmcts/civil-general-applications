@@ -101,15 +101,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "regards to vulnerability\n";
     private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent2 requires support with "
         + "regards to vulnerability\n";
-    private static final String JUDICIAL_PREF_COURT_LOC_APP_RESP_DIFF_TEXT =
-        "Applicant prefers Location %s. Respondent prefers Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT =
-        "Respondent1 prefers Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT =
-        "Respondent2 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT = "Respondent1 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT = "Respondent2 prefers Location %s.";
     private static final String JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT =
         "Both applicant and respondent prefer Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
         + "%s. Respondent prefers %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = "Both applicant and respondent prefer %s.";
@@ -901,7 +897,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
             return concat(concat(format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
                               .getHearingPreferredLocation().getValue().getLabel()), " "),
-                          generateRespondentCourtDirectionText(caseData));
+                          generateRespondentCourtDirectionText(caseData)).trim();
         }
         return StringUtils.EMPTY;
     }

@@ -165,7 +165,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                          getHearingOrderApplnAndResp(types, NO, YES)
                                              .getGeneralAppHearingDetails().getHearingPreferredLocation()
                                                 .getValue().getLabel()));
-
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(getJudgeHearingSupportReqText(getHearingOrderApplnAndResp(types, NO, YES), YES));
 
@@ -215,6 +214,31 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testAboutToStartForHearingOnlyRespondent1Respondent2LocationPreference() {
+
+            String expectedOnlyRespondent1LocationText =
+                "Respondent1 prefers Location %s. Respondent2 prefers Location %s.";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            var caseData = getHearingOrderAppForCourtLocationPreference(types, NO, YES, YES);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingCourtLocationText1())
+                .isEqualTo(String.format(expectedOnlyRespondent1LocationText,
+                                         caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+                                             .getHearingPreferredLocation().getValue().getLabel(),
+                                         caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+                                            .getHearingPreferredLocation().getValue().getLabel()));
+        }
+
+        @Test
         void testAboutToStartForHearingOnlyRespondent1LocationPreference() {
 
             String expectedOnlyRespondent1LocationText = "Respondent1 prefers Location %s.";
@@ -256,6 +280,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(String.format(expectedOnlyRespondent2LocationText,
                                          caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
                                              .getHearingPreferredLocation().getValue().getLabel()));
+        }
+
+        @Test
+        void testAboutToStartForHearingOnlyApplicantLocationPreference() {
+
+            String expectedOnlyRespondent1LocationText = "Applicant prefers Location %s.";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            var caseData = getHearingOrderAppForCourtLocationPreference(types, YES, NO, NO);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingCourtLocationText1())
+                .isEqualTo(String.format(expectedOnlyRespondent1LocationText, caseData.getGeneralAppHearingDetails()
+                    .getHearingPreferredLocation().getValue().getLabel()));
         }
 
         @Test
@@ -1259,8 +1304,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(response).isNotNull();
 
-            assertThat(responseCaseData.getJudicialHearingGOHearingReqText())
-                .isEqualTo("");
+            assertThat(responseCaseData.getJudicialHearingGOHearingReqText()).isEmpty();
 
         }
 
