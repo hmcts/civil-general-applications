@@ -95,4 +95,10 @@
     <notes>Latest supported springboot 2.5.14 version inherited still got the vulnerability for oauth2 client</notes>
     <cve>CVE-2022-22978</cve>
   </suppress>
+  <suppress until="2022-07-01">
+    <notes>
+      Still using Spring Framework versions 5.3.0 - 5.3.16 which has got vulnerability.
+    </notes>
+    <cve>CVE-2022-22950</cve>
+  </suppress>
 </suppressions>
