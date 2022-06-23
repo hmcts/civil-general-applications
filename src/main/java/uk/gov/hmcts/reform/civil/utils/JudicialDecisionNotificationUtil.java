@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
@@ -19,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
@@ -141,7 +141,7 @@ public class JudicialDecisionNotificationUtil {
             && Objects.nonNull(decision)
             && caseData.getJudicialDecision()
             .getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
-            && caseData.getApplicationIsCloaked().equals(YesOrNo.YES);
+            && caseData.getApplicationIsCloaked().equals(YES);
     }
 
     private static boolean isListForHearing(CaseData caseData) {

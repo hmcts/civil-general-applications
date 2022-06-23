@@ -474,6 +474,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+        CaseData caseData = callbackParams.getCaseData();
+
+        if (caseData.getMakeAppVisibleToRespondents() != null) {
+            dataBuilder
+                .applicationIsCloaked(NO);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))

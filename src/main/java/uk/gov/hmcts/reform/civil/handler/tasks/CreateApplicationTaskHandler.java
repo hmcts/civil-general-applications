@@ -8,6 +8,7 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -93,6 +95,14 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             .caseLink(CaseLink.builder().caseReference(String.valueOf(
                 generalAppCaseData.getCcdCaseReference())).build())
             .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
+    }
+
+    public YesOrNo isApplicationCloaked(CaseData caseData) {
+        return (caseData.getGeneralAppRespondentAgreement() != null
+            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            && caseData.getGeneralAppInformOtherParty() != null
+            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            ? YES : NO;
     }
 
     private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication, CaseData caseData) {
