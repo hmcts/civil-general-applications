@@ -97,14 +97,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
     }
 
-    public YesOrNo isApplicationCloaked(CaseData caseData) {
-        return (caseData.getGeneralAppRespondentAgreement() != null
-            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            && caseData.getGeneralAppInformOtherParty() != null
-            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-            ? YES : NO;
-    }
-
     private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication, CaseData caseData) {
 
         if (ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
