@@ -283,6 +283,81 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         }
 
+        public CaseData getCaseDateWithHearingScreeen1V1(List<GeneralApplicationTypes> types, YesOrNo vulQuestion,
+                                                         YesOrNo hasRespondentResponseVul) {
+
+            return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .respondentsResponses(getRespodentResponses(hasRespondentResponseVul))
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .applicantPartyName("ApplicantPartyName")
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppHearingDetails(GAHearingDetails.builder()
+                                              .vulnerabilityQuestionsYesOrNo(vulQuestion)
+                                              .vulnerabilityQuestion("dummy")
+                                              .hearingPreferencesPreferredType(GAHearingType.VIDEO)
+                                              .hearingDuration(GAHearingDuration.MINUTES_45)
+                                              .supportRequirement(getApplicantResponses1V1())
+                                              .hearingPreferredLocation(getLocationDynamicList())
+                                              .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
+        }
+
+        public List<GAHearingSupportRequirements> getApplicantResponses1V1() {
+            List<GAHearingSupportRequirements> applSupportReq = new ArrayList<>();
+            applSupportReq
+                .add(GAHearingSupportRequirements.DISABLED_ACCESS);
+            applSupportReq
+                .add(GAHearingSupportRequirements.SIGN_INTERPRETER);
+
+            return applSupportReq;
+        }
+
+        @Test
+        void shouldMatchHearingReqForDifferentPreferences() {
+
+            String expecetedJudicialTimeEstimateText = "Applicant estimates 45 minutes. Respondent estimates 1 hour.";
+            String expecetedJudicialPreferrenceText = "Applicant prefers Video conference hearing. Respondent "
+                + "prefers In person.";
+            String expecetedJudicialSupportReqText = "Applicant require Disabled access, Sign language interpreter. "
+                + "Respondent require Other support, Hearing loop.";
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
+            CallbackParams params = callbackParamsOf(getCaseDateWithHearingScreeen1V1(types, NO, YES), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
+
+            assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
+                .isEqualTo(expecetedJudicialPreferrenceText);
+
+            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
+                .isEqualTo(expecetedJudicialSupportReqText);
+
+        }
+
         @Test
         void testHearingScreenSupportReqWithNoApplnHearingSupport() {
 
