@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
@@ -74,7 +75,10 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformation(caseData)) {
+        if (isRequestForInformationWithouNotice(caseData)) {
+            return REQUEST_FOR_INFORMATION;
+        }
+        if (isRequestForInformationWithNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
@@ -180,14 +184,37 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInformation(CaseData caseData) {
+    private static boolean isRequestForInformationWithouNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
                 && Objects.nonNull(decision)
-                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
-                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION);
+                && caseData.getJudicialDecision()
+                .getDecision().equals(REQUEST_MORE_INFO)
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption().equals(
+                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION)
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoByDate() != null;
+    }
+
+    private static boolean isRequestForInformationWithNotice(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
+            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && Objects.isNull(decision)
+                && caseData.getJudicialDecision()
+                .getDecision().equals(REQUEST_MORE_INFO)
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption() == null
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoByDate() != null;
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {
