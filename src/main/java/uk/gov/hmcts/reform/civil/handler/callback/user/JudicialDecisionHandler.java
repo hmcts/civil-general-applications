@@ -255,7 +255,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .hearingPreferencesPreferredTypeLabel1(
                                                        getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
                                                    .judgeHearingCourtLocationText1(
-                                                       getJudgeHearingCourtLoc(caseData, isAppAndRespSameCourtLocPref))
+                                                       getJudgeHearingCourtLoc(caseData))
                                                    .judgeHearingTimeEstimateText1(
                                                        getJudgeHearingTimeEst(caseData, isAppAndRespSameTimeEst))
                                                    .judgeHearingSupportReqText1(
@@ -873,7 +873,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return StringUtils.EMPTY;
     }
 
-    private String getJudgeHearingCourtLoc(CaseData caseData, boolean isAppAndRespSameCourtLocPref) {
+    private String getJudgeHearingCourtLoc(CaseData caseData) {
 
         if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
             && caseData.getRespondentsResponses() != null) {
@@ -883,10 +883,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null
             && caseData.getRespondentsResponses() == null) {
             return format(JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT, caseData.getGeneralAppHearingDetails()
-                .getHearingPreferredLocation().getValue().getLabel());
-        }
-        if (isAppAndRespSameCourtLocPref) {
-            return format(JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT, caseData.getGeneralAppHearingDetails()
                 .getHearingPreferredLocation().getValue().getLabel());
         }
         if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null

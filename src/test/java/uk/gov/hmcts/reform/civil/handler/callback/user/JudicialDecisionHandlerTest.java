@@ -140,7 +140,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expecetedJudicialTimeEstimateText = "Both applicant and respondent estimate it would take %s.";
             String expecetedJudicialPreferrenceText = "Both applicant and respondent prefer %s.";
-            String expectedJudicialPreferenceLocationText = "Both applicant and respondent prefer Location %s.";
             when(helper.isApplicantAndRespondentLocationPrefSame(any())).thenReturn(true);
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -159,14 +158,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
                 .isEqualTo(String.format(expecetedJudicialPreferrenceText, getHearingOrderApplnAndResp(types, NO, YES)
                     .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()));
-
-            assertThat(responseCaseData.getJudgeHearingCourtLocationText1())
-                .isEqualTo(String.format(expectedJudicialPreferenceLocationText,
-                                         getHearingOrderApplnAndResp(types, NO, YES)
-                                             .getGeneralAppHearingDetails().getHearingPreferredLocation()
-                                                .getValue().getLabel()));
-            assertThat(responseCaseData.getJudgeHearingSupportReqText1())
-                .isEqualTo(getJudgeHearingSupportReqText(getHearingOrderApplnAndResp(types, NO, YES), YES));
 
         }
 
