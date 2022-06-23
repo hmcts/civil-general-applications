@@ -31,6 +31,7 @@ public class JudicialDecisionHelper {
         String applicantLocation = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
             .getValue().getLabel();
         long count = caseData.getRespondentsResponses().stream()
+            .filter(e -> e.getValue().getGaHearingDetails().getHearingPreferredLocation() != null)
             .filter(e -> !applicantLocation.equals(
                 e.getValue().getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel())).count();
         return count == 0;
