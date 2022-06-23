@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 
@@ -100,11 +99,10 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         return judgeReadyToRevisitRequestForInfoCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a)
                 .getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption()
-                .equals(REQUEST_MORE_INFORMATION))
+                .getJudgeRequestMoreInfoByDate() != null
                 && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionRequestMoreInfo()
-                                               .getJudgeRequestMoreInfoByDate()))
+                                               .getJudgeRequestMoreInfoByDate())))
             .collect(Collectors.toList());
     }
 
