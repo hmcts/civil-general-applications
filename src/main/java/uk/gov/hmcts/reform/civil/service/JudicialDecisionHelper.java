@@ -25,7 +25,9 @@ public class JudicialDecisionHelper {
     public boolean isApplicantAndRespondentLocationPrefSame(CaseData caseData) {
         if (caseData.getGeneralAppHearingDetails() == null
             || caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
-            || caseData.getRespondentsResponses() == null) {
+            || caseData.getRespondentsResponses() == null
+            || caseData.getRespondentsResponses().stream().filter(
+                e -> e.getValue().getGaHearingDetails().getHearingPreferredLocation() == null).count() > 0) {
             return false;
         }
         String applicantLocation = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()

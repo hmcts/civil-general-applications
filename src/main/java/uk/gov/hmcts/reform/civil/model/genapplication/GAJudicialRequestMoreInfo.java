@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 
 import java.time.LocalDate;
@@ -19,19 +20,23 @@ public class GAJudicialRequestMoreInfo {
     private String judgeRequestMoreInfoText;
     private LocalDate judgeRequestMoreInfoByDate;
     private LocalDateTime deadlineForMoreInfoSubmission;
+    private YesOrNo isWithNotice;
 
     @JsonCreator
     GAJudicialRequestMoreInfo(@JsonProperty("requestMoreInfoOption")
-                                      GAJudgeRequestMoreInfoOption requestMoreInfoOption,
+                                  GAJudgeRequestMoreInfoOption requestMoreInfoOption,
                               @JsonProperty("judgeRequestMoreInfoText")
-                                      String judgeRequestMoreInfoText,
+                                  String judgeRequestMoreInfoText,
                               @JsonProperty("judgeRequestMoreInfoByDate")
-                                      LocalDate judgeRequestMoreInfoByDate,
+                                  LocalDate judgeRequestMoreInfoByDate,
                               @JsonProperty("deadlineForMoreInfoSubmission")
-                                      LocalDateTime deadlineForMoreInfoSubmission) {
+                                  LocalDateTime deadlineForMoreInfoSubmission,
+                              @JsonProperty("isWithNotice")
+                                  YesOrNo isWithNotice) {
         this.requestMoreInfoOption = requestMoreInfoOption;
         this.judgeRequestMoreInfoText = judgeRequestMoreInfoText;
         this.judgeRequestMoreInfoByDate = judgeRequestMoreInfoByDate;
         this.deadlineForMoreInfoSubmission = deadlineForMoreInfoSubmission;
+        this.isWithNotice = isWithNotice;
     }
 }
