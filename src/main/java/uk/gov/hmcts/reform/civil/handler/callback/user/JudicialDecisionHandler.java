@@ -255,7 +255,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .hearingPreferencesPreferredTypeLabel1(
                                                        getJudgeHearingPrefType(caseData, isAppAndRespSameHearingPref))
                                                    .judgeHearingCourtLocationText1(
-                                                       getJudgeHearingCourtLoc(caseData))
+                                                       generateRespondentCourtLocationText(caseData))
                                                    .judgeHearingTimeEstimateText1(
                                                        getJudgeHearingTimeEst(caseData, isAppAndRespSameTimeEst))
                                                    .judgeHearingSupportReqText1(
@@ -873,7 +873,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return StringUtils.EMPTY;
     }
 
-    private String getJudgeHearingCourtLoc(CaseData caseData) {
+    private String generateRespondentCourtLocationText(CaseData caseData) {
 
         if (caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
             && caseData.getRespondentsResponses() != null) {
