@@ -51,6 +51,8 @@ public class GeneralApplication implements MappableObject {
     private final String defendant1PartyName;
     private final String defendant2PartyName;
 
+    private final GAParties generalApplicationParties;
+
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
                        @JsonProperty("generalAppRespondentAgreement")
@@ -81,7 +83,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("claimant1PartyName") String claimant1PartyName,
                        @JsonProperty("claimant2PartyName") String claimant2PartyName,
                        @JsonProperty("defendant1PartyName") String defendant1PartyName,
-                       @JsonProperty("defendant2PartyName") String defendant2PartyName) {
+                       @JsonProperty("defendant2PartyName") String defendant2PartyName,
+                       @JsonProperty("generalApplicationParties") GAParties generalApplicationParties) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -110,6 +113,7 @@ public class GeneralApplication implements MappableObject {
         this.claimant2PartyName = claimant2PartyName;
         this.defendant1PartyName = defendant1PartyName;
         this.defendant2PartyName = defendant2PartyName;
+        this.generalApplicationParties = generalApplicationParties;
     }
 
     @JsonIgnore
