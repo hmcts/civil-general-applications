@@ -21,10 +21,12 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
@@ -38,6 +40,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -71,37 +75,39 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
-            when(notificationsProperties.getRespondentWrittenRepConcurrentRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantWrittenRepConcurrentRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentWrittenRepSequentialRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepSequentialRepresentationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantWrittenRepSequentialRepresentationEmailTemplate())
+            when(notificationsProperties.getWrittenRepSequentialRepresentationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeDismissesOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeListsForHearingApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate())
+            when(notificationsProperties.getJudgeDismissesOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getWithNoticeUpdateRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeHasOrderedTheApplicationApprovedEmailTemplate())
+            when(notificationsProperties.getJudgeForApproveRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getJudgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate())
+            when(notificationsProperties.getJudgeForApprovedCaseApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeListsForHearingRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeDismissesOrderRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantDirectionOrderEmailTemplate())
+            when(notificationsProperties.getJudgeForDirectionOrderApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentDirectionOrderEmailTemplate())
+            when(notificationsProperties.getJudgeForDirectionOrderRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getApplicantRequestForInformationEmailTemplate())
+            when(notificationsProperties.getJudgeRequestForInformationApplicantEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
-            when(notificationsProperties.getRespondentRequestForInformationEmailTemplate())
+            when(notificationsProperties.getJudgeRequestForInformationRespondentEmailTemplate())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeUncloakApplicationEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
         }
 
@@ -157,7 +163,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendForDismissal() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeDismissal())
+                              caseDataForJudgeDismissal(NO, YES))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForDismissal() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudgeDismissal(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -237,7 +259,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendIfJudicialApproval() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialApprovalOfApplication())
+                              caseDataForJudicialApprovalOfApplication(NO, YES))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendIfJudicialApproval() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialApprovalOfApplication(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -253,7 +291,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendIfJudicialDirectionOrder() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialDirectionOrderOfApplication())
+                              caseDataForJudicialDirectionOrderOfApplication(NO, NO))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendIfJudicialDirectionOrder() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialDirectionOrderOfApplication(YES, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -269,7 +323,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendIfJudicialDirectionOrderRepArePresentInList() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList())
+                              caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendIfJudicialDirectionOrderRepArePresentInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -365,7 +435,23 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendForApplicationsApprovedWhenRespondentsAreInList() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForApplicationsApprovedWhenRespondentsAreInList())
+                              caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, YES))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForApplicationApprovedWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -397,7 +483,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendWhenApplicationIsDismissedByJudgeWhenRespondentsAreAvailableInList() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForCaseDismissedByJudgeRespondentsAreInList())
+                              caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -498,8 +584,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudgeDismissal() {
+        private CaseData caseDataForJudgeDismissal(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
@@ -530,9 +618,9 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData caseDataForApplicationUncloaked() {
             return CaseData.builder()
-                .applicationIsCloaked(YesOrNo.YES)
+                .applicationIsCloaked(YES)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
-                                               .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
+                                               .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
@@ -547,7 +635,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData caseDataForApplicationUncloakedJudgeApproveOrEdit() {
             return CaseData.builder()
-                .applicationIsCloaked(YesOrNo.YES)
+                .applicationIsCloaked(YES)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -564,7 +652,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData caseDataForApplicationUncloakedIsDismissed() {
             return CaseData.builder()
-                .applicationIsCloaked(YesOrNo.YES)
+                .applicationIsCloaked(YES)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -595,8 +683,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudicialApprovalOfApplication() {
+        private CaseData caseDataForJudicialApprovalOfApplication(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -610,8 +700,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudicialDirectionOrderOfApplication() {
+        private CaseData caseDataForJudicialDirectionOrderOfApplication(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -625,8 +717,12 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        private CaseData caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList() {
+        private CaseData caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(
+            YesOrNo orderAgreement,
+            YesOrNo isWithNotice) {
             return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
@@ -718,10 +814,14 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     .build();
         }
 
-        private CaseData caseDataForApplicationsApprovedWhenRespondentsAreInList() {
+        private CaseData caseDataForApplicationsApprovedWhenRespondentsAreInList(YesOrNo orderAgreement,
+                                                                                 YesOrNo isWithNotice) {
             return
                 CaseData.builder()
                     .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                                       .hasAgreed(orderAgreement).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
                     .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
@@ -753,9 +853,13 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     .build();
         }
 
-        private CaseData caseDataForCaseDismissedByJudgeRespondentsAreInList() {
+        private CaseData caseDataForCaseDismissedByJudgeRespondentsAreInList(YesOrNo orderAgreement,
+                                                                             YesOrNo isWithNotice) {
             return
                 CaseData.builder()
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                                       .hasAgreed(orderAgreement).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
@@ -787,7 +891,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                           .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
-                    .applicationIsCloaked(YesOrNo.YES)
+                    .applicationIsCloaked(YES)
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .build();
         }
@@ -808,7 +912,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                           .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
-                    .applicationIsCloaked(YesOrNo.YES)
+                    .applicationIsCloaked(YES)
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .build();
         }
