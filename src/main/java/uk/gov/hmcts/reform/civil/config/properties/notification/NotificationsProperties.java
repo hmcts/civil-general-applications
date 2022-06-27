@@ -19,47 +19,47 @@ public class NotificationsProperties {
     private String withNoticeUpdateRespondentEmailTemplate;
 
     @NotEmpty
-    private String respondentWrittenRepConcurrentRepresentationEmailTemplate;
+    private String writtenRepConcurrentRepresentationApplicantEmailTemplate;
 
     @NotEmpty
-    private String applicantWrittenRepConcurrentRepresentationEmailTemplate;
+    private String writtenRepConcurrentRepresentationRespondentEmailTemplate;
 
     @NotEmpty
-    private String respondentWrittenRepSequentialRepresentationEmailTemplate;
+    private String writtenRepSequentialRepresentationApplicantEmailTemplate;
 
     @NotEmpty
-    private String applicantWrittenRepSequentialRepresentationEmailTemplate;
-
-    @NotEmpty
-    private String judgeDismissesOrderApplicantEmailTemplate;
+    private String writtenRepSequentialRepresentationRespondentEmailTemplate;
 
     @NotEmpty
     private String judgeListsForHearingApplicantEmailTemplate;
 
     @NotEmpty
-    private String judgeUncloaksApplicationForDismissedCaseApplicantEmailTemplate;
-
-    @NotEmpty
-    private String judgeUncloaksApplicationForApprovedCaseApplicantEmailTemplate;
-
-    @NotEmpty
-    private String judgeHasOrderedTheApplicationApprovedEmailTemplate;
-
-    @NotEmpty
     private String judgeListsForHearingRespondentEmailTemplate;
+
+    @NotEmpty
+    private String judgeForApprovedCaseApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeForApproveRespondentEmailTemplate;
+
+    @NotEmpty
+    private String judgeDismissesOrderApplicantEmailTemplate;
 
     @NotEmpty
     private String judgeDismissesOrderRespondentEmailTemplate;
 
     @NotEmpty
-    private String applicantDirectionOrderEmailTemplate;
+    private String judgeForDirectionOrderApplicantEmailTemplate;
 
     @NotEmpty
-    private String respondentDirectionOrderEmailTemplate;
+    private String judgeForDirectionOrderRespondentEmailTemplate;
 
     @NotEmpty
-    private String applicantRequestForInformationEmailTemplate;
+    private String judgeRequestForInformationApplicantEmailTemplate;
 
     @NotEmpty
-    private String respondentRequestForInformationEmailTemplate;
+    private String judgeRequestForInformationRespondentEmailTemplate;
+
+    @NotEmpty
+    private String judgeUncloakApplicationEmailTemplate;
 }
