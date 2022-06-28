@@ -11,23 +11,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -110,6 +94,7 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaAddlnInfoList;
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
+    private final String generalAppSuperClaimType;
 
     //PDF Documents
     @Builder.Default
