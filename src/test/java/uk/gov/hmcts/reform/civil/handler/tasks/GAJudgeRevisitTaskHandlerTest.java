@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
@@ -31,6 +32,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDIT
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
@@ -89,10 +91,12 @@ class GAJudgeRevisitTaskHandlerTest {
                 .sequentialApplicantMustRespondWithin(LocalDate.now())
                 .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
         caseDetailRequestForInformation = CaseDetails.builder().id(4L).data(
-            Map.of("judicialDecisionRequestMoreInfo", GAJudicialRequestMoreInfo.builder()
-                .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
-                .judgeRequestMoreInfoByDate(LocalDate.now())
-                .judgeRequestMoreInfoText("test").build())).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+            Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
+                   "judicialDecisionRequestMoreInfo", GAJudicialRequestMoreInfo.builder()
+                       .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                       .judgeRequestMoreInfoByDate(LocalDate.now())
+                       .judgeRequestMoreInfoText("test").build()
+            )).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
     }
 
     @Test
