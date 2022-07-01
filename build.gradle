@@ -11,7 +11,7 @@ plugins {
   id 'org.sonarqube' version '3.4.0.2513'
   id 'au.com.dius.pact' version '4.3.8'
   id "io.freefair.lombok" version "6.4.3.1"
-  id "org.flywaydb.flyway" version "8.5.2"
+  id "org.flywaydb.flyway" version "8.5.12"
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -76,10 +76,10 @@ allprojects {
         entry 'guava'
       }
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: '1.7.0'
-      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '1.6.10'
+      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '1.6.21'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.7.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.6.0'
-      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.6.10'
+      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.6.21'
       // CVE-2020-29582
 
       // CVE-2021-29425
@@ -245,7 +245,8 @@ def versions = [
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
   springfoxSwagger   : '2.9.2',
-  lombok             : '1.18.12',
+  lombok             : '1.18.24',
+  springSecurity     : '3.5.24',
   pact               : '3.5.24'
 ]
 
@@ -258,6 +259,15 @@ ext.libraries = [
     "org.junit.platform:junit-platform-engine:${versions.junitPlatform}"
   ]
 ]
+
+configurations.all {
+  resolutionStrategy.eachDependency { details ->
+    if (details.requested.group == 'org.projectlombok') {
+      details.useVersion versions.lombok
+    }
+  }
+  exclude group: 'org.springframework.security', module: 'spring-security-rsa'
+}
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
@@ -275,7 +285,7 @@ dependencies {
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.4.0'
 
-  implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.27.2'
+  implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.30.0'
   implementation group: 'org.jdbi', name: 'jdbi3-spring4', version: '3.19.0'
 
   implementation group: 'org.flywaydb', name: 'flyway-core'
@@ -286,7 +296,7 @@ dependencies {
   implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
   implementation group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '11.7'
+  implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '11.8'
   implementation group: 'org.springframework.retry', name: 'spring-retry'
 
   implementation group: 'uk.gov.hmcts.reform', name: 'core-case-data-store-client', version: '4.7.6'
@@ -304,12 +314,12 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache'
   implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.0.3'
 
-  implementation group: 'org.springframework.security', name: 'spring-security-web'
-  implementation group: 'org.springframework.security', name: 'spring-security-config'
+  implementation group: 'org.springframework.security', name: 'spring-security-web', version: versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-config', version : versions.springSecurity
   // CVE-2021-22112 - Privilege Escalation
-  implementation group: 'org.springframework.security', name: 'spring-security-core', version: '5.6.5'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-resource-server'
+  implementation group: 'org.springframework.security', name: 'spring-security-core', version: versions.springSecurity
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', versions.springSecurity
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-resource-server', versions.springSecurity
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.23'
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
@@ -319,26 +329,26 @@ dependencies {
 
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
-  implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.70'
+  implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.71'
 
   implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: '7.17.0'
 
   implementation group: 'org.camunda.bpm.extension.rest', name: 'camunda-rest-client-spring-boot-starter', version: '0.0.4'
 
   implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.17.0'
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.13.0'
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.13.1'
   implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.2'
 
   // JAX-B dependencies for JDK 9+
   implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
-  implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '3.0.1'
+  implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.0'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.8.1'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.9.0'
 
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.3.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.3.1'
-  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.6.0'
+  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.6.1'
 
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
@@ -349,7 +359,7 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
   testCompile  group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
-  testCompile 'com.github.hmcts:fortify-client:1.2.2'
+  testCompile 'com.github.hmcts:fortify-client:1.2.2:all'
   //pact contract testing
   contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-junit5_2.12', version: versions.pact
   contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-java8_2.12', version: versions.pact
