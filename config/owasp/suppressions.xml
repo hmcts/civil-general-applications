@@ -16,9 +16,9 @@
   </suppress>
   <suppress until="2022-07-29">
     <notes><![CDATA[
-   file name: spring-cloud-openfeign-core-3.0.4.jar -> need common component teams to upgrade their clients so as to remove this suppression
+   file name: spring-cloud-starter-openfeign-3.0.4.jar
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-openfeign\-core@.*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-starter\-openfeign@.*$</packageUrl>
     <cve>CVE-2021-22044</cve>
   </suppress>
   <suppress until="2022-07-29">
@@ -32,5 +32,5 @@
     </notes>
     <cve>CVE-2022-34305</cve>
   </suppress>
-  
+
 </suppressions>
