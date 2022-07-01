@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -229,7 +231,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             addResponse(buildResponse(caseData, userDetails), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
-        caseDataBuilder.hearingDetailsResp(GAHearingDetails.builder().build());
+        caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
         CaseData updatedCaseData = caseDataBuilder.build();
 
@@ -244,6 +246,15 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
+    private GAHearingDetails populateHearingDetailsResp(CaseData caseData){
+        String applicationLocationLabel = caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue().getLabel();
+        DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
+        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+            .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+        first.ifPresent(dynamicLocationList::setValue);
+        GAHearingDetails gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder().hearingPreferredLocation(dynamicLocationList).build();
+        return gaHearingDetailsResp;
+    }
     private List<Element<GARespondentResponse>> addResponse(GARespondentResponse gaRespondentResponseBuilder,
                                                             List<Element<GARespondentResponse>> respondentsResponses) {
 
@@ -260,7 +271,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         gaRespondentResponseBuilder
             .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
                                                             .getGeneralAppRespondent1Representative())
-            .gaHearingDetails(caseData.getHearingDetailsResp())
+            .gaHearingDetails(populateHearingDetailsResp(caseData))
             .gaRespondentDetails(userDetails.getId()).build();
 
         return gaRespondentResponseBuilder.build();
