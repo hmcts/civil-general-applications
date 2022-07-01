@@ -246,7 +246,7 @@ def versions = [
   springStatemachine : '3.2.0',
   springfoxSwagger   : '2.9.2',
   lombok             : '1.18.24',
-  springSecurity     : '3.5.24',
+  springSecurity     : '5.7.1',
   pact               : '3.5.24'
 ]
 
@@ -318,8 +318,10 @@ dependencies {
   implementation group: 'org.springframework.security', name: 'spring-security-config', version : versions.springSecurity
   // CVE-2021-22112 - Privilege Escalation
   implementation group: 'org.springframework.security', name: 'spring-security-core', version: versions.springSecurity
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-client', versions.springSecurity
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-oauth2-resource-server', versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-oauth2-resource-server', version: versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-oauth2-core', version: versions.springSecurity
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.23'
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
