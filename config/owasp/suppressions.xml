@@ -136,4 +136,10 @@
     </notes>
     <cve>CVE-2022-34305</cve>
   </suppress>
+  <suppress>
+    <notes>
+      latest Log4j api 2.17.2 still got vulnerabilities
+    </notes>
+    <cve>CVE-2022-33915</cve>
+  </suppress>
 </suppressions>
