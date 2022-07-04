@@ -237,7 +237,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (isAppAndRespSameCourtLocPref) {
             String applicationLocationLabel = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
                 .getValue().getLabel();
-            List<String> applicationLocationList = List.of(caseData.getGeneralAppHearingDetails().getHearingPreferredLocation().getValue().getLabel());
+            List<String> applicationLocationList = List.of(caseData.getGeneralAppHearingDetails()
+                                                                   .getHearingPreferredLocation()
+                                                                   .getValue().getLabel());
             dynamicLocationList = fromList(applicationLocationList);
             Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
@@ -547,9 +549,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder().hearingPreferredLocation(populateJudicialHearingLocation(caseData)).build();
-        CaseData nCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-        CaseData.CaseDataBuilder caseDataBuilder = nCaseData.toBuilder();
+        GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                                                                      .hearingPreferredLocation(populateJudicialHearingLocation(caseData)).build();
+        CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
+        CaseData.CaseDataBuilder caseDataBuilder = updatedCaseData.toBuilder();
 
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
@@ -560,12 +563,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .build();
     }
 
-    private DynamicList populateJudicialHearingLocation(CaseData caseData){
-        String applicationLocationLabel = caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue().getLabel();
-        DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
-        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
-            .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
-        first.ifPresent(dynamicLocationList::setValue);
+    private DynamicList populateJudicialHearingLocation(CaseData caseData) {
+        DynamicList dynamicLocationList = caseData.getGeneralAppHearingDetails()
+                                                  .getHearingPreferredLocation();
+        if (caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue().getLabel() != null) {
+            String applicationLocationLabel = caseData.getJudicialListForHearing()
+                                                      .getHearingPreferredLocation().getValue().getLabel();
+            dynamicLocationList = fromList(List.of(applicationLocationLabel));
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+            first.ifPresent(dynamicLocationList::setValue);
+            return dynamicLocationList;
+        }
         return dynamicLocationList;
     }
 

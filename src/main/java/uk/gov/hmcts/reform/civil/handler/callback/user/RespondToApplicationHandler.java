@@ -246,15 +246,19 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
-    private GAHearingDetails populateHearingDetailsResp(CaseData caseData){
-        String applicationLocationLabel = caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue().getLabel();
+    private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
+        String applicationLocationLabel = caseData.getHearingDetailsResp()
+                                                  .getHearingPreferredLocation().getValue()
+                                                  .getLabel();
         DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
         Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
             .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
         first.ifPresent(dynamicLocationList::setValue);
-        GAHearingDetails gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder().hearingPreferredLocation(dynamicLocationList).build();
+        GAHearingDetails gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                                                        .hearingPreferredLocation(dynamicLocationList).build();
         return gaHearingDetailsResp;
     }
+
     private List<Element<GARespondentResponse>> addResponse(GARespondentResponse gaRespondentResponseBuilder,
                                                             List<Element<GARespondentResponse>> respondentsResponses) {
 
