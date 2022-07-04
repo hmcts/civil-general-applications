@@ -550,7 +550,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                                                                      .hearingPreferredLocation(populateJudicialHearingLocation(caseData)).build();
+                                                                .hearingPreferredLocation(
+                                                                    populateJudicialHearingLocation(caseData))
+                                                                .build();
         CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
         CaseData.CaseDataBuilder caseDataBuilder = updatedCaseData.toBuilder();
 
@@ -564,17 +566,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private DynamicList populateJudicialHearingLocation(CaseData caseData) {
-        DynamicList dynamicLocationList = caseData.getGeneralAppHearingDetails()
-                                                  .getHearingPreferredLocation();
-        if (caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue().getLabel() != null) {
-            String applicationLocationLabel = caseData.getJudicialListForHearing()
+        String applicationLocationLabel = caseData.getJudicialListForHearing()
                                                       .getHearingPreferredLocation().getValue().getLabel();
-            dynamicLocationList = fromList(List.of(applicationLocationLabel));
-            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+        DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
+        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
-            first.ifPresent(dynamicLocationList::setValue);
-            return dynamicLocationList;
-        }
+        first.ifPresent(dynamicLocationList::setValue);
         return dynamicLocationList;
     }
 
