@@ -234,10 +234,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (isAppAndRespSameCourtLocPref) {
             String applicationLocationLabel = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
                 .getValue().getLabel();
-            List<String> applicationLocationList = List.of(caseData.getGeneralAppHearingDetails()
-                                                                   .getHearingPreferredLocation()
-                                                                   .getValue().getLabel());
-            dynamicLocationList = fromList(applicationLocationList);
             Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
             first.ifPresent(dynamicLocationList::setValue);
