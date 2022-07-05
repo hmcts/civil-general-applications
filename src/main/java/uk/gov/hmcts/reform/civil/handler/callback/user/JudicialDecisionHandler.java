@@ -104,8 +104,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
     private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT = "Respondent1 prefers Location %s.";
     private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT = "Respondent2 prefers Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_APP_RESP_SAME_TEXT =
-        "Both applicant and respondent prefer Location %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
         + "%s. Respondent prefers %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = "Both applicant and respondent prefer %s.";
@@ -206,7 +204,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
 
-        YesOrNo isAppAndRespSameHearingPref = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()
@@ -221,13 +219,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudgesHearingListGAspecBuilder = GAJudgesHearingListGAspec.builder();
         }
 
-        YesOrNo isAppAndRespSameSupportReq = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameSupportReq = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
-            && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
             && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
             .getSupportRequirement() != null
-            && caseData.getHearingDetailsResp().getSupportRequirement() != null
+            && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null
             && checkIfAppAndRespHaveSameSupportReq(caseData))
             ? YES : NO;
 
@@ -246,7 +243,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             first.ifPresent(dynamicLocationList::setValue);
         }
 
-        YesOrNo isAppAndRespSameTimeEst = (caseData.getHearingDetailsResp() != null
+        YesOrNo isAppAndRespSameTimeEst = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
             && caseData.getRespondentsResponses().size() == 1
             && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
@@ -476,6 +473,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+        CaseData caseData = callbackParams.getCaseData();
+
+        if (caseData.getMakeAppVisibleToRespondents() != null) {
+            dataBuilder
+                .applicationIsCloaked(NO);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
@@ -628,13 +631,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         String respondent1HearingType = null;
         String respondent2HearingType = null;
 
-        if (caseData.getGeneralAppUrgencyRequirement() != null
-            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
-            return "Applicant prefers ".concat(caseData
-                                                   .getGeneralAppHearingDetails().getHearingPreferencesPreferredType()
-                                                   .getDisplayedValue());
-        }
-
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
             return isAppAndRespSameHearingPref == YES ? format(JUDICIAL_PREF_TYPE_TEXT_2, caseData
                 .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue())
@@ -662,18 +658,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
             );
         }
 
+        if ((caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
+            || caseData.getGeneralAppHearingDetails().getHearingPreferencesPreferredType() != null) {
+            return "Applicant prefers ".concat(caseData
+                                                   .getGeneralAppHearingDetails().getHearingPreferencesPreferredType()
+                                                   .getDisplayedValue());
+        }
+
         return StringUtils.EMPTY;
     }
 
     private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
         String respondet1HearingDuration = null;
         String respondent2HearingDuration = null;
-
-        if (caseData.getGeneralAppUrgencyRequirement() != null
-            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
-            return "Applicant estimates ".concat(caseData.getGeneralAppHearingDetails()
-                                                     .getHearingDuration().getDisplayedValue());
-        }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
             return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData
@@ -700,6 +698,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return format(JUDICIAL_TIME_EST_TEXT_3, caseData.getGeneralAppHearingDetails()
                 .getHearingDuration().getDisplayedValue(), respondet1HearingDuration, respondent2HearingDuration);
         }
+
+        if ((caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
+            || caseData.getGeneralAppHearingDetails().getHearingDuration() != null) {
+            return "Applicant estimates ".concat(caseData.getGeneralAppHearingDetails()
+                                                     .getHearingDuration().getDisplayedValue());
+        }
+
         return StringUtils.EMPTY;
     }
 
@@ -828,20 +834,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingSupportReq(CaseData caseData, YesOrNo isAppAndRespSameSupportReq) {
         List<String> applicantSupportReq = Collections.emptyList();
-        String appSupportReq = StringUtils.EMPTY;
         String resSupportReq = StringUtils.EMPTY;
+        String appSupportReq = StringUtils.EMPTY;
 
         if (caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
-            applicantSupportReq
-                = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream()
+            applicantSupportReq = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream()
                 .map(GAHearingSupportRequirements::getDisplayedValue).collect(Collectors.toList());
 
             appSupportReq = String.join(", ", applicantSupportReq);
-        }
-
-        if (caseData.getGeneralAppUrgencyRequirement() != null
-            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
-            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
@@ -873,6 +873,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     appSupportReq,
                     retrieveSupportRequirementsFromResponse(response1),
                     retrieveSupportRequirementsFromResponse(response2));
+        }
+
+        if ((caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
+            || caseData.getGeneralAppHearingDetails() != null) {
+            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
+
         }
         return StringUtils.EMPTY;
     }
@@ -906,6 +913,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                               .getHearingPreferredLocation().getValue().getLabel()), " "),
                           generateRespondentCourtDirectionText(caseData)).trim();
         }
+
         return StringUtils.EMPTY;
     }
 
