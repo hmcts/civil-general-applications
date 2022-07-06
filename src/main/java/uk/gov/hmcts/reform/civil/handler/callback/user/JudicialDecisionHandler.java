@@ -548,13 +548,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                                                                .hearingPreferredLocation(
-                                                                    populateJudicialHearingLocation(caseData))
-                                                                .build();
-        CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-        CaseData.CaseDataBuilder caseDataBuilder = updatedCaseData.toBuilder();
-
+        String preferredType = caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().name();
+        if (preferredType.equals("IN_PERSON")) {
+            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                .hearingPreferredLocation(
+                    populateJudicialHearingLocation(caseData))
+                .build();
+            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
+            caseData = updatedCaseData;
+            CaseData.CaseDataBuilder caseDataBuilder = updatedCaseData.toBuilder();
+        }
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
