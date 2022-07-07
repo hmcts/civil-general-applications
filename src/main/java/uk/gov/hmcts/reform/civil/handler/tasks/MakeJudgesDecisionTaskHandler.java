@@ -51,6 +51,7 @@ public class MakeJudgesDecisionTaskHandler implements BaseExternalTaskHandler {
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
+        variables.putValue("generalAppParentCaseLink", data.getGeneralAppParentCaseLink().getCaseReference());
         return variables;
     }
 
