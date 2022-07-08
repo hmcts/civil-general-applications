@@ -532,7 +532,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -552,7 +553,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForCloakedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(YES);
@@ -572,7 +574,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -1581,7 +1584,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
 
