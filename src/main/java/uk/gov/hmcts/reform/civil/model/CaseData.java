@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -95,8 +96,8 @@ public class CaseData implements MappableObject {
     private final String claimant2PartyName;
     private final String defendant1PartyName;
     private final String defendant2PartyName;
-    private final String workAllocationLocation;
-    private final String workAllocationLocationName;
+    private final GACaseLocation caseManagementLocation;
+    private final YesOrNo isCcmccLocation;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
     private final String judicialHearingGeneralOrderHearingText;
