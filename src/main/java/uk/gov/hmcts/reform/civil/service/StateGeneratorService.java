@@ -13,7 +13,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDE
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE_SYSTEM;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -53,7 +53,7 @@ public class StateGeneratorService {
             && APPROVE_OR_EDIT.equals(data.getJudicialDecisionMakeOrder().getMakeAnOrder())) {
             if (YesOrNo.YES.equals(data.getParentClaimantIsApplicant())
                 && data.getGeneralAppType().getTypes().contains(STRIKE_OUT)) {
-                return PROCEEDS_IN_HERITAGE_SYSTEM;
+                return PROCEEDS_IN_HERITAGE;
             } else {
                 return ORDER_MADE;
             }
