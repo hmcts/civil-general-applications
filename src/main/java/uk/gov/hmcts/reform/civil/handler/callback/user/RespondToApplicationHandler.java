@@ -247,15 +247,23 @@ public class RespondToApplicationHandler extends CallbackHandler {
     }
 
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
-        String applicationLocationLabel = caseData.getHearingDetailsResp()
-                                                  .getHearingPreferredLocation().getValue()
-                                                  .getLabel();
-        DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
-        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
-            .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
-        first.ifPresent(dynamicLocationList::setValue);
-        GAHearingDetails gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
-                                                        .hearingPreferredLocation(dynamicLocationList).build();
+        GAHearingDetails gaHearingDetailsResp;
+        String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
+        if (preferredType.equals("IN_PERSON")) {
+            String applicationLocationLabel = caseData.getHearingDetailsResp()
+                .getHearingPreferredLocation().getValue()
+                .getLabel();
+            DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+            first.ifPresent(dynamicLocationList::setValue);
+            gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .hearingPreferredLocation(dynamicLocationList).build();
+
+        } else {
+            gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .hearingPreferredLocation(DynamicList.builder().build()).build();
+        }
         return gaHearingDetailsResp;
     }
 
