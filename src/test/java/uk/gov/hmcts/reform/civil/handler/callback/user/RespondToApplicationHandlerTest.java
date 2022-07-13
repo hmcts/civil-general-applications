@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -481,6 +483,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData updatedCaseData = caseData.toBuilder().hearingDetailsResp(GAHearingDetails.builder()
                                                                                .hearingPreferredLocation(
                                                                                    dynamicListTest)
+                                                                               .hearingPreferencesPreferredType(
+                                                                                   GAHearingType.IN_PERSON)
                                                                                .build()).build();
         caseData = updatedCaseData;
 
@@ -614,9 +618,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                     .build())
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                        .hearingPreferredLocation(dynamicListTest)
+                                        .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
                                        .build())
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferredLocation(dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                     .build())
             .generalAppType(
                 GAApplicationType
@@ -646,6 +652,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferredLocation(
                                         dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                     .build())
             .respondentsResponses(respondentsResponses)
             .generalAppRespondent1Representative(

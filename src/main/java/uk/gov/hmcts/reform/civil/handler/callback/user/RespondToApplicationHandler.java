@@ -82,6 +82,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     public static final String APPLICATION_RESPONSE_PRESENT = "The General Application has already "
         +  "received a response.";
     public static final String RESPONDENT_RESPONSE_EXISTS = "The application has already been responded to.";
+
+    public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
 
     @Override
@@ -249,7 +251,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
         GAHearingDetails gaHearingDetailsResp;
         String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
-        if (preferredType.equals("IN_PERSON")) {
+        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
+            && (caseData.getHearingDetailsResp().getHearingPreferredLocation() != null)) {
             String applicationLocationLabel = caseData.getHearingDetailsResp()
                 .getHearingPreferredLocation().getValue()
                 .getLabel();

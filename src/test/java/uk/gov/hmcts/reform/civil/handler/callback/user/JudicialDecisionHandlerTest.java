@@ -532,8 +532,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -553,8 +552,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForCloakedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(YES);
@@ -574,8 +572,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Defendant dated 15 January 22 and upon the "
+            String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -1584,8 +1581,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
 
@@ -1844,8 +1840,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldSetUpReadyBusinessProcess() {
             CaseData caseData = getApplicationBusinessProcess();
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
@@ -1860,6 +1856,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                            .hearingPreferredLocation(getLocationDynamicList()).build())
                 .businessProcess(BusinessProcess
                                      .builder()
                                      .camundaEvent(CAMUNDA_EVENT)
