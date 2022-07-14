@@ -14,7 +14,6 @@ public enum CaseState {
     CASE_DISMISSED("Case Dismissed"),
     AWAITING_APPLICANT_INTENTION("Awaiting applicant intention"),
     PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
-    PROCEEDS_IN_HERITAGE("Proceeds In Heritage"),
 
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
@@ -29,6 +28,7 @@ public enum CaseState {
     AWAITING_ADDITIONAL_INFORMATION("Additional Information Required"),
     APPLICATION_DISMISSED("Application Dismissed"),
     APPLICATION_CLOSED("Application Closed"),
+    PROCEEDS_IN_HERITAGE("Proceeds In Heritage"),
     RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION("Respond to judge for Written Representations");
 
     private final String displayedValue;
