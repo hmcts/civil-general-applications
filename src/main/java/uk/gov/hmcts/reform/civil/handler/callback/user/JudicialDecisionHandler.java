@@ -155,6 +155,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_LOCATION_REQUIRED = "Select your preferred hearing location.";
 
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
+
+    public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
     private final ObjectMapper objectMapper;
 
     @Override
@@ -472,6 +474,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
+        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
+            if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
+                GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                    .hearingPreferredLocation(
+                        populateJudicialHearingLocation(caseData))
+                    .build();
+                CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
+                    .build();
+                caseData = updatedCaseData;
+                dataBuilder = updatedCaseData.toBuilder();
+            }
+        }
 
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
         if (caseData.getMakeAppVisibleToRespondents() != null) {
@@ -485,17 +499,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private DynamicList populateJudicialHearingLocation(CaseData caseData) {
         DynamicList dynamicLocationList;
-        String preferredType = caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().name();
-        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)) {
-            String applicationLocationLabel = caseData.getJudicialListForHearing()
+        String applicationLocationLabel = caseData.getJudicialListForHearing()
                 .getHearingPreferredLocation().getValue().getLabel();
-            dynamicLocationList = fromList(List.of(applicationLocationLabel));
-            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+        dynamicLocationList = fromList(List.of(applicationLocationLabel));
+        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
-            first.ifPresent(dynamicLocationList::setValue);
-        } else {
-            dynamicLocationList = DynamicList.builder().build();
-        }
+        first.ifPresent(dynamicLocationList::setValue);
         return dynamicLocationList;
     }
 
@@ -571,15 +580,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
             && (caseData.getJudicialListForHearing().getHearingPreferredLocation() == null)) {
             errors.add(PREFERRED_LOCATION_REQUIRED);
-        } else {
-
-            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                    .hearingPreferredLocation(
-                        populateJudicialHearingLocation(caseData))
-                    .build();
-            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
-                                        .build();
-            caseData = updatedCaseData;
         }
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
