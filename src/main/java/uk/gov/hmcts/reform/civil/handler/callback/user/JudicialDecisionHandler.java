@@ -472,23 +472,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
-        String preferredType = caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().name();
-        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)) {
-            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                .hearingPreferredLocation(
-                    populateJudicialHearingLocation(caseData))
-                .build();
-            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-            caseData = updatedCaseData;
-            dataBuilder = updatedCaseData.toBuilder();
-        } else {
-            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                .hearingPreferredLocation(DynamicList.builder().build())
-                .build();
-            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-            caseData = updatedCaseData;
-            dataBuilder = updatedCaseData.toBuilder();
-        }
 
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
         if (caseData.getMakeAppVisibleToRespondents() != null) {
@@ -584,6 +567,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
             && (caseData.getJudicialListForHearing().getHearingPreferredLocation() == null)) {
             errors.add(PREFERRED_LOCATION_REQUIRED);
+        } else {
+
+            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                    .hearingPreferredLocation(
+                        populateJudicialHearingLocation(caseData))
+                    .build();
+            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
+                                        .build();
+            caseData = updatedCaseData;
         }
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))

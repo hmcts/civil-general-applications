@@ -1414,6 +1414,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnErrorWhenInPersonAndLocationIsNull() {
+
+            CallbackParams params = callbackParamsOf(getJudicialListHearingData(),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            String expectedErrorText = "Select your preferred hearing location.";
+
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors().contains(expectedErrorText));
+        }
+
+        @Test
         void shouldReturnNullForJudgeGOSupportRequirement() {
 
             List<SupportRequirements> judgeSupportReqChoices = null;
@@ -1428,6 +1443,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getJudicialHearingGOHearingReqText()).isEmpty();
 
+        }
+
+        private CaseData getJudicialListHearingData() {
+
+            YesOrNo hasRespondentResponseVul = NO;
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                            .judicialTimeEstimate(GAHearingDuration.HOURS_2).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
         }
 
         private CaseData getHearingOrderApplnAndResp(List<SupportRequirements> judgeSupportReqChoices) {
@@ -1850,6 +1886,19 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
         }
 
+        @Test
+        void shouldSetUpReadyWhenPreferredTypeNotInPerson() {
+            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation().getValue() == null);
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+        }
+
         private CaseData getApplicationBusinessProcess() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1859,6 +1908,25 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                             .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
                                             .hearingPreferredLocation(getLocationDynamicList()).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        private CaseData getApplicationWithPreferredTypeNotInPerson() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.TELEPHONE)
+                                            .hearingPreferredLocation(DynamicList.builder().build()).build())
                 .businessProcess(BusinessProcess
                                      .builder()
                                      .camundaEvent(CAMUNDA_EVENT)

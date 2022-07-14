@@ -466,6 +466,19 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldReturn_Null_WhenPreferredTypeNotInPerson() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
+    }
+
+    @Test
     void shouldReturn_Null_RespondentResponseAfterAddingToCollections() {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
@@ -549,6 +562,19 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                     .trialRequiredYesOrNo(YES)
                                     .trialDateFrom(null)
                                     .trialDateTo(null)
+                                    .build())
+            .build();
+    }
+
+    private CaseData getCaseWithPreferredTypeInPersonLocationNull() {
+        return CaseData.builder()
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .hearingPreferredLocation(DynamicList.builder().build())
                                     .build())
             .build();
     }
