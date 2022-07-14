@@ -485,13 +485,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private DynamicList populateJudicialHearingLocation(CaseData caseData) {
         DynamicList dynamicLocationList;
-        String applicationLocationLabel = caseData.getJudicialListForHearing()
+        String preferredType = caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().name();
+        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)) {
+            String applicationLocationLabel = caseData.getJudicialListForHearing()
                 .getHearingPreferredLocation().getValue().getLabel();
-        dynamicLocationList = fromList(List.of(applicationLocationLabel));
-        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+            dynamicLocationList = fromList(List.of(applicationLocationLabel));
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
-        first.ifPresent(dynamicLocationList::setValue);
-
+            first.ifPresent(dynamicLocationList::setValue);
+        } else {
+            dynamicLocationList = DynamicList.builder().build();
+        }
         return dynamicLocationList;
     }
 
