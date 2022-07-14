@@ -13,6 +13,7 @@ public enum CaseState {
     AWAITING_RESPONDENT_ACKNOWLEDGEMENT("Awaiting respondent acknowledgement"),
     CASE_DISMISSED("Case Dismissed"),
     AWAITING_APPLICANT_INTENTION("Awaiting applicant intention"),
+    PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
     PROCEEDS_IN_HERITAGE("Proceeds in heritage system"),
 
     //General Application states
