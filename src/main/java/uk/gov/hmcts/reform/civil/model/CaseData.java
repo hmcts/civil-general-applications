@@ -112,6 +112,7 @@ public class CaseData implements MappableObject {
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
+    private final String respondentSolicitor1EmailAddress;
 
     //PDF Documents
     @Builder.Default

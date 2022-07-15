@@ -10,11 +10,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
+import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,11 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private final NotificationService notificationService;
     private final NotificationsProperties notificationProperties;
 
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+
+    private final SolicitorEmailValidation solicitorEmailValidation;
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -53,17 +61,25 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
 
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(caseData);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        CaseData civilCaseData = caseDetailsConverter.toCaseData(
+            coreCaseDataService.getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+        CaseData updatedCaseData = solicitorEmailValidation.
+            validateSolicitorEmail(civilCaseData, caseData, caseDataBuilder);
+
+        boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(updatedCaseData);
 
         if (isNotificationCriteriaSatisfied) {
+            // pass in the general app casedata and cviil casedata to a new method which would update the email address to the relevant respondent solictors
 
-            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData.getGeneralAppRespondentSolicitors();
-            respondentSolicitor.stream().forEach((RS) ->
-                sendNotificationToGeneralAppRespondent(caseData, RS.getValue().getEmail()));
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData.getGeneralAppRespondentSolicitors();
+            //CaseData finalCaseData = caseData;
+            respondentSolicitor.forEach((RS) ->
+                sendNotificationToGeneralAppRespondent(updatedCaseData, RS.getValue().getEmail()));
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseData.toMap(objectMapper))
+            .data(updatedCaseData.toMap(objectMapper))
             .build();
     }
 
@@ -75,6 +91,9 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
     }
+
+    // private method
+    // 1 vs 1 use the yes or not flag to identify the claimant or respondent as the applicant so that you can update the email address with the main case data
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
