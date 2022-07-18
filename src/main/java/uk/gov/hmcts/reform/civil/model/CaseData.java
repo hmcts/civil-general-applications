@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -98,6 +99,7 @@ public class CaseData implements MappableObject {
     private final String defendant2PartyName;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
+    private final DynamicList caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
     private final String judicialHearingGeneralOrderHearingText;
