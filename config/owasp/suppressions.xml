@@ -36,14 +36,6 @@
     <notes><![CDATA[
    file name: jakarta.annotation-api-1.3.5.jar stable version of org.springframework.boot:spring-boot-starter-web -> 2.5.14 contains this vulnerability
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/jakarta\.annotation/jakarta\.annotation\-api@.*$</packageUrl>
-    <cve>CVE-2022-31569</cve>
-  </suppress>
-  <suppress>
-    <notes><![CDATA[
-   file name: spring-cloud-context-3.0.4.jar stable version of spring-cloud-starter-netflix-hystrix:2.2.10.RELEASE contains this vulnerability
-   ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-context@.*$</packageUrl>
     <cve>CVE-2022-31569</cve>
   </suppress>
 </suppressions>
