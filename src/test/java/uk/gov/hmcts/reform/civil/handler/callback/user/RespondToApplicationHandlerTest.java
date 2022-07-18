@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
@@ -41,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +57,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -353,7 +358,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         CaseData responseCaseData = getResponseCaseData(response);
-        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getHearingDetailsResp()
+                       .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
@@ -386,7 +392,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(response).isNotNull();
 
         CaseData responseCaseData = getResponseCaseData(response);
-        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getHearingDetailsResp()
+                       .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(2);
         assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
@@ -437,7 +444,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(response).isNotNull();
 
         CaseData responseCaseData = getResponseCaseData(response);
-        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
+        assertThat(responseCaseData.getHearingDetailsResp()
+                       .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
@@ -458,6 +466,19 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldReturn_Null_WhenPreferredTypeNotInPerson() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
+    }
+
+    @Test
     void shouldReturn_Null_RespondentResponseAfterAddingToCollections() {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
@@ -468,6 +489,17 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent1));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
+        DynamicList dynamicListTest = fromList(getSampleCourLocations());
+        Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+        first.ifPresent(dynamicListTest::setValue);
+
+        CaseData updatedCaseData = caseData.toBuilder().hearingDetailsResp(GAHearingDetails.builder()
+                                                                               .hearingPreferredLocation(
+                                                                                   dynamicListTest)
+                                                                               .hearingPreferencesPreferredType(
+                                                                                   GAHearingType.IN_PERSON)
+                                                                               .build()).build();
+        caseData = updatedCaseData;
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -477,7 +509,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(response).isNotNull();
 
         CaseData responseCaseData = getResponseCaseData(response);
-        assertThat(responseCaseData.getHearingDetailsResp()).isEqualTo(null);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
@@ -531,6 +562,19 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                     .trialRequiredYesOrNo(YES)
                                     .trialDateFrom(null)
                                     .trialDateTo(null)
+                                    .build())
+            .build();
+    }
+
+    private CaseData getCaseWithPreferredTypeInPersonLocationNull() {
+        return CaseData.builder()
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .hearingPreferredLocation(DynamicList.builder().build())
                                     .build())
             .build();
     }
@@ -589,11 +633,23 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     private CaseData getCase(CaseState state) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        DynamicList dynamicListTest = fromList(getSampleCourLocations());
+        Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+        first.ifPresent(dynamicListTest::setValue);
+
         return CaseData.builder()
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
                     .generalAppRespondent1Representative(YES)
                     .build())
+            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                       .hearingPreferredLocation(dynamicListTest)
+                                        .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                       .build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferredLocation(dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .build())
             .generalAppType(
                 GAApplicationType
                     .builder()
@@ -613,8 +669,17 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                              List<Element<GARespondentResponse>> respondentsResponses) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        DynamicList dynamicListTest = fromList(getSampleCourLocations());
+        Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+        first.ifPresent(dynamicListTest::setValue);
+
         return CaseData.builder()
             .generalAppRespondentSolicitors(respondentSols)
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferredLocation(
+                                        dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .build())
             .respondentsResponses(respondentsResponses)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
