@@ -62,18 +62,17 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        CaseData civilCaseData = caseDetailsConverter.toCaseData(
-            coreCaseDataService.getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
         CaseData updatedCaseData = solicitorEmailValidation.
             validateSolicitorEmail(civilCaseData, caseData, caseDataBuilder);
 
         boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(updatedCaseData);
 
         if (isNotificationCriteriaSatisfied) {
-            // pass in the general app casedata and cviil casedata to a new method which would update the email address to the relevant respondent solictors
 
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData.getGeneralAppRespondentSolicitors();
-            //CaseData finalCaseData = caseData;
             respondentSolicitor.forEach((RS) ->
                 sendNotificationToGeneralAppRespondent(updatedCaseData, RS.getValue().getEmail()));
         }
@@ -91,9 +90,6 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
             String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
     }
-
-    // private method
-    // 1 vs 1 use the yes or not flag to identify the claimant or respondent as the applicant so that you can update the email address with the main case data
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
