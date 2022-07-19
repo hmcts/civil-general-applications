@@ -112,8 +112,7 @@ public class CaseData implements MappableObject {
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
-    @JsonProperty("paymentServiceRequestReferenceNumber")
-    private final String paymentServiceRequestReferenceNumber;
+
 
     //PDF Documents
     @Builder.Default
