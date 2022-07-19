@@ -44,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
@@ -366,7 +367,21 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+        @Test
+        void notificationShouldSendIfJudicialRequestForInformationWithOutNoticeApplicationChangeToWithNotice() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudicialRequestForInformationWithoutNoticeOfApplicationCorrect())
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
 
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStayTheClaim(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithNotice() {
             CallbackParams params = CallbackParamsBuilder
@@ -755,7 +770,24 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                     .types(applicationTypeToStayTheClaim()).build())
                 .build();
         }
-
+        private CaseData caseDataForJudicialRequestForInformationWithoutNoticeOfApplicationCorrect() {
+            return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoText("Test")
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now()).build())
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStayTheClaim()).build())
+                .build();
+        }
         private CaseData caseDataForJudicialRequestForInformationWithNoticeOfApplication() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()

@@ -92,6 +92,9 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             case REQUEST_FOR_INFORMATION:
                 applicationRequestForInformation(caseData);
                 break;
+            case APPLICATION_CHANGE_TO_WITH_NOTICE:
+                applicationRequestForInformationChangeToWithNotice(caseData);
+                break;
             default:case NON_CRITERION:
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -105,6 +108,13 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             template,
             addProperties(caseData),
             String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
+        );
+    }
+    private void applicationRequestForInformationChangeToWithNotice(CaseData caseData){
+        sendNotificationForJudicialDecision(
+            caseData,
+            caseData.getGeneralAppApplnSolicitor().getEmail(),
+            notificationProperties.getJudgeUncloakApplicationEmailTemplate()
         );
     }
 
