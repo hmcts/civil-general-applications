@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 public class PaymentsService {
 
     private final PaymentsClient paymentsClient;
+    private final PaymentServiceClient paymentServiceClient;
     private final PaymentStoreApi paymentStoreApi;
     private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
@@ -54,24 +55,26 @@ public class PaymentsService {
         return paymentsClient.createCreditAccountPayment(authToken, buildRequest(caseData));
     }
 
-    public PaymentServiceResponse createServiceRequest(String authToken,CaseData caseData) throws Exception {
+    public PaymentServiceResponse createPaymentServiceReq(CaseData caseData, String authToken) {
+        return paymentServiceClient.createServiceRequest(authToken, buildServiceRequest(caseData));
+    }
+
+    private PaymentServiceRequest buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
-        return paymentStoreApi
-            .createPaymentServiceRequest(authToken,  authTokenGenerator.generate(),
-                                         PaymentServiceRequest.builder()
-                                             .callBackUrl(callBackUrl)
-                                             .casePaymentRequest(CasePaymentRequestDto.builder()
-                                                                     .action(PAYMENT_ACTION)
-                                                                     .responsibleParty(caseData.getApplicantPartyName()).build())
-                                             .caseReference(caseData.getLegacyCaseReference())
-                                             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
-                                             .fees(new FeeDto[] { (FeeDto.builder()
-                                                 .calculatedAmount(feeResponse.getCalculatedAmount())
-                                                 .code(feeResponse.getCode())
-                                                 .version(feeResponse.getVersion())
-                                                 .volume(1).build())
-                                             }).build());
+        return PaymentServiceRequest.builder()
+            .callBackUrl(callBackUrl)
+            .casePaymentRequest(CasePaymentRequestDto.builder()
+                                    .action(PAYMENT_ACTION)
+                                    .responsibleParty(caseData.getApplicantPartyName()).build())
+            .caseReference(caseData.getLegacyCaseReference())
+            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+            .fees(new FeeDto[] { (FeeDto.builder()
+                .calculatedAmount(feeResponse.getCalculatedAmount())
+                .code(feeResponse.getCode())
+                .version(feeResponse.getVersion())
+                .volume(1).build())
+            }).build();
     }
 
     private CreditAccountPaymentRequest buildRequest(CaseData caseData) {
