@@ -68,10 +68,10 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             paymentsService.validateRequest(caseData);
+            var paymentServiceRequest = paymentsService.createServiceRequest(authToken,caseData).getServiceRequestReference();
             var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
@@ -85,6 +85,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                     .build();
 
             caseData = caseData.toBuilder()
+                    .paymentServiceRequestReferenceNumber(paymentServiceRequest)
                     .generalAppPBADetails(pbaDetails.toBuilder()
                             .paymentDetails(paymentDetails)
                             .paymentSuccessfulDate(time.now()).build())
@@ -101,6 +102,8 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                     caseData.getCcdCaseReference(), e.getMessage()
             ));
             caseData = updateWithDuplicatePaymentError(caseData, e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()

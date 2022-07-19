@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -21,9 +23,13 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 public class PaymentsService {
 
     private final PaymentsClient paymentsClient;
+    private final PaymentStoreApi paymentStoreApi;
     private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
-
+    private AuthTokenGenerator authTokenGenerator;
+    @Value("${payments.api.callback-url}")
+    String callBackUrl;
+    public static final String PAYMENT_ACTION = "payment";
     public void validateRequest(CaseData caseData) {
         String error = null;
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
@@ -46,6 +52,26 @@ public class PaymentsService {
 
     public PaymentDto createCreditAccountPayment(CaseData caseData, String authToken) {
         return paymentsClient.createCreditAccountPayment(authToken, buildRequest(caseData));
+    }
+
+    public PaymentServiceResponse createServiceRequest(String authToken,CaseData caseData) throws Exception {
+        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
+        FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
+        return paymentStoreApi
+            .createPaymentServiceRequest(authToken,  authTokenGenerator.generate(),
+                                         PaymentServiceRequest.builder()
+                                             .callBackUrl(callBackUrl)
+                                             .casePaymentRequest(CasePaymentRequestDto.builder()
+                                                                     .action(PAYMENT_ACTION)
+                                                                     .responsibleParty(caseData.getApplicantPartyName()).build())
+                                             .caseReference(caseData.getLegacyCaseReference())
+                                             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+                                             .fees(new FeeDto[] { (FeeDto.builder()
+                                                 .calculatedAmount(feeResponse.getCalculatedAmount())
+                                                 .code(feeResponse.getCode())
+                                                 .version(feeResponse.getVersion())
+                                                 .volume(1).build())
+                                             }).build());
     }
 
     private CreditAccountPaymentRequest buildRequest(CaseData caseData) {
