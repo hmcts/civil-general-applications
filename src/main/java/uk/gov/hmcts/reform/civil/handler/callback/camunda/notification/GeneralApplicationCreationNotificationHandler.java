@@ -61,18 +61,20 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
 
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
-        CaseData updatedCaseData = solicitorEmailValidation.
-            validateSolicitorEmail(civilCaseData, caseData, caseDataBuilder);
+
+        CaseData updatedCaseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
 
         boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(updatedCaseData);
 
         if (isNotificationCriteriaSatisfied) {
 
-            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData.getGeneralAppRespondentSolicitors();
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
+                .getGeneralAppRespondentSolicitors();
+
             respondentSolicitor.forEach((RS) ->
                 sendNotificationToGeneralAppRespondent(updatedCaseData, RS.getValue().getEmail()));
         }

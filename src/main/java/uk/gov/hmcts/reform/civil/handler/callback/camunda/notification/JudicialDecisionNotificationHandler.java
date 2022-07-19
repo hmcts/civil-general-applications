@@ -73,7 +73,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData, caseDataBuilder);
+        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
 
         switch (notificationCriterion(caseData)) {
             case CONCURRENT_WRITTEN_REP:

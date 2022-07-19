@@ -34,7 +34,7 @@ public class SolicitorEmailValidation {
 
     }
 
-    public GASolicitorDetailsGAspec checkIfOrgIDMatch (GASolicitorDetailsGAspec generalAppSolicitor,
+    public GASolicitorDetailsGAspec checkIfOrgIDMatch(GASolicitorDetailsGAspec generalAppSolicitor,
                                                        CaseData civilCaseData, CaseData gaCaseData) {
 
         String civilClaimApplicantOrgId = civilCaseData.getApplicant1OrganisationPolicy()
@@ -47,7 +47,7 @@ public class SolicitorEmailValidation {
             .equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail());
 
         if (civilClaimApplicantOrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-            && isGASolicitorEmailMatchWithCivilApplnSol) {
+            && ! isGASolicitorEmailMatchWithCivilApplnSol) {
             // Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email
             log.info("Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email");
             return updateSolDetails(civilCaseData.getApplicantSolicitor1UserDetails().getEmail(), generalAppSolicitor);
@@ -58,7 +58,7 @@ public class SolicitorEmailValidation {
         boolean isGASolicitorEmailMatchWithCivilRespondent1Sol = generalAppSolicitor.getEmail()
             .equals(civilCaseData.getRespondentSolicitor1EmailAddress());
         if (civilClaimRespondent1OrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-            && isGASolicitorEmailMatchWithCivilRespondent1Sol) {
+            && ! isGASolicitorEmailMatchWithCivilRespondent1Sol) {
             log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor one Email");
             return updateSolDetails(civilCaseData.getRespondentSolicitor1EmailAddress(), generalAppSolicitor);
         }
@@ -66,12 +66,12 @@ public class SolicitorEmailValidation {
         if (YES.equals(gaCaseData.getIsMultiParty())) {
 
             boolean isGASolicitorEmailMatchWithCivilRespondent2Sol = generalAppSolicitor.getEmail()
-                .equals(civilCaseData.getRespondentSolicitor1EmailAddress());
+                .equals(civilCaseData.getRespondentSolicitor2EmailAddress());
             String civilClaimRespondent2OrgId = civilCaseData.getRespondent2OrganisationPolicy()
                 .getOrganisation().getOrganisationID();
             // civil claim defendant 2
             if (civilClaimRespondent2OrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-                && isGASolicitorEmailMatchWithCivilRespondent2Sol) {
+                && ! isGASolicitorEmailMatchWithCivilRespondent2Sol) {
                 log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor Two Email");
                 return updateSolDetails(civilCaseData.getRespondentSolicitor2EmailAddress(), generalAppSolicitor);
             }
@@ -81,20 +81,19 @@ public class SolicitorEmailValidation {
 
     }
 
-    public CaseData validateSolicitorEmail(CaseData civilCaseData, CaseData gaCaseData,
-                                           CaseData.CaseDataBuilder caseDataBuilder) {
+    public CaseData validateSolicitorEmail(CaseData civilCaseData, CaseData gaCaseData) {
 
         // GA Applicant solicitor
+        CaseData.CaseDataBuilder caseDataBuilder = gaCaseData.toBuilder();
+
         caseDataBuilder.generalAppApplnSolicitor(checkIfOrgIDMatch(gaCaseData.getGeneralAppApplnSolicitor(),
                                                                    civilCaseData, gaCaseData));
 
         // GA Respondent solicitor
         List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
 
-        gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> {
-            generalAppRespondentSolicitors
-                .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData)));
-        });
+        gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
+            .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
 
         caseDataBuilder.generalAppRespondentSolicitors(generalAppRespondentSolicitors.isEmpty()
                                                            ? gaCaseData.getGeneralAppRespondentSolicitors()
