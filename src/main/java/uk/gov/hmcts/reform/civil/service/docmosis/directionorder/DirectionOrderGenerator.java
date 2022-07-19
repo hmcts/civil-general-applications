@@ -61,8 +61,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
-                .applicantName(caseData.getApplicantPartyName())
-                .applicationDate(caseData.getCreatedDate().toLocalDate())
+                .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now());

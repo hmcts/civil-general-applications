@@ -32,6 +32,8 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String hearingLocation;
     private final String estimatedHearingLength;
     private final String reasonForDecision;
+    private final String judgeRecital;
+    private final String hearingOrder;
     private final LocalDate dateBy;
     private final String judgeComments;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
