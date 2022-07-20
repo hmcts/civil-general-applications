@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
 public interface PaymentStoreApi {
 
     @PostMapping(value = "/service-request", consumes = "application/json")
-    PaymentServiceResponse createPaymentServiceRequest(
+    PaymentServiceResponse createServiceRequest(
         @RequestHeader("Authorization") String authorization,
         @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @RequestBody PaymentServiceRequest paymentRequest

@@ -71,8 +71,8 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             paymentsService.validateRequest(caseData);
-            var paymentServiceRequest = paymentsService.createServiceRequest(authToken,caseData).getServiceRequestReference();
-            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
+            var paymentReference = paymentsService.createPaymentServiceReq(caseData,authToken).getServiceRequestReference();
+          //  var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
@@ -85,7 +85,6 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                     .build();
 
             caseData = caseData.toBuilder()
-                    .paymentServiceRequestReferenceNumber(paymentServiceRequest)
                     .generalAppPBADetails(pbaDetails.toBuilder()
                             .paymentDetails(paymentDetails)
                             .paymentSuccessfulDate(time.now()).build())
