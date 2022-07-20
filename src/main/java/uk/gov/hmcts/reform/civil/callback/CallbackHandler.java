@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -67,7 +68,7 @@ public abstract class CallbackHandler {
             callbackKey = callbackKey(callbackParams.getType(), callbackParams.getPageId());
         }
 
-        return ofNullable(callbacks().get(callbackKey))
+        return Optional.ofNullable(callbacks().get(callbackKey))
             .map(callback -> callback.execute(callbackParams))
             .orElseThrow(() -> new CallbackException(
                 String.format(

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
@@ -11,11 +12,15 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFO
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 
 @Service
 public class StateGeneratorService {
@@ -44,6 +49,14 @@ public class StateGeneratorService {
             return AWAITING_WRITTEN_REPRESENTATIONS;
         } else if (decision == LIST_FOR_A_HEARING) {
             return  LISTING_FOR_A_HEARING;
+        } else if (decision == MAKE_AN_ORDER && data.getJudicialDecisionMakeOrder() != null
+            && APPROVE_OR_EDIT.equals(data.getJudicialDecisionMakeOrder().getMakeAnOrder())) {
+            if (YesOrNo.YES.equals(data.getParentClaimantIsApplicant())
+                && data.getGeneralAppType().getTypes().contains(STRIKE_OUT)) {
+                return PROCEEDS_IN_HERITAGE;
+            } else {
+                return ORDER_MADE;
+            }
         }
         return data.getCcdState();
     }

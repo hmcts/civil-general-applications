@@ -111,6 +111,7 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaAddlnInfoList;
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
+    private final String generalAppSuperClaimType;
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
 
     //PDF Documents
