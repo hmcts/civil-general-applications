@@ -117,9 +117,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "Upon reading the application of %s dated %s and upon the "
+    private static final String JUDICIAL_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reading the application of %s dated %s and upon the "
         + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "Upon reading the "
+    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reading the "
         + "application of %s dated %s and upon considering the information provided by the parties";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
@@ -152,6 +154,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "cannot be in past.";
     public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
 
+    public static final String PREFERRED_LOCATION_REQUIRED = "Select your preferred hearing location.";
+
+    public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
+
+    public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
     private final ObjectMapper objectMapper;
 
     @Override
@@ -468,17 +475,39 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
-        dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
         CaseData caseData = callbackParams.getCaseData();
+        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
+            if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
+                GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                    .hearingPreferredLocation(
+                        populateJudicialHearingLocation(caseData))
+                    .build();
+                CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
+                    .build();
+                caseData = updatedCaseData;
+                dataBuilder = updatedCaseData.toBuilder();
+            }
+        }
 
+        dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
         if (caseData.getMakeAppVisibleToRespondents() != null) {
             dataBuilder
                 .applicationIsCloaked(NO);
         }
-
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private DynamicList populateJudicialHearingLocation(CaseData caseData) {
+        DynamicList dynamicLocationList;
+        String applicationLocationLabel = caseData.getJudicialListForHearing()
+                .getHearingPreferredLocation().getValue().getLabel();
+        dynamicLocationList = fromList(List.of(applicationLocationLabel));
+        Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+        first.ifPresent(dynamicLocationList::setValue);
+        return dynamicLocationList;
     }
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
@@ -548,13 +577,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        List<String> errors = new ArrayList<>();
+        String preferredType = caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().name();
+        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
+            && (caseData.getJudicialListForHearing().getHearingPreferredLocation() == null)) {
+            errors.add(PREFERRED_LOCATION_REQUIRED);
+        }
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
@@ -659,7 +694,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue())
                 : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
                 .getHearingDuration().getDisplayedValue(), caseData.getRespondentsResponses() == null
-                ? StringUtils.EMPTY : caseData.getRespondentsResponses()
+                             ? StringUtils.EMPTY : caseData.getRespondentsResponses()
                 .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
                 .getDisplayedValue());
         }
@@ -851,9 +886,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             Optional<Element<GARespondentResponse>> response2 = response2(caseData);
 
             return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
-                    appSupportReq,
-                    retrieveSupportRequirementsFromResponse(response1),
-                    retrieveSupportRequirementsFromResponse(response2));
+                          appSupportReq,
+                          retrieveSupportRequirementsFromResponse(response1),
+                          retrieveSupportRequirementsFromResponse(response2));
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
@@ -867,10 +902,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String retrieveSupportRequirementsFromResponse(Optional<Element<GARespondentResponse>> response) {
         if (response.isPresent()
-                && response.get().getValue().getGaHearingDetails().getSupportRequirement() != null) {
+            && response.get().getValue().getGaHearingDetails().getSupportRequirement() != null) {
             return response.get().getValue().getGaHearingDetails()
-                    .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
-                    .collect(Collectors.joining(", "));
+                .getSupportRequirement().stream().map(GAHearingSupportRequirements::getDisplayedValue)
+                .collect(Collectors.joining(", "));
         }
         return StringUtils.EMPTY;
     }
@@ -958,7 +993,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                               .getValue().getGaHearingDetails().getHearingPreferredLocation()
                               .getValue().getLabel()), " "),
                           format(JUDICIAL_PREF_COURT_LOC_RESP2_TEXT, responseElementOptional2.get().getValue()
-                    .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel()));
+                              .getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel()));
         }
         if (responseElementOptional1.isPresent() && hasRespondent1PreferredLocation == YES) {
             return format(JUDICIAL_PREF_COURT_LOC_RESP1_TEXT, responseElementOptional1.get().getValue()

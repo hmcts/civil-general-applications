@@ -532,7 +532,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -552,7 +553,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForCloakedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(YES);
@@ -572,7 +574,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "Upon reading the application of Defendant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCloaked(any())).thenReturn(NO);
@@ -1414,6 +1417,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnErrorWhenInPersonAndLocationIsNull() {
+
+            CallbackParams params = callbackParamsOf(getJudicialListHearingData(),
+                                                     MID, VALIDATE_HEARING_ORDER_SCREEN);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            String expectedErrorText = "Select your preferred hearing location.";
+
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors().contains(expectedErrorText));
+        }
+
+        @Test
         void shouldReturnNullForJudgeGOSupportRequirement() {
 
             List<SupportRequirements> judgeSupportReqChoices = null;
@@ -1430,6 +1448,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         }
 
+        private CaseData getJudicialListHearingData() {
+
+            YesOrNo hasRespondentResponseVul = NO;
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                            .judicialTimeEstimate(GAHearingDuration.HOURS_2).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.STARTED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .build();
+        }
+
         private CaseData getHearingOrderApplnAndResp(List<SupportRequirements> judgeSupportReqChoices) {
 
             YesOrNo hasRespondentResponseVul = NO;
@@ -1439,12 +1478,14 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
                 .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferredLocation(getLocationDynamicList())
                                             .judicialSupportRequirement(judgeSupportReqChoices)
                                             .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
                                             .judicialTimeEstimate(GAHearingDuration.HOURS_2).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppHearingDetails(GAHearingDetails.builder()
                                         .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                        .hearingPreferredLocation(getLocationDynamicList())
                                         .hearingDuration(GAHearingDuration.HOUR_1)
                                         .supportRequirement(getApplicantResponses())
                                         .build())
@@ -1454,6 +1495,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .applicantPartyName("ApplicantPartyName")
                 .generalAppHearingDetails(GAHearingDetails.builder()
                                               .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                              .hearingPreferredLocation(getLocationDynamicList())
                                               .hearingDuration(GAHearingDuration.HOUR_1)
                                               .supportRequirement(getApplicantResponses())
                                               .build())
@@ -1578,7 +1620,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "Upon reading the application of Claimant dated 15 January 22 and upon the "
+            String expectedRecitalText = "<Title> <Name> \n"
+                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
 
@@ -1837,8 +1880,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldSetUpReadyBusinessProcess() {
             CaseData caseData = getApplicationBusinessProcess();
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
@@ -1847,12 +1890,51 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
         }
 
+        @Test
+        void shouldSetUpReadyWhenPreferredTypeNotInPerson() {
+            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null);
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
+        }
+
         private CaseData getApplicationBusinessProcess() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(LIST_FOR_A_HEARING).build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                            .hearingPreferredLocation(getLocationDynamicList()).build())
+                .businessProcess(BusinessProcess
+                                     .builder()
+                                     .camundaEvent(CAMUNDA_EVENT)
+                                     .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                     .status(BusinessProcessStatus.FINISHED)
+                                     .activityId(ACTIVITY_ID)
+                                     .build())
+                .build();
+        }
+
+        private CaseData getApplicationWithPreferredTypeNotInPerson() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(LIST_FOR_A_HEARING).build())
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.TELEPHONE)
+                                            .build())
                 .businessProcess(BusinessProcess
                                      .builder()
                                      .camundaEvent(CAMUNDA_EVENT)

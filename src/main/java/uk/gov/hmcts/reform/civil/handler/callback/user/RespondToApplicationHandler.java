@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -80,6 +82,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     public static final String APPLICATION_RESPONSE_PRESENT = "The General Application has already "
         +  "received a response.";
     public static final String RESPONDENT_RESPONSE_EXISTS = "The application has already been responded to.";
+
+    public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
 
     @Override
@@ -229,7 +233,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             addResponse(buildResponse(caseData, userDetails), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
-        caseDataBuilder.hearingDetailsResp(GAHearingDetails.builder().build());
+        caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
         CaseData updatedCaseData = caseDataBuilder.build();
 
@@ -242,6 +246,28 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .state(newState.toString())
             .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
+        GAHearingDetails gaHearingDetailsResp;
+        String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
+        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
+            && (caseData.getHearingDetailsResp().getHearingPreferredLocation() != null)) {
+            String applicationLocationLabel = caseData.getHearingDetailsResp()
+                .getHearingPreferredLocation().getValue()
+                .getLabel();
+            DynamicList dynamicLocationList = fromList(List.of(applicationLocationLabel));
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+            first.ifPresent(dynamicLocationList::setValue);
+            gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .hearingPreferredLocation(dynamicLocationList).build();
+
+        } else {
+            gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .hearingPreferredLocation(DynamicList.builder().build()).build();
+        }
+        return gaHearingDetailsResp;
     }
 
     private List<Element<GARespondentResponse>> addResponse(GARespondentResponse gaRespondentResponseBuilder,
@@ -260,7 +286,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         gaRespondentResponseBuilder
             .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
                                                             .getGeneralAppRespondent1Representative())
-            .gaHearingDetails(caseData.getHearingDetailsResp())
+            .gaHearingDetails(populateHearingDetailsResp(caseData))
             .gaRespondentDetails(userDetails.getId()).build();
 
         return gaRespondentResponseBuilder.build();
