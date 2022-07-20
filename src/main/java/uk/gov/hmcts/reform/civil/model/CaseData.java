@@ -109,6 +109,7 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaAddlnInfoList;
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
+    private final String generalAppSuperClaimType;
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
     private final String respondentSolicitor1EmailAddress;
     private final String respondentSolicitor2EmailAddress;
