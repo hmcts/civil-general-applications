@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.caseassignment;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment.AssignCaseToUserCallbackHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -52,97 +54,271 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objectMapper;
 
     private CallbackParams params;
+    private GeneralApplication generalApplication;
 
     public static final Long CASE_ID = 1594901956117591L;
+    public static final int RESPONDENT_ONE = 0;
+    public static final int RESPONDENT_TWO = 1;
 
-    @BeforeEach
-    void setup() {
+    @Nested
+    class AssignRolesUnspecCase {
+        @BeforeEach
+        void setup() {
 
-        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
-        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-            .email("test@gmail.com").organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
 
-        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-            .email("test@gmail.com").organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
 
-        respondentSols.add(element(respondent1));
-        respondentSols.add(element(respondent2));
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
 
-        GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
-        builder.generalAppType(GAApplicationType.builder()
-                                   .types(singletonList(SUMMARY_JUDGEMENT))
-                                   .build())
-            .claimant1PartyName("Applicant1")
-            .generalAppRespondentSolicitors(respondentSols)
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec
-                                         .builder()
-                                         .id("id")
-                                         .email("TEST@gmail.com")
-                                         .organisationIdentifier("Org1").build())
-            .defendant1PartyName("Respondent1")
-            .claimant2PartyName("Applicant2")
-            .defendant2PartyName("Respondent2")
-            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
-            .civilServiceUserRoles(IdamUserDetails.builder()
-                                       .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                                       .email("applicant@someorg.com")
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
                                        .build())
-            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-            .build();
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType("UNSPEC_CLAIM")
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
 
-        GeneralApplication caseData = builder.build();
+            generalApplication = builder.build();
 
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
-        });
-        params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-    }
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
 
-    @Test
-    void shouldCallAssignCase_3Times() {
+        @Test
+        void shouldAssignCaseToApplicantSolicitorOneAndRespondentOneAndTwoUnspec() {
+            assignCaseToUserHandler.handle(params);
+            verifyApplicantSolicitorOneRoles();
+            verifyRespondentSolicitorOneRoles();
+            verifyRespondentSolicitorTwoRoles();
+        }
 
-        assignCaseToUserHandler.handle(params);
-        verify(coreCaseUserService, times(3)).assignCase(
-            any(),
-            any(),
-            any(),
-            any()
-        );
-    }
+        @Test
+        void shouldCallAssignCase_3Times() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(3)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
 
-    @Test
-    void shouldThrowExceptionIfSolicitorsAreNull() {
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
 
-        try {
-            assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor());
-        } catch (Exception e) {
-            assertEquals("java.lang.NullPointerException", e.toString());
+            try {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor());
+            } catch (Exception e) {
+                assertEquals("java.lang.NullPointerException", e.toString());
+            }
+        }
+
+        public CallbackParams getCaseDateWithNoSolicitor() {
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .generalAppSuperClaimType("UNSPEC_CLAIM")
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+
+            GeneralApplication caseData = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+            });
+            return callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         }
     }
 
-    public CallbackParams getCaseDateWithNoSolicitor() {
+    @Nested
+    class AssignRolesSpecCase {
+        @BeforeEach
+        void setup() {
 
-        GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
-        builder.generalAppType(GAApplicationType.builder()
-                                   .types(singletonList(SUMMARY_JUDGEMENT))
-                                   .build())
-            .claimant1PartyName("Applicant1")
-            .defendant1PartyName("Respondent1")
-            .claimant2PartyName("Applicant2")
-            .defendant2PartyName("Respondent2")
-            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
-            .civilServiceUserRoles(IdamUserDetails.builder()
-                                       .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                                       .email("applicant@someorg.com")
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
                                        .build())
-            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-            .build();
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType("SPEC_CLAIM")
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
 
-        GeneralApplication caseData = builder.build();
+            generalApplication = builder.build();
 
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
-        });
-        return callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
+
+        @Test
+        void shouldAssignCaseToApplicantSolicitorOneAndRespondentOneAndTwoUnspec() {
+            assignCaseToUserHandler.handle(params);
+            verifyApplicantSolicitorOneSpecRoles();
+            verifyRespondentSolicitorOneSpecRoles();
+            verifyRespondentSolicitorTwoSpecRoles();
+        }
+
+        @Test
+        void shouldCallAssignCase_3Times() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(3)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+
+            try {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor());
+            } catch (Exception e) {
+                assertEquals("java.lang.NullPointerException", e.toString());
+            }
+        }
+
+        public CallbackParams getCaseDateWithNoSolicitor() {
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType("SPEC_CLAIM")
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+
+            GeneralApplication caseData = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+            });
+            return callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
     }
 
+    private void verifyApplicantSolicitorOneRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppApplnSolicitor().getId(),
+            "Org1",
+            CaseRole.APPLICANTSOLICITORONE
+        );
+    }
+
+    private void verifyApplicantSolicitorOneSpecRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppApplnSolicitor().getId(),
+            "Org1",
+            CaseRole.APPLICANTSOLICITORONESPEC
+        );
+    }
+
+    private void verifyRespondentSolicitorOneRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppRespondentSolicitors()
+                .get(RESPONDENT_ONE).getValue().getId(),
+            "org2",
+            CaseRole.RESPONDENTSOLICITORONE
+        );
+    }
+
+    private void verifyRespondentSolicitorTwoRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppRespondentSolicitors()
+                .get(RESPONDENT_ONE).getValue().getId(),
+            "org2",
+            CaseRole.RESPONDENTSOLICITORTWO
+        );
+    }
+
+    private void verifyRespondentSolicitorOneSpecRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppRespondentSolicitors()
+                .get(RESPONDENT_TWO).getValue().getId(),
+            "org2",
+            CaseRole.RESPONDENTSOLICITORONESPEC
+        );
+    }
+
+    private void verifyRespondentSolicitorTwoSpecRoles() {
+        verify(coreCaseUserService).assignCase(
+            CASE_ID.toString(),
+            generalApplication.getGeneralAppRespondentSolicitors()
+                .get(RESPONDENT_TWO).getValue().getId(),
+            "org2",
+            CaseRole.RESPONDENTSOLICITORTWOSPEC
+        );
+    }
 }
