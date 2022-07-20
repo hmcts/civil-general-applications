@@ -29,6 +29,8 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String judgeDirection;
     private final String dismissalOrder;
     private final String generalOrder;
+    private final String requestOrder;
+    private final String writtenOrder;
     private final String hearingLocation;
     private final String estimatedHearingLength;
     private final String reasonForDecision;
