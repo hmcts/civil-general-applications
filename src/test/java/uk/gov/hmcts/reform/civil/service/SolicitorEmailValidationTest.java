@@ -158,7 +158,7 @@ public class SolicitorEmailValidationTest {
     private CaseData getCivilCaseData(String applicantEmail, String respondent1SolEmail, String respondent2SolEmail) {
 
         return new CaseDataBuilder()
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id").forename("GAApplnSolicitor")
                                           .email(DUMMY_EMAIL).organisationIdentifier("1").build())
             .respondentSolicitor1EmailAddress(respondent1SolEmail)
             .respondentSolicitor2EmailAddress(respondent2SolEmail)
@@ -183,17 +183,17 @@ public class SolicitorEmailValidationTest {
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
         GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-            .email(DUMMY_EMAIL).organisationIdentifier("2").build();
+            .email(DUMMY_EMAIL).forename("Respondent One").organisationIdentifier("2").build();
 
         GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-            .email(DUMMY_EMAIL).organisationIdentifier("3").build();
+            .email(DUMMY_EMAIL).forename("Resondent Two").organisationIdentifier("3").build();
 
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
 
         return new CaseDataBuilder()
             .isMultiParty(isMultiParty)
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id").forename("Applicant One")
                                           .email(DUMMY_EMAIL).organisationIdentifier("1").build())
             .generalAppRespondentSolicitors(respondentSols)
             .parentClaimantIsApplicant(YES)

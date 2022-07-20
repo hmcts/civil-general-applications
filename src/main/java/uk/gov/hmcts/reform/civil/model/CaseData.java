@@ -113,8 +113,6 @@ public class CaseData implements MappableObject {
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
     private final String respondentSolicitor1EmailAddress;
     private final String respondentSolicitor2EmailAddress;
-    private final String respondent1OrganisationIDCopy;
-    private final String respondent2OrganisationIDCopy;
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;

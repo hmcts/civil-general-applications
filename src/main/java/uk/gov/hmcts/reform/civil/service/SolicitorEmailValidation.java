@@ -22,20 +22,24 @@ public class SolicitorEmailValidation {
     private GASolicitorDetailsGAspec updateSolDetails(String updateEmail,
                                                       GASolicitorDetailsGAspec generalAppSolicitor) {
 
-        GASolicitorDetailsGAspec.GASolicitorDetailsGAspecBuilder
-            gaSolicitorDetailsGAspecBuilder = GASolicitorDetailsGAspec.builder();
+        GASolicitorDetailsGAspec.GASolicitorDetailsGAspecBuilder gaSolicitorDetailsGAspecBuilder =
+            generalAppSolicitor.toBuilder();
 
-        gaSolicitorDetailsGAspecBuilder.id(generalAppSolicitor.getId())
-            .forename(generalAppSolicitor.getForename())
-            .surname(generalAppSolicitor.getSurname())
-            .organisationIdentifier(generalAppSolicitor.getOrganisationIdentifier())
-            .email(updateEmail);
+        gaSolicitorDetailsGAspecBuilder.email(updateEmail);
 
         return gaSolicitorDetailsGAspecBuilder.build();
 
     }
 
-    public GASolicitorDetailsGAspec checkIfOrgIDMatch(GASolicitorDetailsGAspec generalAppSolicitor,
+    private boolean checkIfOrgIdAndEmailAreSame(String organisationID, String civilSolEmail,
+                                               GASolicitorDetailsGAspec generalAppSolicitor) {
+
+        return organisationID.equals(generalAppSolicitor.getOrganisationIdentifier())
+            && ! generalAppSolicitor.getEmail().equals(civilSolEmail);
+
+    }
+
+    private GASolicitorDetailsGAspec checkIfOrgIDMatch(GASolicitorDetailsGAspec generalAppSolicitor,
                                                        CaseData civilCaseData, CaseData gaCaseData) {
 
         // civil claim applicant
@@ -43,21 +47,17 @@ public class SolicitorEmailValidation {
         if (civilCaseData.getApplicant1OrganisationPolicy() != null
             && checkIfOrgIdExists(civilCaseData.getApplicant1OrganisationPolicy())) {
 
-            String civilClaimApplicantOrgId = civilCaseData.getApplicant1OrganisationPolicy()
-                .getOrganisation().getOrganisationID();
+            if (checkIfOrgIdAndEmailAreSame(civilCaseData.getApplicant1OrganisationPolicy()
+                                                .getOrganisation().getOrganisationID(),
+                                            civilCaseData.getApplicantSolicitor1UserDetails().getEmail(),
+                                            generalAppSolicitor)) {
 
-            boolean isGASolicitorEmailMatchWithCivilApplnSol = generalAppSolicitor.getEmail()
-                .equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail());
-
-            if (civilClaimApplicantOrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-                && ! isGASolicitorEmailMatchWithCivilApplnSol) {
                 // Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email
                 log.info("Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email");
                 return updateSolDetails(civilCaseData.getApplicantSolicitor1UserDetails()
                                             .getEmail(), generalAppSolicitor);
 
             }
-
         }
 
         // civil claim defendant 1
@@ -65,16 +65,15 @@ public class SolicitorEmailValidation {
         if (civilCaseData.getRespondent1OrganisationPolicy() != null
             && checkIfOrgIdExists(civilCaseData.getRespondent1OrganisationPolicy())) {
 
-            String civilClaimRespondent1OrgId = civilCaseData.getRespondent1OrganisationPolicy()
-                .getOrganisation().getOrganisationID();
-            boolean isGASolicitorEmailMatchWithCivilRespondent1Sol = generalAppSolicitor.getEmail()
-                .equals(civilCaseData.getRespondentSolicitor1EmailAddress());
-            if (civilClaimRespondent1OrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-                && ! isGASolicitorEmailMatchWithCivilRespondent1Sol) {
+            if (checkIfOrgIdAndEmailAreSame(civilCaseData.getRespondent1OrganisationPolicy()
+                                                .getOrganisation().getOrganisationID(),
+                                            civilCaseData.getRespondentSolicitor1EmailAddress(),
+                                            generalAppSolicitor)) {
+
                 log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor one Email");
                 return updateSolDetails(civilCaseData.getRespondentSolicitor1EmailAddress(), generalAppSolicitor);
-            }
 
+            }
         }
 
         if (YES.equals(gaCaseData.getIsMultiParty())) {
@@ -84,16 +83,15 @@ public class SolicitorEmailValidation {
             if (civilCaseData.getRespondent2OrganisationPolicy() != null
                 && checkIfOrgIdExists(civilCaseData.getRespondent2OrganisationPolicy())) {
 
-                boolean isGASolicitorEmailMatchWithCivilRespondent2Sol = generalAppSolicitor.getEmail()
-                    .equals(civilCaseData.getRespondentSolicitor2EmailAddress());
-                String civilClaimRespondent2OrgId = civilCaseData.getRespondent2OrganisationPolicy()
-                    .getOrganisation().getOrganisationID();
-                if (civilClaimRespondent2OrgId.equals(generalAppSolicitor.getOrganisationIdentifier())
-                    && ! isGASolicitorEmailMatchWithCivilRespondent2Sol) {
+                if (checkIfOrgIdAndEmailAreSame(civilCaseData.getRespondent2OrganisationPolicy()
+                                                    .getOrganisation().getOrganisationID(),
+                                                civilCaseData.getRespondentSolicitor2EmailAddress(),
+                                                generalAppSolicitor)) {
+
                     log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor Two Email");
                     return updateSolDetails(civilCaseData.getRespondentSolicitor2EmailAddress(), generalAppSolicitor);
-                }
 
+                }
             }
         }
 
@@ -101,7 +99,7 @@ public class SolicitorEmailValidation {
 
     }
 
-    public boolean checkIfOrgIdExists(OrganisationPolicy organisationPolicy) {
+    private boolean checkIfOrgIdExists(OrganisationPolicy organisationPolicy) {
         return organisationPolicy.getOrganisation() != null
             && organisationPolicy.getOrganisation().getOrganisationID() != null;
     }

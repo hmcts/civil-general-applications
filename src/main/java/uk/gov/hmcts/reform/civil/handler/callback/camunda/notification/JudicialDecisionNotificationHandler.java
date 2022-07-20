@@ -67,7 +67,6 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
 
     private CallbackResponse judicialDecisionNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
@@ -109,7 +108,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             default:case NON_CRITERION:
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataBuilder.build().toMap(objectMapper))
+            .data(caseData.toMap(objectMapper))
             .build();
     }
 
