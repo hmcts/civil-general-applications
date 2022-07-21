@@ -46,11 +46,12 @@ public class StateGeneratorService {
         } else if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
-                if(data.getJudicialDecisionRequestMoreInfo()!=null &&
-                    data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
-                        GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY)) {
-                    return APPLICATION_ADD_PAYMENT;
-                }
+            if (data.getJudicialDecisionRequestMoreInfo() != null
+                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != null
+                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
+                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY)) {
+                return APPLICATION_ADD_PAYMENT;
+            }
             return AWAITING_ADDITIONAL_INFORMATION;
         } else if (decision == MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return AWAITING_WRITTEN_REPRESENTATIONS;

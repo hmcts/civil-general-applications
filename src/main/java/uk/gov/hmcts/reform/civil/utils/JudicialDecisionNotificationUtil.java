@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 import java.util.Objects;
@@ -103,7 +104,7 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
-        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
+        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());;
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
         return
             isJudicialDecisionEvent(caseData)
@@ -115,7 +116,7 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isApplicationForSequentialWrittenRep(CaseData caseData) {
-        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
+        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
         return
             isJudicialDecisionEvent(caseData)
@@ -204,6 +205,7 @@ public class JudicialDecisionNotificationUtil {
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null;
     }
+
     private static boolean isRequestForInformationWithoutNoticeToNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
@@ -220,6 +222,7 @@ public class JudicialDecisionNotificationUtil {
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null;
     }
+
     private static boolean isRequestForInformationWithNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
@@ -243,5 +246,12 @@ public class JudicialDecisionNotificationUtil {
             Objects.nonNull(judicialDecision)
             && caseData.getBusinessProcess().getCamundaEvent()
             .equals(JUDGES_DECISION);
+    }
+
+    private static boolean isApplicantPresent(GASolicitorDetailsGAspec gaSolicitorDetailsGAspec) {
+        if (gaSolicitorDetailsGAspec != null && gaSolicitorDetailsGAspec.getEmail() != null) {
+            return StringUtils.isNotEmpty(gaSolicitorDetailsGAspec.getEmail());
+        }
+        return false;
     }
 }

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,16 +44,22 @@ class PaymentsServiceTest {
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PaymentDto PAYMENT_DTO = PaymentDto.builder().reference("RC-1234-1234-1234-1234").build();
+    private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE=PaymentServiceResponse.builder()
+                                                            .serviceRequestReference("RC-1234-1234-1234-1234").build();
+    public static final String PAYMENT_ACTION = "payment";
     private static final Organisation ORGANISATION = Organisation.builder()
         .name("test org")
         .contactInformation(List.of(ContactInformation.builder().build()))
         .build();
     private static final String CUSTOMER_REFERENCE = "12345";
     private static final String FEE_NOT_SET_CORRECTLY_ERROR = "Fees are not set correctly.";
-
+    @Value("${payments.api.callback-url}")
+    String callBackUrl;
     @MockBean
     private PaymentsClient paymentsClient;
 
+    @MockBean
+    PaymentServiceClient paymentServiceClient;
     @MockBean
     private PaymentsConfiguration paymentsConfiguration;
 
@@ -68,6 +75,7 @@ class PaymentsServiceTest {
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
+        given(paymentServiceClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
     }
 
     @Test
@@ -201,6 +209,19 @@ class PaymentsServiceTest {
         assertThat(paymentResponse).isEqualTo(PAYMENT_DTO);
     }
 
+    @Test
+    void shouldCreateAdditionalPaymentServiceRequest_whenValidCaseDetails() {
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+
+        var expectedCreditAccountPaymentRequest = buildExpectedServiceRequestAdditionalPaymentResponse(caseData);
+
+        PaymentServiceResponse paymentResponse = paymentsService.createServiceRequestAdditionalPayment(caseData,
+                                                                                                       AUTH_TOKEN);
+
+        verify(paymentServiceClient).createServiceRequest(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
+        assertThat(paymentResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+    }
+
     private CreditAccountPaymentRequest getExpectedCreditAccountPaymentRequest(CaseData caseData) {
         return CreditAccountPaymentRequest.builder()
             .accountNumber("PBA0078095")
@@ -214,5 +235,20 @@ class PaymentsServiceTest {
             .siteId(SITE_ID)
             .fees(new FeeDto[]{caseData.getGeneralAppPBADetails().getFee().toFeeDto()})
             .build();
+    }
+    private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData){
+        return PaymentServiceRequest.builder()
+            .callBackUrl(callBackUrl)
+            .casePaymentRequest(CasePaymentRequestDto.builder()
+                                    .action(PAYMENT_ACTION)
+                                    .responsibleParty(caseData.getApplicantPartyName()).build())
+            .caseReference(caseData.getLegacyCaseReference())
+            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+            .fees(new FeeDto[] { (FeeDto.builder()
+                .calculatedAmount(BigDecimal.valueOf(165.00))
+                .code("FEE0306")
+                .version("1")
+                .volume(1).build())
+            }).build();
     }
 }

@@ -44,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
@@ -62,7 +63,11 @@ public class CaseDataBuilder {
     public static final LocalDateTime NOTIFICATION_DEADLINE = LocalDate.now().atStartOfDay().plusDays(1);
     public static final BigDecimal FAST_TRACK_CLAIM_AMOUNT = BigDecimal.valueOf(10000);
     public static final String CUSTOMER_REFERENCE = "12345";
-
+    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
+        BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
+    private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
+        BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
     // Create Claim
     protected Long ccdCaseReference;
     protected String legacyCaseReference;
@@ -428,6 +433,19 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(FEE275)
+                    .pbaReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -435,6 +453,39 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                  .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                 .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                 .judgeRequestMoreInfoText("test").build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+    public CaseData.CaseDataBuilder requestForInformationApplicationWithOutNoticeToWithNotice() {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
+                                 .camundaEvent(JUDGES_DECISION).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(FEE108)
+                    .pbaReference(CUSTOMER_REFERENCE).build())
+            .createdDate(LocalDateTime.now())
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(EXTEND_TIME))
+                                .build())
+            .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);

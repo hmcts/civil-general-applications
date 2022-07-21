@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -15,6 +14,8 @@ import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
+import java.math.BigDecimal;
+
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
@@ -24,13 +25,12 @@ public class PaymentsService {
 
     private final PaymentsClient paymentsClient;
     private final PaymentServiceClient paymentServiceClient;
-    private final PaymentStoreApi paymentStoreApi;
     private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
-    private AuthTokenGenerator authTokenGenerator;
     @Value("${payments.api.callback-url}")
     String callBackUrl;
     public static final String PAYMENT_ACTION = "payment";
+
     public void validateRequest(CaseData caseData) {
         String error = null;
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
@@ -77,6 +77,11 @@ public class PaymentsService {
             }).build();
     }
 
+    public PaymentServiceResponse createServiceRequestAdditionalPayment(CaseData caseData, String authToken)  {
+
+        return paymentServiceClient.createServiceRequest(authToken, buildAdditionalPaymentRequest(caseData));
+    }
+
     private CreditAccountPaymentRequest buildRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
@@ -102,5 +107,21 @@ public class PaymentsService {
             .siteId(paymentsConfiguration.getSiteId())
             .fees(new FeeDto[]{claimFee})
             .build();
+    }
+
+    private PaymentServiceRequest buildAdditionalPaymentRequest(CaseData caseData) {
+        return PaymentServiceRequest.builder()
+            .callBackUrl(callBackUrl)
+            .casePaymentRequest(CasePaymentRequestDto.builder()
+                                    .action(PAYMENT_ACTION)
+                                    .responsibleParty(caseData.getApplicantPartyName()).build())
+            .caseReference(caseData.getLegacyCaseReference())
+            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+            .fees(new FeeDto[] { (FeeDto.builder()
+                .calculatedAmount(BigDecimal.valueOf(165.00))
+                .code("FEE0306")
+                .version("1")
+                .volume(1).build())
+            }).build();
     }
 }
