@@ -58,6 +58,9 @@ public class PaymentsService {
         return paymentServiceClient.createServiceRequest(authToken, buildServiceRequest(caseData));
     }
 
+    public PaymentServiceResponse createServiceRequestAdditionalPayment(CaseData caseData, String authToken)  {
+        return paymentServiceClient.createServiceRequest(authToken, buildAdditionalPaymentRequest(caseData));
+    }
     private PaymentServiceRequest buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();

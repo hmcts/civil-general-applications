@@ -110,7 +110,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
             var statusHistory = paymentDto.getStatusHistories()[0];
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                 .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
-                .customerReference(pbaDetails.getPbaReference())
+                .customerReference(pbaDetails.getServiceReqReference())
                 .status(FAILED)
                 .errorCode(statusHistory.getErrorCode())
                 .errorMessage(statusHistory.getErrorMessage())
@@ -133,7 +133,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
         var paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
             .map(PaymentDetails::toBuilder)
             .orElse(PaymentDetails.builder())
-            .customerReference(pbaDetails.getPbaReference())
+            .customerReference(pbaDetails.getServiceReqReference())
             .status(FAILED)
             .errorCode(null)
             .errorMessage(DUPLICATE_PAYMENT_MESSAGE)
