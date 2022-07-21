@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,6 +38,7 @@ import static org.mockito.Mockito.verify;
 class PaymentsServiceTest {
 
     private static final String SERVICE = "service";
+    private static final String DUMMY_URL = "dummy_url";
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PaymentDto PAYMENT_DTO = PaymentDto.builder()
@@ -52,8 +52,7 @@ class PaymentsServiceTest {
         .build();
     private static final String CUSTOMER_REFERENCE = "12345";
     private static final String FEE_NOT_SET_CORRECTLY_ERROR = "Fees are not set correctly.";
-    @Value("${payments.api.callback-url}")
-    String callBackUrl;
+
     @MockBean
     private PaymentServiceClient paymentsClient;
 
@@ -71,6 +70,7 @@ class PaymentsServiceTest {
         given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
+        given(paymentsConfiguration.getPayApiCallBackUrl()).willReturn(DUMMY_URL);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
     }
 
@@ -229,7 +229,7 @@ class PaymentsServiceTest {
 
     private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData) {
         return PaymentServiceRequest.builder()
-            .callBackUrl(callBackUrl)
+            .callBackUrl(DUMMY_URL)
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
                                     .responsibleParty(caseData.getApplicantPartyName()).build())
