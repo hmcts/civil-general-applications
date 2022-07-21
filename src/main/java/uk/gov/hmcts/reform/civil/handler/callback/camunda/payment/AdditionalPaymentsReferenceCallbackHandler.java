@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +11,9 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +24,6 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_MAKE_ADDITIONAL_PAYMENT_REF;
-import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.FAILED;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_CHANGE_TO_WITH_NOTICE;
 
@@ -83,7 +78,11 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
                     .build();
                 caseData = caseData.toBuilder().generalAppPBADetails(paymentDetails).build();
             } catch (FeignException e) {
-                     errors.add(ERROR_MESSAGE);
+                if (e.status() == 403) {
+                    throw e;
+                }
+                log.info(String.format("Http Status %s ", e.status()), e);
+                errors.add(ERROR_MESSAGE);
             } catch (InvalidPaymentRequestException e) {
                 log.error(String.format("Error handling payment for general application: %s, response body: [%s]",
                                         caseData.getCcdCaseReference(), e.getMessage()
