@@ -70,15 +70,13 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
-            paymentsService.validateRequest(caseData);
-            var paymentReference = paymentsService.createPaymentServiceReq(caseData,authToken).getServiceRequestReference();
-          //  var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
+            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
                     .orElse(PaymentDetails.builder())
                     .status(SUCCESS)
-                    .customerReference(pbaDetails.getPbaReference())
+                    .customerReference(pbaDetails.getServiceReqReference())
                     .reference(paymentReference)
                     .errorCode(null)
                     .errorMessage(null)
@@ -118,7 +116,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             var statusHistory = paymentDto.getStatusHistories()[0];
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
-                    .customerReference(pbaDetails.getPbaReference())
+                    .customerReference(pbaDetails.getServiceReqReference())
                     .status(FAILED)
                     .errorCode(statusHistory.getErrorCode())
                     .errorMessage(statusHistory.getErrorMessage())
@@ -141,7 +139,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         var paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                 .map(PaymentDetails::toBuilder)
                 .orElse(PaymentDetails.builder())
-                .customerReference(pbaDetails.getPbaReference())
+                .customerReference(pbaDetails.getServiceReqReference())
                 .status(FAILED)
                 .errorCode(null)
                 .errorMessage(DUPLICATE_PAYMENT_MESSAGE)

@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CasePaymentRequestDto {
+
     @JsonProperty("action")
     private String action;
     @JsonProperty("responsible_party")

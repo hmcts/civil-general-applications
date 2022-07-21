@@ -88,7 +88,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldMakePbaPayment_whenInvoked() {
+        void shouldMakePbaPayment_whenInvoked() throws Exception {
             when(paymentsService.createCreditAccountPayment(any(), any()))
                 .thenReturn(PaymentDto.builder().reference(SUCCESSFUL_PAYMENT_REFERENCE).build());
 
@@ -156,7 +156,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
 
-            assertThat(extractPaymentDetailsFromResponse(response).getPbaReference()).isEqualTo("12345");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference()).isEqualTo("12345");
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails()).isNull();
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate()).isNull();
             assertThat(response.getErrors()).containsOnly("Technical error occurred");

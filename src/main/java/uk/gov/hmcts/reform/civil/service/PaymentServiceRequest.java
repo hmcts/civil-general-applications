@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentServiceRequest {
+
     @JsonProperty("call_back_url")
     private String callBackUrl;
     @JsonProperty("case_payment_request")
