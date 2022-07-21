@@ -22,7 +22,6 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 public class PaymentsService {
 
     private final PaymentServiceClient paymentServiceClient;
-    private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
     @Value("${payments.api.callback-url}")
     String callBackUrl;
