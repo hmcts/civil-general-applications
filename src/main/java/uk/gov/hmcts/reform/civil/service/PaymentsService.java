@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -21,10 +19,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 public class PaymentsService {
 
     private final PaymentServiceClient paymentServiceClient;
-    private final PaymentStoreApi paymentStoreApi;
-    private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
-    private AuthTokenGenerator authTokenGenerator;
     @Value("${payments.api.callback-url}")
     String callBackUrl;
     public static final String PAYMENT_ACTION = "payment";

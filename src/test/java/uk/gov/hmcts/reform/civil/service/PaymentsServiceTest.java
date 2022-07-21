@@ -58,12 +58,12 @@ class PaymentsServiceTest {
     @MockBean
     private OrganisationService organisationService;
 
-    @MockBean
+    @Autowired
     private PaymentsService paymentsService;
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createPbaPayment(anyString(), any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
@@ -176,7 +176,7 @@ class PaymentsServiceTest {
     @Test
     void validateRequestShouldThrowAnError_whenApplicantSolicitorOrgDetailsAreNotSet() {
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().build())
+            .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().build()).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
             .build();
 
