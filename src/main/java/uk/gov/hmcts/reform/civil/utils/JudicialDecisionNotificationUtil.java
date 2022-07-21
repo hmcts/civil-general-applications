@@ -104,7 +104,7 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
-        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());;
+        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
         return
             isJudicialDecisionEvent(caseData)

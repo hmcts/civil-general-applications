@@ -95,7 +95,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(extractPaymentRequestReferenceFromResponse(response))
-                .isEqualTo(null);
+                .isNull();
         }
 
         @Test
