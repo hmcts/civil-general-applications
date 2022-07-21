@@ -17,19 +17,19 @@ import java.time.LocalDateTime;
 public class GAPbaDetails {
 
     private final DynamicList applicantsPbaAccounts;
-    private final String pbaReference;
+    private final String serviceReqReference;
     private final Fee fee;
     private final PaymentDetails paymentDetails;
     private final LocalDateTime paymentSuccessfulDate;
 
     @JsonCreator
     GAPbaDetails(@JsonProperty("applicantsPbaAccounts") DynamicList applicantsPbaAccounts,
-                 @JsonProperty("pbaReference") String pbaReference,
+                 @JsonProperty("pbaReference") String serviceReqReference,
                  @JsonProperty("fee") Fee fee,
                  @JsonProperty("paymentDetails") PaymentDetails paymentDetails,
                  @JsonProperty("paymentSuccessfulDate") LocalDateTime paymentSuccessfulDate) {
         this.applicantsPbaAccounts = applicantsPbaAccounts;
-        this.pbaReference = pbaReference;
+        this.serviceReqReference = serviceReqReference;
         this.fee = fee;
         this.paymentDetails = paymentDetails;
         this.paymentSuccessfulDate = paymentSuccessfulDate;

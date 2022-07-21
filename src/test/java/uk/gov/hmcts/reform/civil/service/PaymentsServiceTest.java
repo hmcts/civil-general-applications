@@ -15,10 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
-import uk.gov.hmcts.reform.payments.client.PaymentsClient;
-import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
-import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
@@ -42,7 +39,8 @@ class PaymentsServiceTest {
     private static final String SERVICE = "service";
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
-    private static final PaymentDto PAYMENT_DTO = PaymentDto.builder().reference("RC-1234-1234-1234-1234").build();
+    private static final PaymentDto PAYMENT_DTO = PaymentDto.builder()
+                                        .reference("RC-1234-1234-1234-1234").build();
     private static final Organisation ORGANISATION = Organisation.builder()
         .name("test org")
         .contactInformation(List.of(ContactInformation.builder().build()))
@@ -51,7 +49,7 @@ class PaymentsServiceTest {
     private static final String FEE_NOT_SET_CORRECTLY_ERROR = "Fees are not set correctly.";
 
     @MockBean
-    private PaymentsClient paymentsClient;
+    private PaymentServiceClient paymentsClient;
 
     @MockBean
     private PaymentsConfiguration paymentsConfiguration;
@@ -64,7 +62,7 @@ class PaymentsServiceTest {
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createCreditAccountPayment(any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createPbaPayment("12345asd", any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
@@ -177,7 +175,7 @@ class PaymentsServiceTest {
     @Test
     void validateRequestShouldThrowAnError_whenApplicantSolicitorOrgDetailsAreNotSet() {
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().build()).build())
+            .generalAppPBADetails(GAPbaDetails.builder().build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
             .build();
 
@@ -197,22 +195,16 @@ class PaymentsServiceTest {
         PaymentDto paymentResponse = paymentsService.createCreditAccountPayment(caseData, AUTH_TOKEN);
 
         verify(organisationService).findOrganisationById("OrgId");
-        verify(paymentsClient).createCreditAccountPayment(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
+        verify(paymentsClient).createPbaPayment(CUSTOMER_REFERENCE, AUTH_TOKEN, expectedCreditAccountPaymentRequest);
         assertThat(paymentResponse).isEqualTo(PAYMENT_DTO);
     }
 
-    private CreditAccountPaymentRequest getExpectedCreditAccountPaymentRequest(CaseData caseData) {
-        return CreditAccountPaymentRequest.builder()
+    private ServiceRequestPaymentDto getExpectedCreditAccountPaymentRequest(CaseData caseData) {
+        return ServiceRequestPaymentDto.builder()
             .accountNumber("PBA0078095")
             .amount(caseData.getGeneralAppPBADetails().getFee().toFeeDto().getCalculatedAmount())
-            .caseReference("000DC001")
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
             .customerReference(CUSTOMER_REFERENCE)
-            .description("Claim issue payment")
             .organisationName(ORGANISATION.getName())
-            .service(SERVICE)
-            .siteId(SITE_ID)
-            .fees(new FeeDto[]{caseData.getGeneralAppPBADetails().getFee().toFeeDto()})
             .build();
     }
 }
