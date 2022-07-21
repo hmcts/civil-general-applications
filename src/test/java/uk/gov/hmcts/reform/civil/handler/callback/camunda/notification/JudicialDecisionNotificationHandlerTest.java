@@ -583,7 +583,8 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendWhenJudgeApprovesOrderDamageApplicationIsCloak() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList("UNSPEC_CLAIM"))
+                              caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList(
+                                  "UNSPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -599,7 +600,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         void notificationShouldSendWhenJudgeApprovesOrderOcmcApplicationIsCloak() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
-                              caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"))
+                              caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
             handler.handle(params);
 
@@ -914,8 +915,9 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     .build();
         }
 
-        private CaseData caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(YesOrNo orderAgreement,
-                                                                                 YesOrNo isWithNotice, String superClaimType) {
+        private CaseData caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(
+            YesOrNo orderAgreement,
+            YesOrNo isWithNotice, String superClaimType) {
             return
                 CaseData.builder()
                     .generalAppRespondentSolicitors(respondentSolicitors())
@@ -1019,7 +1021,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     .build();
         }
 
-        private CaseData caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList(String superClaimType) {
+        private CaseData caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList(String superClaimType) {
             return
                 CaseData.builder()
                     .generalAppRespondentSolicitors(respondentSolicitors())
