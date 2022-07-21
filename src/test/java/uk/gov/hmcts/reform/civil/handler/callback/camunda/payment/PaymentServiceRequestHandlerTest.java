@@ -1,9 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
-import feign.Request;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,14 +18,9 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
-import uk.gov.hmcts.reform.payments.client.models.StatusHistoryDto;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
-import static feign.Request.HttpMethod.GET;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -72,7 +64,7 @@ class PaymentServiceRequestHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Nested
-    class MakePBAPayments {
+    class MakeServiceRequestPayments {
 
         @BeforeEach
         void setup() {
@@ -109,26 +101,4 @@ class PaymentServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         return responseCaseData.getGeneralAppPBADetails();
     }
 
-    @SneakyThrows
-    private FeignException buildFeignException(int status) {
-        return buildFeignClientException(status, objectMapper.writeValueAsBytes(
-            PaymentDto.builder()
-                .statusHistories(new StatusHistoryDto[]{
-                    StatusHistoryDto.builder()
-                        .errorCode(PAYMENT_ERROR_CODE)
-                        .errorMessage(PAYMENT_ERROR_MESSAGE)
-                        .build()
-                })
-                .build()
-        ));
-    }
-
-    private FeignException.FeignClientException buildFeignClientException(int status, byte[] body) {
-        return new FeignException.FeignClientException(
-            status,
-            "exception message",
-            Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
-            body
-        );
-    }
 }
