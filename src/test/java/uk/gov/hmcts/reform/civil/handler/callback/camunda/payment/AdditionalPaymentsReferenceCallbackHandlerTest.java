@@ -145,7 +145,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
 
     private String extractPaymentRequestReferenceFromResponse(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        return responseCaseData.getGeneralAppPBADetails().getPaymentServiceRequestReferenceNumber();
+        return responseCaseData.getGeneralAppPBADetails().getAdditionalPaymentServiceReqReference();
     }
 
     private FeignException buildForbiddenFeignExceptionWithInvalidResponse() {

@@ -79,7 +79,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
                 GAPbaDetails paymentDetails = ofNullable(caseData.getGeneralAppPBADetails())
                     .map(GAPbaDetails::toBuilder)
                     .orElse(GAPbaDetails.builder())
-                    .paymentServiceRequestReferenceNumber(paymentServiceRequest)
+                    .additionalPaymentServiceReqReference(paymentServiceRequest)
                     .build();
                 caseData = caseData.toBuilder().generalAppPBADetails(paymentDetails).build();
             } catch (FeignException e) {
