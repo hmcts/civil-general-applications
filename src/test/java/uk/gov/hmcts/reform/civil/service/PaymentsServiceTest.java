@@ -26,6 +26,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -57,12 +58,12 @@ class PaymentsServiceTest {
     @MockBean
     private OrganisationService organisationService;
 
-    @Autowired
+    @MockBean
     private PaymentsService paymentsService;
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createPbaPayment("12345asd", any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createPbaPayment(anyString(), any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
