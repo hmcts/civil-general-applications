@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -22,8 +22,7 @@ public class PaymentsService {
 
     private final PaymentServiceClient paymentServiceClient;
     private final OrganisationService organisationService;
-    @Value("${payments.api.callback-url}")
-    String callBackUrl;
+    private final PaymentsConfiguration paymentsConfiguration;
     public static final String PAYMENT_ACTION = "payment";
 
     public void validateRequest(CaseData caseData) {
@@ -59,7 +58,7 @@ public class PaymentsService {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
         return PaymentServiceRequest.builder()
-            .callBackUrl(callBackUrl)
+            .callBackUrl(paymentsConfiguration.getPayApiCallBackUrl())
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
                                     .responsibleParty(caseData.getApplicantPartyName()).build())
@@ -94,9 +93,13 @@ public class PaymentsService {
             .build();
     }
 
+    public PaymentServiceResponse createServiceRequestAdditionalPayment(CaseData caseData, String authToken)  {
+        return paymentServiceClient.createServiceRequest(authToken, buildAdditionalPaymentRequest(caseData));
+    }
+
     private PaymentServiceRequest buildAdditionalPaymentRequest(CaseData caseData) {
         return PaymentServiceRequest.builder()
-            .callBackUrl(callBackUrl)
+            .callBackUrl(paymentsConfiguration.getPayApiCallBackUrl())
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
                                     .responsibleParty(caseData.getApplicantPartyName()).build())

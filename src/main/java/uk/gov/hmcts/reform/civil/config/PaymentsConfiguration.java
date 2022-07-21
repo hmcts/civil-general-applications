@@ -14,7 +14,7 @@ public class PaymentsConfiguration {
 
     public PaymentsConfiguration(@Value("${payments.api.site_id}") String siteId,
                                  @Value("${payments.api.service}") String service,
-                                 @Value("${payments.api.callback_url}") String payApiCallBackUrl) {
+                                 @Value("${payments.api.callback-url}") String payApiCallBackUrl) {
         this.siteId = siteId;
         this.service = service;
         this.payApiCallBackUrl = payApiCallBackUrl;
