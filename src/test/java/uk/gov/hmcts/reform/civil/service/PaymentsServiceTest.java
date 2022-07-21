@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
+import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
@@ -57,8 +58,6 @@ class PaymentsServiceTest {
     private PaymentServiceClient paymentsClient;
 
     @MockBean
-    PaymentServiceClient paymentServiceClient;
-    @MockBean
     private PaymentsConfiguration paymentsConfiguration;
 
     @MockBean
@@ -69,11 +68,11 @@ class PaymentsServiceTest {
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createPbaPayment("12345asd", any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
-        given(paymentServiceClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
+
     }
 
     @Test
@@ -218,13 +217,13 @@ class PaymentsServiceTest {
     @Test
     void shouldCreateAdditionalPaymentServiceRequest_whenValidCaseDetails() {
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
-
+        given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
         var expectedCreditAccountPaymentRequest = buildExpectedServiceRequestAdditionalPaymentResponse(caseData);
 
         PaymentServiceResponse paymentResponse = paymentsService.createServiceRequestAdditionalPayment(caseData,
                                                                                                        AUTH_TOKEN);
 
-        verify(paymentServiceClient).createServiceRequest(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
+        verify(paymentsClient).createServiceRequest(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
         assertThat(paymentResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
     }
     private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData){
