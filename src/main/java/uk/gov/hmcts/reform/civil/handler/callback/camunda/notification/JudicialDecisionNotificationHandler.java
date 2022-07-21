@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
@@ -211,20 +212,48 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void applicationApprovedNotification(CaseData caseData) {
-        if (areRespondentSolicitorsPresent(caseData)) {
+        if (areRespondentSolicitorsPresent(caseData)
+            && useDamageTemplate(caseData)) {
+            caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> sendNotificationForJudicialDecision(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getJudgeApproveOrderToStrikeOutDamages()
+                ));
+        } else if (areRespondentSolicitorsPresent(caseData)
+            && useOcmcTemplate(caseData)) {
+            caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> sendNotificationForJudicialDecision(
+                    caseData, respondentSolicitor.getValue().getEmail(),
+                    notificationProperties.getJudgeApproveOrderToStrikeOutOCMC()
+                ));
+        } else if (areRespondentSolicitorsPresent(caseData)) {
             caseData.getGeneralAppRespondentSolicitors().forEach(
                 respondentSolicitor -> sendNotificationForJudicialDecision(
                     caseData, respondentSolicitor.getValue().getEmail(),
                     notificationProperties.getJudgeForApproveRespondentEmailTemplate()
                 ));
         }
-        if (useApplicantTemplate(caseData)) {
+
+        if (useApplicantTemplate(caseData) && useDamageTemplate(caseData)) {
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                notificationProperties.getJudgeApproveOrderToStrikeOutDamages()
+            );
+        } else if (useApplicantTemplate(caseData) && useOcmcTemplate(caseData)) {
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                notificationProperties.getJudgeApproveOrderToStrikeOutOCMC()
+            );
+        } else if (useApplicantTemplate(caseData)) {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
                 notificationProperties.getJudgeForApprovedCaseApplicantEmailTemplate()
             );
         }
+
         if (useUncloakTemplate(caseData)) {
             sendNotificationForJudicialDecision(
                 caseData,
@@ -299,9 +328,19 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     }
 
     private void judgeApprovedOrderApplicationCloak(CaseData caseData) {
-        sendNotificationForJudicialDecision(caseData,
-            caseData.getGeneralAppApplnSolicitor().getEmail(),
-            notificationProperties.getJudgeForApprovedCaseApplicantEmailTemplate());
+        if (useDamageTemplate(caseData)) {
+            sendNotificationForJudicialDecision(caseData,
+                                                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                                                notificationProperties.getJudgeApproveOrderToStrikeOutDamages());
+        } else if (useOcmcTemplate(caseData)) {
+            sendNotificationForJudicialDecision(caseData,
+                                                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                                                notificationProperties.getJudgeApproveOrderToStrikeOutOCMC());
+        } else {
+            sendNotificationForJudicialDecision(caseData,
+                                                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                                                notificationProperties.getJudgeForApprovedCaseApplicantEmailTemplate());
+        }
     }
 
     private void judgeDismissedOrderApplicationCloak(CaseData caseData) {
@@ -325,5 +364,15 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
     public static boolean useUncloakTemplate(CaseData caseData) {
         return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
             && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
+    }
+
+    public static boolean useDamageTemplate(CaseData caseData) {
+        return caseData.getGeneralAppType().getTypes().contains(STRIKE_OUT)
+            && caseData.getGeneralAppSuperClaimType().equals("UNSPEC_CLAIM");
+    }
+
+    public static boolean useOcmcTemplate(CaseData caseData) {
+        return caseData.getGeneralAppType().getTypes().contains(STRIKE_OUT)
+            && caseData.getGeneralAppSuperClaimType().equals("SPEC_CLAIM");
     }
 }

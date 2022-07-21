@@ -109,6 +109,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeUncloakApplicationEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeApproveOrderToStrikeOutDamages())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeApproveOrderToStrikeOutOCMC())
+                .thenReturn(SAMPLE_TEMPLATE);
         }
 
         @Test
@@ -448,6 +452,38 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void notificationShouldSendApproveDamagesWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendApproveOcmcWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationUncloakShouldSendForApplicationApprovedWhenRespondentsAreInList() {
             CallbackParams params = CallbackParamsBuilder
                 .builder().of(ABOUT_TO_SUBMIT,
@@ -459,6 +495,38 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForApprovedDamageWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForApprovedOcmcWhenRespondentsAreInList() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -507,6 +575,38 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeApprovesOrderDamageApplicationIsCloak() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList("UNSPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeApprovesOrderOcmcApplicationIsCloak() {
+            CallbackParams params = CallbackParamsBuilder
+                .builder().of(ABOUT_TO_SUBMIT,
+                              caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"))
+                .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            handler.handle(params);
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -814,6 +914,29 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                     .build();
         }
 
+        private CaseData caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(YesOrNo orderAgreement,
+                                                                                 YesOrNo isWithNotice, String superClaimType) {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppSuperClaimType(superClaimType)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                                       .hasAgreed(orderAgreement).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                                   .makeAnOrder(
+                                                       GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeToStrikeOut()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
         private CaseData caseDataForApplicationsApprovedWhenRespondentsAreInList(YesOrNo orderAgreement,
                                                                                  YesOrNo isWithNotice) {
             return
@@ -891,6 +1014,28 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                           .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
+                    .applicationIsCloaked(YES)
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .build();
+        }
+
+        private CaseData caseDataForJudgeApprovedOrderCloakStrikeOutWhenRespondentsArePresentInList(String superClaimType) {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppSuperClaimType(superClaimType)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
+                        GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT
+                    ).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeToStrikeOut()).build())
                     .applicationIsCloaked(YES)
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .build();
