@@ -110,7 +110,8 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
     }
-    private void applicationRequestForInformationChangeToWithNotice(CaseData caseData){
+
+    private void applicationRequestForInformationChangeToWithNotice(CaseData caseData) {
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),

@@ -457,6 +457,7 @@ public class CaseDataBuilder {
                                                  .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
+
     public CaseData.CaseDataBuilder requestForInformationApplicationWithOutNoticeToWithNotice() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)

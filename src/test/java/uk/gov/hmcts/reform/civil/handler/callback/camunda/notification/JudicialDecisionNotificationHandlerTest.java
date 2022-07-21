@@ -367,6 +367,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithOutNoticeApplicationChangeToWithNotice() {
             CallbackParams params = CallbackParamsBuilder
@@ -382,6 +383,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithNotice() {
             CallbackParams params = CallbackParamsBuilder
@@ -770,6 +772,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                     .types(applicationTypeToStayTheClaim()).build())
                 .build();
         }
+
         private CaseData caseDataForJudicialRequestForInformationWithoutNoticeOfApplicationCorrect() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()
@@ -788,6 +791,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                                     .types(applicationTypeToStayTheClaim()).build())
                 .build();
         }
+
         private CaseData caseDataForJudicialRequestForInformationWithNoticeOfApplication() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()

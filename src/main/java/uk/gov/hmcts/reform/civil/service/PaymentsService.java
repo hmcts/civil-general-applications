@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -61,6 +60,7 @@ public class PaymentsService {
     public PaymentServiceResponse createServiceRequestAdditionalPayment(CaseData caseData, String authToken)  {
         return paymentServiceClient.createServiceRequest(authToken, buildAdditionalPaymentRequest(caseData));
     }
+
     private PaymentServiceRequest buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();

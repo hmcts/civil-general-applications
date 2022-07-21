@@ -43,7 +43,7 @@ class PaymentsServiceTest {
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PaymentDto PAYMENT_DTO = PaymentDto.builder()
                                         .reference("RC-1234-1234-1234-1234").build();
-    private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE=PaymentServiceResponse.builder()
+    private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE = PaymentServiceResponse.builder()
                                                             .serviceRequestReference("RC-1234-1234-1234-1234").build();
     public static final String PAYMENT_ACTION = "payment";
     private static final Organisation ORGANISATION = Organisation.builder()
@@ -72,7 +72,6 @@ class PaymentsServiceTest {
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
-
     }
 
     @Test
@@ -214,6 +213,7 @@ class PaymentsServiceTest {
             .organisationName(ORGANISATION.getName())
             .build();
     }
+
     @Test
     void shouldCreateAdditionalPaymentServiceRequest_whenValidCaseDetails() {
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
@@ -226,7 +226,8 @@ class PaymentsServiceTest {
         verify(paymentsClient).createServiceRequest(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
         assertThat(paymentResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
     }
-    private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData){
+
+    private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData) {
         return PaymentServiceRequest.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
