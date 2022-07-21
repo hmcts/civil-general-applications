@@ -181,7 +181,7 @@ class PaymentsServiceTest {
     @Test
     void validateRequestShouldThrowAnError_whenApplicantSolicitorOrgDetailsAreNotSet() {
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().build())
+            .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().build()).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
             .build();
 
