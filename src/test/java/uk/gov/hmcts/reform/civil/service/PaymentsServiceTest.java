@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
+import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
@@ -37,10 +38,15 @@ import static org.mockito.Mockito.verify;
 class PaymentsServiceTest {
 
     private static final String SERVICE = "service";
+
+    private static final String CALLBACKURL = "dummy_url";
+    private static final String PAYMENT_ACTION = "payment";
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PaymentDto PAYMENT_DTO = PaymentDto.builder()
                                         .reference("RC-1234-1234-1234-1234").build();
+    private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE = PaymentServiceResponse.builder()
+        .serviceRequestReference("RC-1234-1234-1234-1234").build();
     private static final Organisation ORGANISATION = Organisation.builder()
         .name("test org")
         .contactInformation(List.of(ContactInformation.builder().build()))
@@ -63,6 +69,7 @@ class PaymentsServiceTest {
     @BeforeEach
     void setUp() {
         given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
@@ -206,5 +213,30 @@ class PaymentsServiceTest {
             .customerReference(CUSTOMER_REFERENCE)
             .organisationName(ORGANISATION.getName())
             .build();
+    }
+
+    @Test
+    void shouldCreatePaymentServiceRequest_whenValidCaseDetails() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        var expectedServiceRequest = getExpectedServiceRequest(caseData);
+        PaymentServiceResponse serviceRequestResponse = paymentsService.createPaymentServiceReq(caseData, AUTH_TOKEN);
+        assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+    }
+
+    private PaymentServiceRequest getExpectedServiceRequest(CaseData caseData) {
+        return PaymentServiceRequest.builder()
+            .callBackUrl(CALLBACKURL)
+            .casePaymentRequest(CasePaymentRequestDto.builder()
+                                    .action(PAYMENT_ACTION)
+                                    .responsibleParty(caseData.getApplicantPartyName()).build())
+            .caseReference(caseData.getLegacyCaseReference())
+            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+            .fees(new FeeDto[] { (FeeDto.builder()
+                .calculatedAmount(BigDecimal.valueOf(165.00))
+                .code("FEE0306")
+                .version("1")
+                .volume(1).build())
+            }).build();
     }
 }
