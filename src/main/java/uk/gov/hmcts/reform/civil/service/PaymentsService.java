@@ -3,8 +3,13 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
+import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
+import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -19,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 public class PaymentsService {
 
     private final PaymentServiceClient paymentServiceClient;
+    private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
     @Value("${payments.api.callback-url}")
     String callBackUrl;
@@ -67,8 +73,8 @@ public class PaymentsService {
                 .calculatedAmount(feeResponse.getCalculatedAmount())
                 .code(feeResponse.getCode())
                 .version(feeResponse.getVersion())
-                .volume(1).build())
-            }).build();
+                .volume(1).build())})
+            .organisationId(paymentsConfiguration.getSiteId()).build();
     }
 
     private ServiceRequestPaymentDto buildRequest(CaseData caseData) {

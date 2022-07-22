@@ -1,10 +1,11 @@
-package uk.gov.hmcts.reform.civil.service;
+package uk.gov.hmcts.reform.civil.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 
 @Data
@@ -23,8 +24,7 @@ public class PaymentServiceRequest {
     private String ccdCaseNumber;
     @JsonProperty("fees")
     private FeeDto[] fees;
-    @Builder.Default
-    @JsonProperty("hmcts_org_id")
-    private String hmctsOrgId = "ABA5";
+    @JsonProperty("organisation_id")
+    private String organisationId;
 
 }
