@@ -10,24 +10,19 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -170,7 +165,30 @@ public class StateGeneratorServiceTest {
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(ORDER_MADE);
     }
-
+    @Test
+    public void shouldReturnOrderAdditionalAddPayment_WhenJudgeRequestInformationWithNotice() {
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(REQUEST_MORE_INFO))
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                 .build())
+            .build();
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+    }
+//    @Test
+//    public void shouldReturnOrderAdditionalAddPayment_WhenJudgeRequestInformationWithNotice() {
+//        CaseData caseData = CaseData.builder()
+//            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+//            .judicialDecision(new GAJudicialDecision(REQUEST_MORE_INFO))
+//            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+//                                                 .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+//                                                 .build())
+//            .build();
+//        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+//        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+//    }
     private List<GeneralApplicationTypes> applicationTypeJudgement() {
         return List.of(
             GeneralApplicationTypes.STRIKE_OUT
