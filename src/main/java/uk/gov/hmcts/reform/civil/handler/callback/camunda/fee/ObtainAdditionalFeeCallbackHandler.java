@@ -27,10 +27,14 @@ import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
+public class ObtainAdditionalFeeCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(OBTAIN_ADDITIONAL_FEE_VALUE);
+    private static final String ERROR_MESSAGE_NO_FEE_IN_CASEDATA = "Application case data does not have fee details";
+    private static final String ERROR_MESSAGE_FEE_CHANGED = "Fee has changed since application was submitted. "
+        + "It needs to be validated again";
     private static final String TASK_ID = "ObtainAdditionalFeeValue";
+
     private final GeneralAppFeesService feeService;
     private final GeneralAppFeesConfiguration feesConfiguration;
     private final ObjectMapper objectMapper;
@@ -43,7 +47,7 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_SUBMIT), this::getAdditionalFeeValue
+            callbackKey(ABOUT_TO_SUBMIT), this::validateFee
         );
     }
 
@@ -52,14 +56,14 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
-    private CallbackResponse getAdditionalFeeValue(CallbackParams callbackParams) {
+    private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
         if (notificationCriterion(caseData).equals(APPLICATION_CHANGE_TO_WITH_NOTICE)) {
             Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee());
 
             GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails()
-                .toBuilder().fee(feeForGA).build();
+                .toBuilder().additionalUncloakFee(feeForGA).build();
 
             caseData = caseData.toBuilder().generalAppPBADetails(generalAppPBADetails).build();
 

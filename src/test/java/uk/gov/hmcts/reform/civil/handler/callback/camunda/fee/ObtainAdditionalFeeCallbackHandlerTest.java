@@ -29,7 +29,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 
 @SpringBootTest(classes = {
-    AdditionalFeeValueCallbackHandler.class,
+    ObtainAdditionalFeeCallbackHandler.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
 })
@@ -39,7 +39,7 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         BigDecimal.valueOf(16700)).code("FEE0444").version("1").build();
     private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_167 = BigDecimal.valueOf(16700);
     @Autowired
-    private AdditionalFeeValueCallbackHandler handler;
+    private ObtainAdditionalFeeCallbackHandler handler;
     private static final String TASK_ID = "ObtainAdditionalFeeValue";
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
@@ -122,8 +122,8 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
     private Fee extractAdditionalUncloakFee(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         if (responseCaseData.getGeneralAppPBADetails() != null
-            && responseCaseData.getGeneralAppPBADetails().getFee() != null) {
-            return responseCaseData.getGeneralAppPBADetails().getFee();
+            && responseCaseData.getGeneralAppPBADetails().getAdditionalUncloakFee() != null) {
+            return responseCaseData.getGeneralAppPBADetails().getAdditionalUncloakFee();
         }
 
         return null;

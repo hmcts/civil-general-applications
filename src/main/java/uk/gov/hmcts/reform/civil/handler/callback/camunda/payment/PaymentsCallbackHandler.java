@@ -71,15 +71,14 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             paymentsService.validateRequest(caseData);
-//            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
+            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-
-//            PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
-//                    .map(PaymentDetails::toBuilder)
-//                    .orElse(PaymentDetails.builder())
-            PaymentDetails paymentDetails=PaymentDetails.builder().status(SUCCESS)
+            PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+                    .map(PaymentDetails::toBuilder)
+                    .orElse(PaymentDetails.builder())
+                    .status(SUCCESS)
                     .customerReference(pbaDetails.getServiceReqReference())
-                    .reference("RC-1234-1234-1234-1234")
+                    .reference(paymentReference)
                     .errorCode(null)
                     .errorMessage(null)
                     .build();

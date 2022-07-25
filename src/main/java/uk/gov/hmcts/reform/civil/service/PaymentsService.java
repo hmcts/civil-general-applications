@@ -102,8 +102,6 @@ public class PaymentsService {
     }
 
     private PaymentServiceRequest buildAdditionalPaymentRequest(CaseData caseData) {
-        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
-        FeeDto fee = generalAppPBADetails.getFee().toFeeDto();
         return PaymentServiceRequest.builder()
             .callBackUrl(paymentsConfiguration.getPayApiCallBackUrl())
             .casePaymentRequest(CasePaymentRequestDto.builder()
@@ -112,10 +110,10 @@ public class PaymentsService {
             .caseReference(caseData.getLegacyCaseReference())
             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
             .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(fee.getCalculatedAmount())
-                .code(fee.getCode())
-                .version(fee.getVersion())
-                .volume(1).build())})
-            .build();
+                .calculatedAmount(BigDecimal.valueOf(165.00))
+                .code("FEE0306")
+                .version("1")
+                .volume(1).build())
+            }).build();
     }
 }
