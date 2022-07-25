@@ -7,6 +7,7 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
+def camundaBranch = "tempgenappbranch"
 
 def generalappCCDBranch = "CIV-3291_Additional_scenarios_for_api_testing"
 
@@ -100,7 +101,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*DJspec.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
