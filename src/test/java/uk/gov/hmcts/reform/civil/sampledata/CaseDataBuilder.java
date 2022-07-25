@@ -37,6 +37,8 @@ import java.util.List;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -68,6 +70,7 @@ public class CaseDataBuilder {
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
+    public static final String STRING_CONSTANT = "this is a string";
     // Create Claim
     protected Long ccdCaseReference;
     protected String legacyCaseReference;
@@ -80,18 +83,20 @@ public class CaseDataBuilder {
     protected CaseState ccdState;
     // Claimant Response
     protected BusinessProcess businessProcess;
-    private GeneralAppParentCaseLink generalAppParentCaseLink;
-    private YesOrNo parentClaimantIsApplicant;
-
     protected List<Element<GeneralApplication>> generalApplications;
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
-
     //General Application
     protected LocalDate submittedOn;
+    private GeneralAppParentCaseLink generalAppParentCaseLink;
+    private YesOrNo parentClaimantIsApplicant;
+
+    public static CaseDataBuilder builder() {
+        return new CaseDataBuilder();
+    }
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -137,7 +142,7 @@ public class CaseDataBuilder {
     }
 
     public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
-                                                      gaDetailsRespondentSolTwo) {
+                                                         gaDetailsRespondentSolTwo) {
         this.gaDetailsRespondentSolTwo = gaDetailsRespondentSolTwo;
         return this;
     }
@@ -190,10 +195,6 @@ public class CaseDataBuilder {
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
-    }
-
-    public static CaseDataBuilder builder() {
-        return new CaseDataBuilder();
     }
 
     public CaseData build() {
@@ -271,15 +272,25 @@ public class CaseDataBuilder {
             .build();
     }
 
-    public CaseData buildFeeValidationCaseData(Fee fee) {
+    public CaseData buildFeeValidationCaseData(Fee fee, boolean isConsented, boolean isWithNotice) {
+
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
             .organisationID("OrgId").build();
 
-        return build().toBuilder()
+        GAInformOtherParty gaInformOtherParty = null;
+        if (!isConsented) {
+            gaInformOtherParty = GAInformOtherParty.builder().isWithNotice(isWithNotice ? YES : NO)
+                                                .reasonsForWithoutNotice(isWithNotice ? null : STRING_CONSTANT)
+                                                .build();
+        }
+        return CaseData.builder()
             .ccdCaseReference(1644495739087775L)
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(isConsented ? YES : NO).build())
+            .generalAppInformOtherParty(gaInformOtherParty)
             .generalAppPBADetails(
                 GAPbaDetails.builder()
                     .applicantsPbaAccounts(
@@ -491,4 +502,5 @@ public class CaseDataBuilder {
                                                  .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
+
 }

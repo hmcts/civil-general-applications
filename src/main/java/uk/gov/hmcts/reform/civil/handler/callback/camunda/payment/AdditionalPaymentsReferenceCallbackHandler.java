@@ -68,8 +68,10 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
                 log.info("processing payment reference for case " + caseData.getCcdCaseReference());
                 paymentsService.validateRequest(caseData);
 
-                var paymentServiceRequest = paymentsService.createServiceRequestAdditionalPayment(caseData,
-                                                                                                  authToken)
+                var paymentServiceRequest = paymentsService.createServiceRequestAdditionalPayment(
+                        caseData,
+                        authToken
+                    )
                     .getServiceRequestReference();
                 GAPbaDetails paymentDetails = ofNullable(caseData.getGeneralAppPBADetails())
                     .map(GAPbaDetails::toBuilder)
@@ -91,9 +93,9 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-           .data(caseData.toMap(objectMapper))
-           .errors(errors)
-           .build();
+            .data(caseData.toMap(objectMapper))
+            .errors(errors)
+            .build();
     }
 
 }

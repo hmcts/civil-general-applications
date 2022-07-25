@@ -45,6 +45,7 @@ public class StateGeneratorServiceTest {
         CaseData caseData = CaseData.builder()
             .judicialDecision(new GAJudicialDecision(REQUEST_MORE_INFO))
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().orderText("test").build())
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().build())
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);

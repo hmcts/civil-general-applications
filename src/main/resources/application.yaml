@@ -65,6 +65,7 @@ genApp:
     keywords:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
+      uncloakFee: HACFOOnNotice
   lrd:
     endpoint: /refdata/location/court-venues
 
