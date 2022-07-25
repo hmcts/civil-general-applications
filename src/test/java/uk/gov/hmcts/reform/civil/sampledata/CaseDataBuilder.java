@@ -252,6 +252,38 @@ public class CaseDataBuilder {
             .build();
     }
 
+    public CaseData buildAdditionalPaymentsReferenceCaseData() {
+        uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
+            .organisationID("OrgId").build();
+
+        return build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(
+                                DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(
+                        Fee.builder()
+                            .code("FEE0444")
+                            .calculatedAmountInPence(BigDecimal.valueOf(16700))
+                            .version("1")
+                            .build())
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
+            .build();
+    }
+
     public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
         return CaseData.builder()
             .generalAppType(application.getGeneralAppType())

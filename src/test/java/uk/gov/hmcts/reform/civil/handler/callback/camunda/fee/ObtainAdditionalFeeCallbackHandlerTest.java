@@ -29,7 +29,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 
 @SpringBootTest(classes = {
-    ObtainAdditionalFeeCallbackHandler.class,
+    AdditionalFeeValueCallbackHandler.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
 })
@@ -39,7 +39,7 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         BigDecimal.valueOf(16700)).code("FEE0444").version("1").build();
     private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_167 = BigDecimal.valueOf(16700);
     @Autowired
-    private ObtainAdditionalFeeCallbackHandler handler;
+    private AdditionalFeeValueCallbackHandler handler;
     private static final String TASK_ID = "ObtainAdditionalFeeValue";
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
@@ -89,7 +89,7 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
-    public void shouldNotReturnAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
+    public void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 BigDecimal.valueOf(16700)).code("").version("1").build());
@@ -98,13 +98,11 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             .requestForInforationApplication()
             .build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        assertThat(extractAdditionalUncloakFee(response)).isNull();
         verify(generalAppFeesService, never()).getFeeForGA(any());
     }
 
     @Test
-    void shouldNotThrowError_when() {
+    void shouldThrowError_whenRunTimeExceptionHappens() {
 
         when(generalAppFeesService.getFeeForGA(any()))
             .thenThrow(new RuntimeException("Some Exception"));
@@ -122,8 +120,8 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
     private Fee extractAdditionalUncloakFee(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         if (responseCaseData.getGeneralAppPBADetails() != null
-            && responseCaseData.getGeneralAppPBADetails().getAdditionalUncloakFee() != null) {
-            return responseCaseData.getGeneralAppPBADetails().getAdditionalUncloakFee();
+            && responseCaseData.getGeneralAppPBADetails().getFee() != null) {
+            return responseCaseData.getGeneralAppPBADetails().getFee();
         }
 
         return null;

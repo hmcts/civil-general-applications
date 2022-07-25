@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
@@ -14,8 +15,6 @@ import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.prd.model.Organisation;
-
-import java.math.BigDecimal;
 
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -102,6 +101,8 @@ public class PaymentsService {
     }
 
     private PaymentServiceRequest buildAdditionalPaymentRequest(CaseData caseData) {
+        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
+        Fee fee = generalAppPBADetails.getFee();
         return PaymentServiceRequest.builder()
             .callBackUrl(paymentsConfiguration.getPayApiCallBackUrl())
             .casePaymentRequest(CasePaymentRequestDto.builder()
@@ -110,10 +111,10 @@ public class PaymentsService {
             .caseReference(caseData.getLegacyCaseReference())
             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
             .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(BigDecimal.valueOf(165.00))
-                .code("FEE0306")
-                .version("1")
-                .volume(1).build())
-            }).build();
+                .calculatedAmount(fee.getCalculatedAmountInPence())
+                .code(fee.getCode())
+                .version(fee.getVersion())
+                .volume(1).build())})
+            .build();
     }
 }
