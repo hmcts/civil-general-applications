@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
@@ -89,14 +88,6 @@ public class JudicialDecisionNotificationUtil {
         return NON_CRITERION;
     }
 
-    private static GAJudgeWrittenRepresentationsOptions writtenOptions(CaseData caseData) {
-        return Optional
-            .ofNullable(caseData
-                            .getJudicialDecisionMakeAnOrderForWrittenRepresentations())
-            .map(GAJudicialWrittenRepresentations::getWrittenOption)
-            .orElse(null);
-    }
-
     public static String requiredGAType(CaseData caseData) {
         List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
         return types.stream().map(GeneralApplicationTypes::getDisplayedValue)
@@ -106,11 +97,12 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
         boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
+        boolean isAppConcurWrittenRep = isAppWrittenRepresentationOfGivenType(caseData,
+                                                                             GAJudgeWrittenRepresentationsOptions
+                                                                                 .CONCURRENT_REPRESENTATIONS);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(writtenOptions(caseData))
-            && ((writtenOptions(caseData))
-            .equals(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS))
+            && isAppConcurWrittenRep
             && isApplicantPresent
             && isRespondentPresent;
     }
@@ -118,11 +110,12 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isApplicationForSequentialWrittenRep(CaseData caseData) {
         boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
+        boolean isAppSeqWrittenRep = isAppWrittenRepresentationOfGivenType(caseData,
+                                                                          GAJudgeWrittenRepresentationsOptions
+                                                                              .SEQUENTIAL_REPRESENTATIONS);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(writtenOptions(caseData))
-            && ((writtenOptions(caseData))
-            .equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS))
+            && isAppSeqWrittenRep
             && isApplicantPresent
             && isRespondentPresent;
     }
@@ -251,6 +244,18 @@ public class JudicialDecisionNotificationUtil {
     private static boolean isApplicantPresent(GASolicitorDetailsGAspec gaSolicitorDetailsGAspec) {
         if (gaSolicitorDetailsGAspec != null && gaSolicitorDetailsGAspec.getEmail() != null) {
             return StringUtils.isNotEmpty(gaSolicitorDetailsGAspec.getEmail());
+        }
+        return false;
+    }
+
+    private static boolean isAppWrittenRepresentationOfGivenType(CaseData caseData,
+                                                                 GAJudgeWrittenRepresentationsOptions
+                                                                             gaJudgeWrittenRepresentationsOptions) {
+
+        if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenOption().equals(gaJudgeWrittenRepresentationsOptions)) {
+            return true;
         }
         return false;
     }
