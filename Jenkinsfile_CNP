@@ -9,7 +9,7 @@ def product = "civil"
 def component = "general-applications"
 def camundaBranch = "tempgenappbranch"
 
-def generalappCCDBranch = "CIV-3291_Additional_scenarios_for_api_testing"
+def generalappCCDBranch = "master"
 
 AppPipelineConfig pipelineConf
 
