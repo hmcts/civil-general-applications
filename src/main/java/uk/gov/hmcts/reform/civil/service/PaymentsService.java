@@ -27,7 +27,6 @@ public class PaymentsService {
     private final PaymentServiceClient paymentServiceClient;
     private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
-    private final PaymentsConfiguration paymentsConfiguration;
     public static final String PAYMENT_ACTION = "payment";
 
     public void validateRequest(CaseData caseData) {
