@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
-import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +32,6 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
     private static final String TASK_ID = "GeneralApplicationMakePayment";
-    public static final String DUPLICATE_PAYMENT_MESSAGE
-        = "You attempted to retry the payment to soon. Try again later.";
 
     private final PaymentsService paymentsService;
     private final ObjectMapper objectMapper;
@@ -62,24 +59,21 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
         try {
-            log.info("processing payment for case " + caseData.getCcdCaseReference());
-            paymentsService.validateRequest(caseData);
-            var serviceRequestReference = paymentsService.createPaymentServiceReq(caseData, authToken)
+            log.info("calling payment service request " + caseData.getCcdCaseReference());
+            var serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
                                                                         .getServiceRequestReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+
             caseData = caseData.toBuilder()
                 .generalAppPBADetails(GAPbaDetails.builder()
+                                          .applicantsPbaAccounts(caseData.getGeneralAppPBADetails()
+                                                                     .getApplicantsPbaAccounts())
+                                          .fee(caseData.getGeneralAppPBADetails().getFee())
                                           .serviceReqReference(serviceRequestReference).build())
                 .build();
         } catch (FeignException e) {
             log.info(String.format("Http Status %s ", e.status()), e);
             errors.add(ERROR_MESSAGE);
-        } catch (InvalidPaymentRequestException e) {
-            log.error(String.format("Error handling payment for general application: %s, response body: [%s]",
-                                    caseData.getCcdCaseReference(), e.getMessage()
-            ));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()

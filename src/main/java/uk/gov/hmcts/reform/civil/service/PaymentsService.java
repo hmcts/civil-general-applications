@@ -6,15 +6,17 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
+import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.prd.model.Organisation;
+
+import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -50,19 +52,19 @@ public class PaymentsService {
         }
     }
 
-    public PaymentDto createCreditAccountPayment(CaseData caseData, String authToken) {
+    public PBAServiceRequestResponse createCreditAccountPayment(CaseData caseData, String authToken) {
         String serviceReqReference = caseData.getGeneralAppPBADetails().getServiceReqReference();
         return paymentServiceClient.createPbaPayment(serviceReqReference, authToken, buildRequest(caseData));
     }
 
-    public PaymentServiceResponse createPaymentServiceReq(CaseData caseData, String authToken) {
+    public PaymentServiceResponse createServiceRequest(CaseData caseData, String authToken) {
         return paymentServiceClient.createServiceRequest(authToken, buildServiceRequest(caseData));
     }
 
-    private PaymentServiceRequest buildServiceRequest(CaseData caseData) {
+    private CreateServiceRequest buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
-        return PaymentServiceRequest.builder()
+        return CreateServiceRequest.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
@@ -95,6 +97,7 @@ public class PaymentsService {
             .amount(claimFee.getCalculatedAmount())
             .customerReference(customerReference)
             .organisationName(organisationName)
+            .idempotencyKey(String.valueOf(UUID.randomUUID()))
             .build();
     }
 }

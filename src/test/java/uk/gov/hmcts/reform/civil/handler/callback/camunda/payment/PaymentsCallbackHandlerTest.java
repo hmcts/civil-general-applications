@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
@@ -90,7 +91,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldMakePbaPayment_whenInvoked() throws Exception {
             when(paymentsService.createCreditAccountPayment(any(), any()))
-                .thenReturn(PaymentDto.builder().reference(SUCCESSFUL_PAYMENT_REFERENCE).build());
+                .thenReturn(PBAServiceRequestResponse.builder().paymentReference(SUCCESSFUL_PAYMENT_REFERENCE).build());
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -175,7 +176,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralApplicationMakePayment");
+            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralAppServiceReqPbaPayment");
         }
 
         @Test

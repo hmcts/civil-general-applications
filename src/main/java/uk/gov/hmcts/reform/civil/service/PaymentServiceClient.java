@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
+import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
+import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
 @Service
 @ConditionalOnProperty(prefix = "payments", name = "api.url")
@@ -22,7 +22,7 @@ public class PaymentServiceClient {
         this.authTokenGenerator = authTokenGenerator;
     }
 
-    public PaymentServiceResponse createServiceRequest(String authorisation, PaymentServiceRequest paymentRequest) {
+    public PaymentServiceResponse createServiceRequest(String authorisation, CreateServiceRequest paymentRequest) {
         return paymentsApi.createServiceRequest(
             authorisation,
             authTokenGenerator.generate(),
@@ -30,8 +30,8 @@ public class PaymentServiceClient {
         );
     }
 
-    public PaymentDto createPbaPayment(String serviceReqReference, String authorisation,
-                                       ServiceRequestPaymentDto paymentRequest) {
+    public PBAServiceRequestResponse createPbaPayment(String serviceReqReference, String authorisation,
+                                                      ServiceRequestPaymentDto paymentRequest) {
         return paymentsApi.createPbaPayment(
             serviceReqReference,
             authorisation,

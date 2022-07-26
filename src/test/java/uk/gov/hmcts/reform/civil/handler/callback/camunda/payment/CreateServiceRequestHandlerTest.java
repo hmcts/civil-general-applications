@@ -33,16 +33,15 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class
 })
-class PaymentServiceRequestHandlerTest extends BaseCallbackHandlerTest {
+class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
 
-    private static final String SUCCESSFUL_PAYMENT_REFERENCE = "RC-1234-1234-1234-1234";
-    private static final String PAYMENT_ERROR_MESSAGE = "Your account is deleted";
-    private static final String PAYMENT_ERROR_CODE = "CA-E0004";
-    public static final String DUPLICATE_PAYMENT_MESSAGE
-        = "You attempted to retry the payment to soon. Try again later.";
+    private static final String SUCCESSFUL_PAYMENT_REFERENCE = "2022-1655915218557";
 
     @MockBean
     private PaymentsService paymentsService;
+
+    @MockBean
+    private PaymentServiceResponse paymentServiceResponse;
 
     @MockBean
     private Time time;
@@ -73,13 +72,13 @@ class PaymentServiceRequestHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldMakePaymentServiceRequest_whenInvoked() throws Exception {
-            when(paymentsService.createPaymentServiceReq(any(), any()))
-                .thenReturn(PaymentServiceResponse.builder()
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenReturn(paymentServiceResponse.builder()
                                 .serviceRequestReference(SUCCESSFUL_PAYMENT_REFERENCE).build());
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(paymentsService).createPaymentServiceReq(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
                 .isEqualTo(SUCCESSFUL_PAYMENT_REFERENCE);
         }

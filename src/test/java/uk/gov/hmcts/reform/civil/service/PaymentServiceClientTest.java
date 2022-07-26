@@ -12,8 +12,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
 import uk.gov.hmcts.reform.civil.model.Fee;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
@@ -42,7 +42,7 @@ public class PaymentServiceClientTest {
     private PaymentServiceResponse paymentServiceResponse;
 
     @MockBean
-    private PaymentServiceRequest paymentServiceRequest;
+    private CreateServiceRequest paymentServiceRequest;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -62,7 +62,7 @@ public class PaymentServiceClientTest {
     void setUp() {
         caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
 
-        paymentServiceRequest = PaymentServiceRequest.builder()
+        paymentServiceRequest = CreateServiceRequest.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)

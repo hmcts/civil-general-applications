@@ -11,8 +11,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
 import uk.gov.hmcts.reform.civil.model.Fee;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceRequest;
+import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -20,7 +21,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
@@ -47,8 +47,9 @@ class PaymentsServiceTest {
     private static final String PAYMENT_ACTION = "payment";
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
-    private static final PaymentDto PAYMENT_DTO = PaymentDto.builder()
-                                        .reference("RC-1234-1234-1234-1234").build();
+    private static final PBAServiceRequestResponse PAYMENT_DTO = PBAServiceRequestResponse.builder()
+        .paymentReference("RC-1234-1234-1234-1234").build();
+
     private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE = PaymentServiceResponse.builder()
         .serviceRequestReference("RC-1234-1234-1234-1234").build();
     private static final Organisation ORGANISATION = Organisation.builder()
@@ -72,10 +73,10 @@ class PaymentsServiceTest {
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
+        given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
     }
 
@@ -203,10 +204,9 @@ class PaymentsServiceTest {
 
         var expectedCreditAccountPaymentRequest = getExpectedCreditAccountPaymentRequest(caseData);
 
-        PaymentDto paymentResponse = paymentsService.createCreditAccountPayment(caseData, AUTH_TOKEN);
+        PBAServiceRequestResponse paymentResponse = paymentsService.createCreditAccountPayment(caseData, AUTH_TOKEN);
 
         verify(organisationService).findOrganisationById("OrgId");
-        verify(paymentsClient).createPbaPayment(CUSTOMER_REFERENCE, AUTH_TOKEN, expectedCreditAccountPaymentRequest);
         assertThat(paymentResponse).isEqualTo(PAYMENT_DTO);
     }
 
@@ -216,6 +216,7 @@ class PaymentsServiceTest {
             .amount(caseData.getGeneralAppPBADetails().getFee().toFeeDto().getCalculatedAmount())
             .customerReference(CUSTOMER_REFERENCE)
             .organisationName(ORGANISATION.getName())
+            .idempotencyKey("2634946490")
             .build();
     }
 
@@ -224,12 +225,12 @@ class PaymentsServiceTest {
 
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
         var expectedServiceRequest = getExpectedServiceRequest(caseData);
-        PaymentServiceResponse serviceRequestResponse = paymentsService.createPaymentServiceReq(caseData, AUTH_TOKEN);
+        PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
     }
 
-    private PaymentServiceRequest getExpectedServiceRequest(CaseData caseData) {
-        return PaymentServiceRequest.builder()
+    private CreateServiceRequest getExpectedServiceRequest(CaseData caseData) {
+        return CreateServiceRequest.builder()
             .callBackUrl(CALLBACKURL)
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
