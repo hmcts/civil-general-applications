@@ -5,15 +5,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
-import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
-import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
-import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
+import uk.gov.hmcts.reform.payments.client.PaymentsClient;
+import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
 import java.util.UUID;
@@ -25,7 +26,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 @RequiredArgsConstructor
 public class PaymentsService {
 
-    private final PaymentServiceClient paymentServiceClient;
+    private final PaymentsClient paymentsClient;
     private final PaymentsConfiguration paymentsConfiguration;
     private final OrganisationService organisationService;
     @Value("${payments.api.callback-url}")
@@ -54,17 +55,17 @@ public class PaymentsService {
 
     public PBAServiceRequestResponse createCreditAccountPayment(CaseData caseData, String authToken) {
         String serviceReqReference = caseData.getGeneralAppPBADetails().getServiceReqReference();
-        return paymentServiceClient.createPbaPayment(serviceReqReference, authToken, buildRequest(caseData));
+        return paymentsClient.createPbaPayment(serviceReqReference, authToken, buildRequest(caseData));
     }
 
     public PaymentServiceResponse createServiceRequest(CaseData caseData, String authToken) {
-        return paymentServiceClient.createServiceRequest(authToken, buildServiceRequest(caseData));
+        return paymentsClient.createServiceRequest(authToken, buildServiceRequest(caseData));
     }
 
-    private CreateServiceRequest buildServiceRequest(CaseData caseData) {
+    private CreateServiceRequestDTO buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
-        return CreateServiceRequest.builder()
+        return CreateServiceRequestDTO.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
@@ -79,7 +80,7 @@ public class PaymentsService {
             .organisationId(paymentsConfiguration.getSiteId()).build();
     }
 
-    private ServiceRequestPaymentDto buildRequest(CaseData caseData) {
+    private PBAServiceRequestDTO buildRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
         var organisationId = caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
@@ -91,7 +92,7 @@ public class PaymentsService {
             .map(PaymentDetails::getCustomerReference)
             .orElse(generalAppPBADetails.getServiceReqReference());
 
-        return ServiceRequestPaymentDto.builder()
+        return PBAServiceRequestDTO.builder()
             .accountNumber(generalAppPBADetails.getApplicantsPbaAccounts()
                     .getValue().getLabel())
             .amount(claimFee.getCalculatedAmount())

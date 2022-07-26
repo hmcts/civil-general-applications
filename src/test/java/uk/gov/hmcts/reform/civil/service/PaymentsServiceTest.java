@@ -10,17 +10,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.CasePaymentRequestDto;
-import uk.gov.hmcts.reform.civil.model.CreateServiceRequest;
 import uk.gov.hmcts.reform.civil.model.Fee;
-import uk.gov.hmcts.reform.civil.model.PBAServiceRequestResponse;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
-import uk.gov.hmcts.reform.civil.model.ServiceRequestPaymentDto;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
-import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.payments.client.PaymentsClient;
+import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
@@ -43,8 +41,6 @@ class PaymentsServiceTest {
 
     private static final String SERVICE = "service";
 
-    private static final String CALLBACKURL = "dummy_url";
-    private static final String PAYMENT_ACTION = "payment";
     private static final String SITE_ID = "site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PBAServiceRequestResponse PAYMENT_DTO = PBAServiceRequestResponse.builder()
@@ -60,7 +56,7 @@ class PaymentsServiceTest {
     private static final String FEE_NOT_SET_CORRECTLY_ERROR = "Fees are not set correctly.";
 
     @MockBean
-    private PaymentServiceClient paymentsClient;
+    private PaymentsClient paymentsClient;
 
     @MockBean
     private PaymentsConfiguration paymentsConfiguration;
@@ -210,8 +206,8 @@ class PaymentsServiceTest {
         assertThat(paymentResponse).isEqualTo(PAYMENT_DTO);
     }
 
-    private ServiceRequestPaymentDto getExpectedCreditAccountPaymentRequest(CaseData caseData) {
-        return ServiceRequestPaymentDto.builder()
+    private PBAServiceRequestDTO getExpectedCreditAccountPaymentRequest(CaseData caseData) {
+        return PBAServiceRequestDTO.builder()
             .accountNumber("PBA0078095")
             .amount(caseData.getGeneralAppPBADetails().getFee().toFeeDto().getCalculatedAmount())
             .customerReference(CUSTOMER_REFERENCE)
@@ -224,24 +220,7 @@ class PaymentsServiceTest {
     void shouldCreatePaymentServiceRequest_whenValidCaseDetails() {
 
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
-        var expectedServiceRequest = getExpectedServiceRequest(caseData);
         PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
-    }
-
-    private CreateServiceRequest getExpectedServiceRequest(CaseData caseData) {
-        return CreateServiceRequest.builder()
-            .callBackUrl(CALLBACKURL)
-            .casePaymentRequest(CasePaymentRequestDto.builder()
-                                    .action(PAYMENT_ACTION)
-                                    .responsibleParty(caseData.getApplicantPartyName()).build())
-            .caseReference(caseData.getLegacyCaseReference())
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
-            .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(BigDecimal.valueOf(165.00))
-                .code("FEE0306")
-                .version("1")
-                .volume(1).build())
-            }).build();
     }
 }
