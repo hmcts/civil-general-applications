@@ -353,6 +353,7 @@ public class CaseDataBuilder {
                                            .orderText("Test Order")
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
+                                           .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -375,6 +376,7 @@ public class CaseDataBuilder {
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
+                                           .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -409,6 +411,8 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
+            .judicialGeneralHearingOrderRecital("Test Judge's recital")
+            .judicialGOHearingDirections("Test hearing direction")
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
@@ -429,6 +433,8 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .judgeRecitalText("Test Judge's recital")
+            .directionInRelationToHearingText("Test written order")
             .createdDate(LocalDateTime.now())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -452,6 +458,8 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
+            .judgeRecitalText("Test Judge's recital")
+            .directionInRelationToHearingText("Test written order")
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
