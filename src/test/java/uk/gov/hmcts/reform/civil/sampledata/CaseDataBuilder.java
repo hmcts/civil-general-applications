@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -70,8 +71,13 @@ public class CaseDataBuilder {
     protected GAInformOtherParty gaInformOtherParty;
     protected GAUrgencyRequirement gaUrgencyRequirement;
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
+    protected String respondentSolicitor1EmailAddress;
+    protected String respondentSolicitor2EmailAddress;
     protected GAPbaDetails gaPbaDetails;
     protected OrganisationPolicy applicant1OrganisationPolicy;
+    protected IdamUserDetails applicantSolicitor1UserDetails;
+    protected OrganisationPolicy respondent1OrganisationPolicy;
+    protected OrganisationPolicy respondent2OrganisationPolicy;
     protected CaseState ccdState;
     // Claimant Response
     protected BusinessProcess businessProcess;
@@ -83,6 +89,7 @@ public class CaseDataBuilder {
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    private YesOrNo isMultiParty;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
     //General Application
@@ -105,6 +112,16 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalAppApplnSolicitor(GASolicitorDetailsGAspec generalAppApplnSolicitor) {
         this.generalAppApplnSolicitor = generalAppApplnSolicitor;
+        return this;
+    }
+
+    public CaseDataBuilder isMultiParty(YesOrNo isMultiParty) {
+        this.isMultiParty = isMultiParty;
+        return this;
+    }
+
+    public CaseDataBuilder applicantSolicitor1UserDetails(IdamUserDetails applicantSolicitor1UserDetails) {
+        this.applicantSolicitor1UserDetails = applicantSolicitor1UserDetails;
         return this;
     }
 
@@ -172,6 +189,16 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder respondentSolicitor1EmailAddress(String email) {
+        this.respondentSolicitor1EmailAddress = email;
+        return this;
+    }
+
+    public CaseDataBuilder respondentSolicitor2EmailAddress(String email) {
+        this.respondentSolicitor2EmailAddress = email;
+        return this;
+    }
+
     public CaseDataBuilder gaPbaDetails(GAPbaDetails gaPbaDetails) {
         this.gaPbaDetails = gaPbaDetails;
         return this;
@@ -179,6 +206,16 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder applicant1OrganisationPolicy(OrganisationPolicy applicant1OrganisationPolicy) {
         this.applicant1OrganisationPolicy = applicant1OrganisationPolicy;
+        return this;
+    }
+
+    public CaseDataBuilder respondent1OrganisationPolicy(OrganisationPolicy respondent1OrganisationPolicy) {
+        this.respondent1OrganisationPolicy = respondent1OrganisationPolicy;
+        return this;
+    }
+
+    public CaseDataBuilder respondent2OrganisationPolicy(OrganisationPolicy respondent2OrganisationPolicy) {
+        this.respondent2OrganisationPolicy = respondent2OrganisationPolicy;
         return this;
     }
 
@@ -195,6 +232,13 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .isMultiParty(isMultiParty)
+            .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)
+            .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
+            .respondentSolicitor2EmailAddress(respondentSolicitor2EmailAddress)
+            .respondent1OrganisationPolicy(respondent1OrganisationPolicy)
+            .respondent2OrganisationPolicy(respondent2OrganisationPolicy)
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
