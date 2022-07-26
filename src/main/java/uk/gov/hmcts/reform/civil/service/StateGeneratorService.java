@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -23,6 +22,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Service
 public class StateGeneratorService {
@@ -44,14 +44,11 @@ public class StateGeneratorService {
         if (isCaseDismissed(data)) {
             return APPLICATION_DISMISSED;
         } else if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
-            return AWAITING_DIRECTIONS_ORDER_DOCS;
-        } else if (decision == REQUEST_MORE_INFO) {
-            if (data.getJudicialDecisionRequestMoreInfo() != null
-                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != null
-                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
-                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY)) {
+            if (isApplicationUncloakedInJudicialDecision(data)) {
                 return APPLICATION_ADD_PAYMENT;
             }
+            return AWAITING_DIRECTIONS_ORDER_DOCS;
+        } else if (decision == REQUEST_MORE_INFO) {
             return AWAITING_ADDITIONAL_INFORMATION;
         } else if (decision == MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return AWAITING_WRITTEN_REPRESENTATIONS;
@@ -63,6 +60,9 @@ public class StateGeneratorService {
                 && data.getGeneralAppType().getTypes().contains(STRIKE_OUT)) {
                 return PROCEEDS_IN_HERITAGE;
             } else {
+                if (isApplicationUncloakedInJudicialDecision(data)) {
+                    return APPLICATION_ADD_PAYMENT;
+                }
                 return ORDER_MADE;
             }
         }

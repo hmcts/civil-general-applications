@@ -58,7 +58,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
-        Fee feeForGA = feeService.getFeeForGA(getFeeRegisterKeywordKeyword(caseData));
+        Fee feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
 
         List<String> errors = compareFees(caseData, feeForGA);
 
@@ -80,7 +80,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
         return new ArrayList<>();
     }
 
-    private String getFeeRegisterKeywordKeyword(CaseData caseData) {
+    private String getFeeRegisterKeyword(CaseData caseData) {
         boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null

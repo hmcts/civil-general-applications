@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
 })
-class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
+class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     private static final Fee FEE167 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(16700)).code("FEE0444").version("1").build();
@@ -81,7 +81,7 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             .version("1")
             .build();
         var caseData = CaseDataBuilder.builder()
-            .requestForInformationApplicationWithOutNoticeToWithNotice()
+            .judicialOrderMadeWithUncloakApplication()
             .build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -108,7 +108,7 @@ class ObtainAdditionalFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenThrow(new RuntimeException("Some Exception"));
 
         var caseData = CaseDataBuilder.builder()
-            .requestForInformationApplicationWithOutNoticeToWithNotice()
+            .judicialOrderMadeWithUncloakApplication()
             .build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 

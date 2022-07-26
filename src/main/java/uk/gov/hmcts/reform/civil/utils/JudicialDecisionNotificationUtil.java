@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_CHANGE_TO_WITH_NOTICE;
@@ -131,6 +132,11 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
+    public static boolean isApplicationUncloakedInJudicialDecision(CaseData caseData) {
+        return !isApplicationCloaked(caseData) && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
+    }
+
     public static boolean isApplicationCloaked(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecision())
             .map(GAJudicialDecision::getDecision).orElse(null);
@@ -209,11 +215,11 @@ public class JudicialDecisionNotificationUtil {
                 .getDecision().equals(REQUEST_MORE_INFO)
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getRequestMoreInfoOption().equals(
-                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY)
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoText() != null
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoByDate() != null;
+                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY);
+//                && caseData.getJudicialDecisionRequestMoreInfo()
+//                .getJudgeRequestMoreInfoText() != null
+//                && caseData.getJudicialDecisionRequestMoreInfo()
+//                .getJudgeRequestMoreInfoByDate() != null;
     }
 
     private static boolean isRequestForInformationWithNotice(CaseData caseData) {
@@ -259,4 +265,5 @@ public class JudicialDecisionNotificationUtil {
         }
         return false;
     }
+
 }

@@ -76,7 +76,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
 
         @Test
         void shouldMakeAdditionalPaymentReference_whenJudgeUncloakedApplication() throws Exception {
-            var caseData = CaseDataBuilder.builder().requestForInformationApplicationWithOutNoticeToWithNotice()
+            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -102,7 +102,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         void shouldThrowException_whenForbiddenExceptionThrownContainsInvalidResponse() {
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createServiceRequestAdditionalPayment(any(), any());
-            var caseData = CaseDataBuilder.builder().requestForInformationApplicationWithOutNoticeToWithNotice()
+            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThrows(FeignException.class, () -> handler.handle(params));
@@ -115,7 +115,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .when(paymentsService).createServiceRequestAdditionalPayment(any(), any());
 
             var caseData = CaseDataBuilder.builder()
-                .requestForInformationApplicationWithOutNoticeToWithNotice()
+                .judicialOrderMadeWithUncloakApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -129,7 +129,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             var caseData = CaseDataBuilder.builder()
-                .requestForInformationApplicationWithOutNoticeToWithNotice()
+                .judicialOrderMadeWithUncloakApplication()
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
