@@ -46,7 +46,6 @@ java:
         - robotics-notification-sender
         - robotics-notification-recipient
         - launch-darkly-sdk-key
-        - robotics-notification-multipartyrecipient
   environment:
     CORE_CASE_DATA_API_URL: http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
     OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat2.internal:8443/openam/oauth2/realms/root/realms/hmcts
@@ -93,6 +92,8 @@ civil-service:
           - robotics-notification-recipient
           - launch-darkly-sdk-key
           - ordnance-survey-api-key
+          - robotics-notification-recipient-spec
+          - robotics-notification-multipartyrecipient
     environment:
       IDAM_CLIENT_ID: civil-service
       IDAM_CLIENT_REDIRECT_URI: https://civil-ccd-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
