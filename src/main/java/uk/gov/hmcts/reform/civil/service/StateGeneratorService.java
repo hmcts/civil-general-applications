@@ -27,12 +27,6 @@ public class StateGeneratorService {
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
         GAJudgeDecisionOption decision;
-        String directionsText;
-        if (data.getJudicialDecisionMakeOrder() != null) {
-            directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-        } else {
-            directionsText = null;
-        }
         if (data.getJudicialDecision() != null) {
             decision = data.getJudicialDecision().getDecision();
         } else {
