@@ -49,7 +49,7 @@ public class ReferToLegalAdvisorHandlerTest extends BaseCallbackHandlerTest {
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
-    private static final String CONFIRMATION_MESSAGE = "";
+    private static final String CONFIRMATION_MESSAGE = "Test refer to Legal Advisor";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {

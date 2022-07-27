@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -27,11 +28,14 @@ public class ReferToJudgeHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(REFER_TO_JUDGE);
 
+    private static final String REFER_TO_LEGAL_ADVISOR_MESSAGE = "Refer to Judge";
+    private static final String JUDGE_CONFIRMATION_SUMMARY = "Test refer to Judge";
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
             callbackKey(ABOUT_TO_START), this::courtValidation,
-            callbackKey(ABOUT_TO_SUBMIT), this::submitRefer,
+            callbackKey(ABOUT_TO_SUBMIT), this::submitReferToJudge,
             callbackKey(SUBMITTED), this::buildResponseConfirmation
         );
     }
@@ -49,17 +53,18 @@ public class ReferToJudgeHandler extends CallbackHandler {
             .build();
     }
 
-    private CallbackResponse submitRefer(CallbackParams callbackParams) {
+    private CallbackResponse submitReferToJudge(CallbackParams callbackParams) {
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .build();
     }
 
     private SubmittedCallbackResponse buildResponseConfirmation(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
 
         return SubmittedCallbackResponse.builder()
-            .confirmationHeader("")
-            .confirmationBody("")
+            .confirmationHeader(REFER_TO_LEGAL_ADVISOR_MESSAGE)
+            .confirmationBody(buildConfirmationSummary(caseData))
             .build();
     }
 
@@ -68,5 +73,11 @@ public class ReferToJudgeHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
 
         return errors;
+    }
+
+    private String buildConfirmationSummary(CaseData caseData) {
+        return format(
+            JUDGE_CONFIRMATION_SUMMARY
+        );
     }
 }
