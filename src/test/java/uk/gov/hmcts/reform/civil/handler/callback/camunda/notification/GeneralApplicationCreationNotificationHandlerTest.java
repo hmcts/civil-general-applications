@@ -8,9 +8,12 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
+import uk.gov.hmcts.reform.ccd.model.Organisation;
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -21,7 +24,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
+import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,6 +55,15 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
     private GeneralApplicationCreationNotificationHandler handler;
 
     @MockBean
+    private SolicitorEmailValidation solicitorEmailValidation;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
     private NotificationService notificationService;
 
     @MockBean
@@ -73,6 +87,11 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
         @Test
         void notificationShouldSendWhenInvoked() {
             CaseData caseData = getCaseData(true);
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
             handler.handle(params);
@@ -88,6 +107,11 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
         @Test
         void notificationShouldSendWhenInvokedTwice() {
             CaseData caseData = getCaseData(true);
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
             handler.handle(params);
@@ -103,6 +127,11 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
         @Test
         void notificationShouldNotSendWhenInvokedWhenConditionsAreNotMet() {
             CaseData caseData = getCaseData(false);
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
             handler.handle(params);
@@ -123,10 +152,10 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+                .email(DUMMY_EMAIL).organisationIdentifier("2").build();
 
             GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+                .email(DUMMY_EMAIL).organisationIdentifier("3").build();
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
@@ -135,7 +164,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
 
                 return new CaseDataBuilder()
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
-                                                 .email(DUMMY_EMAIL).organisationIdentifier("org2").build())
+                                                 .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                     .generalAppRespondentSolicitors(respondentSols)
                     .businessProcess(BusinessProcess.builder().status(STARTED)
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
@@ -143,6 +172,17 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                     .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                     .parentClaimantIsApplicant(YES)
                     .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                    .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
+                    .respondentSolicitor2EmailAddress(DUMMY_EMAIL)
+                    .applicant1OrganisationPolicy(OrganisationPolicy.builder()
+                                                      .organisation(Organisation.builder().organisationID("1").build())
+                                                      .build())
+                    .respondent1OrganisationPolicy(OrganisationPolicy.builder()
+                                                       .organisation(Organisation.builder().organisationID("2").build())
+                                                       .build())
+                    .respondent2OrganisationPolicy(OrganisationPolicy.builder()
+                                                       .organisation(Organisation.builder().organisationID("3").build())
+                                                       .build())
                     .generalAppParentCaseLink(
                         GeneralAppParentCaseLink
                             .builder()
@@ -158,6 +198,22 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
                     .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                     .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                     .ccdCaseReference(CASE_REFERENCE)
+                    .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
+                    .respondentSolicitor2EmailAddress(DUMMY_EMAIL)
+                    .applicant1OrganisationPolicy(OrganisationPolicy.builder()
+                                                      .organisation(Organisation.builder().organisationID("1").build())
+                                                      .build())
+                    .respondent1OrganisationPolicy(OrganisationPolicy.builder()
+                                                       .organisation(Organisation.builder().organisationID("2").build())
+                                                       .build())
+                    .respondent2OrganisationPolicy(OrganisationPolicy.builder()
+                                                       .organisation(Organisation.builder().organisationID("3").build())
+                                                       .build())
+                    .generalAppParentCaseLink(
+                        GeneralAppParentCaseLink
+                            .builder()
+                            .caseReference(CASE_REFERENCE.toString())
+                            .build())
                     .generalAppDeadlineNotificationDate(DUMMY_DATE)
                     .build();
             }

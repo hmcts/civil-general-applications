@@ -10,9 +10,12 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
+import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +48,11 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
 
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
 
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+
+    private final SolicitorEmailValidation solicitorEmailValidation;
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -59,7 +67,12 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
 
     private CallbackResponse judicialDecisionNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
+        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
 
         switch (notificationCriterion(caseData)) {
             case CONCURRENT_WRITTEN_REP:
@@ -95,7 +108,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler impleme
             default:case NON_CRITERION:
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataBuilder.build().toMap(objectMapper))
+            .data(caseData.toMap(objectMapper))
             .build();
     }
 

@@ -72,8 +72,6 @@ public class CaseData implements MappableObject {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final IdamUserDetails civilServiceUserRoles;
-    private final OrganisationPolicy applicant1OrganisationPolicy;
-    private final OrganisationPolicy respondent1OrganisationPolicy;
     private final List<Element<Document>> generalAppEvidenceDocument;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
@@ -113,6 +111,11 @@ public class CaseData implements MappableObject {
     private final LocalDate issueDate;
     private final String generalAppSuperClaimType;
     private final GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
+    private final String respondentSolicitor1EmailAddress;
+    private final String respondentSolicitor2EmailAddress;
+    private final OrganisationPolicy applicant1OrganisationPolicy;
+    private final OrganisationPolicy respondent1OrganisationPolicy;
+    private final OrganisationPolicy respondent2OrganisationPolicy;
 
 
     //PDF Documents
