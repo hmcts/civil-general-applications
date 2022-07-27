@@ -120,6 +120,7 @@ public class CaseData implements MappableObject {
     private final String generalAppJudgeReferAdditionalInfo;
     private final String generalAppLegalAdvisorEventDescription;
     private final String generalAppLegalAdvisorAdditionalInfo;
+    private final YesOrNo respondent2SameLegalRepresentative;
 
     //PDF Documents
     @Builder.Default
