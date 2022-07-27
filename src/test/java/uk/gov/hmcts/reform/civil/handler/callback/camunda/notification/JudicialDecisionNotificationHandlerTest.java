@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -29,13 +30,16 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.NotificationService;
+import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,6 +61,15 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private NotificationsProperties notificationsProperties;
+
+    @MockBean
+    private SolicitorEmailValidation solicitorEmailValidation;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
 
     @MockBean
     private NotificationService notificationService;
@@ -117,6 +130,9 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForConcurrentWrittenOption())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenOption());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -133,6 +149,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForSequentialWrittenOption())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForSequentialWrittenOption());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -149,6 +169,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForConcurrentWrittenRepRespondentNotPresent())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenRepRespondentNotPresent());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -165,6 +189,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudgeDismissal(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissal(NO, YES));
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -181,6 +209,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudgeDismissal(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissal(NO, NO));
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -197,6 +229,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataListForHearing())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataListForHearing());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -213,6 +249,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationUncloaked())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloaked());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -229,6 +269,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationUncloakedJudgeApproveOrEdit())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloakedJudgeApproveOrEdit());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -245,6 +289,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForAmendStatementOfClaim())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForAmendStatementOfClaim());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -261,6 +309,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialApprovalOfApplication(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, YES));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -277,6 +329,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialApprovalOfApplication(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, NO));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -293,6 +349,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialDirectionOrderOfApplication(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplication(NO, NO));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -309,6 +369,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialDirectionOrderOfApplication(YES, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplication(YES, NO));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -325,6 +389,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -341,6 +409,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -357,6 +429,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialRequestForInformationWithoutNoticeOfApplication())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationWithoutNoticeOfApplication());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -373,6 +449,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialRequestForInformationWithNoticeOfApplication())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationWithNoticeOfApplication());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -389,6 +469,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudicialRequestForInformationOfApplicationWhenRespondentsArePresentInList())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationOfApplicationWhenRespondentsArePresentInList());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -405,6 +489,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationUncloakedIsDismissed())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloakedIsDismissed());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -421,6 +509,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForSequentialWrittenRepInList())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForSequentialWrittenRepInList());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -437,6 +529,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, YES));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -453,6 +549,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -469,6 +569,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForListForHearingRespondentsAreInList())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForListForHearingRespondentsAreInList());
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -485,6 +589,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -501,6 +609,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -517,6 +629,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList())
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList());
+
             handler.handle(params);
 
             verify(notificationService).sendMail(

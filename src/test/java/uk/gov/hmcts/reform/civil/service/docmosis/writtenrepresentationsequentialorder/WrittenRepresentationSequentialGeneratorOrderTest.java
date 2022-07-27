@@ -119,14 +119,14 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getUploadDeadlineDate(),
                                    caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                        .getWrittenSequentailRepresentationsBy()),
                 () -> assertEquals(templateData.getResponseDeadlineDate(),
                                    caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getSequentialApplicantMustRespondWithin())
+                                       .getSequentialApplicantMustRespondWithin()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
             );
         }
 
