@@ -1694,6 +1694,20 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnCorrectDirectionOrderText_whenJudgeMakeDecisionGiveDirection() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
+                                                                           LocalDate.now().plusDays(1));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(PERSON_NOT_NOTIFIED_TEXT);
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_MakeDecision_GiveDirections(APPROVE_OR_EDIT,
                     LocalDate.now().minusDays(1));
@@ -1735,7 +1749,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(orderOption)
-                                               .directionsText("ABC")
                                                .judgeApproveEditOptionDate(LocalDate.now().plusDays(1))
                                                .directionsResponseByDate(directionsResponseByDate).build())
                 .build();
