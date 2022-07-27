@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -31,44 +30,54 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @SpringBootTest(classes = {
     CaseDetailsConverter.class,
-    ReferToJudgeHandler.class,
+    ReferToJudgeOrLegalAdvisorHandler.class,
     JacksonAutoConfiguration.class,
     },
     properties = {"reference.database.enabled=false"})
-public class ReferToJudgeHandlerTest extends BaseCallbackHandlerTest {
+public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
-    ReferToJudgeHandler handler;
+    ReferToJudgeOrLegalAdvisorHandler handler;
 
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
-    private static final String CONFIRMATION_MESSAGE = "Test refer to Judge";
-
     @Test
-    void handleEventsReturnsTheExpectedCallbackEvent() {
+    void handleEventsReturnsTheExpectedCallbackEventReferToJudge() {
         assertThat(handler.handledEvents()).contains(REFER_TO_JUDGE);
     }
 
     @Test
-    void buildResponseConfirmationReturnsCorrectMessage() {
-        CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
-                                                 CallbackType.SUBMITTED);
-        var response = (SubmittedCallbackResponse) handler.handle(params);
-        assertThat(response).isNotNull();
-        assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_MESSAGE);
+    void handleEventsReturnsTheExpectedCallbackEventReferToLegalAdvisor() {
+        assertThat(handler.handledEvents()).contains(REFER_TO_LEGAL_ADVISOR);
     }
 
     @Test
-    void aboutToStartCallbackChecksApplicationStateBeforeProceeding() {
-        CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
-                                                 CallbackType.ABOUT_TO_START);
+    void aboutToStartCallbackChecksApplicationStateBeforeProceedingSubmittedState() {
+        CallbackParams params = callbackParamsOf(
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+            CallbackType.ABOUT_TO_START
+        );
+        List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackChecksApplicationStateBeforeProceedingTimeExpiredtate() {
+        CallbackParams params = callbackParamsOf(
+            getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED),
+            CallbackType.ABOUT_TO_START
+        );
         List<String> errors = new ArrayList<>();
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
