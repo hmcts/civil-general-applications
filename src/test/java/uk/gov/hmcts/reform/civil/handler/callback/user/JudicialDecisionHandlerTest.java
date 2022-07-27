@@ -733,7 +733,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
-            CallbackParams params = callbackParamsOf(getDirectionOrderApplnAndResp(types,NO,NO), ABOUT_TO_START);
+            CallbackParams params = callbackParamsOf(getDirectionOrderApplnAndResp(types, NO, NO), ABOUT_TO_START);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
