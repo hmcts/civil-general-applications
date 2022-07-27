@@ -70,7 +70,7 @@ public class PaymentsService {
             .casePaymentRequest(CasePaymentRequestDto.builder()
                                     .action(PAYMENT_ACTION)
                                     .responsibleParty(caseData.getApplicantPartyName()).build())
-            .caseReference(caseData.getLegacyCaseReference())
+            .caseReference(caseData.getCcdCaseReference().toString())
             .ccdCaseNumber(caseData.getCcdCaseReference().toString())
             .fees(new FeeDto[] { (FeeDto.builder()
                 .calculatedAmount(feeResponse.getCalculatedAmount())

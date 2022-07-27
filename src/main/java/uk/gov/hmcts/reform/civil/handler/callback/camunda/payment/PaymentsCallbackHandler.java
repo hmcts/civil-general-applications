@@ -104,8 +104,6 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                     caseData.getCcdCaseReference(), e.getMessage()
             ));
             caseData = updateWithDuplicatePaymentError(caseData, e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
