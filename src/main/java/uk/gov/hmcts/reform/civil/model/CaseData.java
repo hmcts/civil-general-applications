@@ -116,6 +116,10 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
+    private final String generalAppJudgeReferEventDescription;
+    private final String generalAppJudgeReferAdditionalInfo;
+    private final String generalAppLegalAdvisorEventDescription;
+    private final String generalAppLegalAdvisorAdditionalInfo;
 
     //PDF Documents
     @Builder.Default
