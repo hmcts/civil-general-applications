@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -10,7 +9,6 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.ArrayList;
@@ -26,8 +24,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 @Service
 @RequiredArgsConstructor
 public class ReferToJudgeHandler extends CallbackHandler {
-
-    private final CaseDetailsConverter caseDetailsConverter;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(REFER_TO_JUDGE);
 
@@ -54,9 +50,6 @@ public class ReferToJudgeHandler extends CallbackHandler {
     }
 
     private CallbackResponse submitRefer(CallbackParams callbackParams) {
-
-        CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .build();
