@@ -117,12 +117,12 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()),
+                () -> assertEquals(templateData.getJudgeRecital(),
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
             );
         }
 
