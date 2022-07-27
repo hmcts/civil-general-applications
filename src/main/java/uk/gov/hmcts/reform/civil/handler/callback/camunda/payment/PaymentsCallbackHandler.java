@@ -74,11 +74,14 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken)
                                             .getPaymentReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+            String customerReference = ofNullable(pbaDetails.getPaymentDetails())
+                .map(PaymentDetails::getCustomerReference)
+                .orElse(pbaDetails.getServiceReqReference());
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
                     .orElse(PaymentDetails.builder())
                     .status(SUCCESS)
-                    .customerReference(pbaDetails.getServiceReqReference())
+                    .customerReference(customerReference)
                     .reference(paymentReference)
                     .errorCode(null)
                     .errorMessage(null)
