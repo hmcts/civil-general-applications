@@ -15,11 +15,11 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -69,7 +69,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @BeforeEach
         void setup() {
 
-            when(paymentsService.createServiceRequestAdditionalPayment(any(), any()))
+            when(paymentsService.createServiceRequest(any(), any()))
                 .thenReturn(PaymentServiceResponse.builder().serviceRequestReference(PAYMENT_REQUEST_REFERENCE)
                                 .build());
         }
@@ -81,7 +81,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(paymentsService).createServiceRequestAdditionalPayment(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentRequestReferenceFromResponse(response))
                 .isEqualTo(PAYMENT_REQUEST_REFERENCE);
         }
@@ -101,18 +101,18 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @Test
         void shouldThrowException_whenForbiddenExceptionThrownContainsInvalidResponse() {
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
-                .when(paymentsService).createServiceRequestAdditionalPayment(any(), any());
+                .when(paymentsService).createServiceRequest(any(), any());
             var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThrows(FeignException.class, () -> handler.handle(params));
-            verify(paymentsService).createServiceRequestAdditionalPayment(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
         }
 
         @Test
         void shouldNotThrowError_whenPaymentIsResubmittedWithInTwoMinutes() {
             doThrow(new InvalidPaymentRequestException("Duplicate Payment."))
-                .when(paymentsService).createServiceRequestAdditionalPayment(any(), any());
+                .when(paymentsService).createServiceRequest(any(), any());
 
             var caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakApplication()
@@ -120,7 +120,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(paymentsService).createServiceRequestAdditionalPayment(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
 
             assertThat(extractPaymentRequestReferenceFromResponse(response)).isNull();
             assertThat(response.getErrors()).isEmpty();

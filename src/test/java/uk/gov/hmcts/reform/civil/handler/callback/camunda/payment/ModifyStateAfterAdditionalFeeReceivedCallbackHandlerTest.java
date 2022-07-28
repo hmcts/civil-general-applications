@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_AD
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @SpringBootTest(classes = {
-    JudicialNotificationService.class,
+    ModifyStateAfterAdditionalFeeReceivedCallbackHandler.class,
     JacksonAutoConfiguration.class,
 })
 class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallbackHandlerTest {
@@ -30,6 +30,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     @MockBean
     private ParentCaseUpdateHelper parentCaseUpdateHelper;
 
+    @MockBean JudicialNotificationService judicialNotificationService;
     @Autowired
     private ModifyStateAfterAdditionalFeeReceivedCallbackHandler handler;
 

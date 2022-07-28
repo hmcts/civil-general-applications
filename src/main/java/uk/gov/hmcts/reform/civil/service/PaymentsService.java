@@ -102,25 +102,4 @@ public class PaymentsService {
             .build();
     }
 
-    public PaymentServiceResponse createServiceRequestAdditionalPayment(CaseData caseData, String authToken)  {
-        return paymentServiceClient.createServiceRequest(authToken, buildAdditionalPaymentRequest(caseData));
-    }
-
-    private PaymentServiceRequest buildAdditionalPaymentRequest(CaseData caseData) {
-        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
-        Fee fee = generalAppPBADetails.getFee();
-        return PaymentServiceRequest.builder()
-            .callBackUrl(paymentsConfiguration.getPayApiCallBackUrl())
-            .casePaymentRequest(CasePaymentRequestDto.builder()
-                                    .action(PAYMENT_ACTION)
-                                    .responsibleParty(caseData.getApplicantPartyName()).build())
-            .caseReference(caseData.getLegacyCaseReference())
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
-            .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(fee.getCalculatedAmountInPence())
-                .code(fee.getCode())
-                .version(fee.getVersion())
-                .volume(1).build())})
-            .build();
-    }
 }

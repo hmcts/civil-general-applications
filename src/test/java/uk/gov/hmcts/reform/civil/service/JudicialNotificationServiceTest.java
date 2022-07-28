@@ -29,8 +29,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -289,6 +287,54 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendIfJudicialDirectionOrder_AfterAdditionalPaymentReceived() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplication(NO, NO).toBuilder().generalAppPBADetails(
+                        GAPbaDetails.builder()
+                            .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                            .build())
+                                .build());
+
+            judicialNotificationService.sendNotification(
+                caseDataForJudicialApprovalOfApplication(NO, NO).toBuilder()
+                    .generalAppPBADetails(GAPbaDetails.builder()
+                                              .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                                              .build())
+                    .build());
+            verify(notificationService, times(2)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendIfJudicialApproval_AfterAdditionalPaymentReceived() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, NO).toBuilder().generalAppPBADetails(
+                        GAPbaDetails.builder()
+                            .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                            .build())
+                                .build());
+
+            judicialNotificationService.sendNotification(
+                caseDataForJudicialApprovalOfApplication(NO, NO).toBuilder()
+                    .generalAppPBADetails(GAPbaDetails.builder()
+                                              .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                                              .build())
+                    .build());
+            verify(notificationService, times(2)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationShouldSendIfJudicialDirectionOrder() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -466,7 +512,12 @@ class JudicialNotificationServiceTest {
         void shouldSendNotification_WhenAdditionalPaymentReceived_AfterApplicationUncloaked() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
+                .thenReturn(
+                    caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO)
+                        .toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                            .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                            .build())
+                                .build());
 
             CaseData caseData = caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO)
                 .toBuilder().generalAppPBADetails(
@@ -516,6 +567,8 @@ class JudicialNotificationServiceTest {
 
         @Test
         void shouldSendNotification_forAdditionalPayment_JudgeDismissedApplicationUncloaked() {
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO));
             CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO)
                 .toBuilder().generalAppPBADetails(GAPbaDetails.builder().build())
                 .build();
@@ -531,6 +584,16 @@ class JudicialNotificationServiceTest {
 
         @Test
         void shouldSendNotification_WhenAdditionalPaymentReceived_JudgeDismissedApplicationUncloaked() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(
+                    caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO).toBuilder()
+                        .generalAppPBADetails(GAPbaDetails.builder()
+                        .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                        .build())
+                .build()
+                );
+
             CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO)
                 .toBuilder().generalAppPBADetails(
                     GAPbaDetails.builder()
@@ -768,6 +831,7 @@ class JudicialNotificationServiceTest {
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToAmendStatmentOfClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
                 .build();
         }
 
@@ -947,6 +1011,7 @@ class JudicialNotificationServiceTest {
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
+                    .generalAppPBADetails(GAPbaDetails.builder().build())
                     .build();
         }
 

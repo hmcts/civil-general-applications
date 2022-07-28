@@ -73,7 +73,6 @@ class PaymentsServiceTest {
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
-        given(paymentsConfiguration.getPayApiCallBackUrl()).willReturn(DUMMY_URL);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
     }
 
@@ -224,50 +223,4 @@ class PaymentsServiceTest {
         PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
     }
-
-    private PaymentServiceRequest getExpectedServiceRequest(CaseData caseData) {
-        return PaymentServiceRequest.builder()
-            .callBackUrl(CALLBACKURL)
-            .casePaymentRequest(CasePaymentRequestDto.builder()
-                                    .action(PAYMENT_ACTION)
-                                    .responsibleParty(caseData.getApplicantPartyName()).build())
-            .caseReference(caseData.getLegacyCaseReference())
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
-            .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(BigDecimal.valueOf(165.00))
-                .code("FEE0306")
-                .version("1")
-                .volume(1).build())
-            }).build();
-    }
-
-    @Test
-    void shouldCreateAdditionalPaymentServiceRequest_whenValidCaseDetails() {
-        CaseData caseData = CaseDataBuilder.builder().buildAdditionalPaymentsReferenceCaseData();
-        given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
-        var expectedCreditAccountPaymentRequest = buildExpectedServiceRequestAdditionalPaymentResponse(caseData);
-
-        PaymentServiceResponse paymentResponse = paymentsService.createServiceRequestAdditionalPayment(caseData,
-                                                                                                       AUTH_TOKEN);
-        verify(paymentsClient).createServiceRequest(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
-        assertThat(paymentResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
-    }
-
-    private PaymentServiceRequest buildExpectedServiceRequestAdditionalPaymentResponse(CaseData caseData) {
-
-        return PaymentServiceRequest.builder()
-            .callBackUrl(DUMMY_URL)
-            .casePaymentRequest(CasePaymentRequestDto.builder()
-                                    .action(PAYMENT_ACTION)
-                                    .responsibleParty(caseData.getApplicantPartyName()).build())
-            .caseReference(caseData.getLegacyCaseReference())
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
-            .fees(new FeeDto[] { (FeeDto.builder()
-                .calculatedAmount(BigDecimal.valueOf(16700))
-                .code("FEE0444")
-                .version("1")
-                .volume(1).build())
-            }).build();
-    }
-
 }
