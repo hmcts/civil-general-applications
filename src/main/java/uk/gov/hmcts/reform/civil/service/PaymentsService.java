@@ -77,7 +77,7 @@ public class PaymentsService {
                 .code(feeResponse.getCode())
                 .version(feeResponse.getVersion())
                 .volume(1).build())})
-            .organisationId(paymentsConfiguration.getSiteId()).build();
+            .hmctsOrgId(paymentsConfiguration.getSiteId()).build();
     }
 
     private PBAServiceRequestDTO buildRequest(CaseData caseData) {
