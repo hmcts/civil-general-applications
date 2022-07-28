@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -55,6 +56,7 @@ import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FL
 class MakeJudgesDecisionTaskHandlerTest {
 
     private static final String CASE_ID = "1";
+    private static final String PARENT_CASE_ID = "2";
 
     @Mock
     private ExternalTask mockTask;
@@ -92,10 +94,12 @@ class MakeJudgesDecisionTaskHandlerTest {
         void shouldTriggerCCDEvent_whenHandlerIsExecuted() {
             CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
                 .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference(PARENT_CASE_ID).build())
                 .build();
             VariableMap variables = Variables.createVariables();
             variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
             variables.putValue(FLOW_FLAGS, Map.of());
+            variables.putValue("generalAppParentCaseLink", PARENT_CASE_ID);
 
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
 
