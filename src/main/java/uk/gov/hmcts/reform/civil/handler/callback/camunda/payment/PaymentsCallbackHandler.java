@@ -39,7 +39,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PBA_PAYMENT_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
-    private static final String TASK_ID = "GeneralApplicationMakePayment";
+    private static final String TASK_ID = "GeneralAppServiceReqPbaPayment";
     public static final String DUPLICATE_PAYMENT_MESSAGE
             = "You attempted to retry the payment to soon. Try again later.";
 
@@ -71,13 +71,17 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             paymentsService.validateRequest(caseData);
-            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
+            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken)
+                                            .getPaymentReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+            String customerReference = ofNullable(pbaDetails.getPaymentDetails())
+                .map(PaymentDetails::getCustomerReference)
+                .orElse(pbaDetails.getServiceReqReference());
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
                     .orElse(PaymentDetails.builder())
                     .status(SUCCESS)
-                    .customerReference(pbaDetails.getServiceReqReference())
+                    .customerReference(customerReference)
                     .reference(paymentReference)
                     .errorCode(null)
                     .errorMessage(null)
@@ -100,8 +104,6 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                     caseData.getCcdCaseReference(), e.getMessage()
             ));
             caseData = updateWithDuplicatePaymentError(caseData, e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
