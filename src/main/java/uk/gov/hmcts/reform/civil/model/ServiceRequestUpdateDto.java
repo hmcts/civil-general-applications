@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceRequestUpdateDto {
+
     @JsonProperty("service_request_reference")
     private String serviceRequestReference;
     @JsonProperty("ccd_case_number")
