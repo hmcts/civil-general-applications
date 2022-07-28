@@ -83,4 +83,5 @@ public class StateGeneratorService {
 
         return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
     }
+
 }

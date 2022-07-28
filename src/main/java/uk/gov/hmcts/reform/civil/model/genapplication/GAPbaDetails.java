@@ -22,6 +22,7 @@ public class GAPbaDetails {
     private final PaymentDetails paymentDetails;
     private final LocalDateTime paymentSuccessfulDate;
     private final String additionalPaymentServiceRef;
+    private final PaymentDetails additionalPaymentDetails;
 
     @JsonCreator
     GAPbaDetails(@JsonProperty("applicantsPbaAccounts") DynamicList applicantsPbaAccounts,
@@ -29,12 +30,14 @@ public class GAPbaDetails {
                  @JsonProperty("fee") Fee fee,
                  @JsonProperty("paymentDetails") PaymentDetails paymentDetails,
                  @JsonProperty("paymentSuccessfulDate") LocalDateTime paymentSuccessfulDate,
-                 @JsonProperty("additionalPaymentServiceRef") String additionalPaymentServiceRef) {
+                 @JsonProperty("additionalPaymentServiceRef") String additionalPaymentServiceRef,
+                 @JsonProperty("additionalPaymentDetails") PaymentDetails additionalPaymentDetails) {
         this.applicantsPbaAccounts = applicantsPbaAccounts;
         this.serviceReqReference = serviceReqReference;
         this.fee = fee;
         this.paymentDetails = paymentDetails;
         this.paymentSuccessfulDate = paymentSuccessfulDate;
         this.additionalPaymentServiceRef = additionalPaymentServiceRef;
+        this.additionalPaymentDetails = additionalPaymentDetails;
     }
 }

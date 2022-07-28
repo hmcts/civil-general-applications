@@ -47,8 +47,9 @@ public enum CaseEvent {
 
     GENERATE_JUDGES_FORM(CAMUNDA),
 
-    UPDATE_CASE_WITH_GA_STATE(CAMUNDA);
-
+    UPDATE_CASE_WITH_GA_STATE(CAMUNDA),
+    ADDITIONAL_PAYMENT_SUCCESS_CALLBACK(CAMUNDA),
+    MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID(CAMUNDA);
     private final UserType userType;
 
     public boolean isCamundaEvent() {
