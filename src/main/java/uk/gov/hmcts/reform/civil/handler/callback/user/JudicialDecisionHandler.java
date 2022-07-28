@@ -284,16 +284,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judgeRecitalText(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
                                         ? DISMISSAL_ORDER_TEXT
-                                        : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText() == null
-                                    ? PERSON_NOT_NOTIFIED_TEXT
-                                    : caseData.getJudicialDecisionMakeOrder().getDirectionsText());
+                                        : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-                .dismissalOrderText(DISMISSAL_ORDER_TEXT)
-                .directionsText(PERSON_NOT_NOTIFIED_TEXT);
+                .dismissalOrderText(DISMISSAL_ORDER_TEXT);
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
