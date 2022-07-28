@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -28,12 +29,15 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,6 +63,15 @@ class JudicialNotificationServiceTest {
 
     @MockBean
     private NotificationService notificationService;
+
+    @MockBean
+    private SolicitorEmailValidation solicitorEmailValidation;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
 
     private static final Long CASE_REFERENCE = 111111L;
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
@@ -113,6 +126,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendThriceForConcurrentWrittenRepsWhenInvoked() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenOption());
+
             judicialNotificationService.sendNotification(caseDataForConcurrentWrittenOption());
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -124,6 +140,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendThriceForSequentialWrittenRepsWhenInvoked() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForSequentialWrittenOption());
+
             judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption());
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -136,6 +156,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendForConcurrentWrittenRepsWhenInvoked() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenRepRespondentNotPresent());
+
             judicialNotificationService.sendNotification(caseDataForConcurrentWrittenRepRespondentNotPresent());
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -147,6 +170,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendForDismissal() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissal(NO, YES));
+
             judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, YES));
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -158,6 +185,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationUncloakShouldSendForDismissal() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissal(NO, NO));
+
             judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO));
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -169,6 +200,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendListForHearing() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataListForHearing());
+
             judicialNotificationService.sendNotification(caseDataListForHearing());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -180,6 +215,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfApplicationUncloaked() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloaked());
+
             judicialNotificationService.sendNotification(caseDataForApplicationUncloaked());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -191,6 +230,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfApplicationUncloakedForApproveOrEdit() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloakedJudgeApproveOrEdit());
+
             judicialNotificationService.sendNotification(caseDataForApplicationUncloakedJudgeApproveOrEdit());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -202,6 +245,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfApplicationIsToAmendStatementOfCase() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForAmendStatementOfClaim());
+
             judicialNotificationService.sendNotification(caseDataForAmendStatementOfClaim());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -213,6 +260,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfJudicialApproval() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, YES));
+
             judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, YES));
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -224,6 +275,9 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationUncloakShouldSendIfJudicialApproval() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, NO));
 
             judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, NO));
             verify(notificationService, times(1)).sendMail(
@@ -237,6 +291,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendIfJudicialDirectionOrder() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplication(NO, NO));
+
             judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, NO));
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
@@ -249,6 +306,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationUncloakShouldSendIfJudicialDirectionOrder() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplication(YES, NO));
+
             judicialNotificationService.sendNotification(caseDataForJudicialDirectionOrderOfApplication(YES, NO));
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -260,6 +320,9 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfJudicialDirectionOrderRepArePresentInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES));
 
             judicialNotificationService
                 .sendNotification(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES
@@ -275,6 +338,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationUncloakShouldSendIfJudicialDirectionOrderRepArePresentInList() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO));
+
             judicialNotificationService
                 .sendNotification(
                     caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO));
@@ -289,6 +355,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithouNotice() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationWithoutNoticeOfApplication());
+
             judicialNotificationService
                 .sendNotification(caseDataForJudicialRequestForInformationWithoutNoticeOfApplication());
             verify(notificationService, times(3)).sendMail(
@@ -302,6 +371,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithNotice() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationWithNoticeOfApplication());
+
             judicialNotificationService
                 .sendNotification(caseDataForJudicialRequestForInformationWithNoticeOfApplication());
             verify(notificationService, times(3)).sendMail(
@@ -314,6 +386,9 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfJudicialRequestForInformationRepArePresentInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudicialRequestForInformationOfApplicationWhenRespondentsArePresentInList());
 
             judicialNotificationService
                 .sendNotification(caseDataForJudicialRequestForInformationOfApplicationWhenRespondentsArePresentInList()
@@ -329,6 +404,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendIfApplicationUncloakedDismissed() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationUncloakedIsDismissed());
+
             judicialNotificationService.sendNotification(caseDataForApplicationUncloakedIsDismissed());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -341,6 +419,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendIfSequentialWrittenRepsArePresentInList() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForSequentialWrittenRepInList());
+
             judicialNotificationService.sendNotification(caseDataForSequentialWrittenRepInList());
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -352,6 +433,8 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendForApplicationsApprovedWhenRespondentsAreInList() {
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, YES));
 
             judicialNotificationService
                 .sendNotification(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, YES));
@@ -366,6 +449,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationUncloakShouldSendForApplicationApprovedWhenRespondentsAreInList() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
+
             judicialNotificationService
                 .sendNotification(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
             verify(notificationService, times(1)).sendMail(
@@ -378,6 +464,10 @@ class JudicialNotificationServiceTest {
 
         @Test
         void shouldSendNotification_WhenAdditionalPaymentReceived_AfterApplicationUncloaked() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
+
             CaseData caseData = caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO)
                 .toBuilder().generalAppPBADetails(
                     GAPbaDetails.builder()
@@ -397,6 +487,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendForApplicationListForHearingWhenRespondentsAreAvailableInList() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForListForHearingRespondentsAreInList());
+
             judicialNotificationService.sendNotification(caseDataForListForHearingRespondentsAreInList());
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -408,6 +501,9 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendWhenApplicationIsDismissedByJudgeWhenRespondentsAreAvailableInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES));
 
             judicialNotificationService.sendNotification(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES));
             verify(notificationService, times(3)).sendMail(
@@ -454,6 +550,9 @@ class JudicialNotificationServiceTest {
         @Test
         void notificationShouldSendWhenJudgeApprovesOrderApplicationIsCloak() {
 
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList());
+
             judicialNotificationService
                 .sendNotification(caseDataForJudgeApprovedOrderCloakWhenRespondentsArePresentInList());
             verify(notificationService).sendMail(
@@ -466,6 +565,9 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendWhenJudgeDismissedTheApplicationIsCloak() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList());
 
             judicialNotificationService
                 .sendNotification(caseDataForJudgeDismissTheApplicationCloakWhenRespondentsArePresentInList());

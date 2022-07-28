@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.civil.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
@@ -25,13 +25,23 @@ import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.r
 @RequiredArgsConstructor
 public class JudicialNotificationService implements NotificationData {
 
-    private final ObjectMapper objectMapper;
     private final NotificationsProperties notificationProperties;
     private final NotificationService notificationService;
     private final Map<String, String> customProps;
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
 
-    public void sendNotification(CaseData caseData) throws NotificationException {
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+
+    private final SolicitorEmailValidation solicitorEmailValidation;
+
+    public CaseData sendNotification(CaseData caseData) throws NotificationException {
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
+        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
+
         switch (notificationCriterion(caseData)) {
             case CONCURRENT_WRITTEN_REP:
                 concurrentWrittenRepNotification(caseData);
@@ -66,7 +76,7 @@ public class JudicialNotificationService implements NotificationData {
             default:
             case NON_CRITERION:
         }
-
+        return caseData;
     }
 
     @Override
