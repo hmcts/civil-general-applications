@@ -172,7 +172,6 @@ public class SolicitorEmailValidationTest {
             .respondent1OrganisationPolicy(OrganisationPolicy.builder()
                                                .organisation(Organisation.builder().organisationID("2").build())
                                                .build())
-            .respondent2SameLegalRepresentative(NO)
             .respondent2OrganisationPolicy(OrganisationPolicy.builder()
                                                .organisation(Organisation.builder().organisationID("3").build())
                                                .build())

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -77,8 +76,7 @@ public class SolicitorEmailValidation {
             }
         }
 
-        if (YES.equals(gaCaseData.getIsMultiParty())
-            && NO.equals(civilCaseData.getRespondent2SameLegalRepresentative())) {
+        if (YES.equals(gaCaseData.getIsMultiParty())) {
 
             // civil claim defendant 2
 

@@ -77,7 +77,6 @@ public class CaseDataBuilder {
     protected OrganisationPolicy applicant1OrganisationPolicy;
     protected IdamUserDetails applicantSolicitor1UserDetails;
     protected OrganisationPolicy respondent1OrganisationPolicy;
-    protected YesOrNo respondent2SameLegalRepresentative;
     protected OrganisationPolicy respondent2OrganisationPolicy;
     protected CaseState ccdState;
     // Claimant Response
@@ -215,11 +214,6 @@ public class CaseDataBuilder {
         return this;
     }
 
-    public CaseDataBuilder respondent2SameLegalRepresentative(YesOrNo respondent2SameLegalRepresentative) {
-        this.respondent2SameLegalRepresentative = respondent2SameLegalRepresentative;
-        return this;
-    }
-
     public CaseDataBuilder respondent2OrganisationPolicy(OrganisationPolicy respondent2OrganisationPolicy) {
         this.respondent2OrganisationPolicy = respondent2OrganisationPolicy;
         return this;
@@ -248,7 +242,6 @@ public class CaseDataBuilder {
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
-            .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .legacyCaseReference(legacyCaseReference)
             .generalApplications(generalApplications)
             .generalAppInformOtherParty(gaInformOtherParty)
