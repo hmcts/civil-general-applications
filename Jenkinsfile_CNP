@@ -7,8 +7,9 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
+def camundaBranch = "master"
 
-def generalappCCDBranch = "feature/CIV-3306_CIV-3307"
+def generalappCCDBranch = "sprint6integration"
 
 AppPipelineConfig pipelineConf
 
@@ -100,7 +101,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*DJspec.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
@@ -112,7 +113,7 @@ withPipeline(type, product, component) {
     }
 
     after('smoketest:preview') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/smokeTest/**/*'
     }
 
     before('functionalTest:preview') {
@@ -126,8 +127,12 @@ withPipeline(type, product, component) {
     }
 
     after('functionalTest:preview') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
     }
+
+  after('functionalTest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+  }
 
     before('smoketest:aat') {
         validateRpaContract()
@@ -139,7 +144,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-nonprod.json,*DJspec.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
 
         env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"
@@ -152,7 +157,7 @@ withPipeline(type, product, component) {
     }
 
   after('smoketest:aat') {
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/smokeTest/**/*'
   }
 
     onMaster() {
