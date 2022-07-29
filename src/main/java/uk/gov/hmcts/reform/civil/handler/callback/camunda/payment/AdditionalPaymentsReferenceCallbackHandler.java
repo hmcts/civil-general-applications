@@ -23,7 +23,7 @@ import java.util.Map;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_MAKE_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Slf4j
@@ -31,7 +31,7 @@ import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.i
 @RequiredArgsConstructor
 public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(START_MAKE_ADDITIONAL_PAYMENT_REF);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(OBTAIN_ADDITIONAL_PAYMENT_REF);
     private static final String ERROR_MESSAGE = "Technical error occurred";
     private static final String TASK_ID = "GeneralApplicationMakeAdditionalPayment";
     public static final String DUPLICATE_PAYMENT_MESSAGE

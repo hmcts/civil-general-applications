@@ -33,7 +33,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_MAKE_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
 
 @SpringBootTest(classes = {
     AdditionalPaymentsReferenceCallbackHandler.class,
@@ -138,7 +138,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
 
         @Test
         void handleEventsReturnsTheExpectedCallbackEvent() {
-            assertThat(handler.handledEvents()).contains(START_MAKE_ADDITIONAL_PAYMENT_REF);
+            assertThat(handler.handledEvents()).contains(OBTAIN_ADDITIONAL_PAYMENT_REF);
         }
 
     }
