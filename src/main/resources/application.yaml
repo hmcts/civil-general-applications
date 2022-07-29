@@ -74,7 +74,7 @@ payments:
   api:
     site_id: AAA7
     service: CIVIL
-    callback-url: http://localhost:4550/payment-request-update
+    callback-url: ${PAY_CALLBACK_URL:}
 
 idam:
   s2s-auth:
