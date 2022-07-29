@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
@@ -33,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
@@ -50,6 +52,8 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
+    public static final String COURT_ASSIGNE_ERROR_MESSAGE = "Court already has been assigned for this application";
+
     @Test
     void handleEventsReturnsTheExpectedCallbackEventReferToJudge() {
         assertThat(handler.handledEvents()).contains(REFER_TO_JUDGE);
@@ -61,9 +65,22 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     }
 
     @Test
+    void aboutToStartCallbackShouldThrowErrorCourtValidationState() {
+        CallbackParams params = callbackParamsOf(
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, YES),
+            CallbackType.ABOUT_TO_START
+        );
+        List<String> errors = new ArrayList<>();
+        errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
     void aboutToStartCallbackChecksApplicationStateBeforeProceedingSubmittedState() {
         CallbackParams params = callbackParamsOf(
-            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
             CallbackType.ABOUT_TO_START
         );
         List<String> errors = new ArrayList<>();
@@ -75,7 +92,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     @Test
     void aboutToStartCallbackChecksApplicationStateBeforeProceedingTimeExpiredtate() {
         CallbackParams params = callbackParamsOf(
-            getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED),
+            getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED, NO),
             CallbackType.ABOUT_TO_START
         );
         List<String> errors = new ArrayList<>();
@@ -84,7 +101,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
         assertThat(response.getErrors()).isEqualTo(errors);
     }
 
-    private CaseData getCase(CaseState state) {
+    private CaseData getCase(CaseState state, YesOrNo courtAssigned) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         DynamicList dynamicListTest = fromList(getSampleCourLocations());
@@ -115,6 +132,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
                                  .status(BusinessProcessStatus.FINISHED)
                                  .activityId("anyActivity")
                                  .build())
+            .isCcmccLocation(courtAssigned)
             .ccdState(state)
             .build();
     }
