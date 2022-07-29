@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.reform.prd.model.Organisation;
 
 import java.util.UUID;
 
-import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Service
@@ -88,15 +86,11 @@ public class PaymentsService {
             .map(Organisation::getName)
             .orElseThrow(RuntimeException::new);
 
-        String customerReference = ofNullable(generalAppPBADetails.getPaymentDetails())
-            .map(PaymentDetails::getCustomerReference)
-            .orElse(generalAppPBADetails.getServiceReqReference());
-
         return PBAServiceRequestDTO.builder()
             .accountNumber(generalAppPBADetails.getApplicantsPbaAccounts()
                     .getValue().getLabel())
             .amount(claimFee.getCalculatedAmount())
-            .customerReference(customerReference)
+            .customerReference(generalAppPBADetails.getPbaReference())
             .organisationName(organisationName)
             .idempotencyKey(String.valueOf(UUID.randomUUID()))
             .build();
