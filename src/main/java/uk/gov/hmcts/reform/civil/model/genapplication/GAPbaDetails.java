@@ -31,8 +31,7 @@ public class GAPbaDetails {
                  @JsonProperty("fee") Fee fee,
                  @JsonProperty("paymentDetails") PaymentDetails paymentDetails,
                  @JsonProperty("paymentSuccessfulDate") LocalDateTime paymentSuccessfulDate,
-                 @JsonProperty("serviceRequestReference") String serviceReqReference) {
-                 @JsonProperty("paymentSuccessfulDate") LocalDateTime paymentSuccessfulDate,
+                 @JsonProperty("serviceRequestReference") String serviceReqReference,
                  @JsonProperty("additionalPaymentServiceRef") String additionalPaymentServiceRef,
                  @JsonProperty("additionalPaymentDetails") PaymentDetails additionalPaymentDetails) {
         this.applicantsPbaAccounts = applicantsPbaAccounts;
