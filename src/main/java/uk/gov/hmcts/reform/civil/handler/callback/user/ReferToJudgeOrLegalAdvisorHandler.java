@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISO
 @RequiredArgsConstructor
 public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
 
-    public static final String COURT_ASSIGNE_ERROR_MESSAGE = "Court already has been assigned for this application";
+    public static final String COURT_ASSIGNE_ERROR_MESSAGE = "A Court has already been assigned";
 
     private static final List<CaseEvent> EVENTS = List.of(
         REFER_TO_JUDGE,
@@ -55,7 +55,7 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
         YesOrNo courtAssigned = caseData.getIsCcmccLocation();
 
         List<String> errors = new ArrayList<>();
-        if (courtAssigned.equals(YesOrNo.YES)) {
+        if (YesOrNo.NO.equals(courtAssigned)) {
             errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         }
         return errors;

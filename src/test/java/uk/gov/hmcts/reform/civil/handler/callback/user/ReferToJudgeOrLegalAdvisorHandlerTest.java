@@ -52,7 +52,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
-    public static final String COURT_ASSIGNE_ERROR_MESSAGE = "Court already has been assigned for this application";
+    public static final String COURT_ASSIGNE_ERROR_MESSAGE = "A Court has already been assigned";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEventReferToJudge() {
@@ -67,7 +67,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     @Test
     void aboutToStartCallbackShouldThrowErrorCourtValidationState() {
         CallbackParams params = callbackParamsOf(
-            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, YES),
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
             CallbackType.ABOUT_TO_START
         );
         List<String> errors = new ArrayList<>();
@@ -78,9 +78,9 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     }
 
     @Test
-    void aboutToStartCallbackChecksApplicationStateBeforeProceedingSubmittedState() {
+    void aboutToStartCallbackShouldNotThrowErrorCourtValidationState() {
         CallbackParams params = callbackParamsOf(
-            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, YES),
             CallbackType.ABOUT_TO_START
         );
         List<String> errors = new ArrayList<>();
@@ -90,12 +90,25 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     }
 
     @Test
-    void aboutToStartCallbackChecksApplicationStateBeforeProceedingTimeExpiredtate() {
+    void aboutToStartCallbackTimeExpiredShouldNotThrowErrorCourtValidationState() {
+        CallbackParams params = callbackParamsOf(
+            getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED, YES),
+            CallbackType.ABOUT_TO_START
+        );
+        List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackTimeExpiredShouldThrowErrorCourtValidationState() {
         CallbackParams params = callbackParamsOf(
             getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED, NO),
             CallbackType.ABOUT_TO_START
         );
         List<String> errors = new ArrayList<>();
+        errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEqualTo(errors);
