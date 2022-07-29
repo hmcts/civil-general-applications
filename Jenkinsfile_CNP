@@ -57,13 +57,6 @@ def publishRpaContract() {
 }
 
 withPipeline(type, product, component) {
-    
-    enableFortifyScan()
-    
-    after('fortify-scan') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    }
-    
     pipelineConf = config
     disableLegacyDeployment()
     enableAksStagingDeployment()
