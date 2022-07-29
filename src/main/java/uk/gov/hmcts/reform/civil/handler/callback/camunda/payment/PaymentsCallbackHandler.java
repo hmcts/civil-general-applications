@@ -74,14 +74,11 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken)
                                             .getPaymentReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-            String customerReference = ofNullable(pbaDetails.getPaymentDetails())
-                .map(PaymentDetails::getCustomerReference)
-                .orElse(pbaDetails.getServiceReqReference());
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
                     .orElse(PaymentDetails.builder())
                     .status(SUCCESS)
-                    .customerReference(customerReference)
+                    .customerReference(pbaDetails.getPbaReference())
                     .reference(paymentReference)
                     .errorCode(null)
                     .errorMessage(null)
@@ -119,7 +116,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
             var statusHistory = paymentDto.getStatusHistories()[0];
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
-                    .customerReference(pbaDetails.getServiceReqReference())
+                    .customerReference(pbaDetails.getPbaReference())
                     .status(FAILED)
                     .errorCode(statusHistory.getErrorCode())
                     .errorMessage(statusHistory.getErrorMessage())
@@ -142,7 +139,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         var paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                 .map(PaymentDetails::toBuilder)
                 .orElse(PaymentDetails.builder())
-                .customerReference(pbaDetails.getServiceReqReference())
+                .customerReference(pbaDetails.getPbaReference())
                 .status(FAILED)
                 .errorCode(null)
                 .errorMessage(DUPLICATE_PAYMENT_MESSAGE)
