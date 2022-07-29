@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <suppress until="2022-07-29">
+  <suppress until="2022-08-29">
     <notes><![CDATA[
    file name: camunda-engine-7.15.0.jar (shaded: com.google.code.gson:gson:2.8.5)
    camunda-rest-client-spring-boot-starter still uses old camunda engine with vulnerability
@@ -21,12 +21,12 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework\.cloud/spring\-cloud\-starter\-openfeign@.*$</packageUrl>
     <cve>CVE-2021-22044</cve>
   </suppress>
-  <suppress until="2022-07-29">
+  <suppress until="2022-08-29">
     <notes>CVE-2016-1000027 cant be fixed since spring has conveyed its a known warning in their documentation
       details are available to it from here https://nvd.nist.gov/vuln/detail/CVE-2016-1000027</notes>
     <cve>CVE-2016-1000027</cve>
   </suppress>
-  <suppress until="2022-07-29">
+  <suppress until="2022-08-29">
     <notes>
       Upgrading to tomcat embed core to 1.10.x has got startup issues which requires investigation
     </notes>
