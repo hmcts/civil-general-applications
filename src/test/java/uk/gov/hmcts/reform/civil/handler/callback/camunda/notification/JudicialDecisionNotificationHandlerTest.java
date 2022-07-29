@@ -553,6 +553,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -569,6 +573,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -605,6 +613,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -621,6 +633,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService, times(3)).sendMail(
@@ -698,6 +714,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                               caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList(
                                   "UNSPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("UNSPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
@@ -714,6 +734,10 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
                 .builder().of(ABOUT_TO_SUBMIT,
                               caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"))
                 .request(CallbackRequest.builder().eventId(CASE_EVENT).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"));
+
             handler.handle(params);
 
             verify(notificationService).sendMail(
