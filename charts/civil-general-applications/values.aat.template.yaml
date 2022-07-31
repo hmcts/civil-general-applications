@@ -57,6 +57,7 @@ java:
     FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://civil-ga-camunda-staging-aat.service.core-compute-aat.internal/engine-rest/
+    PAY_CALLBACK_URL: http://civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/payment-request-update
     TESTING_SUPPORT_ENABLED: true
     POLLING_EVENT_EMITTER_ENABLED: false
     RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false
@@ -113,7 +114,6 @@ civil-service:
       TESTING_SUPPORT_ENABLED: true
       FEES_API_URL: http://fees-register-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
       PAYMENTS_API_URL: http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
-      PAY_CALLBACK_URL: http://civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/payment-request-update
       DOCMOSIS_TORNADO_URL: https://docmosis.aat.platform.hmcts.net
       DOCUMENT_MANAGEMENT_URL: http://dm-store-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
       SPRING_CLOUD_BOOTSTRAP_ENABLED: true
