@@ -6,7 +6,6 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -20,6 +19,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 
 @Service
@@ -27,12 +27,6 @@ public class StateGeneratorService {
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
         GAJudgeDecisionOption decision;
-        String directionsText;
-        if (data.getJudicialDecisionMakeOrder() != null) {
-            directionsText = data.getJudicialDecisionMakeOrder().getDirectionsText();
-        } else {
-            directionsText = null;
-        }
         if (data.getJudicialDecision() != null) {
             decision = data.getJudicialDecision().getDecision();
         } else {
@@ -41,7 +35,8 @@ public class StateGeneratorService {
 
         if (isCaseDismissed(data)) {
             return APPLICATION_DISMISSED;
-        } else if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
+        } else if (decision == MAKE_AN_ORDER && data.getJudicialDecisionMakeOrder()
+            .getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
             return AWAITING_ADDITIONAL_INFORMATION;
