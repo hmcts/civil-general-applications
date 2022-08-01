@@ -33,6 +33,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -74,10 +75,12 @@ public class StateGeneratorServiceTest {
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("test").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
             .applicationIsCloaked(YesOrNo.NO)
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .directionsText("test")
+                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
