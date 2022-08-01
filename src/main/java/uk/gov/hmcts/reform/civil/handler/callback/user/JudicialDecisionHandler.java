@@ -197,28 +197,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
-        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
-            = GAJudicialRequestMoreInfo.builder();
-
-        if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
-            caseDataBuilder
-                .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
-                                                     .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
-                                                     .isWithNotice(caseData.getGeneralAppInformOtherParty()
-                                                                       .getIsWithNotice())
-                                                     .build());
-
-        } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
-            caseDataBuilder
-                .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
-                                                     .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
-                                                     .isWithNotice(YES)
-                                                     .build());
-
-        }
-
-        caseDataBuilder.judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
-            .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build());
+        caseDataBuilder
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
@@ -282,6 +262,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData) {
+
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = GAJudicialRequestMoreInfo.builder();
+
+        if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
+            gaJudicialRequestMoreInfoBuilder
+                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+
+        } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+            gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+
+        }
+
+        gaJudicialRequestMoreInfoBuilder.judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build();
+
+        return gaJudicialRequestMoreInfoBuilder;
     }
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
@@ -426,6 +425,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
+        caseDataBuilder
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
@@ -436,6 +438,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = judicialRequestMoreInfo.toBuilder();
+
+        if (judicialRequestMoreInfo.getIsWithNotice() == null) {
+
+            if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
+                gaJudicialRequestMoreInfoBuilder
+                    .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+
+            } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+                gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+
+            }
+        }
+
         List<String> errors = judicialRequestMoreInfo != null
             ? validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo)
             : Collections.emptyList();
@@ -446,15 +464,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .calculateApplicantResponseDeadline(
                     LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
 
-            caseDataBuilder
-                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
-                                                     .builder()
-                                                     .requestMoreInfoOption(caseData
-                                                                                .getJudicialDecisionRequestMoreInfo()
-                                                                                .getRequestMoreInfoOption())
-                                                     .deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission)
-                                                     .build());
+            gaJudicialRequestMoreInfoBuilder.deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission).build();
         }
+
+        caseDataBuilder
+            .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)

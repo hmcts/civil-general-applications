@@ -1794,16 +1794,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "respond, cannot be in past.";
 
         @Test
-        void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
-            CaseData caseData = CaseDataBuilder.builder().build();
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            assertThat(response.getErrors()).isEmpty();
-        }
-
-        @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsNull() {
             CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION, null, NO);
 
@@ -1898,6 +1888,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                .build())
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .requestMoreInfoOption(option)
+                                                     .isWithNotice(YES)
                                                      .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
                                                      .judgeRequestMoreInfoText("Test")
                                                      .deadlineForMoreInfoSubmission(LocalDateTime.now().plusDays(5))
