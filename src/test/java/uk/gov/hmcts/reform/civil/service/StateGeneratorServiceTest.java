@@ -87,49 +87,7 @@ public class StateGeneratorServiceTest {
 
         assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
     }
-
-    @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedNoTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("").build())
-
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
-    @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndEmptyTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("   ").build())
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
-    @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndNullTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
+    
     @Test
     public void shouldReturnCurrentStateWhenMakeOrderAndDismissed() {
 
@@ -211,20 +169,6 @@ public class StateGeneratorServiceTest {
         assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
     }
 
-    @Test
-    public void shouldReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("test").build())
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
-            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .applicationIsCloaked(YesOrNo.NO)
-            .build();
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
-    }
 
     private List<GeneralApplicationTypes> applicationTypeJudgement() {
         return List.of(
