@@ -9,7 +9,7 @@ def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
 
-def generalappCCDBranch = "sprint6integration"
+def generalappCCDBranch = "feature/CIV-2693-2991"
 
 AppPipelineConfig pipelineConf
 
@@ -63,7 +63,7 @@ withPipeline(type, product, component) {
 
     onPR {
         loadVaultSecrets(secrets)
-        enableCleanupOfHelmReleaseOnSuccess()
+        //enableCleanupOfHelmReleaseOnSuccess()
     }
     onMaster {
         loadVaultSecrets(secrets)
