@@ -123,6 +123,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "<Title> <Name> \n"
         + "Upon reading the "
         + "application of %s dated %s and upon considering the information provided by the parties";
+    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reviewing the application made and upon considering the information "
+        + "provided by the parties, the court requests more information from the applicant.";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -194,19 +197,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
 
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = GAJudicialRequestMoreInfo.builder();
+
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
-            caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
-                                                                .builder()
-                                                                .isWithNotice(caseData
-                                                                                  .getGeneralAppInformOtherParty()
-                                                                                  .getIsWithNotice())
-                                                                .build());
+            caseDataBuilder
+                .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
+                                                     .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
+                                                     .isWithNotice(caseData.getGeneralAppInformOtherParty()
+                                                                       .getIsWithNotice())
+                                                     .build());
+
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
-            caseDataBuilder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo
-                                                                .builder()
-                                                                .isWithNotice(YES)
-                                                                .build());
+            caseDataBuilder
+                .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
+                                                     .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
+                                                     .isWithNotice(YES)
+                                                     .build());
+
         }
+
+        caseDataBuilder.judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder
+            .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build());
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
             .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();

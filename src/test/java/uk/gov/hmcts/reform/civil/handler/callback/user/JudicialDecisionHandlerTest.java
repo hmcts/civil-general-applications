@@ -573,6 +573,38 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testAboutToStartForRequestMoreInfoCloakedAppln() {
+            String judgeRecitalText = "<Title> <Name> \n"
+                + "Upon reviewing the application made and upon considering the information provided by the parties, "
+                + "the court requests more information from the applicant.";
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getIsWithNotice()).isEqualTo(NO);
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
+        void testAboutToStartForRequestMoreInfoUrgentAppln() {
+            String judgeRecitalText = "<Title> <Name> \n"
+                + "Upon reviewing the application made and upon considering the information provided by the parties, "
+                + "the court requests more information from the applicant.";
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getIsWithNotice()).isEqualTo(YES);
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
             String expectedRecitalText = "<Title> <Name> \n"
                 + "Upon reading the application of Defendant dated 15 January 22 and upon the "
@@ -2348,6 +2380,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     public GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getJudicialDecisionMakeOrder();
+    }
+
+    public GAJudicialRequestMoreInfo getJudicialRequestMoreInfo(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getJudicialDecisionRequestMoreInfo();
     }
 
     public YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
