@@ -11,6 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
     private static final String PAYMENT_CALLBACK_URL = "/payment-request-update";
+    private static final String CCD_CASE_NUMBER = "1234";
+    private static final String PAID = "Paid";
+    private static final String REFERENCE = "reference";
+    private static final String ACCOUNT_NUMBER = "123445555";
 
     @Test
     public void whenInvalidTypeOfRequestMade_ReturnMethodNotAllowed() throws Exception {
@@ -28,13 +32,13 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
     private ServiceRequestUpdateDto buildServiceDto() {
         return ServiceRequestUpdateDto.builder()
-            .ccdCaseNumber("1234")
-            .serviceRequestStatus("Paid")
+            .ccdCaseNumber(CCD_CASE_NUMBER)
+            .serviceRequestStatus(PAID)
             .payment(PaymentDto.builder()
                          .amount(new BigDecimal(167))
-                         .paymentReference("reference")
-                         .caseReference("reference")
-                         .accountNumber("123445555")
+                         .paymentReference(REFERENCE)
+                         .caseReference(REFERENCE)
+                         .accountNumber(ACCOUNT_NUMBER)
                          .build())
             .build();
     }

@@ -44,6 +44,10 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAY
 class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandlerTest {
 
     private static final String PAYMENT_REQUEST_REFERENCE = "RC-1234-1234-1234-1234";
+    public static final String BEARER_TOKEN = "BEARER_TOKEN";
+    public static final String DUPLICATE_PAYMENT = "Duplicate Payment.";
+    public static final String UNEXPECTED_RESPONSE_BODY = "unexpected response body";
+    public static final String EXCEPTION_MESSAGE = "exception message";
 
     @MockBean
     private Time time;
@@ -81,7 +85,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, BEARER_TOKEN);
             assertThat(extractPaymentRequestReferenceFromResponse(response))
                 .isEqualTo(PAYMENT_REQUEST_REFERENCE);
         }
@@ -106,12 +110,12 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThrows(FeignException.class, () -> handler.handle(params));
-            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, BEARER_TOKEN);
         }
 
         @Test
         void shouldNotThrowError_whenPaymentIsResubmittedWithInTwoMinutes() {
-            doThrow(new InvalidPaymentRequestException("Duplicate Payment."))
+            doThrow(new InvalidPaymentRequestException(DUPLICATE_PAYMENT))
                 .when(paymentsService).createServiceRequest(any(), any());
 
             var caseData = CaseDataBuilder.builder()
@@ -120,7 +124,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
+            verify(paymentsService).createServiceRequest(caseData, BEARER_TOKEN);
 
             assertThat(extractPaymentRequestReferenceFromResponse(response)).isNull();
             assertThat(response.getErrors()).isEmpty();
@@ -149,13 +153,13 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
     }
 
     private FeignException buildForbiddenFeignExceptionWithInvalidResponse() {
-        return buildFeignClientException(403, "unexpected response body".getBytes(UTF_8));
+        return buildFeignClientException(403, UNEXPECTED_RESPONSE_BODY.getBytes(UTF_8));
     }
 
     private FeignException.FeignClientException buildFeignClientException(int status, byte[] body) {
         return new FeignException.FeignClientException(
             status,
-            "exception message",
+            EXCEPTION_MESSAGE,
             Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
             body
         );

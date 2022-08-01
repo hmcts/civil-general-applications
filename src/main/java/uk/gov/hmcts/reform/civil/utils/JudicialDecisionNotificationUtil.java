@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.APPLICATION_CHANGE_TO_WITH_NOTICE;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
@@ -79,9 +78,6 @@ public class JudicialDecisionNotificationUtil {
         }
         if (isRequestForInformationWithouNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
-        }
-        if (isRequestForInformationWithoutNoticeToNotice(caseData)) {
-            return APPLICATION_CHANGE_TO_WITH_NOTICE;
         }
         if (isRequestForInformationWithNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
@@ -203,23 +199,6 @@ public class JudicialDecisionNotificationUtil {
                 .getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null;
-    }
-
-    private static boolean isRequestForInformationWithoutNoticeToNotice(CaseData caseData) {
-        var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
-            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
-        return
-            isJudicialDecisionEvent(caseData)
-                && Objects.nonNull(decision)
-                && caseData.getJudicialDecision()
-                .getDecision().equals(REQUEST_MORE_INFO)
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().equals(
-                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY);
-//                && caseData.getJudicialDecisionRequestMoreInfo()
-//                .getJudgeRequestMoreInfoText() != null
-//                && caseData.getJudicialDecisionRequestMoreInfo()
-//                .getJudgeRequestMoreInfoByDate() != null;
     }
 
     private static boolean isRequestForInformationWithNotice(CaseData caseData) {

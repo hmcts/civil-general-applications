@@ -43,6 +43,9 @@ class PaymentRequestUpdateCallbackServiceTest {
     private static final String PAID = "Paid";
     private static final String NOT_PAID = "NotPaid";
     private static final String CASE_ID = "12345";
+    public static final String REFERENCE = "123445";
+    public static final String ACCOUNT_NUMBER = "123445555";
+    public static final String TOKEN = "1234";
     @Mock
     ObjectMapper objectMapper;
     @MockBean
@@ -114,7 +117,7 @@ class PaymentRequestUpdateCallbackServiceTest {
                                       .additionalPaymentDetails(PaymentDetails.builder()
                                                                     .status(FAILED)
                                                                     .customerReference(null)
-                                                                    .reference("123445")
+                                                                    .reference(REFERENCE)
                                                                     .errorCode(null)
                                                                     .errorMessage(null)
                                                                     .build())
@@ -188,16 +191,16 @@ class PaymentRequestUpdateCallbackServiceTest {
             .serviceRequestStatus(status)
             .payment(PaymentDto.builder()
                          .amount(new BigDecimal(167))
-                         .paymentReference("reference")
-                         .caseReference("reference")
-                         .accountNumber("123445555")
+                         .paymentReference(REFERENCE)
+                         .caseReference(REFERENCE)
+                         .accountNumber(ACCOUNT_NUMBER)
                          .build())
             .build();
     }
 
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {
         return StartEventResponse.builder()
-            .token("1234")
+            .token(TOKEN)
             .eventId(END_JUDGE_BUSINESS_PROCESS_GASPEC.name())
             .caseDetails(caseDetails)
             .build();

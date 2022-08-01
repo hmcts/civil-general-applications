@@ -38,6 +38,9 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     private static final Fee FEE167 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(16700)).code("FEE0444").version("1").build();
     private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_167 = BigDecimal.valueOf(16700);
+    public static final String TEST_FEE_CODE = "test_fee_code";
+    public static final String SOME_FEE_CODE = "Some Fee Code";
+    public static final String SOME_EXCEPTION = "Some Exception";
     @Autowired
     private AdditionalFeeValueCallbackHandler handler;
     private static final String TASK_ID = "ObtainAdditionalFeeValue";
@@ -52,7 +55,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     @BeforeEach
     void setup() {
         when(generalAppFeesConfiguration.getApplicationUncloakAdditionalFee())
-            .thenReturn("Some Fee Code");
+            .thenReturn(SOME_FEE_CODE);
     }
 
     @Test
@@ -73,11 +76,11 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     public void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
-                TEST_FEE_AMOUNT_POUNDS_167).code("test_fee_code").version("1").build());
+                TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version("1").build());
 
         Fee expectedFeeDto = Fee.builder()
             .calculatedAmountInPence(TEST_FEE_AMOUNT_POUNDS_167)
-            .code("test_fee_code")
+            .code(TEST_FEE_CODE)
             .version("1")
             .build();
         var caseData = CaseDataBuilder.builder()
@@ -105,7 +108,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     void shouldThrowError_whenRunTimeExceptionHappens() {
 
         when(generalAppFeesService.getFeeForGA(any()))
-            .thenThrow(new RuntimeException("Some Exception"));
+            .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
             .judicialOrderMadeWithUncloakApplication()
@@ -114,7 +117,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
         Exception exception = assertThrows(RuntimeException.class, () -> handler.handle(params));
 
-        assertThat(exception.getMessage()).isEqualTo("Some Exception");
+        assertThat(exception.getMessage()).isEqualTo(SOME_EXCEPTION);
     }
 
     private Fee extractAdditionalUncloakFee(AboutToStartOrSubmitCallbackResponse response) {

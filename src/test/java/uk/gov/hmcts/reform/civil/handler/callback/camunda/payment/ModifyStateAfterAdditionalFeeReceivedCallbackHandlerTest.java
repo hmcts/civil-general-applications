@@ -27,6 +27,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 })
 class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallbackHandlerTest {
 
+    public static final long CCD_CASE_REFERENCE = 1234L;
     @MockBean
     private ParentCaseUpdateHelper parentCaseUpdateHelper;
 
@@ -36,7 +37,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
     @Test
     void shouldRespondWithStateChanged() {
-        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1234L).build();
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(CCD_CASE_REFERENCE).build();
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -47,7 +48,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
     @Test
     void shouldDispatchBusinessProcess_whenStatusIsReady() {
-        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1234L).build();
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(CCD_CASE_REFERENCE).build();
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
         handler.handle(params);
