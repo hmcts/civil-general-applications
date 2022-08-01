@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -21,6 +22,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Service
 public class StateGeneratorService {
@@ -42,6 +44,9 @@ public class StateGeneratorService {
         if (isCaseDismissed(data)) {
             return APPLICATION_DISMISSED;
         } else if (decision == MAKE_AN_ORDER && !isBlank(directionsText)) {
+            if (isApplicationUncloakedInJudicialDecision(data)) {
+                return APPLICATION_ADD_PAYMENT;
+            }
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
             return AWAITING_ADDITIONAL_INFORMATION;
@@ -55,6 +60,9 @@ public class StateGeneratorService {
                 && data.getGeneralAppType().getTypes().contains(STRIKE_OUT)) {
                 return PROCEEDS_IN_HERITAGE;
             } else {
+                if (isApplicationUncloakedInJudicialDecision(data)) {
+                    return APPLICATION_ADD_PAYMENT;
+                }
                 return ORDER_MADE;
             }
         }
@@ -75,4 +83,5 @@ public class StateGeneratorService {
 
         return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
     }
+
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.fee;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -37,7 +39,8 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private ValidateFeeCallbackHandler handler;
-
+    @MockBean
+    private GeneralAppFeesConfiguration feesConfiguration;
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
@@ -53,6 +56,12 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class MakePBAPayments {
 
+        @BeforeEach
+        void setup() {
+            when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
+            when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
+        }
+
         @Test
         void shouldReturnErrors_whenCaseDataDoesNotHavePBADetails() {
             CaseData caseData = CaseDataBuilder.builder().build();
@@ -63,7 +72,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(caseData);
+            verify(feesService).getFeeForGA(any());
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ERROR_MESSAGE_NO_FEE_IN_CASEDATA);
         }
@@ -78,49 +87,61 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(caseData);
+            verify(feesService).getFeeForGA(any());
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ERROR_MESSAGE_NO_FEE_IN_CASEDATA);
         }
 
         @Test
-        void shouldReturnNoErrors_whenFeeOnCaseDataIsSameAsFeeFromFeeService() {
-            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108);
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            when(feesService.getFeeForGA(any()))
-                .thenReturn(Fee.builder().calculatedAmountInPence(
-                    BigDecimal.valueOf(10800)).code("FEE0443").version("1").build());
+        void shouldReturnErrors_whenConsentedApplicationWithDifferentFeesOnCaseDataAndFeeFromFeeService() {
 
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(feesService).getFeeForGA(caseData);
-            assertThat(response.getErrors()).isEmpty();
-        }
-
-        @Test
-        void shouldReturnErrors_whenFeeOnCaseDataIsDifferentFromFeeFromFeeService() {
-            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108);
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, true, false);
             when(feesService.getFeeForGA(any()))
                 .thenReturn(FEE275);
-
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(caseData);
+            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ERROR_MESSAGE_FEE_CHANGED);
         }
 
         @Test
+        void shouldReturnNoErrors_whenWithNoticeApplicationSameFeesOnCaseDataAndFeeFromFeeService() {
+            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE275, false, true);
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(feesService.getFeeForGA(any()))
+                .thenReturn(FEE275);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            verify(feesService).getFeeForGA(feesConfiguration.getWithNoticeKeyword());
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldReturnNoErrors_whenNotConsentedNotifiedApplicationIsBeingMade() {
+
+            CaseData caseData =  CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
+            when(feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword()))
+                .thenReturn(FEE108);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
         void returnsCorrectTaskId() {
-            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108);
+            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.camundaActivityId(params)).isEqualTo(TASK_ID);
         }
 
         @Test
         void returnsCorrectEvents() {
-            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108);
+            CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.handledEvents()).contains(VALIDATE_FEE_GASPEC);
         }
