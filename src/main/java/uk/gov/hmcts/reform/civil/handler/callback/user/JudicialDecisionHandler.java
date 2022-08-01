@@ -454,12 +454,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
         }
 
-        List<String> errors = judicialRequestMoreInfo != null
-            ? validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo)
-            : Collections.emptyList();
+        List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
-        if (judicialRequestMoreInfo != null
-            && SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
+        if (SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
             LocalDateTime deadlineForMoreInfoSubmission = deadlinesCalculator
                 .calculateApplicantResponseDeadline(
                     LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
