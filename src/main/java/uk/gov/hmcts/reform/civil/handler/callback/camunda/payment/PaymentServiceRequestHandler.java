@@ -31,7 +31,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
-    private static final String TASK_ID = "GeneralApplicationMakePayment";
+    private static final String TASK_ID = "GeneralApplicationPaymentServiceReq";
 
     private final PaymentsService paymentsService;
     private final ObjectMapper objectMapper;
@@ -63,9 +63,8 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             var serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
                                                                         .getServiceRequestReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-
             caseData = caseData.toBuilder()
-                .generalAppPBADetails(GAPbaDetails.builder()
+                .generalAppPBADetails(pbaDetails.toBuilder()
                                           .applicantsPbaAccounts(caseData.getGeneralAppPBADetails()
                                                                      .getApplicantsPbaAccounts())
                                           .fee(caseData.getGeneralAppPBADetails().getFee())
