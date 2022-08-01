@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-//import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ADDITIONAL_PAYMENT_SUCCESS_CALLBACK;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
