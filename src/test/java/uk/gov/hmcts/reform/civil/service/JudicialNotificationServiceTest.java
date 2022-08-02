@@ -119,6 +119,10 @@ class JudicialNotificationServiceTest {
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeUncloakApplicationEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeApproveOrderToStrikeOutDamages())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getJudgeApproveOrderToStrikeOutOCMC())
+                .thenReturn(SAMPLE_TEMPLATE);
         }
 
         @Test
@@ -536,6 +540,41 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendApproveDamagesWhenRespondentsAreInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"));
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendApproveOcmcWhenRespondentsAreInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"));
+
+            verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationShouldSendForApplicationListForHearingWhenRespondentsAreAvailableInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -561,6 +600,42 @@ class JudicialNotificationServiceTest {
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForApprovedDamageWhenRespondentsAreInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"));
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationUncloakShouldSendForApprovedOcmcWhenRespondentsAreInList() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"));
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -622,6 +697,41 @@ class JudicialNotificationServiceTest {
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeApprovesOrderDamageApplicationIsCloak() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("UNSPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList(
+                    "UNSPEC_CLAIM"));
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendWhenJudgeApprovesOrderOcmcApplicationIsCloak() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"));
+
+            judicialNotificationService
+                .sendNotification(caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList("SPEC_CLAIM"));
+
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -872,6 +982,7 @@ class JudicialNotificationServiceTest {
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStayTheClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
                 .build();
         }
 
@@ -909,6 +1020,7 @@ class JudicialNotificationServiceTest {
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStayTheClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
                 .build();
         }
 
@@ -929,7 +1041,33 @@ class JudicialNotificationServiceTest {
                                               .caseReference(CASE_REFERENCE.toString()).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStayTheClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
                 .build();
+        }
+
+        private CaseData caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(
+            YesOrNo orderAgreement,
+            YesOrNo isWithNotice, String superClaimType) {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppSuperClaimType(superClaimType)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                                       .hasAgreed(orderAgreement).build())
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                                   .makeAnOrder(
+                                                       GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeToStrikeOut()).build())
+                    .judicialConcurrentDateText(DUMMY_DATE)
+                    .generalAppPBADetails(GAPbaDetails.builder().build())
+                    .build();
         }
 
         private CaseData caseDataForSequentialWrittenRepInList() {
@@ -949,6 +1087,7 @@ class JudicialNotificationServiceTest {
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
+                    .generalAppPBADetails(GAPbaDetails.builder().build())
                     .build();
         }
 
@@ -1012,6 +1151,28 @@ class JudicialNotificationServiceTest {
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .generalAppPBADetails(GAPbaDetails.builder().build())
+                    .build();
+        }
+
+        private CaseData caseDataForApprovedCloakStrikeOutWhenRespondentsArePresentInList(String superClaimType) {
+            return
+                CaseData.builder()
+                    .generalAppRespondentSolicitors(respondentSolicitors())
+                    .generalAppSuperClaimType(superClaimType)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                                  .email(DUMMY_EMAIL).build())
+                    .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                                  .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
+                        GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT
+                    ).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(applicationTypeToStrikeOut()).build())
+                    .applicationIsCloaked(YES)
+                    .judicialConcurrentDateText(DUMMY_DATE)
                     .build();
         }
 

@@ -101,10 +101,6 @@ public class CaseDataBuilder {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private YesOrNo parentClaimantIsApplicant;
 
-    public static CaseDataBuilder builder() {
-        return new CaseDataBuilder();
-    }
-
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
         return this;
@@ -232,6 +228,10 @@ public class CaseDataBuilder {
     public CaseDataBuilder respondent2OrganisationPolicy(OrganisationPolicy respondent2OrganisationPolicy) {
         this.respondent2OrganisationPolicy = respondent2OrganisationPolicy;
         return this;
+    }
+
+    public static CaseDataBuilder builder() {
+        return new CaseDataBuilder();
     }
 
     public CaseDataBuilder atStateClaimDraft() {
