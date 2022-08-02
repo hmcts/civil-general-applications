@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import uk.gov.hmcts.reform.payments.client.models.StatusHistoryDto;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -88,9 +89,9 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldMakePbaPayment_whenInvoked() {
+        void shouldMakePbaPayment_whenInvoked() throws Exception {
             when(paymentsService.createCreditAccountPayment(any(), any()))
-                .thenReturn(PaymentDto.builder().reference(SUCCESSFUL_PAYMENT_REFERENCE).build());
+                .thenReturn(PBAServiceRequestResponse.builder().paymentReference(SUCCESSFUL_PAYMENT_REFERENCE).build());
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -156,7 +157,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
 
-            assertThat(extractPaymentDetailsFromResponse(response).getPbaReference()).isEqualTo("12345");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference()).isEqualTo("12345");
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails()).isNull();
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate()).isNull();
             assertThat(response.getErrors()).containsOnly("Technical error occurred");
@@ -175,7 +176,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralApplicationMakePayment");
+            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralAppServiceReqPbaPayment");
         }
 
         @Test

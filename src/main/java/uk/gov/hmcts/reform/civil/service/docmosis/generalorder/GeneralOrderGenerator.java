@@ -61,10 +61,9 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
-                .applicantName(caseData.getApplicantPartyName())
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
+                .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
-                .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now());
 
         return judgeDecisionPdfDocumentBuilder.build();

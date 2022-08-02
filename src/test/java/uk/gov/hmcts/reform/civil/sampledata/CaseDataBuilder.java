@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -70,8 +71,14 @@ public class CaseDataBuilder {
     protected GAInformOtherParty gaInformOtherParty;
     protected GAUrgencyRequirement gaUrgencyRequirement;
     protected GARespondentOrderAgreement gaRespondentOrderAgreement;
+    protected String respondentSolicitor1EmailAddress;
+    protected String respondentSolicitor2EmailAddress;
     protected GAPbaDetails gaPbaDetails;
     protected OrganisationPolicy applicant1OrganisationPolicy;
+    protected IdamUserDetails applicantSolicitor1UserDetails;
+    protected OrganisationPolicy respondent1OrganisationPolicy;
+    protected YesOrNo respondent2SameLegalRepresentative;
+    protected OrganisationPolicy respondent2OrganisationPolicy;
     protected CaseState ccdState;
     // Claimant Response
     protected BusinessProcess businessProcess;
@@ -83,6 +90,7 @@ public class CaseDataBuilder {
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    private YesOrNo isMultiParty;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
 
     //General Application
@@ -105,6 +113,16 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalAppApplnSolicitor(GASolicitorDetailsGAspec generalAppApplnSolicitor) {
         this.generalAppApplnSolicitor = generalAppApplnSolicitor;
+        return this;
+    }
+
+    public CaseDataBuilder isMultiParty(YesOrNo isMultiParty) {
+        this.isMultiParty = isMultiParty;
+        return this;
+    }
+
+    public CaseDataBuilder applicantSolicitor1UserDetails(IdamUserDetails applicantSolicitor1UserDetails) {
+        this.applicantSolicitor1UserDetails = applicantSolicitor1UserDetails;
         return this;
     }
 
@@ -172,6 +190,16 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder respondentSolicitor1EmailAddress(String email) {
+        this.respondentSolicitor1EmailAddress = email;
+        return this;
+    }
+
+    public CaseDataBuilder respondentSolicitor2EmailAddress(String email) {
+        this.respondentSolicitor2EmailAddress = email;
+        return this;
+    }
+
     public CaseDataBuilder gaPbaDetails(GAPbaDetails gaPbaDetails) {
         this.gaPbaDetails = gaPbaDetails;
         return this;
@@ -179,6 +207,21 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder applicant1OrganisationPolicy(OrganisationPolicy applicant1OrganisationPolicy) {
         this.applicant1OrganisationPolicy = applicant1OrganisationPolicy;
+        return this;
+    }
+
+    public CaseDataBuilder respondent1OrganisationPolicy(OrganisationPolicy respondent1OrganisationPolicy) {
+        this.respondent1OrganisationPolicy = respondent1OrganisationPolicy;
+        return this;
+    }
+
+    public CaseDataBuilder respondent2SameLegalRepresentative(YesOrNo respondent2SameLegalRepresentative) {
+        this.respondent2SameLegalRepresentative = respondent2SameLegalRepresentative;
+        return this;
+    }
+
+    public CaseDataBuilder respondent2OrganisationPolicy(OrganisationPolicy respondent2OrganisationPolicy) {
+        this.respondent2OrganisationPolicy = respondent2OrganisationPolicy;
         return this;
     }
 
@@ -195,9 +238,17 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .isMultiParty(isMultiParty)
+            .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)
+            .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
+            .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
+            .respondentSolicitor2EmailAddress(respondentSolicitor2EmailAddress)
+            .respondent1OrganisationPolicy(respondent1OrganisationPolicy)
+            .respondent2OrganisationPolicy(respondent2OrganisationPolicy)
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
+            .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .legacyCaseReference(legacyCaseReference)
             .generalApplications(generalApplications)
             .generalAppInformOtherParty(gaInformOtherParty)
@@ -240,7 +291,8 @@ public class CaseDataBuilder {
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .pbaReference(CUSTOMER_REFERENCE).build())
+                    .pbaReference(CUSTOMER_REFERENCE)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
@@ -286,7 +338,8 @@ public class CaseDataBuilder {
                             .value(DynamicListElement.dynamicElement("PBA0078095"))
                             .build())
                     .fee(fee)
-                    .pbaReference(CUSTOMER_REFERENCE).build())
+                    .pbaReference(CUSTOMER_REFERENCE)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
@@ -309,6 +362,7 @@ public class CaseDataBuilder {
                                            .orderText("Test Order")
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
+                                           .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -331,6 +385,7 @@ public class CaseDataBuilder {
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
+                                           .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -365,6 +420,8 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
+            .judicialGeneralHearingOrderRecital("Test Judge's recital")
+            .judicialGOHearingDirections("Test hearing direction")
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
@@ -385,6 +442,8 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .judgeRecitalText("Test Judge's recital")
+            .directionInRelationToHearingText("Test written order")
             .createdDate(LocalDateTime.now())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -408,6 +467,8 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
+            .judgeRecitalText("Test Judge's recital")
+            .directionInRelationToHearingText("Test written order")
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
