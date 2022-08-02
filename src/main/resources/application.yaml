@@ -73,6 +73,7 @@ payments:
   api:
     site_id: AAA7
     service: CIVIL
+    callback-url: http://localhost:4550/payment-request-update
 
 idam:
   s2s-auth:
@@ -195,6 +196,7 @@ genApp:
 payments:
   api:
     url: http://localhost:8765
+    callback-url: http://localhost:4550/payment-request-update
 
 idam:
   web:
@@ -259,6 +261,7 @@ genApp:
 payments:
   api:
     url: http://fake-payment-register-api
+    callback-url: http://fake-payment-register-api
 
 idam:
   web:
