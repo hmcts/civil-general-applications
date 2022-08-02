@@ -62,4 +62,10 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String judgeUncloakApplicationEmailTemplate;
+
+    @NotEmpty
+    private String judgeApproveOrderToStrikeOutDamages;
+
+    @NotEmpty
+    private String judgeApproveOrderToStrikeOutOCMC;
 }
