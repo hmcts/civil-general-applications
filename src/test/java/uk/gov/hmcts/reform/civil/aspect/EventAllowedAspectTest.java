@@ -79,7 +79,7 @@ class EventAllowedAspectTest {
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .type(ABOUT_TO_START)
             .request(CallbackRequest.builder()
-                         .eventId(CaseEvent.MAKE_PBA_PAYMENT_GASPEC.name())
+                         .eventId(CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC.name())
                          .caseDetails(CaseDetailsBuilder.builder().atStateAwaitingRespondentAcknowledgement().build())
                          .build())
             .build();
