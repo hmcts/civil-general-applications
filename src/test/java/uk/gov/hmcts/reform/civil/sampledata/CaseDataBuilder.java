@@ -291,7 +291,8 @@ public class CaseDataBuilder {
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .pbaReference(CUSTOMER_REFERENCE).build())
+                    .pbaReference(CUSTOMER_REFERENCE)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
@@ -337,7 +338,8 @@ public class CaseDataBuilder {
                             .value(DynamicListElement.dynamicElement("PBA0078095"))
                             .build())
                     .fee(fee)
-                    .pbaReference(CUSTOMER_REFERENCE).build())
+                    .pbaReference(CUSTOMER_REFERENCE)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();

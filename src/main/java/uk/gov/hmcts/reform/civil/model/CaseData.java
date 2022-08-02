@@ -127,6 +127,7 @@ public class CaseData implements MappableObject {
     private final String generalAppLegalAdvisorAdditionalInfo;
     private final YesOrNo respondent2SameLegalRepresentative;
 
+
     //PDF Documents
     @Builder.Default
     private final List<Element<CaseDocument>> generalOrderDocument = new ArrayList<>();

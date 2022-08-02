@@ -224,7 +224,7 @@ class GeneralAppFeesServiceTest {
                                 .build())
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .applicantsPbaAccounts(PBA_ACCOUNTS)
-                                      .pbaReference(STRING_CONSTANT)
+                                      .serviceReqReference(STRING_CONSTANT)
                                       .build())
             .generalAppDetailsOfOrder(STRING_CONSTANT)
             .generalAppReasonsOfOrder(STRING_CONSTANT)
