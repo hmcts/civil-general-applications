@@ -230,6 +230,10 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public static CaseDataBuilder builder() {
+        return new CaseDataBuilder();
+    }
+
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
