@@ -8,7 +8,27 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "rpe"
-def component = "spring-boot-template"
+def product = "civil"
+def component = "service"
 
-withNightlyPipeline(type, product, component) {}
+static Map<String, Object> secret(String secretName, String envVariable) {
+  [$class     : 'AzureKeyVaultSecret',
+   secretType : 'Secret',
+   name       : secretName,
+   envVariable: envVariable
+  ]
+}
+
+def secrets = [
+  'civil-${env}': [
+    secret('microservicekey-civil-service', 'S2S_SECRET')
+  ]
+]
+
+withNightlyPipeline(type, product, component) {
+    enableFortifyScan()
+
+    after('fortify-scan') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+    }
+}
