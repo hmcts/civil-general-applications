@@ -41,10 +41,11 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
     private ValidateFeeCallbackHandler handler;
     @MockBean
     private GeneralAppFeesConfiguration feesConfiguration;
+    public static final String VERSION = "1";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
-        BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
+        BigDecimal.valueOf(10800)).code("FEE0443").version(VERSION).build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
-        BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
+        BigDecimal.valueOf(27500)).code("FEE0442").version(VERSION).build();
 
     private static final String ERROR_MESSAGE_NO_FEE_IN_CASEDATA = "Application case data does not have fee details";
     private static final String ERROR_MESSAGE_FEE_CHANGED = "Fee has changed since application was submitted. "
@@ -68,7 +69,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             when(feesService.getFeeForGA(any()))
                 .thenReturn(Fee.builder().calculatedAmountInPence(
-                    BigDecimal.valueOf(10800)).code("").version("1").build());
+                    BigDecimal.valueOf(10800)).code("").version(VERSION).build());
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -83,7 +84,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             when(feesService.getFeeForGA(any()))
                 .thenReturn(Fee.builder().calculatedAmountInPence(
-                    BigDecimal.valueOf(10800)).code("").version("1").build());
+                    BigDecimal.valueOf(10800)).code("").version(VERSION).build());
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 

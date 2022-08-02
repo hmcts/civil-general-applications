@@ -118,7 +118,6 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy respondent2OrganisationPolicy;
     private final YesOrNo respondent2SameLegalRepresentative;
 
-
     //PDF Documents
     @Builder.Default
     private final List<Element<CaseDocument>> generalOrderDocument = new ArrayList<>();

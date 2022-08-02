@@ -99,7 +99,7 @@ public class PaymentRequestUpdateCallbackService {
         GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
         String customerReference = ofNullable(serviceRequestUpdateDto.getPayment())
             .map(PaymentDto::getCustomerReference)
-            .orElse(pbaDetails.getServiceReqReference());
+            .orElse(pbaDetails.getAdditionalPaymentServiceRef());
 
         PaymentDetails paymentDetails = ofNullable(pbaDetails.getAdditionalPaymentDetails())
             .map(PaymentDetails::toBuilder)

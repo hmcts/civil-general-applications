@@ -35,11 +35,11 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE
 })
 class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
+    public static final String VERSION = "1";
     private static final Fee FEE167 = Fee.builder().calculatedAmountInPence(
-        BigDecimal.valueOf(16700)).code("FEE0444").version("1").build();
+        BigDecimal.valueOf(16700)).code("FEE0444").version(VERSION).build();
     private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_167 = BigDecimal.valueOf(16700);
     public static final String TEST_FEE_CODE = "test_fee_code";
-    public static final String SOME_FEE_CODE = "Some Fee Code";
     public static final String SOME_EXCEPTION = "Some Exception";
     @Autowired
     private AdditionalFeeValueCallbackHandler handler;
@@ -55,7 +55,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     @BeforeEach
     void setup() {
         when(generalAppFeesConfiguration.getApplicationUncloakAdditionalFee())
-            .thenReturn(SOME_FEE_CODE);
+            .thenReturn(TEST_FEE_CODE);
     }
 
     @Test
@@ -76,12 +76,12 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     public void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
-                TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version("1").build());
+                TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
 
         Fee expectedFeeDto = Fee.builder()
             .calculatedAmountInPence(TEST_FEE_AMOUNT_POUNDS_167)
             .code(TEST_FEE_CODE)
-            .version("1")
+            .version(VERSION)
             .build();
         var caseData = CaseDataBuilder.builder()
             .judicialOrderMadeWithUncloakApplication()
@@ -95,7 +95,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     public void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
-                BigDecimal.valueOf(16700)).code("").version("1").build());
+                BigDecimal.valueOf(16700)).code("").version(VERSION).build());
 
         var caseData = CaseDataBuilder.builder()
             .requestForInforationApplication()
