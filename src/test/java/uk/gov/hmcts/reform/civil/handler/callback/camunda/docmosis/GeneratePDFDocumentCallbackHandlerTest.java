@@ -203,7 +203,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldGenerateRequestForInformationDocument_whenAboutToSubmitEventIsCalled() {
-            CaseData caseData = CaseDataBuilder.builder().requestForInforationApplication()
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 

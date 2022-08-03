@@ -63,6 +63,9 @@ public class CaseDataBuilder {
     public static final LocalDateTime NOTIFICATION_DEADLINE = LocalDate.now().atStartOfDay().plusDays(1);
     public static final BigDecimal FAST_TRACK_CLAIM_AMOUNT = BigDecimal.valueOf(10000);
     public static final String CUSTOMER_REFERENCE = "12345";
+    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reviewing the application made and upon considering the information "
+        + "provided by the parties, the court requests more information from the applicant.";
 
     // Create Claim
     protected Long ccdCaseReference;
@@ -481,7 +484,7 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder requestForInforationApplication() {
+    public CaseData.CaseDataBuilder requestForInformationApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -495,6 +498,7 @@ public class CaseDataBuilder {
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
                                                  .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())

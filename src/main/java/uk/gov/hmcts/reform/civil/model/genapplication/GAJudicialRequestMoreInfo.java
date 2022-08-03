@@ -21,6 +21,7 @@ public class GAJudicialRequestMoreInfo {
     private LocalDate judgeRequestMoreInfoByDate;
     private LocalDateTime deadlineForMoreInfoSubmission;
     private YesOrNo isWithNotice;
+    private String judgeRecitalText;
 
     @JsonCreator
     GAJudicialRequestMoreInfo(@JsonProperty("requestMoreInfoOption")
@@ -32,11 +33,13 @@ public class GAJudicialRequestMoreInfo {
                               @JsonProperty("deadlineForMoreInfoSubmission")
                                   LocalDateTime deadlineForMoreInfoSubmission,
                               @JsonProperty("isWithNotice")
-                                  YesOrNo isWithNotice) {
+                                  YesOrNo isWithNotice,
+                              @JsonProperty("judgeRecitalText") String judgeRecitalText) {
         this.requestMoreInfoOption = requestMoreInfoOption;
         this.judgeRequestMoreInfoText = judgeRequestMoreInfoText;
         this.judgeRequestMoreInfoByDate = judgeRequestMoreInfoByDate;
         this.deadlineForMoreInfoSubmission = deadlineForMoreInfoSubmission;
         this.isWithNotice = isWithNotice;
+        this.judgeRecitalText = judgeRecitalText;
     }
 }
