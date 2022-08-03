@@ -11,13 +11,14 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
@@ -84,14 +85,6 @@ public class JudicialDecisionNotificationUtil {
         return NON_CRITERION;
     }
 
-    private static GAJudgeWrittenRepresentationsOptions writtenOptions(CaseData caseData) {
-        return Optional
-            .ofNullable(caseData
-                            .getJudicialDecisionMakeAnOrderForWrittenRepresentations())
-            .map(GAJudicialWrittenRepresentations::getWrittenOption)
-            .orElse(null);
-    }
-
     public static String requiredGAType(CaseData caseData) {
         List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
         return types.stream().map(GeneralApplicationTypes::getDisplayedValue)
@@ -99,25 +92,27 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static boolean isApplicationForConcurrentWrittenRep(CaseData caseData) {
-        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
+        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
+        boolean isAppConcurWrittenRep = isAppWrittenRepresentationOfGivenType(caseData,
+                                                                             GAJudgeWrittenRepresentationsOptions
+                                                                                 .CONCURRENT_REPRESENTATIONS);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(writtenOptions(caseData))
-            && ((writtenOptions(caseData))
-            .equals(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS))
+            && isAppConcurWrittenRep
             && isApplicantPresent
             && isRespondentPresent;
     }
 
     private static boolean isApplicationForSequentialWrittenRep(CaseData caseData) {
-        boolean isApplicantPresent = StringUtils.isNotEmpty(caseData.getGeneralAppApplnSolicitor().getEmail());
+        boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
+        boolean isAppSeqWrittenRep = isAppWrittenRepresentationOfGivenType(caseData,
+                                                                          GAJudgeWrittenRepresentationsOptions
+                                                                              .SEQUENTIAL_REPRESENTATIONS);
         return
             isJudicialDecisionEvent(caseData)
-            && Objects.nonNull(writtenOptions(caseData))
-            && ((writtenOptions(caseData))
-            .equals(GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS))
+            && isAppSeqWrittenRep
             && isApplicantPresent
             && isRespondentPresent;
     }
@@ -131,6 +126,11 @@ public class JudicialDecisionNotificationUtil {
                 List::stream
             ).filter(e -> !e.getValue().getEmail().isEmpty()).findFirst().orElse(null);
         return respondents != null;
+    }
+
+    public static boolean isApplicationUncloakedInJudicialDecision(CaseData caseData) {
+        return !isApplicationCloaked(caseData) && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
     }
 
     public static boolean isApplicationCloaked(CaseData caseData) {
@@ -225,4 +225,24 @@ public class JudicialDecisionNotificationUtil {
             && caseData.getBusinessProcess().getCamundaEvent()
             .equals(JUDGES_DECISION);
     }
+
+    private static boolean isApplicantPresent(GASolicitorDetailsGAspec gaSolicitorDetailsGAspec) {
+        if (gaSolicitorDetailsGAspec != null && gaSolicitorDetailsGAspec.getEmail() != null) {
+            return StringUtils.isNotEmpty(gaSolicitorDetailsGAspec.getEmail());
+        }
+        return false;
+    }
+
+    private static boolean isAppWrittenRepresentationOfGivenType(CaseData caseData,
+                                                                 GAJudgeWrittenRepresentationsOptions
+                                                                             gaJudgeWrittenRepresentationsOptions) {
+
+        if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenOption().equals(gaJudgeWrittenRepresentationsOptions)) {
+            return true;
+        }
+        return false;
+    }
+
 }

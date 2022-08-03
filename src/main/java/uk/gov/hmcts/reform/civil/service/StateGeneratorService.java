@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -21,6 +22,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROV
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Service
 public class StateGeneratorService {
@@ -37,6 +39,9 @@ public class StateGeneratorService {
             return APPLICATION_DISMISSED;
         } else if (decision == MAKE_AN_ORDER && data.getJudicialDecisionMakeOrder()
             .getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
+            if (isApplicationUncloakedInJudicialDecision(data)) {
+                return APPLICATION_ADD_PAYMENT;
+            }
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
             return AWAITING_ADDITIONAL_INFORMATION;
@@ -50,6 +55,9 @@ public class StateGeneratorService {
                 && data.getGeneralAppType().getTypes().contains(STRIKE_OUT)) {
                 return PROCEEDS_IN_HERITAGE;
             } else {
+                if (isApplicationUncloakedInJudicialDecision(data)) {
+                    return APPLICATION_ADD_PAYMENT;
+                }
                 return ORDER_MADE;
             }
         }
