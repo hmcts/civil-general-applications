@@ -50,7 +50,6 @@ public class PaymentRequestUpdateCallbackService {
         if (serviceRequestUpdateDto.getServiceRequestStatus().equalsIgnoreCase(PAID)) {
 
             log.info("Fetching the Case details based on caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
-
             CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(serviceRequestUpdateDto
                                                                                    .getCcdCaseNumber()));
             CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);

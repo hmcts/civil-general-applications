@@ -1,6 +1,10 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestUpdateDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
@@ -19,14 +23,14 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     @Test
     public void whenInvalidTypeOfRequestMade_ReturnMethodNotAllowed() throws Exception {
 
-        doPost(BEARER_TOKEN, buildServiceDto(), PAYMENT_CALLBACK_URL, "")
+        doPost(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
             .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void whenServiceRequestUpdateRequest() throws Exception {
 
-        doPut(BEARER_TOKEN, buildServiceDto(), PAYMENT_CALLBACK_URL, "")
+        doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
             .andExpect(status().isOk());
     }
 
@@ -41,5 +45,21 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
                          .accountNumber(ACCOUNT_NUMBER)
                          .build())
             .build();
+    }
+
+    @SneakyThrows
+    protected <T> ResultActions doPut(T content, String urlTemplate, Object... uriVars) {
+        return mockMvc.perform(
+            MockMvcRequestBuilders.put(urlTemplate, uriVars)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(content)));
+    }
+
+    @SneakyThrows
+    protected <T> ResultActions doPost(T content, String urlTemplate, Object... uriVars) {
+        return mockMvc.perform(
+            MockMvcRequestBuilders.post(urlTemplate, uriVars)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(content)));
     }
 }
