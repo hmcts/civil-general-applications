@@ -24,6 +24,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -121,12 +123,9 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
-    private final String generalAppJudgeReferEventDescription;
-    private final String generalAppJudgeReferAdditionalInfo;
-    private final String generalAppLegalAdvisorEventDescription;
-    private final String generalAppLegalAdvisorAdditionalInfo;
     private final YesOrNo respondent2SameLegalRepresentative;
-
+    private final GAReferToJudgeGAspec referToJudge;
+    private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
 
     //PDF Documents
     @Builder.Default
