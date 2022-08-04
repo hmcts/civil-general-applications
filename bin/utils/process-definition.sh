@@ -2,7 +2,6 @@
 
 set -eu
 
-definition_processor_version=latest
 
 definition_dir=${1}
 definition_output_file=${2}
@@ -19,5 +18,5 @@ docker run --rm --name json2xlsx \
   -v ${definition_output_file}:/tmp/ccd-definition.xlsx \
   -e CCD_DEF_CASE_SERVICE_BASE_URL=${CCD_DEF_CASE_SERVICE_BASE_URL:-http://docker.for.mac.localhost:4000} \
   -e CCD_DEF_GEN_APP_SERVICE_BASE_URL=${CCD_DEF_GEN_APP_SERVICE_BASE_URL:-http://docker.for.mac.localhost:4550} \
-  hmctspublic.azurecr.io/ccd/definition-processor:${definition_processor_version} \
+  hmctspublic.azurecr.io/ccd/definition-processor:dbsy0s \
   json2xlsx -D /tmp/ccd-definition -o /tmp/ccd-definition.xlsx ${additionalParameters}
