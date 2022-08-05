@@ -55,8 +55,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
     private void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
-        log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
-                     + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
+        log.info("Firing event CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED to change the state "
+                     + "to ADDITIONAL_RESPONSE_TIME_EXPIRED "
                      + "for caseId: {}", caseId);
         coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
     }

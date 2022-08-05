@@ -117,7 +117,7 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
     private final YesOrNo respondent2SameLegalRepresentative;
-
+    private final LocalDateTime applicationClosedDate;
 
     //PDF Documents
     @Builder.Default
