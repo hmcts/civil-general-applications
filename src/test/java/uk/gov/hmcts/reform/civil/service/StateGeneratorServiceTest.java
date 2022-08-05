@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
@@ -153,7 +152,7 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationInOrderMake() {
+    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationInOrderMake() {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
@@ -166,11 +165,11 @@ public class StateGeneratorServiceTest {
             .applicationIsCloaked(YesOrNo.NO)
             .build();
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+        assertThat(caseState).isEqualTo(ORDER_MADE);
     }
 
     @Test
-    public void shouldReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
+    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
@@ -183,7 +182,7 @@ public class StateGeneratorServiceTest {
             .applicationIsCloaked(YesOrNo.NO)
             .build();
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+        assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
     }
 
     private List<GeneralApplicationTypes> applicationTypeJudgement() {

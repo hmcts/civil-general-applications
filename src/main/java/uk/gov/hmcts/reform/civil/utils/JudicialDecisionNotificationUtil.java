@@ -128,9 +128,15 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
-    public static boolean isApplicationUncloakedInJudicialDecision(CaseData caseData) {
-        return !isApplicationCloaked(caseData) && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
+    public static boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
+        return !isApplicationCloaked(caseData)
+            && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && Objects.nonNull(decision)
+            && caseData.getJudicialDecision()
+            .getDecision().equals(REQUEST_MORE_INFO);
     }
 
     public static boolean isApplicationCloaked(CaseData caseData) {
@@ -139,8 +145,6 @@ public class JudicialDecisionNotificationUtil {
         return isJudicialDecisionEvent(caseData)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
             && Objects.nonNull(decision)
-            && caseData.getJudicialDecision()
-            .getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
             && caseData.getApplicationIsCloaked().equals(YES);
     }
 

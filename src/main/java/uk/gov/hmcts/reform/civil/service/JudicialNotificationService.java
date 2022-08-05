@@ -19,6 +19,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationCloaked;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 
@@ -199,46 +200,42 @@ public class JudicialNotificationService implements NotificationData {
 
     private void applicationApprovedNotification(CaseData caseData) {
         String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-        if (isSendUncloakAdditionalFeeEmail(caseData)) {
-            sendNotificationForJudicialDecision(
-                caseData,
-                appSolicitorEmail,
-                notificationProperties.getJudgeUncloakApplicationEmailTemplate()
-            );
-        } else {
+        boolean sendEmailToDefendant = isSendEmailToDefendant(caseData);
+        boolean useApplicantTemplate = useApplicantTemplate(caseData);
 
-            if (areRespondentSolicitorsPresent(caseData)
-                && useDamageTemplate(caseData)) {
+        if (sendEmailToDefendant) {
+            if (useDamageTemplate(caseData)) {
                 sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeApproveOrderToStrikeOutDamages()
                 );
-            } else if (areRespondentSolicitorsPresent(caseData)
-                && useOcmcTemplate(caseData)) {
+            } else if (useOcmcTemplate(caseData)) {
                 sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeApproveOrderToStrikeOutOCMC()
                 );
-            } else if (areRespondentSolicitorsPresent(caseData)) {
+            } else {
                 sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeForApproveRespondentEmailTemplate()
                 );
             }
+        }
 
-            if (useApplicantTemplate(caseData) && useDamageTemplate(caseData)) {
+        if (useApplicantTemplate) {
+            if (useDamageTemplate(caseData)) {
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
                     notificationProperties.getJudgeApproveOrderToStrikeOutDamages()
                 );
-            } else if (useApplicantTemplate(caseData) && useOcmcTemplate(caseData)) {
+            } else if (useOcmcTemplate(caseData)) {
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
                     notificationProperties.getJudgeApproveOrderToStrikeOutOCMC()
                 );
-            } else if (useApplicantTemplate(caseData)) {
+            } else  {
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
@@ -247,6 +244,10 @@ public class JudicialNotificationService implements NotificationData {
             }
         }
 
+    }
+
+    private boolean isSendEmailToDefendant(CaseData caseData) {
+        return areRespondentSolicitorsPresent(caseData) && !isApplicationCloaked(caseData);
     }
 
     private void applicationListForHearing(CaseData caseData) {
@@ -266,51 +267,39 @@ public class JudicialNotificationService implements NotificationData {
 
     private void applicationDismissedByJudge(CaseData caseData) {
         String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-        if (isSendUncloakAdditionalFeeEmail(caseData)) {
+        if (isSendEmailToDefendant(caseData)) {
+            sendEmailToRespondent(
+                caseData,
+                notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate()
+            );
+        }
+
+        if (useApplicantTemplate(caseData)) {
             sendNotificationForJudicialDecision(
                 caseData,
                 appSolicitorEmail,
-                notificationProperties.getJudgeUncloakApplicationEmailTemplate()
+                notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()
             );
-        } else {
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
-                    caseData,
-                    notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate()
-                );
-            }
-
-            if (useApplicantTemplate(caseData)) {
-                sendNotificationForJudicialDecision(
-                    caseData,
-                    appSolicitorEmail,
-                    notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()
-                );
-            }
         }
+
     }
 
     private void applicationDirectionOrder(CaseData caseData) {
         String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-        if (isSendUncloakAdditionalFeeEmail(caseData)) {
+        if (isSendEmailToDefendant(caseData)) {
+            sendEmailToRespondent(
+                caseData,
+                notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate()
+            );
+        }
+        if (useApplicantTemplate(caseData)) {
             sendNotificationForJudicialDecision(
                 caseData,
                 appSolicitorEmail,
-                notificationProperties.getJudgeUncloakApplicationEmailTemplate()
+                notificationProperties.getJudgeForDirectionOrderApplicantEmailTemplate()
             );
-        } else {
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(caseData,
-                                      notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate());
-            }
-            if (useApplicantTemplate(caseData)) {
-                sendNotificationForJudicialDecision(
-                    caseData,
-                    appSolicitorEmail,
-                    notificationProperties.getJudgeForDirectionOrderApplicantEmailTemplate()
-                );
-            }
         }
+
     }
 
     private void judgeApprovedOrderApplicationCloak(CaseData caseData) {

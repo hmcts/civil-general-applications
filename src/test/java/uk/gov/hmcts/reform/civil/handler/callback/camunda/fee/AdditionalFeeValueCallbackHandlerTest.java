@@ -84,7 +84,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .version(VERSION)
             .build();
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakApplication()
+            .judicialOrderMadeWithUncloakRequestForInformationApplication()
             .build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -111,7 +111,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakApplication()
+            .judicialOrderMadeWithUncloakRequestForInformationApplication()
             .build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 

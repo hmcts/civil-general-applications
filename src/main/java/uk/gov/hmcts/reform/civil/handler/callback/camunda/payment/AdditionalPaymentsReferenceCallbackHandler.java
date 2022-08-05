@@ -24,7 +24,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedWithAdditionalFee;
 
 @Slf4j
 @Service
@@ -62,7 +62,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-        if (isApplicationUncloakedInJudicialDecision(caseData)) {
+        if (isApplicationUncloakedWithAdditionalFee(caseData)) {
             try {
                 log.info("processing payment reference for case " + caseData.getCcdCaseReference());
                 paymentsService.validateRequest(caseData);

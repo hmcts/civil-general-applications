@@ -30,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -79,8 +80,9 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         }
 
         @Test
-        void shouldMakeAdditionalPaymentReference_whenJudgeUncloakedApplication() throws Exception {
-            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
+        void shouldMakeAdditionalPaymentReference_whenJudgeUncloakedApplication()  {
+            var caseData = CaseDataBuilder.builder()
+                .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -91,7 +93,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         }
 
         @Test
-        void shouldNotMakeAdditionalPaymentReference_whenJudgeNotUncloakedApplication() throws Exception {
+        void shouldNotMakeAdditionalPaymentReference_whenJudgeNotUncloakedApplication() {
             var caseData = CaseDataBuilder.builder().requestForInforationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -103,10 +105,24 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         }
 
         @Test
+        void shouldNotMakeAdditionalPaymentRef_whenJudgeNotUncloakedApplication_OtherThanRequestMoreInformation() {
+            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
+                .build();
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(paymentsService, never()).createServiceRequest(any(), any());
+            assertThat(extractPaymentRequestReferenceFromResponse(response))
+                .isNull();
+        }
+
+        @Test
         void shouldThrowException_whenForbiddenExceptionThrownContainsInvalidResponse() {
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createServiceRequest(any(), any());
-            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
+            var caseData = CaseDataBuilder.builder()
+                .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThrows(FeignException.class, () -> handler.handle(params));
@@ -119,7 +135,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .when(paymentsService).createServiceRequest(any(), any());
 
             var caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakApplication()
+                .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
