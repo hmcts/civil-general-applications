@@ -37,4 +37,18 @@ public class JudicialDecisionHelper {
                 e.getValue().getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel())).count();
         return count == 0;
     }
+
+    public boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
+        return false;
+
+        /*TODO: Uncomment this code and revise the logic with CIV-3759
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
+        return !isApplicationCloaked(caseData)
+            && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && Objects.nonNull(decision)
+            && caseData.getJudicialDecision()
+            .getDecision().equals(REQUEST_MORE_INFO);*/
+    }
 }

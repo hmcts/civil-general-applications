@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -63,6 +64,9 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
     @MockBean
     private PaymentsService paymentsService;
 
+    @MockBean
+    JudicialDecisionHelper judicialDecisionHelper;
+
     @BeforeEach
     public void setup() {
         when(time.now()).thenReturn(LocalDateTime.of(2020, 1, 1, 12, 0, 0));
@@ -84,6 +88,9 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             var caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
+            when(judicialDecisionHelper
+                     .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -97,7 +104,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             var caseData = CaseDataBuilder.builder().requestForInforationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
+            when(judicialDecisionHelper
+                     .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(extractPaymentRequestReferenceFromResponse(response))
@@ -124,6 +132,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             var caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
+            when(judicialDecisionHelper
+                     .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThrows(FeignException.class, () -> handler.handle(params));
             verify(paymentsService).createServiceRequest(caseData, BEARER_TOKEN);
@@ -137,6 +147,10 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             var caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakRequestForInformationApplication()
                 .build();
+
+            when(judicialDecisionHelper
+                     .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 

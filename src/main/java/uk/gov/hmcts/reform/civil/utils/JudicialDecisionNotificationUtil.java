@@ -18,7 +18,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
@@ -76,7 +75,7 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformationWithouNotice(caseData)) {
+        if (isRequestForInformationWithoutNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         if (isRequestForInformationWithNotice(caseData)) {
@@ -128,17 +127,6 @@ public class JudicialDecisionNotificationUtil {
         return respondents != null;
     }
 
-    public static boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
-        var decision = Optional.ofNullable(caseData.getJudicialDecision())
-            .map(GAJudicialDecision::getDecision).orElse(null);
-        return !isApplicationCloaked(caseData)
-            && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && Objects.nonNull(decision)
-            && caseData.getJudicialDecision()
-            .getDecision().equals(REQUEST_MORE_INFO);
-    }
-
     public static boolean isApplicationCloaked(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecision())
             .map(GAJudicialDecision::getDecision).orElse(null);
@@ -188,7 +176,7 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInformationWithouNotice(CaseData caseData) {
+    private static boolean isRequestForInformationWithoutNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
