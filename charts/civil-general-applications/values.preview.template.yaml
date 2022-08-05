@@ -211,13 +211,7 @@ ccd:
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
-  am-role-assignment-service:
-    java:
-      ingressHost: role-am-${SERVICE_FQDN}
-      keyVaults:
-        am:
-          secrets:
-            - role-assignment-service-LD-SDK-KEY
+
   ccd-definition-store-api:
     java:
       imagePullPolicy: Always
