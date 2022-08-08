@@ -35,6 +35,7 @@ public class HttpClientConfiguration {
 
         return HttpClientBuilder
             .create()
+            .setSSLHostnameVerifier((hostname, session) -> true)
             .useSystemProperties()
             .setDefaultRequestConfig(config)
             .build();
