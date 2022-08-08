@@ -1,49 +1,46 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
-import java.time.LocalDateTime;
-
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_CLOSED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VERIFY_AND_CLOSE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-    MainCaseClosedEventCallbackHandler.class, JacksonAutoConfiguration.class, Time.class
+    VerifyAndCloseApplicationEventCallbackHandler.class, CoreCaseDataService.class,
 })
-class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
+class VerifyAndCloseApplicationEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
-    private Time time;
+    private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private MainCaseClosedEventCallbackHandler handler;
+    private VerifyAndCloseApplicationEventCallbackHandler handler;
 
     @Nested
     class AboutToStartCallback {
@@ -51,12 +48,11 @@ class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnEmptyCallbackResponseForAboutToStart() {
             CaseData caseData = CaseDataBuilder.builder()
                 .ccdCaseReference(1234L)
-                .ccdState(APPLICATION_CLOSED)
-                .businessProcess(BusinessProcess.ready(MAIN_CASE_CLOSED))
+                .ccdState(AWAITING_ADDITIONAL_INFORMATION)
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
 
-            CallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isEqualTo(AboutToStartOrSubmitCallbackResponse.builder().build());
         }
@@ -65,16 +61,12 @@ class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class AboutToSubmitCallback {
 
-        private LocalDateTime localDateTime;
-
-        @BeforeEach
-        void setup() {
-            localDateTime = LocalDateTime.now();
-            when(time.now()).thenReturn(localDateTime);
-        }
-
         @ParameterizedTest(name = "The application is in {0} state")
-        @EnumSource(value = CaseState.class)
+        @EnumSource(
+            value = CaseState.class,
+            mode = EnumSource.Mode.EXCLUDE,
+            names = {"APPLICATION_CLOSED", "PROCEEDS_IN_HERITAGE", "ORDER_MADE",
+                "LISTING_FOR_A_HEARING", "APPLICATION_DISMISSED"})
         void shouldRespondWithStateChangedWhenApplicationIsLive(CaseState state) {
             CaseData caseData = CaseDataBuilder.builder()
                 .ccdCaseReference(1234L)
@@ -83,13 +75,28 @@ class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertThat(response.getErrors()).isNull();
-            assertThat(response.getState()).isEqualTo(APPLICATION_CLOSED.toString());
-            assertThat(response.getData()).extracting("businessProcess").extracting("status").isEqualTo("READY");
-            assertThat(response.getData()).extracting("businessProcess").extracting("camundaEvent").isEqualTo(
-                "MAIN_CASE_CLOSED");
-            assertThat(response.getData()).containsEntry("applicationClosedDate", localDateTime.format(ISO_DATE_TIME));
+            assertThat(response).isEqualTo(AboutToStartOrSubmitCallbackResponse.builder().build());
+            verify(coreCaseDataService, times(1))
+                .triggerEvent(1234L, MAIN_CASE_CLOSED);
         }
+
+        @ParameterizedTest(name = "The application is in {0} state")
+        @EnumSource(
+            value = CaseState.class,
+            names = {"APPLICATION_CLOSED", "PROCEEDS_IN_HERITAGE", "ORDER_MADE",
+                "LISTING_FOR_A_HEARING", "APPLICATION_DISMISSED"})
+        void shouldRespondWithoutStateChangedWhenApplicationIsNotLive(CaseState state) {
+            CaseData caseData = CaseDataBuilder.builder()
+                .ccdCaseReference(1234L)
+                .ccdState(state).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isEqualTo(AboutToStartOrSubmitCallbackResponse.builder().build());
+            verifyNoInteractions(coreCaseDataService);
+        }
+
     }
 
     @Nested
@@ -99,8 +106,7 @@ class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldUpdateParentClaimWhenBusinessProcessIsMainCaseClosedAndCaseStatusIsApplicationClosed() {
             CaseData caseData = CaseDataBuilder.builder()
                 .ccdCaseReference(1234L)
-                .ccdState(APPLICATION_CLOSED)
-                .businessProcess(BusinessProcess.ready(MAIN_CASE_CLOSED))
+                .ccdState(AWAITING_RESPONDENT_RESPONSE)
                 .build();
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
 
@@ -112,6 +118,6 @@ class MainCaseClosedEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(MAIN_CASE_CLOSED);
+        assertThat(handler.handledEvents()).contains(VERIFY_AND_CLOSE_APPLICATION);
     }
 }
