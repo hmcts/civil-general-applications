@@ -192,7 +192,7 @@ class JudicialNotificationServiceTest {
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, NO));
 
             judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO));
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -292,7 +292,7 @@ class JudicialNotificationServiceTest {
                                               .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                               .build())
                     .build());
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -316,7 +316,7 @@ class JudicialNotificationServiceTest {
                                               .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                               .build())
                     .build());
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -331,7 +331,7 @@ class JudicialNotificationServiceTest {
                 .thenReturn(caseDataForJudicialDirectionOrderOfApplication(NO, NO));
 
             judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, NO));
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -380,7 +380,7 @@ class JudicialNotificationServiceTest {
             judicialNotificationService
                 .sendNotification(
                     caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO, NO));
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -490,7 +490,7 @@ class JudicialNotificationServiceTest {
 
             judicialNotificationService
                 .sendNotification(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -517,7 +517,7 @@ class JudicialNotificationServiceTest {
                 .build();
 
             judicialNotificationService.sendNotification(caseData);
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -605,7 +605,7 @@ class JudicialNotificationServiceTest {
                 .sendNotification(
                     caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "UNSPEC_CLAIM"));
 
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -623,7 +623,7 @@ class JudicialNotificationServiceTest {
                 .sendNotification(
                     caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "SPEC_CLAIM"));
 
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -651,7 +651,7 @@ class JudicialNotificationServiceTest {
                 .build();
 
             judicialNotificationService.sendNotification(caseData);
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
