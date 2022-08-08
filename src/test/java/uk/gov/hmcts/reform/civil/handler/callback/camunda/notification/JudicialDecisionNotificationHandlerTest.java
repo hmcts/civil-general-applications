@@ -81,7 +81,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
     private static final String ORG_ID = "1";
     private static final String ID = "1";
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     @Nested
     class AboutToSubmitCallback {
