@@ -9,9 +9,13 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.FLOW_NAME;
+import java.util.function.Predicate;
+
+
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.*;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.*;
+
+
 
 @Component
 @RequiredArgsConstructor
@@ -20,8 +24,15 @@ public class StateFlowEngine {
     private final CaseDetailsConverter caseDetailsConverter;
 
     public StateFlow build() {
-        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME).initial(DRAFT).transitionTo(APPLICATION_SUBMITTED)
+        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME).initial(DRAFT)
+            .transitionTo(PAYMENT_SUCCESSFUL)
+                .onlyIf(paymentSuccessful)
+            .transitionTo(PAYMENT_FAILED).onlyIf(paymentFailed).state(PAYMENT_FAILED)
+            .transitionTo(PAYMENT_SUCCESSFUL).onlyIf(paymentSuccessful)
+            .state(PAYMENT_SUCCESSFUL)
+            .transitionTo(APPLICATION_SUBMITTED)
             .build();
+
     }
 
     public StateFlow evaluate(CaseDetails caseDetails) {

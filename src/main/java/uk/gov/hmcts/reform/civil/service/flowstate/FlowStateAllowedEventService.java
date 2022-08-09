@@ -17,12 +17,17 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLIC
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PBA_PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_SUCCESSFUL;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_FAILED;
 
 @Service
 @RequiredArgsConstructor
@@ -38,10 +43,21 @@ public class FlowStateAllowedEventService {
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
                                         RESPOND_TO_JUDGE_ADDITIONAL_INFO)),
-
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
                   LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+        ),
+        entry(PAYMENT_FAILED.fullName(),
+              List.of(
+                      PBA_PAYMENT_FAILED,
+                      END_BUSINESS_PROCESS_GASPEC
+
+              )
+        ),
+        entry(PAYMENT_SUCCESSFUL.fullName(),
+              List.of(
+                      NOTIFY_GENERAL_APPLICATION_RESPONDENT
+              )
         )
     );
 
