@@ -7,9 +7,9 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def camundaBranch = "CIV-3408-WaysToPays-AdditionalPayment"
+def camundaBranch = "master"
 
-def generalappCCDBranch = "CIV-3408-WaysToPays-AdditionalPayment"
+def generalappCCDBranch = "master"
 
 AppPipelineConfig pipelineConf
 
