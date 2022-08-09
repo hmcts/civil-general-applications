@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.config;
+package uk.gov.hmcts.reform.civil.config.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+
 import uk.gov.hmcts.reform.civil.security.JwtGrantedAuthoritiesConverter;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -43,7 +45,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/health/liveness",
         "/health/readiness",
         "/status/health",
-        "/payment-request-update",
         "/",
         "/loggers/**"
     };
@@ -55,11 +56,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private String issuerOverride;
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
+  //  private final ServiceAuthCustomFilter serviceAuthFilter;
 
+//    RequestAuthorizer<User> userRequestAuthorizer;
+//    RequestAuthorizer<Service> serviceRequestAuthorizer;
     @Autowired
     public SecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
+//        this.serviceAuthFilter = serviceAuthFilter;
         jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+
     }
 
     @Override
@@ -70,6 +76,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+//            .addFilterBefore(serviceAuthFilter, OAuth2AuthorizationRequestRedirectFilter.class)
             .sessionManagement().sessionCreationPolicy(STATELESS).and()
             .formLogin().disable()
             .logout().disable()

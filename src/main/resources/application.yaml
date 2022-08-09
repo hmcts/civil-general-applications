@@ -207,6 +207,8 @@ idam:
   s2s-auth:
     url: http://localhost:4502
     totp_secret: AABBCCDDEEFFGGHH
+  s2s-authorised-services: payment_app
+
   client:
     id: civil
     redirect_uri: https://localhost:9000/oauth2/callback
@@ -272,6 +274,7 @@ idam:
   s2s-auth:
     url: http://fake-service-auth-provider-api
     totp_secret: AABBCCDDEEFFGGHH
+  s2s-authorised-services: payment_app
 
 core_case_data:
   api:
@@ -324,3 +327,4 @@ idam:
     url: http://ccd-test-stubs-service:5555
   api:
     url: http://ccd-test-stubs-service:5555
+  s2s-authorised-services: payment_app
