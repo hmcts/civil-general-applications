@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
@@ -63,7 +62,7 @@ class CoreCaseDataServiceTest {
     private CoreCaseDataApi coreCaseDataApi;
 
     @MockBean
-    private IdamClient idamClient;
+    private UserService userService;
 
     @MockBean
     private AuthTokenGenerator authTokenGenerator;
@@ -77,9 +76,10 @@ class CoreCaseDataServiceTest {
     @BeforeEach
     void init() {
         clearInvocations(authTokenGenerator);
-        clearInvocations(idamClient);
+        clearInvocations(userService);
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-        when(idamClient.getAccessToken(userConfig.getUserName(), userConfig.getPassword())).thenReturn(USER_AUTH_TOKEN);
+        when(userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword()))
+            .thenReturn(USER_AUTH_TOKEN);
     }
 
     @Nested
@@ -100,7 +100,7 @@ class CoreCaseDataServiceTest {
 
         @BeforeEach
         void setUp() {
-            when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+            when(userService.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
 
             when(coreCaseDataApi.startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
                                                          CASE_TYPE, CASE_ID, EVENT_ID
@@ -164,7 +164,7 @@ class CoreCaseDataServiceTest {
 
         @BeforeEach
         void setUp() {
-            when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+            when(userService.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
 
             when(coreCaseDataApi.startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
                                                          GENERAL_APPLICATION_CASE_TYPE, CASE_ID, EVENT_ID
@@ -230,7 +230,7 @@ class CoreCaseDataServiceTest {
 
         @BeforeEach
         void setUp() {
-            when(idamClient.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
+            when(userService.getUserInfo(USER_AUTH_TOKEN)).thenReturn(UserInfo.builder().uid(USER_ID).build());
 
             when(coreCaseDataApi.startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
                 GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
@@ -296,7 +296,7 @@ class CoreCaseDataServiceTest {
 
             assertThat(casesFound).isEqualTo(cases);
             verify(coreCaseDataApi).searchCases(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, CASE_TYPE, query.toString());
-            verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
         }
     }
 
@@ -327,7 +327,7 @@ class CoreCaseDataServiceTest {
                 GENERAL_APPLICATION_CASE_TYPE,
                 query.toString()
             );
-            verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
         }
     }
 
@@ -344,7 +344,7 @@ class CoreCaseDataServiceTest {
 
             assertThat(caseDetails).isEqualTo(expectedCaseDetails);
             verify(coreCaseDataApi).getCase(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, "1");
-            verify(idamClient).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUserName(), userConfig.getPassword());
         }
     }
 }
