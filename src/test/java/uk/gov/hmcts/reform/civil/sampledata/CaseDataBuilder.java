@@ -68,12 +68,18 @@ public class CaseDataBuilder {
     public static final LocalDateTime NOTIFICATION_DEADLINE = LocalDate.now().atStartOfDay().plusDays(1);
     public static final BigDecimal FAST_TRACK_CLAIM_AMOUNT = BigDecimal.valueOf(10000);
     public static final String CUSTOMER_REFERENCE = "12345";
+
     private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
     public static final String STRING_CONSTANT = "this is a string";
+
+    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reviewing the application made and upon considering the information "
+        + "provided by the parties, the court requests more information from the applicant.";
+
     // Create Claim
     protected Long ccdCaseReference;
     protected String legacyCaseReference;
@@ -609,7 +615,7 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder requestForInforationApplication() {
+    public CaseData.CaseDataBuilder requestForInformationApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -638,6 +644,7 @@ public class CaseDataBuilder {
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
                                                  .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())

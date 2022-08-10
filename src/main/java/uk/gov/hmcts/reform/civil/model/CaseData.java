@@ -7,11 +7,13 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -22,6 +24,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -93,6 +97,9 @@ public class CaseData implements MappableObject {
     private final String claimant2PartyName;
     private final String defendant1PartyName;
     private final String defendant2PartyName;
+    private final GACaseLocation caseManagementLocation;
+    private final YesOrNo isCcmccLocation;
+    private final DynamicList caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
     private final String judicialHearingGeneralOrderHearingText;
@@ -117,7 +124,8 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
     private final YesOrNo respondent2SameLegalRepresentative;
-
+    private final GAReferToJudgeGAspec referToJudge;
+    private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
 
     //PDF Documents
     @Builder.Default
