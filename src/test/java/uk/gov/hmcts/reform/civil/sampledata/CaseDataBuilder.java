@@ -676,9 +676,5 @@ public class CaseDataBuilder {
             .applicationIsCloaked(YesOrNo.NO)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
-    @Test
-    public void ShouldProceedAfterInitialPaymentFailure(){
-        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData().toBuilder().build();
 
-    }
 }

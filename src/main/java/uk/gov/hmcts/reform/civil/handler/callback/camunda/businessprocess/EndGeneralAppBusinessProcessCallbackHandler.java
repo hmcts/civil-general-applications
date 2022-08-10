@@ -19,9 +19,9 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
@@ -47,11 +47,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() != null
-            && data.getGeneralAppPBADetails().getPaymentDetails().getStatus()
+            && data.getGeneralAppPBADetails()
+            .getPaymentDetails().getStatus()
             .equals(PaymentStatus.FAILED)) {
-             newState = APPLICATION_PAYMENT_FAILED;
+            newState = APPLICATION_PAYMENT_FAILED;
         } else {
-             newState = isNotificationCriteriaSatisfied(data)
+            newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }

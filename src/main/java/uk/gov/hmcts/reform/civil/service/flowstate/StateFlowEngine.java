@@ -9,13 +9,13 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
-import java.util.function.Predicate;
-
-
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.*;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.*;
-
-
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.paymentFailed;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.paymentSuccessful;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.FLOW_NAME;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_SUCCESSFUL;
 
 @Component
 @RequiredArgsConstructor

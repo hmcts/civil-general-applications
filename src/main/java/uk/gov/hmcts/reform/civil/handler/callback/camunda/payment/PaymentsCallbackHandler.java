@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +17,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
-import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -111,17 +108,16 @@ public class PaymentsCallbackHandler extends CallbackHandler {
     }
 
     private CaseData updateWithBusinessError(CaseData caseData, FeignException e) {
-            GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-            PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
-                    .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
-                    .customerReference(pbaDetails.getPbaReference())
-                    .status(FAILED)
-                    .build();
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+            .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
+            .customerReference(pbaDetails.getPbaReference())
+            .status(FAILED)
+            .build();
 
-            return caseData.toBuilder().generalAppPBADetails(pbaDetails.toBuilder()
-                            .paymentDetails(paymentDetails).build())
-                    .build();
-
+        return caseData.toBuilder().generalAppPBADetails(pbaDetails.toBuilder()
+                                                             .paymentDetails(paymentDetails).build())
+            .build();
     }
 
     private CaseData updateWithDuplicatePaymentError(CaseData caseData, InvalidPaymentRequestException e) {
