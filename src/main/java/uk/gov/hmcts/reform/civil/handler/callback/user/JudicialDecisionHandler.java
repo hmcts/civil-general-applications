@@ -494,10 +494,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
-        if (caseData.getMakeAppVisibleToRespondents() != null) {
-            dataBuilder
-                .applicationIsCloaked(NO);
-        }
+
+        dataBuilder.applicationIsCloaked(isApplicationContinuesCloakedAfterJudicialDecision(caseData));
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
@@ -1018,5 +1017,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return YES;
         }
         return NO;
+    }
+
+    private YesOrNo isApplicationContinuesCloakedAfterJudicialDecision(CaseData caseData) {
+        if (caseData.getMakeAppVisibleToRespondents() != null
+            || (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo()
+            .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY))) {
+            return NO;
+        }
+        return caseData.getApplicationIsCloaked();
     }
 }

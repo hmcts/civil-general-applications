@@ -1947,6 +1947,42 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("JUDGE_MAKES_DECISION");
         }
 
+        @Test
+        void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisonWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
+        }
+
+        @Test
+        void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisonWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked().equals(YES));
+        }
+
+        @Test
+        void shouldUncloakApplication_WhenJudgeUncloaked_OrderMadeApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialOrderMadeWithUncloakApplication(YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
+        }
+
         private CaseData getApplicationBusinessProcess() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));

@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -68,7 +69,7 @@ class PaymentRequestUpdateCallbackServiceTest {
     @Test
     public void shouldStartAndSubmitEventWithCaseDetails() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
@@ -89,7 +90,7 @@ class PaymentRequestUpdateCallbackServiceTest {
     @Test
     public void shouldProceed_WhenGeneralAppParentCaseLink() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT)
             .generalAppParentCaseLink(null).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
@@ -111,7 +112,7 @@ class PaymentRequestUpdateCallbackServiceTest {
     @Test
     public void shouldProceed_WhenAdditionalPaymentExist_WithPaymentFail() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .additionalPaymentDetails(PaymentDetails.builder()
@@ -141,7 +142,7 @@ class PaymentRequestUpdateCallbackServiceTest {
 
     @Test
     public void shouldNotProceed_WhenPaymentFailed() {
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
@@ -161,7 +162,7 @@ class PaymentRequestUpdateCallbackServiceTest {
 
     @Test
     public void shouldNotDoProceed_WhenApplicationNotIn_AdditionalPayment_Status() {
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(PENDING_CASE_ISSUED).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
