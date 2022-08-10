@@ -116,10 +116,6 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getReference()).isNull();
-            assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getErrorMessage())
-                    .isEqualTo(PAYMENT_ERROR_MESSAGE);
-            assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getErrorCode())
-                    .isEqualTo(PAYMENT_ERROR_CODE);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getStatus())
                     .isEqualTo(FAILED);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getCustomerReference())
@@ -158,7 +154,6 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
 
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference()).isEqualTo("12345");
-         //   assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails()).isNotNull();
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate()).isNull();
             assertThat(response.getErrors()).containsOnly("Technical error occurred");
         }
@@ -170,6 +165,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThrows(FeignException.class, () -> handler.handle(params));
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
+
         }
 
         @Test

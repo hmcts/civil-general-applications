@@ -1,21 +1,19 @@
 package uk.gov.hmcts.reform.civil.sampledata;
 
-import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
-import uk.gov.hmcts.reform.civil.model.PaymentDetails;
-
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -37,6 +35,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static java.time.LocalDate.now;
@@ -54,7 +53,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.RE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
-
 
 public class CaseDataBuilder {
 
@@ -308,7 +306,7 @@ public class CaseDataBuilder {
             .build();
     }
 
-    public CaseData buildPaymentFailureCaseData(){
+    public CaseData buildPaymentFailureCaseData() {
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
             .organisationID("OrgId").build();
 
@@ -346,7 +344,7 @@ public class CaseDataBuilder {
             .build();
     }
 
-    public CaseData buildPaymentSuccesfulCaseData(){
+    public CaseData buildPaymentSuccessfulCaseData() {
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
             .organisationID("OrgId").build();
 
@@ -357,6 +355,8 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
+                    .paymentSuccessfulDate(LocalDateTime.of(LocalDate.of(2020, 01, 01),
+                                                            LocalTime.of(12, 00, 00)))
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
                                         .reference("RC-1658-4258-2679-9795")
@@ -383,6 +383,7 @@ public class CaseDataBuilder {
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
     }
+
     public CaseData buildAdditionalPaymentsReferenceCaseData() {
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
             .organisationID("OrgId").build();

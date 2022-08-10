@@ -29,8 +29,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -46,15 +48,14 @@ public class GeneralApplicationCreationNotificationServiceTest {
     private GeneralApplicationCreationNotificationService gaNotificationService;
     @MockBean
     private SolicitorEmailValidation solicitorEmailValidation;
+    @MockBean
+    private NotificationService notificationService;
 
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
-
-    @MockBean
-    private NotificationService notificationService;
 
     @MockBean
     private NotificationsProperties notificationsProperties;
@@ -115,7 +116,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
-              gaNotificationService.sendNotification(caseData);
+            gaNotificationService.sendNotification(caseData);
             verifyNoInteractions(notificationService);
         }
 

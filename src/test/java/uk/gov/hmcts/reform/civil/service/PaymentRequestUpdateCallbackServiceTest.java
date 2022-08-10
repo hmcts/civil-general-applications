@@ -30,8 +30,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.FAILED;
 
@@ -208,10 +208,11 @@ class PaymentRequestUpdateCallbackServiceTest {
             .caseDetails(caseDetails)
             .build();
     }
-    @Test
-    public void ShouldProceedAfterInitialPaymentFailureIsSuccess() {
 
-        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccesfulCaseData().toBuilder().build();
+    @Test
+    public void shouldProceedAfterInitialPaymentFailureIsSuccess() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder().build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_PAYMENT_FAILED).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
