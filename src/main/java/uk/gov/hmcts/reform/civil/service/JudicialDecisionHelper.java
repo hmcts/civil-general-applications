@@ -6,15 +6,18 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import java.util.Objects;
+
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHelper {
 
-    public YesOrNo isApplicationCloaked(CaseData caseData) {
+    public YesOrNo isApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
         return (caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null
@@ -39,16 +42,13 @@ public class JudicialDecisionHelper {
     }
 
     public boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
-        return false;
 
-        /*TODO: Uncomment this code and revise the logic with CIV-3759
-        var decision = Optional.ofNullable(caseData.getJudicialDecision())
-            .map(GAJudicialDecision::getDecision).orElse(null);
-        return !isApplicationCloaked(caseData)
-            && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && Objects.nonNull(decision)
-            && caseData.getJudicialDecision()
-            .getDecision().equals(REQUEST_MORE_INFO);*/
+        var judicialDecisionRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && caseData.getApplicationIsCloaked().equals(NO)
+            &&  Objects.nonNull(judicialDecisionRequestMoreInfo)
+            &&  Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
+            && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
     }
 }
