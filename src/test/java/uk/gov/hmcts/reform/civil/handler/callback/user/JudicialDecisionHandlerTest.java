@@ -536,7 +536,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -557,7 +557,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(YES);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -578,7 +578,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -595,7 +595,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_orderText() {
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1950,7 +1950,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisonWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YES).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -1962,7 +1962,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisonWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 

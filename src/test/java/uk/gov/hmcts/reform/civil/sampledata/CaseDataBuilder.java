@@ -564,7 +564,7 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder judicialDecisonWithUncloakRequestForInformationApplication(
+    public CaseData.CaseDataBuilder judicialDecisionWithUncloakRequestForInformationApplication(
         GAJudgeRequestMoreInfoOption requestMoreInfoOption, YesOrNo isCloak) {
         /*TODO : This method should be revised in CIV-3759 for uncloaking  'Request more information'.
            Its created in this US for passing the test and not to remove all the code

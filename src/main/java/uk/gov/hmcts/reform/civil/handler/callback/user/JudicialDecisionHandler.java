@@ -188,7 +188,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
+        YesOrNo isCloaked = helper.isApplicationCreatedWithoutNoticeByApplicant(caseData);
         caseDataBuilder.applicationIsCloaked(isCloaked);
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))

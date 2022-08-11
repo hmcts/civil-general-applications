@@ -191,7 +191,7 @@ public class StateGeneratorServiceTest {
     @Test
     public void shouldReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
         CaseData caseData = CaseDataBuilder.builder()
-            .judicialDecisonWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YesOrNo.NO).build();
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YesOrNo.NO).build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
