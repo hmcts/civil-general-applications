@@ -106,7 +106,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
                 BigDecimal.valueOf(16700)).code("").version(VERSION).build());
 
         var caseData = CaseDataBuilder.builder()
-            .requestForInforationApplication()
+            .requestForInformationApplication()
             .build();
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
