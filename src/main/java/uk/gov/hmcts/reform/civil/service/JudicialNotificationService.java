@@ -74,6 +74,9 @@ public class JudicialNotificationService implements NotificationData {
             case REQUEST_FOR_INFORMATION:
                 applicationRequestForInformation(caseData);
                 break;
+            case REQUEST_FOR_INFORMATION_CLOAK:
+                applicationRequestForInformationCloak(caseData);
+                break;
             default:
             case NON_CRITERION:
         }
@@ -166,28 +169,45 @@ public class JudicialNotificationService implements NotificationData {
     }
 
     private void applicationRequestForInformation(CaseData caseData) {
+        String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
+
+        if (isSendUncloakAdditionalFeeEmail(caseData)) {
+            sendNotificationForJudicialDecision(
+                caseData,
+                appSolicitorEmail,
+                notificationProperties.getJudgeUncloakApplicationEmailTemplate()
+            );
+        } else {
+            var requestForInformationDeadline = Optional.ofNullable(caseData
+                                                                        .getJudicialDecisionRequestMoreInfo()
+                                                                        .getJudgeRequestMoreInfoByDate()).orElse(null);
+            addCustomPropsForRespondDeadline(requestForInformationDeadline);
+
+            if (areRespondentSolicitorsPresent(caseData)) {
+                sendEmailToRespondent(
+                    caseData,
+                    notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
+                );
+            }
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
+            );
+
+            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
+        }
+
+    }
+
+    private void applicationRequestForInformationCloak(CaseData caseData) {
 
         var requestForInformationDeadline = Optional.ofNullable(caseData
                                                                     .getJudicialDecisionRequestMoreInfo()
                                                                     .getJudgeRequestMoreInfoByDate()).orElse(null);
 
-        customProps.put(
-            GA_REQUEST_FOR_INFORMATION_DEADLINE,
-            Objects.nonNull(requestForInformationDeadline)
-                ? DateFormatHelper
-                .formatLocalDate(
-                    LocalDate.parse(
-                        requestForInformationDeadline.toString(),
-                        JUDICIAL_FORMATTER
-                    ), DATE) : null
-        );
+        addCustomPropsForRespondDeadline(requestForInformationDeadline);
 
-        if (areRespondentSolicitorsPresent(caseData)) {
-            sendEmailToRespondent(
-                caseData,
-                notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
-            );
-        }
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
@@ -334,6 +354,25 @@ public class JudicialNotificationService implements NotificationData {
             ));
     }
 
+    private boolean isSendUncloakAdditionalFeeEmail(CaseData caseData) {
+        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
+    }
+
+    private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {
+        customProps.put(
+            GA_REQUEST_FOR_INFORMATION_DEADLINE,
+            Objects.nonNull(requestForInformationDeadline)
+                ? DateFormatHelper
+                .formatLocalDate(
+                    LocalDate.parse(
+                        requestForInformationDeadline.toString(),
+                        JUDICIAL_FORMATTER
+                    ), DATE) : null
+        );
+    }
+
     public static boolean useDamageTemplate(CaseData caseData) {
         return caseData.getGeneralAppType().getTypes().contains(STRIKE_OUT)
             && caseData.getGeneralAppSuperClaimType().equals("UNSPEC_CLAIM");
@@ -344,9 +383,4 @@ public class JudicialNotificationService implements NotificationData {
             && caseData.getGeneralAppSuperClaimType().equals("SPEC_CLAIM");
     }
 
-    public static boolean isSendUncloakAdditionalFeeEmail(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
-    }
 }

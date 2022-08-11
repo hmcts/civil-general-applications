@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.utils;
 import org.apache.commons.lang.StringUtils;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -30,6 +29,7 @@ import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMIS
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 
 public class JudicialDecisionNotificationUtil {
@@ -75,10 +75,10 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformationWithoutNotice(caseData)) {
-            return REQUEST_FOR_INFORMATION;
+        if (isRequestForInformation(caseData) && isApplicationCloaked(caseData)) {
+            return REQUEST_FOR_INFORMATION_CLOAK;
         }
-        if (isRequestForInformationWithNotice(caseData)) {
+        if (isRequestForInformation(caseData) && !isApplicationCloaked(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         return NON_CRITERION;
@@ -176,7 +176,7 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInformationWithoutNotice(CaseData caseData) {
+    private static boolean isRequestForInformation(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
@@ -184,9 +184,6 @@ public class JudicialDecisionNotificationUtil {
                 && Objects.nonNull(decision)
                 && caseData.getJudicialDecision()
                 .getDecision().equals(REQUEST_MORE_INFO)
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().equals(
-                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION)
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo()
