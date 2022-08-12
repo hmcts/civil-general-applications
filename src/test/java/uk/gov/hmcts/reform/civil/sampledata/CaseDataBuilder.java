@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
@@ -38,6 +39,7 @@ import java.util.List;
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
@@ -50,6 +52,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.RE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 public class CaseDataBuilder {
 
@@ -104,6 +107,7 @@ public class CaseDataBuilder {
     protected LocalDate submittedOn;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private YesOrNo parentClaimantIsApplicant;
+    private static final Long CASE_REFERENCE = 111111L;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -617,6 +621,11 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .generalAppParentCaseLink(
+                GeneralAppParentCaseLink
+                    .builder()
+                    .caseReference(CASE_REFERENCE.toString())
+                    .build())
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
                                  .camundaEvent(JUDGES_DECISION).build())
             .generalAppPBADetails(
@@ -636,11 +645,16 @@ public class CaseDataBuilder {
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .applicationIsCloaked(YesOrNo.NO)
-            .submittedOn(APPLICATION_SUBMITTED_DATE);
+            .applicationIsCloaked(NO)
+            .generalApplicationsDetails(wrapElements(GeneralApplicationsDetails.builder()
+                                                        .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
+                                                         .caseLink(CaseLink.builder()
+                                                                       .caseReference(String.valueOf(CASE_ID)).build())
+                                                                       .build()));
+
     }
 
 }
