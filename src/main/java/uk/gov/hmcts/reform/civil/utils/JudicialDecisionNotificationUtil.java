@@ -1,10 +1,7 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.*;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -75,11 +72,11 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformation(caseData) && isApplicationCloaked(caseData)) {
-            return REQUEST_FOR_INFORMATION_CLOAK;
-        }
-        if (isRequestForInformation(caseData) && !isApplicationCloaked(caseData)) {
+        if (isRequestForInformation(caseData)) {
             return REQUEST_FOR_INFORMATION;
+        }
+        if (isRequestForInformationCloakedApplication(caseData) ) {
+            return REQUEST_FOR_INFORMATION_CLOAK;
         }
         return NON_CRITERION;
     }
@@ -185,12 +182,15 @@ public class JudicialDecisionNotificationUtil {
                 && caseData.getJudicialDecision()
                 .getDecision().equals(REQUEST_MORE_INFO)
                 && caseData.getJudicialDecisionRequestMoreInfo()
+                .getRequestMoreInfoOption().equals(
+                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION)
+                && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null;
     }
 
-    private static boolean isRequestForInformationWithNotice(CaseData caseData) {
+    private static boolean isRequestForInformationCloakedApplication(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
@@ -199,11 +199,9 @@ public class JudicialDecisionNotificationUtil {
                 && caseData.getJudicialDecision()
                 .getDecision().equals(REQUEST_MORE_INFO)
                 && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption() == null
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoText() != null
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoByDate() != null;
+                .getRequestMoreInfoOption().equals(
+                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY);
+
     }
 
     private static boolean isJudicialDecisionEvent(CaseData caseData) {
