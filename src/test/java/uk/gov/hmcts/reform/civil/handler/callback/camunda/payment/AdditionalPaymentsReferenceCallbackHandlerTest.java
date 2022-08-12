@@ -100,8 +100,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         }
 
         @Test
-        void shouldNotMakeAdditionalPaymentReference_whenJudgeNotUncloakedApplication() {
-            var caseData = CaseDataBuilder.builder().requestForInforationApplication()
+        void shouldNotMakeAdditionalPaymentReference_whenJudgeNotUncloakedApplication() throws Exception {
+            var caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             when(judicialDecisionHelper
