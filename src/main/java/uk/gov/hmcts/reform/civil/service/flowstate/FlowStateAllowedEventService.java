@@ -55,13 +55,27 @@ public class FlowStateAllowedEventService {
         entry(PAYMENT_FAILED.fullName(),
               List.of(
                       PBA_PAYMENT_FAILED,
-                      END_BUSINESS_PROCESS_GASPEC
+                      END_BUSINESS_PROCESS_GASPEC,
+                      RESPOND_TO_APPLICATION,
+                      REFER_TO_JUDGE,
+                      REFER_TO_LEGAL_ADVISOR,
+                      JUDGE_MAKES_DECISION,
+                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                      RESPOND_TO_JUDGE_DIRECTIONS,
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
 
               )
         ),
         entry(PAYMENT_SUCCESSFUL.fullName(),
               List.of(
-                      NOTIFY_GENERAL_APPLICATION_RESPONDENT
+                      NOTIFY_GENERAL_APPLICATION_RESPONDENT,
+                      RESPOND_TO_APPLICATION,
+                      REFER_TO_JUDGE,
+                      REFER_TO_LEGAL_ADVISOR,
+                      JUDGE_MAKES_DECISION,
+                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                      RESPOND_TO_JUDGE_DIRECTIONS,
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
               )
         )
     );
