@@ -49,6 +49,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
         if (judicialDecisionHelper.isApplicationCloaked(data).equals(YES)
+            && data.getApplicationIsCloaked() != null
             && data.getApplicationIsCloaked().equals(NO)
             && data.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {
             parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
