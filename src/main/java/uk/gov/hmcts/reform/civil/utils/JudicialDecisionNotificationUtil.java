@@ -76,10 +76,12 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformation(caseData)) {
+        if (isRequestForInformation(caseData)
+            && !isApplicationCloaked(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
-        if (isRequestForInformationCloakedApplication(caseData)) {
+        if (isRequestForInformation(caseData)
+            && isApplicationCloaked(caseData)) {
             return REQUEST_FOR_INFORMATION_CLOAK;
         }
         return NON_CRITERION;
@@ -199,7 +201,7 @@ public class JudicialDecisionNotificationUtil {
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
             isJudicialDecisionEvent(caseData)
-                && Objects.isNull(decision)
+                && Objects.nonNull(decision)
                 && caseData.getJudicialDecision()
                 .getDecision().equals(REQUEST_MORE_INFO)
                 && caseData.getJudicialDecisionRequestMoreInfo()

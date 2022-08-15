@@ -178,9 +178,8 @@ public class JudicialNotificationService implements NotificationData {
                 notificationProperties.getJudgeUncloakApplicationEmailTemplate()
             );
         } else {
-            var requestForInformationDeadline = Optional.ofNullable(caseData
-                                                                        .getJudicialDecisionRequestMoreInfo()
-                                                                        .getJudgeRequestMoreInfoByDate()).orElse(null);
+
+            var requestForInformationDeadline = getDeadlineForRequestMoreInformationApplication(caseData);
             addCustomPropsForRespondDeadline(requestForInformationDeadline);
 
             if (areRespondentSolicitorsPresent(caseData)) {
@@ -197,14 +196,11 @@ public class JudicialNotificationService implements NotificationData {
 
             customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
         }
-
     }
 
     private void applicationRequestForInformationCloak(CaseData caseData) {
 
-        var requestForInformationDeadline = Optional.ofNullable(caseData
-                                                                    .getJudicialDecisionRequestMoreInfo()
-                                                                    .getJudgeRequestMoreInfoByDate()).orElse(null);
+        var requestForInformationDeadline = getDeadlineForRequestMoreInformationApplication(caseData);
 
         addCustomPropsForRespondDeadline(requestForInformationDeadline);
 
@@ -371,6 +367,20 @@ public class JudicialNotificationService implements NotificationData {
                         JUDICIAL_FORMATTER
                     ), DATE) : null
         );
+    }
+
+    private LocalDate getDeadlineForRequestMoreInformationApplication(CaseData caseData) {
+
+        if (caseData.getJudicialDecisionRequestMoreInfo() != null) {
+            if (caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission() != null) {
+                return caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission().toLocalDate();
+            } else {
+                return caseData
+                    .getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoByDate();
+            }
+        }
+        return null;
     }
 
     public static boolean useDamageTemplate(CaseData caseData) {
