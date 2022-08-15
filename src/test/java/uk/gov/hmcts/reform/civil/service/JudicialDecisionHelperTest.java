@@ -227,7 +227,7 @@ public class JudicialDecisionHelperTest {
 
         @Test
         void shouldReturnTrue_WhenJudgeDecideUncloaked_OrderMade() {
-            CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+            CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
             assertThat(helper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).isEqualTo(true);
 
         }

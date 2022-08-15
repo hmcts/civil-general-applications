@@ -48,7 +48,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        if (judicialDecisionHelper.isApplicationCloaked(data).equals(YES)
+        if (judicialDecisionHelper.isApplicationCreatedWithoutNoticeByApplicant(data).equals(YES)
             && data.getApplicationIsCloaked() != null
             && data.getApplicationIsCloaked().equals(NO)
             && data.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {

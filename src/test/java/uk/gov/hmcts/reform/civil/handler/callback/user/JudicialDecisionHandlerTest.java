@@ -577,7 +577,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String judgeRecitalText = "<Title> <Name> \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -593,7 +593,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String judgeRecitalText = "<Title> <Name> \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 

@@ -43,7 +43,7 @@ public class JudicialDecisionHelper {
     }
 
     public boolean isOrderMakeDecisionMadeVisibleToDefendant(CaseData caseData) {
-        if (isApplicationCloaked(caseData).equals(YES)
+        if (isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
             && caseData.getApplicationIsCloaked().equals(NO)
             && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {

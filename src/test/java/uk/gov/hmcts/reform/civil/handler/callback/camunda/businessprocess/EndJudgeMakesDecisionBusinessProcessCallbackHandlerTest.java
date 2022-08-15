@@ -59,10 +59,10 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldAddRespondentSolicitorDetail_WhenJudeOrderMakeUncloakApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCloaked(caseData)).thenReturn(YES);
+        when(judicialDecisionHelper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).thenReturn(YES);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -76,10 +76,10 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldNotAddRespondentSolicitorDetail_WhenJudeOrderMake_WithNoticeApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCloaked(caseData)).thenReturn(NO);
+        when(judicialDecisionHelper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).thenReturn(NO);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);

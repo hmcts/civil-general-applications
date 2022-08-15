@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
-import uk.gov.hmcts.reform.civil.enums.dq.*;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -75,7 +79,7 @@ public class JudicialDecisionNotificationUtil {
         if (isRequestForInformation(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
-        if (isRequestForInformationCloakedApplication(caseData) ) {
+        if (isRequestForInformationCloakedApplication(caseData)) {
             return REQUEST_FOR_INFORMATION_CLOAK;
         }
         return NON_CRITERION;
@@ -91,7 +95,7 @@ public class JudicialDecisionNotificationUtil {
         boolean isApplicantPresent = isApplicantPresent(caseData.getGeneralAppApplnSolicitor());
         boolean isRespondentPresent = areRespondentSolicitorsPresent(caseData);
         boolean isAppConcurWrittenRep = isAppWrittenRepresentationOfGivenType(caseData,
-                                                                             GAJudgeWrittenRepresentationsOptions
+                                                                              GAJudgeWrittenRepresentationsOptions
                                                                                  .CONCURRENT_REPRESENTATIONS);
         return
             isJudicialDecisionEvent(caseData)
