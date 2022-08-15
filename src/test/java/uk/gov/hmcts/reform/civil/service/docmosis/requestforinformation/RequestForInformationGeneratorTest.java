@@ -65,7 +65,7 @@ class RequestForInformationGeneratorTest {
 
     @Test
     void shouldGenerateRequestForInformationDocument() {
-        CaseData caseData = CaseDataBuilder.builder().requestForInforationApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build();
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
             .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
@@ -96,7 +96,7 @@ class RequestForInformationGeneratorTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetRequestForInformationData() {
-            CaseData caseData = CaseDataBuilder.builder().requestForInforationApplication().build().toBuilder()
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
             when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
@@ -120,6 +120,8 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getDateBy(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoByDate()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText())
             );
