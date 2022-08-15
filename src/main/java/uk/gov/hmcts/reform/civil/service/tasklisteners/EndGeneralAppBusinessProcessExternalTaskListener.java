@@ -12,7 +12,9 @@ public class EndGeneralAppBusinessProcessExternalTaskListener {
     private static final String TOPIC = "END_GENERAL_APP_BUSINESS_PROCESS";
 
     @Autowired
-    private EndGeneralAppBusinessProcessExternalTaskListener(EndGeneralAppBusinessProcessTaskHandler handler, ExternalTaskClient client) {
+    private EndGeneralAppBusinessProcessExternalTaskListener(
+        EndGeneralAppBusinessProcessTaskHandler handler,
+        ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(handler).open();
     }

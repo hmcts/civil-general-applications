@@ -33,7 +33,8 @@ public class EndGeneralAppBusinessProcessTaskHandler implements BaseExternalTask
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
 
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, END_GENERAL_APP_BUSINESS_PROCESS);
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
+                                                                                END_GENERAL_APP_BUSINESS_PROCESS);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
 
