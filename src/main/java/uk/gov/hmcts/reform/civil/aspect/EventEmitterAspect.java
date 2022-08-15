@@ -31,6 +31,7 @@ public class EventEmitterAspect {
     public Object emitBusinessProcessEvent(ProceedingJoinPoint joinPoint, CallbackParams callbackParams)
         throws Throwable {
         if (callbackParams.getType() == SUBMITTED) {
+            log.info("[{}] : [{}]", SUBMITTED, callbackParams.getRequest().getEventId());
             CaseData caseData = callbackParams.getCaseData();
             var caseId = caseData.getCcdCaseReference();
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();

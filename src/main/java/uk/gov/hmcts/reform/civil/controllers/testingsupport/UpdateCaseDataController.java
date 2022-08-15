@@ -56,7 +56,7 @@ public class UpdateCaseDataController {
     @PostMapping("/testing-support/case/{caseId}/trigger/{eventName}")
     public void triggerGAEvent(@PathVariable("caseId") Long caseId, @PathVariable("eventName") CaseEvent eventName) {
         try {
-            coreCaseDataService.triggerEvent(caseId, eventName);
+            coreCaseDataService.triggerGaEvent(caseId, eventName, Map.of());
         } catch (FeignException e) {
             log.error(String.format("Triggering event: %s on case %s failed due to: \n %s",
                                     eventName, caseId, e.contentUTF8()));

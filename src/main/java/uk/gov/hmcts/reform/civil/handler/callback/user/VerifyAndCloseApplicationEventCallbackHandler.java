@@ -2,16 +2,18 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.event.CloseApplicationsEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,6 @@ import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VERIFY_AND_CLOSE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_CLOSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
@@ -33,7 +34,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 @RequiredArgsConstructor
 public class VerifyAndCloseApplicationEventCallbackHandler extends CallbackHandler {
 
-    private final CoreCaseDataService coreCaseDataService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private static final List<CaseEvent> EVENTS = singletonList(VERIFY_AND_CLOSE_APPLICATION);
 
@@ -44,8 +45,8 @@ public class VerifyAndCloseApplicationEventCallbackHandler extends CallbackHandl
     protected Map<String, Callback> callbacks() {
         return Map.of(
             callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-            callbackKey(ABOUT_TO_SUBMIT), this::changeApplicationState,
-            callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
+            callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse,
+            callbackKey(SUBMITTED), this::changeApplicationState
         );
     }
 
@@ -58,8 +59,8 @@ public class VerifyAndCloseApplicationEventCallbackHandler extends CallbackHandl
         CaseData caseData = callbackParams.getCaseData();
         if (!NON_LIVE_STATES.contains(caseData.getCcdState())) {
             Long caseId = caseData.getCcdCaseReference();
-            coreCaseDataService.triggerEvent(caseId, MAIN_CASE_CLOSED);
+            applicationEventPublisher.publishEvent(new CloseApplicationsEvent(caseId));
         }
-        return AboutToStartOrSubmitCallbackResponse.builder().build();
+        return SubmittedCallbackResponse.builder().build();
     }
 }

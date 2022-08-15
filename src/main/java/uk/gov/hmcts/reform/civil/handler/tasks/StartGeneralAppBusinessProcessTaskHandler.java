@@ -22,7 +22,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseExternalTaskHandler {
+public class StartGeneralAppBusinessProcessTaskHandler implements BaseExternalTaskHandler {
 
     public static final String BUSINESS_PROCESS = "businessProcess";
     private final CoreCaseDataService coreCaseDataService;
@@ -34,7 +34,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
 
     @Override
     public void handleTask(ExternalTask externalTask) {
-        CaseData caseData = startGeneralApplicationBusinessProcess(externalTask);
+        CaseData caseData = startBusinessProcess(externalTask);
         variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
@@ -46,14 +46,14 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         return variables;
     }
 
-    private CaseData startGeneralApplicationBusinessProcess(ExternalTask externalTask) {
+    private CaseData startBusinessProcess(ExternalTask externalTask) {
         ExternalTaskInput externalTaskInput = mapper.convertValue(
             externalTask.getAllVariables(),
             ExternalTaskInput.class
         );
         String caseId = externalTaskInput.getCaseId();
         CaseEvent caseEvent = externalTaskInput.getCaseEvent();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, caseEvent);
+        StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId, caseEvent);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         log.info("startBusinessProcess [{}] : [{}]", businessProcess.getCamundaEvent(), caseEvent);
@@ -68,7 +68,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
                 return data;
             default:
                 log.error("----------------CAMUNDAERROR -START------------------");
-                log.error("CAMUNDAERROR CaseId ({})", caseId);
+                log.error("CAMUNDAERROR General Application-CaseId ({})", caseId);
                 log.error("CAMUNDAERROR CaseEvent ({})", caseEvent);
                 log.error("CAMUNDAERROR BusinessProcessStatus ({})", businessProcess.getStatusOrDefault());
                 log.error("----------------CAMUNDAERROR -END------------------");
@@ -82,6 +82,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         StartEventResponse startEventResponse,
         BusinessProcess businessProcess
     ) {
+        log.info("Updating BP : [{}]", externalTask.getProcessInstanceId());
         businessProcess = businessProcess.updateProcessInstanceId(externalTask.getProcessInstanceId());
         return coreCaseDataService.submitGaUpdate(ccdId, caseDataContent(startEventResponse, businessProcess));
     }
