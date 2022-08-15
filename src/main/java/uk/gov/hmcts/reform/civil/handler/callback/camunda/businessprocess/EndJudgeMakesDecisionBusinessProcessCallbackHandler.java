@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
@@ -19,6 +21,8 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
     private final StateGeneratorService stateGeneratorService;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -42,7 +47,16 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
 
     private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+
+        if (judicialDecisionHelper.isApplicationCloaked(data).equals(YES)
+            && data.getApplicationIsCloaked() != null
+            && data.getApplicationIsCloaked().equals(NO)
+            && data.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {
+            parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+                data, getNewStateDependingOn(data).getDisplayedValue());
+        } else {
+            parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+        }
         return evaluateReady(callbackParams, getNewStateDependingOn(data));
     }
 

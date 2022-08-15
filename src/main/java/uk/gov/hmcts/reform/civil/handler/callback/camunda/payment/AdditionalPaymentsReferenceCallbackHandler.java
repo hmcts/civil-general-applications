@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 
@@ -24,7 +25,6 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Slf4j
 @Service
@@ -34,11 +34,10 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(OBTAIN_ADDITIONAL_PAYMENT_REF);
     private static final String ERROR_MESSAGE = "Technical error occurred";
     private static final String TASK_ID = "GeneralApplicationMakeAdditionalPayment";
-    public static final String DUPLICATE_PAYMENT_MESSAGE
-        = "You attempted to retry the payment to soon. Try again later.";
 
     private final PaymentsService paymentsService;
     private final ObjectMapper objectMapper;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     @Override
     public String camundaActivityId(CallbackParams callbackParams) {
@@ -62,7 +61,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-        if (isApplicationUncloakedInJudicialDecision(caseData)) {
+        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             try {
                 log.info("processing payment reference for case " + caseData.getCcdCaseReference());
                 paymentsService.validateRequest(caseData);
