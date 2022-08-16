@@ -64,8 +64,12 @@ public class PaymentsService {
     private CreateServiceRequestDTO buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
-        String siteId = (caseData.getGeneralAppSuperClaimType().equals(SPEC_CLAIM)
-            ? paymentsConfiguration.getSpecSiteId() : paymentsConfiguration.getSiteId());
+        String siteId = "";
+        if (!SPEC_CLAIM.equals(caseData.getGeneralAppSuperClaimType())) {
+            siteId = paymentsConfiguration.getSiteId();
+        } else {
+            siteId = paymentsConfiguration.getSpecSiteId();
+        }
         return CreateServiceRequestDTO.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
