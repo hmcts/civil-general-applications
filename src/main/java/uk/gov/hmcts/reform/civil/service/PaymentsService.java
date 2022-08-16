@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.prd.model.Organisation;
 import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static uk.gov.hmcts.reform.civil.enums.GeneralAppClaimType.SPEC_CLAIM;
+
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +31,7 @@ public class PaymentsService {
     @Value("${payments.api.callback-url}")
     String callBackUrl;
     public static final String PAYMENT_ACTION = "payment";
+    public static final String SPEC_CLAIM = "SPEC_CLAIM";
 
     public void validateRequest(CaseData caseData) {
         String error = null;
@@ -64,12 +65,9 @@ public class PaymentsService {
     private CreateServiceRequestDTO buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
-        String siteId = "";
-        if (!SPEC_CLAIM.equals(caseData.getGeneralAppSuperClaimType())) {
-            siteId = paymentsConfiguration.getSiteId();
-        } else {
-            siteId = paymentsConfiguration.getSpecSiteId();
-        }
+        String siteId = caseData.getGeneralAppSuperClaimType().equals(SPEC_CLAIM)
+            ? paymentsConfiguration.getSpecSiteId() : paymentsConfiguration.getSiteId();
+
         return CreateServiceRequestDTO.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
