@@ -1090,6 +1090,7 @@ class JudicialNotificationServiceTest {
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
+                    .generalAppPBADetails(GAPbaDetails.builder().build())
                     .build();
         }
 
