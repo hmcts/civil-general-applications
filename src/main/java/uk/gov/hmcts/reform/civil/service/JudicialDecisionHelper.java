@@ -62,4 +62,5 @@ public class JudicialDecisionHelper {
             &&  Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
             && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
     }
+
 }

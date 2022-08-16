@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -25,7 +26,10 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 
 @Service
+@RequiredArgsConstructor
 public class StateGeneratorService {
+
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
         GAJudgeDecisionOption decision;
@@ -42,10 +46,8 @@ public class StateGeneratorService {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
 
-            if (data.getJudicialDecisionRequestMoreInfo() != null
-                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != null
-                && data.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption().equals(
-                GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY)) {
+            if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(data)
+                && data.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
                 return APPLICATION_ADD_PAYMENT;
             }
 
@@ -80,4 +82,6 @@ public class StateGeneratorService {
 
         return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
     }
+
+
 }
