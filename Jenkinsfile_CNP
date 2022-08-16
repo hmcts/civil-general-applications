@@ -9,7 +9,7 @@ def product = "civil"
 def component = "general-applications"
 def camundaBranch = "CIV-3408-WaysToPays-AdditionalPayment"
 
-def generalappCCDBranch = "CIV-3408-WaysToPays-AdditionalPayment"
+def generalappCCDBranch = "feature/CIV-3459"
 
 AppPipelineConfig pipelineConf
 
