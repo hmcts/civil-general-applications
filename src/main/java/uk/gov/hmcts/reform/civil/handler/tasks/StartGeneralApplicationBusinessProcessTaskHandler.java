@@ -56,7 +56,6 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, caseEvent);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
-        log.info("startBusinessProcess [{}] : [{}]", businessProcess.getCamundaEvent(), caseEvent);
         switch (businessProcess.getStatusOrDefault()) {
             case READY:
             case DISPATCHED:

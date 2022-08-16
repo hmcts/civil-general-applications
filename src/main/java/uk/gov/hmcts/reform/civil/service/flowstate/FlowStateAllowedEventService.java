@@ -13,6 +13,7 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
@@ -25,6 +26,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDI
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VERIFY_AND_CLOSE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VERIFY_TO_PROCEED_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
 
@@ -46,7 +48,9 @@ public class FlowStateAllowedEventService {
                                         RESPOND_TO_JUDGE_DIRECTIONS,
                                         RESPOND_TO_JUDGE_ADDITIONAL_INFO,
                                         VERIFY_AND_CLOSE_APPLICATION,
-                                        MAIN_CASE_CLOSED)),
+                                        MAIN_CASE_CLOSED,
+                                        VERIFY_TO_PROCEED_IN_HERITAGE,
+                                        APPLICATION_PROCEEDS_IN_HERITAGE)),
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
