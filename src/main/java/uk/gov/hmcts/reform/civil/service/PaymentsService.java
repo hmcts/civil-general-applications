@@ -20,7 +20,6 @@ import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 
-
 @Service
 @RequiredArgsConstructor
 public class PaymentsService {

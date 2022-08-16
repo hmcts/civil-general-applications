@@ -42,7 +42,7 @@ class PaymentsServiceTest {
     private static final String SERVICE = "service";
 
     private static final String SITE_ID = "site_id";
-    private static final String SPEC_SITE_ID ="spec_site_id";
+    private static final String SPEC_SITE_ID = "spec_site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PBAServiceRequestResponse PAYMENT_DTO = PBAServiceRequestResponse.builder()
         .paymentReference("RC-1234-1234-1234-1234").build();
@@ -227,6 +227,7 @@ class PaymentsServiceTest {
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
 
     }
+
     @Test
     void shouldCreatePaymentServiceRequest_whenGaTypeIsSpecClaim() {
 
