@@ -24,8 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SpringBootTest(classes = {
     EndJudgeMakesDecisionBusinessProcessCallbackHandler.class,
@@ -62,7 +60,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCloaked(caseData)).thenReturn(YES);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -79,7 +77,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCloaked(caseData)).thenReturn(NO);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
