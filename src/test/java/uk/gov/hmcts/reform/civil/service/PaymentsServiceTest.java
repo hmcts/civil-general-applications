@@ -221,6 +221,8 @@ class PaymentsServiceTest {
 
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
         PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
+        assertThat(caseData.getGeneralAppSuperClaimType()).isEqualTo("UNSPEC_CLAIM");
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+
     }
 }

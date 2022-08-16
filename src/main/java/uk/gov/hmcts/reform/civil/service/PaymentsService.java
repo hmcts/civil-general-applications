@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
+import uk.gov.hmcts.reform.civil.enums.GeneralAppClaimType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -63,6 +64,8 @@ public class PaymentsService {
     private CreateServiceRequestDTO buildServiceRequest(CaseData caseData) {
         GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
         FeeDto feeResponse = generalAppPBADetails.getFee().toFeeDto();
+        String siteId = (caseData.getGeneralAppSuperClaimType().equals(GeneralAppClaimType.SPEC_CLAIM)
+            ? paymentsConfiguration.getSpecSiteId() : paymentsConfiguration.getSiteId());
         return CreateServiceRequestDTO.builder()
             .callBackUrl(callBackUrl)
             .casePaymentRequest(CasePaymentRequestDto.builder()
@@ -75,7 +78,7 @@ public class PaymentsService {
                 .code(feeResponse.getCode())
                 .version(feeResponse.getVersion())
                 .volume(1).build())})
-            .hmctsOrgId(paymentsConfiguration.getSiteId()).build();
+            .hmctsOrgId(siteId).build();
     }
 
     private PBAServiceRequestDTO buildRequest(CaseData caseData) {
