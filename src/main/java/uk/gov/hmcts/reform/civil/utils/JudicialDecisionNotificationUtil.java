@@ -186,14 +186,7 @@ public class JudicialDecisionNotificationUtil {
             isJudicialDecisionEvent(caseData)
                 && Objects.nonNull(decision)
                 && caseData.getJudicialDecision()
-                .getDecision().equals(REQUEST_MORE_INFO)
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().equals(
-                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION)
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoText() != null
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoByDate() != null;
+                .getDecision().equals(REQUEST_MORE_INFO);
     }
 
     private static boolean isRequestForInformationCloakedApplication(CaseData caseData) {
