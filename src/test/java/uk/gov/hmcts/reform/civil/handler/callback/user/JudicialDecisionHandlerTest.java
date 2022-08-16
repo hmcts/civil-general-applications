@@ -573,6 +573,38 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testAboutToStartForRequestMoreInfoCloakedAppln() {
+            String judgeRecitalText = "<Title> <Name> \n"
+                + "Upon reviewing the application made and upon considering the information provided by the parties, "
+                + "the court requests more information from the applicant.";
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getIsWithNotice()).isEqualTo(NO);
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
+        void testAboutToStartForRequestMoreInfoUrgentAppln() {
+            String judgeRecitalText = "<Title> <Name> \n"
+                + "Upon reviewing the application made and upon considering the information provided by the parties, "
+                + "the court requests more information from the applicant.";
+            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getIsWithNotice()).isEqualTo(YES);
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
             String expectedRecitalText = "<Title> <Name> \n"
                 + "Upon reading the application of Defendant dated 15 January 22 and upon the "
@@ -1806,8 +1838,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "respond, cannot be in past.";
 
         @Test
-        void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
-            CaseData caseData = CaseDataBuilder.builder().build();
+        void shouldNotReturnErrors_whenRequestedMoreInfoAndTheDateIsInFuture() {
+            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
+                                                                      LocalDate.now().plusDays(1), YES);
+
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -1817,7 +1851,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsNull() {
-            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION, null, NO);
+            CaseData caseData = getApplication_RequestMoreInformation2(REQUEST_MORE_INFORMATION, null, NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1828,7 +1862,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnErrors_whenRequestedMoreInfoAndTheDateIsInPast() {
-            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
+            CaseData caseData = getApplication_RequestMoreInformation2(REQUEST_MORE_INFORMATION,
                     LocalDate.now().minusDays(1), NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
@@ -1840,9 +1874,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldNotReturnErrors_whenRequestedMoreInfoAndTheDateIsInFuture() {
-            CaseData caseData = getApplication_RequestMoreInformation(REQUEST_MORE_INFORMATION,
-                    LocalDate.now().plusDays(1), YES);
+        void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
+            CaseData caseData = getApplication_RequestMoreInformation2(null,
+                    LocalDate.now(), NO);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -1851,16 +1885,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getErrors()).isEmpty();
         }
 
-        @Test
-        void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
-            CaseData caseData = getApplication_RequestMoreInformation(null,
-                    LocalDate.now(), NO);
+        private CaseData getApplication_RequestMoreInformation2(GAJudgeRequestMoreInfoOption option,
+                                                                LocalDate judgeRequestMoreInfoByDate,
+                                                                YesOrNo hasAgree) {
 
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            assertThat(response.getErrors()).isEmpty();
+            return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(hasAgree).build())
+                .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .requestMoreInfoOption(option)
+                                                     .judgeRequestMoreInfoByDate(judgeRequestMoreInfoByDate)
+                                                     .judgeRequestMoreInfoText("Test")
+                                                     .isWithNotice(YES)
+                                                     .deadlineForMoreInfoSubmission(LocalDateTime.now().plusDays(5))
+                                                     .build())
+                .build();
         }
 
         @Test
@@ -2477,6 +2517,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     public GAJudicialMakeAnOrder getJudicialMakeAnOrder(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getJudicialDecisionMakeOrder();
+    }
+
+    public GAJudicialRequestMoreInfo getJudicialRequestMoreInfo(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getJudicialDecisionRequestMoreInfo();
     }
 
     public YesOrNo getApplicationIsCloakedStatus(AboutToStartOrSubmitCallbackResponse response) {
