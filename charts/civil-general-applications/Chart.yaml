@@ -4,7 +4,7 @@ description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
 
-version: 0.0.22
+version: 0.0.23
 
 maintainers:
   - name: HMCTS Civil team
