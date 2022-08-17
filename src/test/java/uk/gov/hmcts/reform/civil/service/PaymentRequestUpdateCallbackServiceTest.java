@@ -52,8 +52,10 @@ class PaymentRequestUpdateCallbackServiceTest {
     ObjectMapper objectMapper;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
     @MockBean
     private GeneralApplicationCreationNotificationService gaNotificationService;
+
     @MockBean
     private JudicialNotificationService judicialNotificationService;
     @MockBean
@@ -229,4 +231,5 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
 
     }
+
 }

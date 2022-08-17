@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
@@ -36,6 +37,7 @@ import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 public class PaymentRequestUpdateCallbackService {
 
     public static final String PAID = "Paid";
+
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
     private final JudicialNotificationService judicialNotificationService;
@@ -61,6 +63,7 @@ public class PaymentRequestUpdateCallbackService {
 
                     caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
                     judicialNotificationService.sendNotification(caseData);
+
                     createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                                 serviceRequestUpdateDto.getCcdCaseNumber());
 
@@ -85,6 +88,7 @@ public class PaymentRequestUpdateCallbackService {
             eventName
         );
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+
         BusinessProcess businessProcess = startEventData.getBusinessProcess();
         CaseDataContent caseDataContent = buildCaseDataContent(
             startEventResponse,
@@ -93,8 +97,10 @@ public class PaymentRequestUpdateCallbackService {
             generalApplicationCaseId,
             startEventData.getGeneralAppParentCaseLink()
         );
+
         coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
         coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(), eventName);
+
     }
 
     private CaseData updateCaseDataWithStateAndPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
@@ -124,6 +130,7 @@ public class PaymentRequestUpdateCallbackService {
 
         return caseData;
     }
+
 
     private CaseData updateCaseDataWithPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
                                                               CaseData caseData) {
