@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
-
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
@@ -130,7 +129,6 @@ public class PaymentRequestUpdateCallbackService {
 
         return caseData;
     }
-
 
     private CaseData updateCaseDataWithPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
                                                               CaseData caseData) {
