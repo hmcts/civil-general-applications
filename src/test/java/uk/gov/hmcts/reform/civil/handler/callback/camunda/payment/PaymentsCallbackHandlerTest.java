@@ -35,7 +35,6 @@ import java.util.Map;
 import static feign.Request.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -155,15 +154,14 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference()).isEqualTo("12345");
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate()).isNull();
-            assertThat(response.getErrors()).containsOnly("Technical error occurred");
         }
 
         @Test
         void shouldThrowException_whenForbiddenExceptionThrownContainsInvalidResponse() {
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createCreditAccountPayment(any(), any());
-
-            assertThrows(FeignException.class, () -> handler.handle(params));
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isEmpty();
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
 
         }
