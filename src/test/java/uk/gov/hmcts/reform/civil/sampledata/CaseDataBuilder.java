@@ -69,7 +69,7 @@ public class CaseDataBuilder {
         + "Upon reviewing the application made and upon considering the information "
         + "provided by the parties, the court requests more information from the applicant.";
 
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(

@@ -39,7 +39,7 @@ public class JudicialDecisionNotificationUtil {
         // Utilities class, no instance
     }
 
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
 
