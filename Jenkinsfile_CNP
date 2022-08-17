@@ -10,7 +10,7 @@ def component = "general-applications"
 
 def camundaBranch = "CIV-3403"
 
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "CIV-3403"
 
 AppPipelineConfig pipelineConf
 
