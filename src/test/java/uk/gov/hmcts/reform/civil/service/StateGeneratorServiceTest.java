@@ -41,7 +41,7 @@ public class StateGeneratorServiceTest {
 
     @Autowired
     StateGeneratorService stateGeneratorService;
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     @Test
     public void shouldReturnAwaiting_Addition_InformationWhenMoreInfoSelected() {
