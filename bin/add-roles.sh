@@ -7,7 +7,9 @@
 ./bin/utils/ccd-add-role.sh "prd-admin"
 ./bin/utils/ccd-add-role.sh "judge-profile"
 ./bin/utils/ccd-add-role.sh "basic-access"
-./bin/utils/ccd-add-role.sh "GS_profile"
+./bin/utils/ccd-add-role.sh "caseworker-ras-validation"
+./bin/utils/ccd-add-role.sh "admin-access"
+./bin/utils/ccd-add-role.sh "full-access"
 ./bin/utils/ccd-add-role.sh "civil-administrator-standard"
 ./bin/utils/ccd-add-role.sh "civil-administrator-basic"
 
