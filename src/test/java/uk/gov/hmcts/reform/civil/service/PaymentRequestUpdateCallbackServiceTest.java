@@ -59,6 +59,8 @@ class PaymentRequestUpdateCallbackServiceTest {
     @Autowired
     PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService;
     @MockBean
+    StateGeneratorService stateGeneratorService;
+    @MockBean
     CaseDetailsConverter caseDetailsConverter;
 
     @BeforeEach

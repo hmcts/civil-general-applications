@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -81,9 +80,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final int ONE_V_ONE = 0;
     private static final int ONE_V_TWO = 1;
     private static final String EMPTY_STRING = "";
-
-    private final DeadlinesCalculator deadlinesCalculator;
-    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
@@ -459,14 +455,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
-
-        if (SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
-            LocalDateTime deadlineForMoreInfoSubmission = deadlinesCalculator
-                .calculateApplicantResponseDeadline(
-                    LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
-
-            gaJudicialRequestMoreInfoBuilder.deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission).build();
-        }
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());

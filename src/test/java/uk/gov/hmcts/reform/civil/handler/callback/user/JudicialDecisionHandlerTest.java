@@ -1903,21 +1903,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        @Test
-        void shouldNotReturnErrors_DeadlineForMoreInfoSubmissionIsPopulated() {
-            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                                                                      LocalDate.now().plusDays(1), YES);
-
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(response.getErrors()).isEmpty();
-            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
-                .isEqualTo(deadline.toString());
-        }
-
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
                                                                LocalDate judgeRequestMoreInfoByDate, YesOrNo hasAgree) {
             List<GeneralApplicationTypes> types = List.of(

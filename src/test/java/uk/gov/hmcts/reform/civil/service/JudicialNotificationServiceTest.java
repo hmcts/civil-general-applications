@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsPro
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -31,10 +32,12 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +47,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
@@ -54,7 +58,10 @@ class JudicialNotificationServiceTest {
 
     @MockBean
     private NotificationsProperties notificationsProperties;
-
+    @MockBean
+    private Time time;
+    @MockBean
+    private DeadlinesCalculator deadlinesCalculator;
     @Autowired
     private JudicialNotificationService judicialNotificationService;
 
@@ -78,6 +85,8 @@ class JudicialNotificationServiceTest {
     private static final String ID = "1";
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
     private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private LocalDateTime responseDate = LocalDateTime.now();
+    private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
     @Nested
     class AboutToSubmitCallback {
@@ -389,12 +398,20 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithoutNotice() {
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES);
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES,
+                                                                                      SEND_APP_TO_OTHER_PARTY);
+
+            when(time.now()).thenReturn(responseDate);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(deadlinesCalculator.calculateApplicantResponseDeadline(
+                any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
 
-            judicialNotificationService
-                .sendNotification(caseData);
+            var responseCaseData = judicialNotificationService.sendNotification(caseData);
+
+            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
+                .isEqualTo(deadline.toString());
+
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -405,7 +422,8 @@ class JudicialNotificationServiceTest {
 
         @Test
         void notificationShouldSendIfJudicialRequestForInformationWithNotice() {
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO);
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO,
+                                                                                      REQUEST_MORE_INFORMATION);
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
 
@@ -422,8 +440,8 @@ class JudicialNotificationServiceTest {
         @Test
         void shouldSendAdditionalPaymentNotification_UncloakRequestForInformation_BeforeAdditionalPaymentMade() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO);
-
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+                                                                                      SEND_APP_TO_OTHER_PARTY);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -440,16 +458,24 @@ class JudicialNotificationServiceTest {
         @Test
         void shouldSendNotification_UncloakRequestForInformation_AfterAdditionalPaymentMade() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO)
-                .toBuilder().generalAppPBADetails(GAPbaDetails.builder()
-                                                      .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
-                                                      .build())
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+                                                                                      SEND_APP_TO_OTHER_PARTY
+            ).toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                                                   .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
+                                                   .build())
                 .build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
-            judicialNotificationService.sendNotification(caseData);
+            when(time.now()).thenReturn(responseDate);
+            when(deadlinesCalculator.calculateApplicantResponseDeadline(
+                any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
+
+            var responseCaseData = judicialNotificationService.sendNotification(caseData);
+
+            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
+                .isEqualTo(deadline.toString());
 
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -970,7 +996,8 @@ class JudicialNotificationServiceTest {
         }
 
         private CaseData caseDataForJudicialRequestForInformationOfApplication(
-            YesOrNo isRespondentOrderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked) {
+            YesOrNo isRespondentOrderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked,
+            GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
 
             return CaseData.builder()
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -978,7 +1005,7 @@ class JudicialNotificationServiceTest {
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
-                                                     .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                     .requestMoreInfoOption(gaJudgeRequestMoreInfoOption)
                                                      .judgeRequestMoreInfoText("Test")
                                                      .judgeRequestMoreInfoByDate(LocalDate.now()).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
