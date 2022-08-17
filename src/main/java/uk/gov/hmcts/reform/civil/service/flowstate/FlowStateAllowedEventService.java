@@ -15,8 +15,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
@@ -39,7 +39,7 @@ public class FlowStateAllowedEventService {
                                         RESPOND_TO_APPLICATION,
                                         REFER_TO_JUDGE,
                                         REFER_TO_LEGAL_ADVISOR,
-                                        JUDGE_MAKES_DECISION,
+                                        MAKE_DECISION,
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
                                         RESPOND_TO_JUDGE_ADDITIONAL_INFO)),

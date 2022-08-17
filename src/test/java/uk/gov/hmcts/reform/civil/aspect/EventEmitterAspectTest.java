@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @ExtendWith(SpringExtension.class)
@@ -146,7 +146,7 @@ class EventEmitterAspectTest {
     @Test
     void shouldEmitBusinessProcessGACamundaEvent_whenCallbackIsSubmittedABPStatusIsReadyAndPIIsNotNull() {
         CaseData caseData = CaseData.builder()
-            .businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION))
+            .businessProcess(BusinessProcess.ready(MAKE_DECISION))
             .build();
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .of(SUBMITTED, caseData)
