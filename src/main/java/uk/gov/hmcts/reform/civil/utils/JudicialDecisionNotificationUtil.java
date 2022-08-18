@@ -76,7 +76,7 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformationWithouNotice(caseData)) {
+        if (isRequestForInformationWithoutNotice(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
         if (isRequestForInformationWithNotice(caseData)) {
@@ -139,8 +139,6 @@ public class JudicialDecisionNotificationUtil {
         return isJudicialDecisionEvent(caseData)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
             && Objects.nonNull(decision)
-            && caseData.getJudicialDecision()
-            .getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
             && caseData.getApplicationIsCloaked().equals(YES);
     }
 
@@ -184,7 +182,7 @@ public class JudicialDecisionNotificationUtil {
                 .equals(GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING);
     }
 
-    private static boolean isRequestForInformationWithouNotice(CaseData caseData) {
+    private static boolean isRequestForInformationWithoutNotice(CaseData caseData) {
         var decision = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
             .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
         return
