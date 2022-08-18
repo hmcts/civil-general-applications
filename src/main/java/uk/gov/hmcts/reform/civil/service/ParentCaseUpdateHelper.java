@@ -82,14 +82,11 @@ public class ParentCaseUpdateHelper {
             }
         }
 
-        List<Element<GeneralApplicationsDetails>> generalApplications = caseData.getGeneralApplicationsDetails();
-        if (!isEmpty(generalApplications)) {
-            generalApplications.stream()
-                .filter(application -> applicationFilterCriteria(application, applicationId))
-                .findAny()
-                .orElseThrow(IllegalArgumentException::new)
-                .getValue().setCaseState(newState);
-        }
+        List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
+            caseData,
+            newState,
+            applicationId
+        );
 
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,

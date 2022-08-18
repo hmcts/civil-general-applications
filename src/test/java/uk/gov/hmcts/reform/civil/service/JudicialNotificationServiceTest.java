@@ -84,7 +84,7 @@ class JudicialNotificationServiceTest {
     private static final String ORG_ID = "1";
     private static final String ID = "1";
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
@@ -1090,6 +1090,7 @@ class JudicialNotificationServiceTest {
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
+                    .generalAppPBADetails(GAPbaDetails.builder().build())
                     .build();
         }
 

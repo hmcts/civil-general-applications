@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
@@ -39,7 +40,7 @@ public class JudicialDecisionNotificationUtil {
         // Utilities class, no instance
     }
 
-    private static final String JUDGES_DECISION = "JUDGE_MAKES_DECISION";
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
 
@@ -128,6 +129,11 @@ public class JudicialDecisionNotificationUtil {
                 List::stream
             ).filter(e -> !e.getValue().getEmail().isEmpty()).findFirst().orElse(null);
         return respondents != null;
+    }
+
+    public static boolean isApplicationUncloakedInJudicialDecision(CaseData caseData) {
+        return !isApplicationCloaked(caseData) && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
     }
 
     public static boolean isApplicationCloaked(CaseData caseData) {

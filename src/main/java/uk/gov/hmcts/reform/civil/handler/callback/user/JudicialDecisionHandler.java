@@ -50,7 +50,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
@@ -70,7 +70,7 @@ import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(JUDGE_MAKES_DECISION);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_DECISION);
 
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
@@ -504,10 +504,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
         }
 
-        dataBuilder.businessProcess(BusinessProcess.ready(JUDGE_MAKES_DECISION)).build();
+        dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
 
         dataBuilder.applicationIsCloaked(isApplicationContinuesCloakedAfterJudicialDecision(caseData));
-
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
