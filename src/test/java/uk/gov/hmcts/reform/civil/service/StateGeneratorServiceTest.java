@@ -203,17 +203,6 @@ public class StateGeneratorServiceTest {
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
-    }
-
-    @Test
-    public void shouldAdditionalAddPayment_WhenApplicationUncloaked_NoPaymentMade_RequestMoreInformation() {
-        CaseData caseData = CaseDataBuilder.builder()
-            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YesOrNo.NO).build();
-
-        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
     }
 
