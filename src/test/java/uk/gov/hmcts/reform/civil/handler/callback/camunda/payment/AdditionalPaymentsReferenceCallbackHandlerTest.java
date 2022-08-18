@@ -110,6 +110,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
+            verify(paymentsService, never()).createServiceRequest(any(), any());
             assertThat(extractPaymentRequestReferenceFromResponse(response))
                 .isNull();
         }

@@ -74,6 +74,7 @@ payments:
   api:
     site_id: AAA7
     service: CIVIL
+    spec_site_id: AAA6
     callback-url: ${PAY_CALLBACK_URL:}
 
 idam:

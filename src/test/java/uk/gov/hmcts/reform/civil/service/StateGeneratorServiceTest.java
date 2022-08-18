@@ -203,7 +203,7 @@ public class StateGeneratorServiceTest {
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+        assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
     }
 
     @Test

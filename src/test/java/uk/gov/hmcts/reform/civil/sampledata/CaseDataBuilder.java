@@ -307,6 +307,7 @@ public class CaseDataBuilder {
                             .build())
                     .pbaReference(CUSTOMER_REFERENCE)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .generalAppSuperClaimType("UNSPEC_CLAIM")
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
