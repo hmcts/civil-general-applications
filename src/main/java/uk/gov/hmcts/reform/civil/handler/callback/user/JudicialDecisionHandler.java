@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -453,7 +454,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             }
         }
-
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
         caseDataBuilder
@@ -506,7 +506,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
 
-        dataBuilder.applicationIsCloaked(isApplicationContinuesCloakedAfterJudicialDecision(caseData));
+        var isApplicationUncloaked = isApplicationContinuesCloakedAfterJudicialDecision(caseData);
+        if (Objects.isNull(isApplicationUncloaked)
+            && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(NO)) {
+            dataBuilder.applicationIsCloaked(NO);
+        } else {
+            dataBuilder.applicationIsCloaked(isApplicationUncloaked);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
@@ -1031,11 +1038,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private YesOrNo isApplicationContinuesCloakedAfterJudicialDecision(CaseData caseData) {
         if (caseData.getMakeAppVisibleToRespondents() != null
-            || (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && caseData.getJudicialDecisionRequestMoreInfo()
-            .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY))) {
+            || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             return NO;
         }
         return caseData.getApplicationIsCloaked();
+    }
+
+    private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
+        if (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != null
+            && caseData.getJudicialDecisionRequestMoreInfo()
+            .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY)) {
+            return YES;
+        }
+        return NO;
     }
 }

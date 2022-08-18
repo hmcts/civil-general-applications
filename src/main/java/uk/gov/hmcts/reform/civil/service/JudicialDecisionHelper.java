@@ -43,13 +43,11 @@ public class JudicialDecisionHelper {
     }
 
     public boolean isOrderMakeDecisionMadeVisibleToDefendant(CaseData caseData) {
-        if (isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+        return (isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
             && caseData.getApplicationIsCloaked().equals(NO)
-            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {
-            return true;
-        }
-        return false;
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER));
+
     }
 
     public boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
@@ -57,9 +55,10 @@ public class JudicialDecisionHelper {
         var judicialDecisionRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
 
         return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && Objects.nonNull(caseData.getApplicationIsCloaked())
             && caseData.getApplicationIsCloaked().equals(NO)
-            &&  Objects.nonNull(judicialDecisionRequestMoreInfo)
-            &&  Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
+            && Objects.nonNull(judicialDecisionRequestMoreInfo)
+            && Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
             && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
     }
 

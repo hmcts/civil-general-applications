@@ -48,18 +48,22 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     private CallbackResponse changeApplicationState(CallbackParams callbackParams) {
         Long caseId = callbackParams.getCaseData().getCcdCaseReference();
         CaseData caseData = callbackParams.getCaseData();
-        log.info("Changing state to ORDER_MADE for caseId: {}", caseId);
+        String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).toString();
+        log.info("Changing state to {} for caseId: {}", newCaseState, caseId);
         return AboutToStartOrSubmitCallbackResponse.builder()
-                .state(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).getDisplayedValue())
+                .state(newCaseState)
                 .build();
     }
 
     private CallbackResponse changeGADetailsStatusInParent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        log.info("Updating parent with latest state of application-caseId: {}", caseData.getCcdCaseReference());
+        String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData)
+            .getDisplayedValue();
+        log.info("Updating parent with latest state {} of application-caseId: {}",
+                 newCaseState, caseData.getCcdCaseReference());
         parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
                 caseData,
-                stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).getDisplayedValue()
+                newCaseState
         );
 
         return SubmittedCallbackResponse.builder().build();

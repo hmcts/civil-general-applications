@@ -50,7 +50,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.getDisplayedValue());
+        assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
     }
 
     @Test

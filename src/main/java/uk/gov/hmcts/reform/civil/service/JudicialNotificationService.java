@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -384,7 +383,7 @@ public class JudicialNotificationService implements NotificationData {
 
             if (caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission() != null
                 && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().equals(REQUEST_MORE_INFORMATION)) {
+                .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY)) {
 
                 return caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission().toLocalDate();
 
