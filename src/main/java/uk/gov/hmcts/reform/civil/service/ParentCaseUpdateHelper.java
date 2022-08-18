@@ -3,18 +3,24 @@ package uk.gov.hmcts.reform.civil.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +43,7 @@ public class ParentCaseUpdateHelper {
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = caseData.getGaDetailsRespondentSol();
+
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo = caseData.getGaDetailsRespondentSolTwo();
 
         if (!isEmpty(respondentSpecficGADetails)) {
@@ -75,6 +82,62 @@ public class ParentCaseUpdateHelper {
             }
         }
 
+        List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
+            caseData,
+            newState,
+            applicationId
+        );
+
+        coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
+            startEventResponse, getUpdatedCaseData(caseData, generalApplications,
+                                                                                respondentSpecficGADetails)));
+    }
+
+    public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
+
+        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+
+        StartEventResponse startEventResponse = coreCaseDataService
+            .startUpdate(parentCaseId, UPDATE_CASE_WITH_GA_STATE);
+
+        CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+
+        Optional<Element<GeneralApplicationsDetails>> generalApplicationsDetails = caseData
+            .getGeneralApplicationsDetails()
+            .stream().filter(application -> applicationFilterCriteria(application, applicationId)).findAny();
+
+        if (generalApplicationsDetails.isPresent()) {
+
+            List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+                caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+
+            gaDetailsRespondentSol.add(
+                element(
+                    GADetailsRespondentSol.builder()
+                        .generalApplicationType(generalApplicationsDetails.get().getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(generalApplicationsDetails
+                                                           .get().getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build())
+                        .caseState(newState).build()));
+
+            List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
+                caseData,
+                newState,
+                applicationId
+            );
+            CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
+                startEventResponse, getUpdatedCaseData(caseData, generalApplications,
+                                                       gaDetailsRespondentSol));
+            coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
+        }
+
+    }
+
+    private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
+                                                                               String applicationId) {
         List<Element<GeneralApplicationsDetails>> generalApplications = caseData.getGeneralApplicationsDetails();
         if (!isEmpty(generalApplications)) {
             generalApplications.stream()
@@ -83,10 +146,7 @@ public class ParentCaseUpdateHelper {
                 .orElseThrow(IllegalArgumentException::new)
                 .getValue().setCaseState(newState);
         }
-
-        coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                                                respondentSpecficGADetails)));
+        return generalApplications;
     }
 
     private boolean applicationFilterCriteria(Element<GeneralApplicationsDetails> gaDetails, String applicationId) {
@@ -111,4 +171,5 @@ public class ParentCaseUpdateHelper {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSpecficGADetails);
         return output;
     }
+
 }

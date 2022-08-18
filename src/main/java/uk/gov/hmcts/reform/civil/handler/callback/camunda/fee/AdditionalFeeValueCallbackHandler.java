@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,6 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationUncloakedInJudicialDecision;
 
 @Slf4j
 @Service
@@ -32,6 +32,7 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
     private static final String TASK_ID = "ObtainAdditionalFeeValue";
     private final GeneralAppFeesService feeService;
     private final GeneralAppFeesConfiguration feesConfiguration;
+    private final JudicialDecisionHelper judicialDecisionHelper;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -54,7 +55,7 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
     private CallbackResponse getAdditionalFeeValue(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
-        if (isApplicationUncloakedInJudicialDecision(caseData)) {
+        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee());
 
             GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails()
