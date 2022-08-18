@@ -62,7 +62,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).thenReturn(YES);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -79,7 +79,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).thenReturn(NO);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
