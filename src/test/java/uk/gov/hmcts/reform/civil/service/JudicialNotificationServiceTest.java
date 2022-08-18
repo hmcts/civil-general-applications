@@ -174,10 +174,10 @@ class JudicialNotificationServiceTest {
         void notificationShouldSendForDismissal() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudgeDismissal(NO, YES));
+                .thenReturn(caseDataForJudgeDismissal(NO, YES, NO));
 
-            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, YES));
-            verify(notificationService).sendMail(
+            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, YES, NO));
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -189,10 +189,10 @@ class JudicialNotificationServiceTest {
         void notificationUncloakShouldSendForDismissal() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudgeDismissal(NO, NO));
+                .thenReturn(caseDataForJudgeDismissal(NO, NO, NO));
 
-            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO));
-            verify(notificationService).sendMail(
+            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO));
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -216,12 +216,12 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendIfApplicationUncloaked() {
+        void notificationShouldSendToApplicant_IfApplicationCloakedWithApplicantSolicitor() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationUncloaked());
+                .thenReturn(caseDataForCloakedApplicationWithSolicitorDataOnly());
 
-            judicialNotificationService.sendNotification(caseDataForApplicationUncloaked());
+            judicialNotificationService.sendNotification(caseDataForCloakedApplicationWithSolicitorDataOnly());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -231,12 +231,13 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendIfApplicationUncloakedForApproveOrEdit() {
+        void notificationShouldSendSendToApplicant_IfApplicationUncloakedForApproveOrEdit() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationUncloakedJudgeApproveOrEdit());
+                .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit());
 
-            judicialNotificationService.sendNotification(caseDataForApplicationUncloakedJudgeApproveOrEdit());
+            judicialNotificationService.sendNotification(
+                caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit());
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -252,7 +253,7 @@ class JudicialNotificationServiceTest {
                 .thenReturn(caseDataForAmendStatementOfClaim());
 
             judicialNotificationService.sendNotification(caseDataForAmendStatementOfClaim());
-            verify(notificationService).sendMail(
+            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -276,21 +277,6 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
-        void notificationUncloakShouldSendIfJudicialApproval() {
-
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudicialApprovalOfApplication(NO, NO));
-
-            judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, NO));
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToAmendStatementOfCase(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
         void notificationShouldSendIfJudicialDirectionOrder_AfterAdditionalPaymentReceived() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -306,7 +292,7 @@ class JudicialNotificationServiceTest {
                                               .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                               .build())
                     .build());
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -330,7 +316,7 @@ class JudicialNotificationServiceTest {
                                               .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                               .build())
                     .build());
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -345,7 +331,7 @@ class JudicialNotificationServiceTest {
                 .thenReturn(caseDataForJudicialDirectionOrderOfApplication(NO, NO));
 
             judicialNotificationService.sendNotification(caseDataForJudicialApprovalOfApplication(NO, NO));
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -372,11 +358,11 @@ class JudicialNotificationServiceTest {
         void notificationShouldSendIfJudicialDirectionOrderRepArePresentInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES));
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES, NO));
 
             judicialNotificationService
-                .sendNotification(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES
-                                  ));
+                .sendNotification(
+                    caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, YES, NO));
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -389,12 +375,12 @@ class JudicialNotificationServiceTest {
         void notificationUncloakShouldSendIfJudicialDirectionOrderRepArePresentInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO));
+                .thenReturn(caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO, NO));
 
             judicialNotificationService
                 .sendNotification(
-                    caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO));
-            verify(notificationService, times(1)).sendMail(
+                    caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO, NO, NO));
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
@@ -497,14 +483,14 @@ class JudicialNotificationServiceTest {
         }
 
         @Test
-        void notificationUncloakShouldSendForApplicationApprovedWhenRespondentsAreInList() {
+        void shouldSendNotificationToRespondent_ForApplicationApprovedUncloaked_WhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
 
             judicialNotificationService
                 .sendNotification(caseDataForApplicationsApprovedWhenRespondentsAreInList(NO, NO));
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -531,7 +517,7 @@ class JudicialNotificationServiceTest {
                 .build();
 
             judicialNotificationService.sendNotification(caseData);
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -543,11 +529,12 @@ class JudicialNotificationServiceTest {
         void notificationShouldSendApproveDamagesWhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"));
+                .thenReturn(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, NO, "UNSPEC_CLAIM"));
 
             judicialNotificationService
                 .sendNotification(
-                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "UNSPEC_CLAIM"));
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, NO, "UNSPEC_CLAIM"));
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -560,11 +547,12 @@ class JudicialNotificationServiceTest {
         void notificationShouldSendApproveOcmcWhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"));
+                .thenReturn(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, NO, "SPEC_CLAIM"));
 
             judicialNotificationService
                 .sendNotification(
-                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, "SPEC_CLAIM"));
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, YES, NO, "SPEC_CLAIM"));
 
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
@@ -593,9 +581,11 @@ class JudicialNotificationServiceTest {
         void notificationShouldSendWhenApplicationIsDismissedByJudgeWhenRespondentsAreAvailableInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES));
+                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES, NO));
 
-            judicialNotificationService.sendNotification(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES));
+            judicialNotificationService.sendNotification(
+                caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, YES, NO));
+
             verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
@@ -608,13 +598,14 @@ class JudicialNotificationServiceTest {
         void notificationUncloakShouldSendForApprovedDamageWhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"));
+                .thenReturn(
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "UNSPEC_CLAIM"));
 
             judicialNotificationService
                 .sendNotification(
-                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "UNSPEC_CLAIM"));
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "UNSPEC_CLAIM"));
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -626,33 +617,16 @@ class JudicialNotificationServiceTest {
         void notificationUncloakShouldSendForApprovedOcmcWhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"));
+                .thenReturn(caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "SPEC_CLAIM"));
 
             judicialNotificationService
                 .sendNotification(
-                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, "SPEC_CLAIM"));
+                    caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(NO, NO, NO, "SPEC_CLAIM"));
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void shouldSendNotification_forAdditionalPayment_JudgeDismissedApplicationUncloaked() {
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO));
-            CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO)
-                .toBuilder().generalAppPBADetails(GAPbaDetails.builder().build())
-                .build();
-
-            judicialNotificationService.sendNotification(caseData);
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesSummeryJudgementConcurrent(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -662,14 +636,14 @@ class JudicialNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(
-                    caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO).toBuilder()
+                    caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO, YES).toBuilder()
                         .generalAppPBADetails(GAPbaDetails.builder()
                         .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                         .build())
                 .build()
                 );
 
-            CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO)
+            CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO, YES)
                 .toBuilder().generalAppPBADetails(
                     GAPbaDetails.builder()
                         .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
@@ -677,7 +651,7 @@ class JudicialNotificationServiceTest {
                 .build();
 
             judicialNotificationService.sendNotification(caseData);
-            verify(notificationService, times(2)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -809,10 +783,12 @@ class JudicialNotificationServiceTest {
                 .build();
         }
 
-        private CaseData caseDataForJudgeDismissal(YesOrNo orderAgreement, YesOrNo isWithNotice) {
+        private CaseData caseDataForJudgeDismissal(YesOrNo orderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked) {
             return CaseData.builder()
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                .applicationIsCloaked(isCloaked)
+                .generalAppRespondentSolicitors(respondentSolicitors())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
@@ -842,7 +818,7 @@ class JudicialNotificationServiceTest {
                 .build();
         }
 
-        private CaseData caseDataForApplicationUncloaked() {
+        private CaseData caseDataForCloakedApplicationWithSolicitorDataOnly() {
             return CaseData.builder()
                 .applicationIsCloaked(YES)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
@@ -859,9 +835,9 @@ class JudicialNotificationServiceTest {
                 .build();
         }
 
-        private CaseData caseDataForApplicationUncloakedJudgeApproveOrEdit() {
+        private CaseData caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit() {
             return CaseData.builder()
-                .applicationIsCloaked(YES)
+                .applicationIsCloaked(NO)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -871,6 +847,8 @@ class JudicialNotificationServiceTest {
                 .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStayTheClaim()).build())
                 .build();
@@ -947,11 +925,12 @@ class JudicialNotificationServiceTest {
 
         private CaseData caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(
             YesOrNo orderAgreement,
-            YesOrNo isWithNotice) {
+            YesOrNo isWithNotice,
+            YesOrNo isCloaked) {
             return CaseData.builder()
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
-                .generalAppRespondentSolicitors(respondentSolicitors())
+                .applicationIsCloaked(isCloaked)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -1047,7 +1026,7 @@ class JudicialNotificationServiceTest {
 
         private CaseData caseDataForApplicationsApprovedStrikeOutWhenRespondentsAreInList(
             YesOrNo orderAgreement,
-            YesOrNo isWithNotice, String superClaimType) {
+            YesOrNo isWithNotice, YesOrNo isCloaked, String superClaimType) {
             return
                 CaseData.builder()
                     .generalAppRespondentSolicitors(respondentSolicitors())
@@ -1055,6 +1034,7 @@ class JudicialNotificationServiceTest {
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                        .hasAgreed(orderAgreement).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                    .applicationIsCloaked(isCloaked)
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
                     .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
@@ -1132,12 +1112,14 @@ class JudicialNotificationServiceTest {
         }
 
         private CaseData caseDataForCaseDismissedByJudgeRespondentsAreInList(YesOrNo orderAgreement,
-                                                                             YesOrNo isWithNotice) {
+                                                                             YesOrNo isWithNotice,
+                                                                             YesOrNo isCloaked) {
             return
                 CaseData.builder()
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                        .hasAgreed(orderAgreement).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                    .applicationIsCloaked(isCloaked)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                                   .email(DUMMY_EMAIL).build())
