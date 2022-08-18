@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -217,6 +218,32 @@ public class JudicialDecisionHelperTest {
             first.ifPresent(dynamicListBuilder::value);
             return dynamicListBuilder.build();
         }
+    }
+
+    @Nested
+    class IsOrderMakeDecisionMadeVisibleToDefendant {
+
+        @Test
+        void shouldReturnTrue_WhenJudgeDecideUncloaked_OrderMade() {
+            CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+            assertThat(helper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).isEqualTo(true);
+
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsWithNotice() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build();
+            assertThat(helper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).isEqualTo(false);
+
+        }
+
+        @Test
+        void shouldReturnFalse_WhenJudgeDecide_WrittenRepresentationSequential() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build();
+            assertThat(helper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).isEqualTo(false);
+
+        }
+
     }
 }
 

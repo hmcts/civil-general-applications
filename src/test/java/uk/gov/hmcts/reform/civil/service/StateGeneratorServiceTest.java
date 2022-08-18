@@ -6,10 +6,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 
 import java.util.List;
 
@@ -28,6 +32,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -36,12 +41,14 @@ public class StateGeneratorServiceTest {
 
     @Autowired
     StateGeneratorService stateGeneratorService;
+    private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     @Test
     public void shouldReturnAwaiting_Addition_InformationWhenMoreInfoSelected() {
         CaseData caseData = CaseData.builder()
             .judicialDecision(new GAJudicialDecision(REQUEST_MORE_INFO))
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().orderText("test").build())
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().build())
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
@@ -66,7 +73,13 @@ public class StateGeneratorServiceTest {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("test").build())
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .directionsText("test")
+                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .applicationIsCloaked(YesOrNo.NO)
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
@@ -75,50 +88,12 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedNoTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("").build())
-
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
-    @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndEmptyTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().directionsText("   ").build())
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
-    @Test
-    public void shouldReturnCurrentStateWhenMakeOrderSelectedAndNullTextProvided() {
-        CaseData caseData = CaseData.builder()
-            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
-            .build();
-
-        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
-        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
-    }
-
-    @Test
     public void shouldReturnCurrentStateWhenMakeOrderAndDismissed() {
 
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .makeAnOrder(DISMISS_THE_APPLICATION)
                                            .build())
@@ -151,6 +126,7 @@ public class StateGeneratorServiceTest {
                                            .makeAnOrder(APPROVE_OR_EDIT)
                                            .build())
             .parentClaimantIsApplicant(YesOrNo.YES)
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .generalAppType(GAApplicationType.builder()
                                 .types(applicationTypeJudgement()).build())
             .build();
@@ -166,9 +142,47 @@ public class StateGeneratorServiceTest {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .makeAnOrder(APPROVE_OR_EDIT)
                                            .build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .applicationIsCloaked(YesOrNo.YES)
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .build();
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(ORDER_MADE);
+    }
+
+    @Test
+    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationInOrderMake() {
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .makeAnOrder(APPROVE_OR_EDIT)
+                                           .build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+            .applicationIsCloaked(YesOrNo.NO)
+            .build();
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(ORDER_MADE);
+    }
+
+    @Test
+    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
+        CaseData caseData = CaseData.builder()
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .directionsText("test")
+                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+            .applicationIsCloaked(YesOrNo.NO)
+            .build();
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
     }
 
     private List<GeneralApplicationTypes> applicationTypeJudgement() {

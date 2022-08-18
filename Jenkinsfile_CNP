@@ -7,8 +7,9 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
+def camundaBranch = "master"
 
-def generalappCCDBranch = "feature/CIV-3206"
+def generalappCCDBranch = "CIV-3760-Uncloaking_WithoutNotice_MakeOrder"
 
 AppPipelineConfig pipelineConf
 
@@ -100,15 +101,16 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*DJspec.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CIVIL_SERVICE_URL="https://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-        env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
+        env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
 
     after('smoketest:preview') {
@@ -118,10 +120,10 @@ withPipeline(type, product, component) {
     before('functionalTest:preview') {
       env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
       env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-      env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-      env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CIVIL_SERVICE_URL="https://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
       env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-      env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
       env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
@@ -143,7 +145,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-nonprod.json,*DJspec.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
 
         env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"

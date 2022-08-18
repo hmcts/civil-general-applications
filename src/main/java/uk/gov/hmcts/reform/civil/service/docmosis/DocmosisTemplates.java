@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis;
 
 public enum DocmosisTemplates {
     GENERAL_ORDER("CV-UNS-GAP-ENG-01068.docx", "General_order_for_application_%s.pdf"),
-    DIRECTION_ORDER("CV-UNS-GAP-ENG-01073.docx", "Direction_order_for_application_%s.pdf"),
+    DIRECTION_ORDER("CV-UNS-GAP-ENG-01073.docx", "Directions_order_for_application_%s.pdf"),
     DISMISSAL_ORDER("CV-UNS-GAP-ENG-01067.docx", "Dismissal_order_for_application_%s.pdf"),
     REQUEST_FOR_INFORMATION("CV-UNS-GAP-ENG-01072.docx", "Request_for_information_for_application_%s.pdf"),
     HEARING_ORDER("CV-UNS-GAP-ENG-01069.docx", "Hearing_order_for_application_%s.pdf"),

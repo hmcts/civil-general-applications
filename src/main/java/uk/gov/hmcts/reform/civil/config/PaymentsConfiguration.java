@@ -10,10 +10,16 @@ public class PaymentsConfiguration {
 
     private final String siteId;
     private final String service;
+    private String payApiCallBackUrl;
+    private final String specSiteId;
 
     public PaymentsConfiguration(@Value("${payments.api.site_id}") String siteId,
-                                 @Value("${payments.api.service}") String service) {
+                                 @Value("${payments.api.service}") String service,
+                                 @Value("${payments.api.callback-url}") String payApiCallBackUrl,
+                                 @Value("${payments.api.spec_site_id}") String specSiteId) {
         this.siteId = siteId;
         this.service = service;
+        this.payApiCallBackUrl = payApiCallBackUrl;
+        this.specSiteId = specSiteId;
     }
 }
