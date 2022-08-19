@@ -42,6 +42,7 @@ class PaymentsServiceTest {
     private static final String SERVICE = "service";
 
     private static final String SITE_ID = "site_id";
+    private static final String SPEC_SITE_ID = "spec_site_id";
     private static final String AUTH_TOKEN = "Bearer token";
     private static final PBAServiceRequestResponse PAYMENT_DTO = PBAServiceRequestResponse.builder()
         .paymentReference("RC-1234-1234-1234-1234").build();
@@ -72,6 +73,7 @@ class PaymentsServiceTest {
         given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
+        given(paymentsConfiguration.getSpecSiteId()).willReturn(SPEC_SITE_ID);
         given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
     }
@@ -221,6 +223,20 @@ class PaymentsServiceTest {
 
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
         PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
+        assertThat(caseData.getGeneralAppSuperClaimType()).isEqualTo("UNSPEC_CLAIM");
         assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+
     }
+
+    @Test
+    void shouldCreatePaymentServiceRequest_whenGaTypeIsSpecClaim() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        caseData = caseData.toBuilder().generalAppSuperClaimType("SPEC_CLAIM").build();
+        PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
+        assertThat(caseData.getGeneralAppSuperClaimType()).isEqualTo("SPEC_CLAIM");
+        assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+
+    }
+
 }

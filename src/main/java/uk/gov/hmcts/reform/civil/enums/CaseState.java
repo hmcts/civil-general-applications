@@ -18,6 +18,7 @@ public enum CaseState {
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
     AWAITING_RESPONDENT_RESPONSE("Awaiting Respondent Response"),
+    APPLICATION_ADD_PAYMENT("Application Additional Payment"),
     APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION("Application Submitted - Awaiting Judicial Decision"),
     ADDITIONAL_RESPONSE_TIME_EXPIRED("Additional Response Time Expired"),
     ADDITIONAL_RESPONSE_TIME_PROVIDED("Additional Response Time Provided"),
