@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
@@ -130,6 +131,8 @@ class JudicialNotificationServiceTest {
             when(notificationsProperties.getJudgeApproveOrderToStrikeOutDamages())
                 .thenReturn(SAMPLE_TEMPLATE);
             when(notificationsProperties.getJudgeApproveOrderToStrikeOutOCMC())
+                .thenReturn(SAMPLE_TEMPLATE);
+            when(notificationsProperties.getGeneralApplicationRespondentEmailTemplate())
                 .thenReturn(SAMPLE_TEMPLATE);
         }
 
@@ -404,8 +407,6 @@ class JudicialNotificationServiceTest {
             when(time.now()).thenReturn(responseDate);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
-            when(deadlinesCalculator.calculateApplicantResponseDeadline(
-                any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
 
             var responseCaseData = judicialNotificationService.sendNotification(caseData);
 
@@ -460,7 +461,9 @@ class JudicialNotificationServiceTest {
 
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
                                                                                       SEND_APP_TO_OTHER_PARTY
-            ).toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+            ).toBuilder()
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .generalAppPBADetails(GAPbaDetails.builder()
                                                    .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                                    .build())
                 .build();
@@ -474,10 +477,10 @@ class JudicialNotificationServiceTest {
 
             var responseCaseData = judicialNotificationService.sendNotification(caseData);
 
-            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
+            assertThat(responseCaseData.getGeneralAppNotificationDeadlineDate())
                 .isEqualTo(deadline.toString());
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService, times(2)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -1007,7 +1010,8 @@ class JudicialNotificationServiceTest {
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .requestMoreInfoOption(gaJudgeRequestMoreInfoOption)
                                                      .judgeRequestMoreInfoText("Test")
-                                                     .judgeRequestMoreInfoByDate(LocalDate.now()).build())
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .deadlineForMoreInfoSubmission(deadline).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                    .hasAgreed(isRespondentOrderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())

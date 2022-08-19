@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
@@ -80,7 +81,7 @@ public class JudicialNotificationService implements NotificationData {
                 caseData = applicationRequestForInformation(caseData);
                 break;
             case REQUEST_FOR_INFORMATION_CLOAK:
-                caseData = applicationRequestForInformationCloak(caseData);
+                applicationRequestForInformationCloak(caseData);
                 break;
             default:
             case NON_CRITERION:
@@ -184,32 +185,52 @@ public class JudicialNotificationService implements NotificationData {
             );
         } else {
 
-            caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
-            var requestForInformationDeadline = getDeadlineForRequestMoreInformationApplication(caseData);
-            addCustomPropsForRespondDeadline(requestForInformationDeadline);
+            if (isAdditionalFeeForUnclaokRecieved(caseData)
+                && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
 
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
+                caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
+                var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
+
+                customProps.put(
+                    GA_NOTIFICATION_DEADLINE,
+                    Objects.nonNull(requestForInformationDeadline)
+                        ? DateFormatHelper
+                        .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
+
+                if (areRespondentSolicitorsPresent(caseData)) {
+                    sendEmailToRespondent(
+                        caseData,
+                        notificationProperties.getGeneralApplicationRespondentEmailTemplate()
+                    );
+                }
+                customProps.remove(GA_NOTIFICATION_DEADLINE);
+
+            } else {
+                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                                                     .getJudgeRequestMoreInfoByDate());
+
+                if (areRespondentSolicitorsPresent(caseData)) {
+                    sendEmailToRespondent(
+                        caseData,
+                        notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
+                    );
+                }
+                sendNotificationForJudicialDecision(
                     caseData,
-                    notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
+                    caseData.getGeneralAppApplnSolicitor().getEmail(),
+                    notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
                 );
+                customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
             }
-            sendNotificationForJudicialDecision(
-                caseData,
-                caseData.getGeneralAppApplnSolicitor().getEmail(),
-                notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
-            );
 
-            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
         }
         return caseData;
     }
 
     private CaseData applicationRequestForInformationCloak(CaseData caseData) {
-        caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
-        var requestForInformationDeadline = getDeadlineForRequestMoreInformationApplication(caseData);
-        addCustomPropsForRespondDeadline(requestForInformationDeadline);
 
+        addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                                              .getDeadlineForMoreInfoSubmission().toLocalDate());
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
@@ -364,6 +385,12 @@ public class JudicialNotificationService implements NotificationData {
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
     }
 
+    private boolean isAdditionalFeeForUnclaokRecieved(CaseData caseData) {
+        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null;
+    }
+
     private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {
         customProps.put(
             GA_REQUEST_FOR_INFORMATION_DEADLINE,
@@ -408,9 +435,7 @@ public class JudicialNotificationService implements NotificationData {
                     LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
 
             caseData = caseData.toBuilder()
-                .judicialDecisionRequestMoreInfo(judicialRequestMoreInfo.toBuilder()
-                                                     .deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission)
-                                                     .build())
+                .generalAppNotificationDeadlineDate(deadlineForMoreInfoSubmission)
                 .build();
         }
 
