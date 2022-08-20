@@ -88,7 +88,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @Test
         void shouldMakeAdditionalPaymentReference_whenJudgeUncloakedApplication()  {
             var caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YesOrNo.NO)
+                .judicialDecisionWithUncloakRequestForInformationApplication(
+                    REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
                 .build();
             when(judicialDecisionHelper
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
@@ -133,7 +134,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createServiceRequest(any(), any());
             var caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YesOrNo.NO)
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION,
+                                                                             YesOrNo.NO, YesOrNo.NO)
                 .build();
             when(judicialDecisionHelper
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
@@ -148,7 +150,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .when(paymentsService).createServiceRequest(any(), any());
 
             var caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YesOrNo.NO)
+                .judicialDecisionWithUncloakRequestForInformationApplication(
+                    REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
                 .build();
 
             when(judicialDecisionHelper

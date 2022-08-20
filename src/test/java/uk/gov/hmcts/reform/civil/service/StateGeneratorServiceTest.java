@@ -35,6 +35,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESE
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -200,7 +201,8 @@ public class StateGeneratorServiceTest {
     @Test
     public void shouldReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
         CaseData caseData = CaseDataBuilder.builder()
-            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YesOrNo.NO).build();
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
+                                                                         NO, YesOrNo.NO).build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
 
@@ -211,7 +213,7 @@ public class StateGeneratorServiceTest {
     @Test
     public void shouldRequestMoreInformation_WhenJudgeUncloakTheApplication_AdditionalPaymentIsMadeSuccessfully() {
         CaseData caseData = CaseDataBuilder.builder()
-            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YesOrNo.NO)
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .additionalPaymentDetails(PaymentDetails.builder()
                                                                     .reference("123456")

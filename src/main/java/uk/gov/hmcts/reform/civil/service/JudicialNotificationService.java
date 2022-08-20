@@ -185,7 +185,7 @@ public class JudicialNotificationService implements NotificationData {
             );
         } else {
 
-            if (isAdditionalFeeForUnclaokRecieved(caseData)
+            if (isAdditionalFeeForUncloakReceived(caseData)
                 && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
 
                 caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
@@ -385,7 +385,7 @@ public class JudicialNotificationService implements NotificationData {
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
     }
 
-    private boolean isAdditionalFeeForUnclaokRecieved(CaseData caseData) {
+    private boolean isAdditionalFeeForUncloakReceived(CaseData caseData) {
         return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
             && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null;
@@ -402,26 +402,6 @@ public class JudicialNotificationService implements NotificationData {
                         JUDICIAL_FORMATTER
                     ), DATE) : null
         );
-    }
-
-    private LocalDate getDeadlineForRequestMoreInformationApplication(CaseData caseData) {
-
-        if (caseData.getJudicialDecisionRequestMoreInfo() != null) {
-
-            if (caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission() != null
-                && caseData.getJudicialDecisionRequestMoreInfo()
-                .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY)) {
-
-                return caseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission().toLocalDate();
-
-            } else {
-
-                return caseData
-                    .getJudicialDecisionRequestMoreInfo()
-                    .getJudgeRequestMoreInfoByDate();
-            }
-        }
-        return null;
     }
 
     private CaseData addDeadlineForMoreInformationUncloakedApplication(CaseData caseData) {

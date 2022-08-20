@@ -90,7 +90,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .build();
 
         var caseData = CaseDataBuilder.builder()
-            .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YesOrNo.NO)
+            .judicialDecisionWithUncloakRequestForInformationApplication(
+                REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
             .build();
 
         when(judicialDecisionHelper
@@ -123,7 +124,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
-            .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YesOrNo.NO)
+            .judicialDecisionWithUncloakRequestForInformationApplication(
+                REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
             .build();
 
         when(judicialDecisionHelper

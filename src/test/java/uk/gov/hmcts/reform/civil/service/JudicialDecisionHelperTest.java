@@ -254,7 +254,7 @@ public class JudicialDecisionHelperTest {
         @Test
         void shouldReturnTrue_WhenApplicationIsUncloakedTypeRequestMoreInformation() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO).build();
             assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isEqualTo(true);
 
         }
@@ -262,14 +262,14 @@ public class JudicialDecisionHelperTest {
         @Test
         void shouldReturnFalse_WhenApplicationIsCloakedTypeRequestMoreInformation() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
             assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isEqualTo(false);
         }
 
         @Test
         void shouldReturnFalse_WhenApplicationIsWithNoticeTypeRequestMoreInformation() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, NO).build();
             assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isEqualTo(false);
         }
 

@@ -1975,7 +1975,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -1987,13 +1987,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getApplicationIsCloaked().equals(YES));
+        }
+
+        @Test
+        void shouldBeUncloaked_WhenRequestMoreInformation_WithNoticeApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES, null)
+                .build();
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
         }
 
         @Test
