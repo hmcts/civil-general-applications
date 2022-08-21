@@ -46,14 +46,8 @@ public class StateGeneratorService {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
 
-            if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(data)) {
-                if (data.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
-                    return APPLICATION_ADD_PAYMENT;
-                } else {
-                    return AWAITING_RESPONDENT_RESPONSE;
-                }
-            }
-            return AWAITING_ADDITIONAL_INFORMATION;
+            return getNewStateForRequestMoreInfo(data);
+
         } else if (decision == MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return AWAITING_WRITTEN_REPRESENTATIONS;
         } else if (decision == LIST_FOR_A_HEARING) {
@@ -83,6 +77,17 @@ public class StateGeneratorService {
                 .equals(DISMISS_THE_APPLICATION);
 
         return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
+    }
+
+    private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
+        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
+                return APPLICATION_ADD_PAYMENT;
+            } else {
+                return AWAITING_RESPONDENT_RESPONSE;
+            }
+        }
+        return AWAITING_ADDITIONAL_INFORMATION;
     }
 
 }

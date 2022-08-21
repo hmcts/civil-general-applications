@@ -1981,7 +1981,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
         }
 
         @Test
@@ -1993,7 +1993,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getApplicationIsCloaked().equals(YES));
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(YES);
         }
 
         @Test
@@ -2007,19 +2007,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
         }
 
         @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_OrderMadeApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakApplication(YES).build();
+                .judicialOrderMadeWithUncloakApplication(YES)
+                    .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                     .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getApplicationIsCloaked().equals(NO));
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
         }
 
         private CaseData getApplicationBusinessProcess() {
