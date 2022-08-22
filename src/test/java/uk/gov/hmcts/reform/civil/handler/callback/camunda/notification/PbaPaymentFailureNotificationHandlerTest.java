@@ -88,6 +88,8 @@ public class PbaPaymentFailureNotificationHandlerTest extends BaseCallbackHandle
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any()))
+                .thenReturn(caseData);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId("PBA_PAYMENT_FAILED").build()).build();
