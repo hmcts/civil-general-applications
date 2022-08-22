@@ -230,7 +230,7 @@ public class JudicialNotificationService implements NotificationData {
     private CaseData applicationRequestForInformationCloak(CaseData caseData) {
 
         addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
-                                              .getDeadlineForMoreInfoSubmission().toLocalDate());
+                                              .getJudgeRequestMoreInfoByDate());
         sendNotificationForJudicialDecision(
             caseData,
             caseData.getGeneralAppApplnSolicitor().getEmail(),
