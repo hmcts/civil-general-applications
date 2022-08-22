@@ -69,7 +69,7 @@ public class PbaPaymentFailureNotificationHandler extends CallbackHandler implem
 
         CaseData updatedCaseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
         notificationService.sendMail(
-            updatedCaseData.getGeneralAppApplnSolicitor().getEmail(),
+            civilCaseData.getApplicantSolicitor1UserDetails().getEmail(),
             notificationProperties.getGeneralApplicationPaymentFailure(),
             addProperties(updatedCaseData),
             String.format(REFERENCE_TEMPLATE, updatedCaseData.getGeneralAppParentCaseLink().getCaseReference())
