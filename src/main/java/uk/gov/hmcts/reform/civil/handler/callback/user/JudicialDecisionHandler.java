@@ -190,8 +190,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        YesOrNo isCloaked = helper.isApplicationCreatedWithoutNoticeByApplicant(caseData);
-        caseDataBuilder.applicationIsCloaked(isCloaked);
+        if (caseData.getApplicationIsCloaked() == null) {
+            caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
+        }
+
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
@@ -269,14 +271,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             = GAJudicialRequestMoreInfo.builder();
 
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
-            gaJudicialRequestMoreInfoBuilder
-                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+            if (isAdditionalPaymentMade(caseData).equals(YES)) {
+                gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+            } else {
+                gaJudicialRequestMoreInfoBuilder
+                    .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+            }
 
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
         }
-
         gaJudicialRequestMoreInfoBuilder.judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build();
 
         return gaJudicialRequestMoreInfoBuilder;
@@ -1062,5 +1067,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return YES;
         }
         return NO;
+    }
+
+    private YesOrNo isAdditionalPaymentMade(CaseData caseData) {
+        return caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && Objects.nonNull(caseData.getGeneralAppPBADetails())
+            && Objects.nonNull(caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails()) ? YES : NO;
+
     }
 }
