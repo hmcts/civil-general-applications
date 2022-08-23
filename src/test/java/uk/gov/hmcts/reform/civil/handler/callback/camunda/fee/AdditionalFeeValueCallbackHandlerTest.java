@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
 import java.math.BigDecimal;
 
@@ -51,6 +52,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     private CallbackParams params;
     @Autowired
     private ObjectMapper objectMapper;
+    @MockBean
+    JudicialDecisionHelper judicialDecisionHelper;
 
     @BeforeEach
     void setup() {
@@ -59,21 +62,21 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
-    public void shouldReturnCorrectTaskId() {
+     void shouldReturnCorrectTaskId() {
         CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE167, false, false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThat(handler.camundaActivityId(params)).isEqualTo(TASK_ID);
     }
 
     @Test
-    public void shouldReturnCorrectEvent() {
+    void shouldReturnCorrectEvent() {
         CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE167, false, false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThat(handler.handledEvents()).contains(OBTAIN_ADDITIONAL_FEE_VALUE);
     }
 
     @Test
-    public void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
+    void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
@@ -83,16 +86,21 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .code(TEST_FEE_CODE)
             .version(VERSION)
             .build();
+
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakApplication()
+            .judicialOrderMadeWithUncloakRequestForInformationApplication()
             .build();
+
+        when(judicialDecisionHelper
+                 .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(extractAdditionalUncloakFee(response)).isEqualTo(expectedFeeDto);
     }
 
     @Test
-    public void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
+    void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
         when(generalAppFeesService.getFeeForGA(any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 BigDecimal.valueOf(16700)).code("").version(VERSION).build());
@@ -100,6 +108,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
         var caseData = CaseDataBuilder.builder()
             .requestForInformationApplication()
             .build();
+        when(judicialDecisionHelper
+                 .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         verify(generalAppFeesService, never()).getFeeForGA(any());
     }
@@ -111,8 +121,12 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakApplication()
+            .judicialOrderMadeWithUncloakRequestForInformationApplication()
             .build();
+
+        when(judicialDecisionHelper
+                 .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
         Exception exception = assertThrows(RuntimeException.class, () -> handler.handle(params));

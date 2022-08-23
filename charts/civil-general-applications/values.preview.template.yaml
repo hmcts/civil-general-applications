@@ -23,6 +23,7 @@ postgresql:
 
 java:
   image: ${IMAGE_NAME}
+  imagePullPolicy: Always
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
     civil:
