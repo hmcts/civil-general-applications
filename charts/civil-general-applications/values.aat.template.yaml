@@ -176,8 +176,8 @@ ccd:
 
   global:
     ccdApiGatewayIngress: http://civil-ga-gateway-staging-aat.service.core-compute-aat.internal
-    ccdDataStoreUrl: http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
-    ccdDefinitionStoreUrl: http://civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
+    ccdDataStoreUrl: https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
+    ccdDefinitionStoreUrl: https://civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
     ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
     dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
     idamApiUrl: https://idam-api.aat.platform.hmcts.net
