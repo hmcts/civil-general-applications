@@ -153,9 +153,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     @Override
     public VariableMap getVariableMap() {
         VariableMap variables = Variables.createVariables();
-        var stateFlow = stateFlowEngine.evaluate(data);
-        variables.putValue(FLOW_STATE, stateFlow.getState().getName());
-        variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());
         }
