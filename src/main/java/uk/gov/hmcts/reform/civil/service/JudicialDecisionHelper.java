@@ -66,10 +66,7 @@ public class JudicialDecisionHelper {
     }
 
     public boolean isListForHearingMadeVisibleToDefendant(CaseData caseData) {
-        if (isApplicationCloaked(caseData).equals(YES)
-            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING)) {
-            return true;
-        }
-        return false;
+        return isApplicationCloaked(caseData).equals(YES)
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
 }
