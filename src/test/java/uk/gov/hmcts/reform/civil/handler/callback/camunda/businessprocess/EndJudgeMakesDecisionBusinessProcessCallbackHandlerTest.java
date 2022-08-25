@@ -87,4 +87,43 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
             .updateParentWithGAState(any(), any());
 
     }
+
+    @Test
+    void shouldAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
+
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
+        when(judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData)).thenReturn(true);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(CaseState.LISTING_FOR_A_HEARING);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(parentCaseUpdateHelper, times(1))
+            .updateParentApplicationVisibilityWithNewState(any(), any());
+
+    }
+
+    @Test
+    void shouldNotAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
+
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
+        when(judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData)).thenReturn(false);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(CaseState.LISTING_FOR_A_HEARING);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(parentCaseUpdateHelper, times(1))
+            .updateParentWithGAState(any(), any());
+
+    }
+
 }
