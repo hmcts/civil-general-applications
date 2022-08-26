@@ -65,6 +65,7 @@ genApp:
     keywords:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
+      uncloakFee: HACFOOnNotice
   lrd:
     endpoint: /refdata/location/court-venues
 
@@ -73,7 +74,8 @@ payments:
   api:
     site_id: AAA7
     service: CIVIL
-    callback-url: http://localhost:4550/payment-request-update
+    spec_site_id: AAA6
+    callback-url: ${PAY_CALLBACK_URL:}
 
 idam:
   s2s-auth:
