@@ -280,5 +280,24 @@ public class JudicialDecisionHelperTest {
             assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isFalse();
         }
     }
+
+    @Nested
+    class IsListForHearingMadeVisibleToDefendant {
+
+        @Test
+        void shouldReturnTrue_WhenJudgeDecideUncloaked_ListForHearing() {
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(NO, NO).build();
+            assertThat(helper.isListForHearingMadeVisibleToDefendant(caseData)).isTrue();
+
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsWithNotice_ListForHearing() {
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(NO, YES).build();
+            assertThat(helper.isListForHearingMadeVisibleToDefendant(caseData)).isFalse();
+
+        }
+
+    }
 }
 
