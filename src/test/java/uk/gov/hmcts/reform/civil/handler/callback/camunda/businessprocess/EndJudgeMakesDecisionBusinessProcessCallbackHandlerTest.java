@@ -93,7 +93,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
@@ -112,7 +112,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldNotAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
