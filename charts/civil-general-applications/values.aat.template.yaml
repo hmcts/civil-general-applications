@@ -134,7 +134,7 @@ idam-pr:
   debug: true
   redirect_uris:
     XUI:
-      - http://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
+      - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
 
 xui-webapp:
   enabled: true
