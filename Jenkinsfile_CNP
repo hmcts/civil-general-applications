@@ -149,14 +149,14 @@ withPipeline(type, product, component) {
           ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json"
           ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
-
+        env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-staging.service.core-compute-aat.internal"
-        env.CIVIL_SERVICE_URL="http://civil-ga-civil-service-staging-aat.service.core-compute-aat.internal"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-staging.service.core-compute-aat.internal"
+        env.CIVIL_SERVICE_URL="https://civil-ga-civil-service-staging-aat.service.core-compute-aat.internal"
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-        env.CCD_DATA_STORE_URL = "http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
-        env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
+        env.CCD_DATA_STORE_URL = "https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
+        env.DM_STORE_URL = "https://dm-store-aat.service.core-compute-aat.internal"
     }
 
   after('smoketest:aat') {
