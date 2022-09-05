@@ -1,10 +1,7 @@
 postgresql:
   enabled: true
   image:
-    registry: hmctspublic.azurecr.io
-    repository: imported/bitnami/postgresql
-    tag: '11.3.0'
-    pullPolicy: Always
+    tag: '11.6.0'
     debug: true
   resources:
     requests:
@@ -119,7 +116,7 @@ civil-service:
       SPRING_CLOUD_BOOTSTRAP_ENABLED: true
       RD_PROFESSIONAL_API_URL: http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
       LAUNCH_DARKLY_ENV: ${SERVICE_FQDN}
-      CORE_CASE_DATA_API_URL: https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
+      CORE_CASE_DATA_API_URL: http://${SERVICE_NAME}-ccd-data-store-api
       CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
       CMC_DB_HOST: ${SERVICE_NAME}-postgresql
       CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
@@ -175,9 +172,9 @@ ccd:
       enabled: true
 
   global:
-    ccdApiGatewayIngress: http://civil-ga-gateway-staging-aat.service.core-compute-aat.internal
-    ccdDataStoreUrl: https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal
-    ccdDefinitionStoreUrl: https://civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
+    ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
+    ccdDataStoreUrl: http://${SERVICE_NAME}-ccd-data-store-api
+    ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
     ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
     dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
     idamApiUrl: https://idam-api.aat.platform.hmcts.net
@@ -211,7 +208,7 @@ ccd:
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
-        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
       keyVaults: []
       ingressHost: civil-ga-data-store-staging-aat.service.core-compute-aat.internal
   am-role-assignment-service:
