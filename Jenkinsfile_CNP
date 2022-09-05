@@ -29,7 +29,8 @@ def secrets = [
         ],
         'ccd-${env}': [
                 secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET'),
-                secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_OAUTH2_CLIENT_SECRET'),                secret('postcode-info-address-lookup-token', 'ADDRESS_LOOKUP_TOKEN'),
+                secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_OAUTH2_CLIENT_SECRET'),
+                secret('postcode-info-address-lookup-token', 'ADDRESS_LOOKUP_TOKEN'),
                 secret('ccd-admin-web-oauth2-client-secret', 'ADMIN_WEB_IDAM_SECRET'),
                 secret('idam-data-store-client-secret','IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET'),
                 secret('idam-data-store-system-user-username','IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
@@ -111,7 +112,6 @@ withPipeline(type, product, component) {
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
         env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
-        env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
 
     after('smoketest:preview') {
