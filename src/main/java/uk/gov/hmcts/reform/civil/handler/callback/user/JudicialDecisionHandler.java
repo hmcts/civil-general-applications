@@ -559,12 +559,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         throw new IllegalArgumentException("Missing data during submission of judicial decision");
                     }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
-                    LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
-                        .getDeadlineForMoreInfoSubmission();
                     confirmationHeader = "# You have requested a response";
-                    body = "<br/><p>The parties will be notified. They will need to provide a response by "
-                        + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate)
-                        + "</p>";
+                    body = "<br/><p>The parties will be notified.</p>";
                 }
             } else {
                 throw new IllegalArgumentException("Missing data during submission of judicial decision");
