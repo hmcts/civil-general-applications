@@ -1,10 +1,7 @@
 postgresql:
   enabled: true
   image:
-    registry: hmctspublic.azurecr.io
-    repository: imported/bitnami/postgresql
-    tag: '11.3.0'
-    pullPolicy: Always
+    tag: '11.6.0'
   resources:
     requests:
       cpu: 25m
@@ -23,6 +20,7 @@ postgresql:
 
 java:
   image: ${IMAGE_NAME}
+  imagePullPolicy: Always
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
     civil:
@@ -131,6 +129,7 @@ civil-service:
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
       POLLING_EVENT_EMITTER_ENABLED: false
+      DOCUMENT_MANAGEMENT_SECURED: true
 
 idam-pr:
   releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
