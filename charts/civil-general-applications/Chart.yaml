@@ -3,7 +3,6 @@ appVersion: "1.1"
 description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
-
 version: 0.0.23
 
 maintainers:
@@ -34,6 +33,6 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
   - name: camunda-bpm
-    version: 0.0.23
+    version: 0.0.26
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
     condition: camunda-bpm.enabled
