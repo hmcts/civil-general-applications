@@ -3,29 +3,39 @@ package uk.gov.hmcts.reform.civil.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -33,6 +43,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -41,6 +52,8 @@ public class StateGeneratorServiceTest {
 
     @Autowired
     StateGeneratorService stateGeneratorService;
+    @MockBean
+    JudicialDecisionHelper judicialDecisionHelper;
     private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     @Test
@@ -52,7 +65,7 @@ public class StateGeneratorServiceTest {
             .build();
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(false);
         assertThat(caseState).isEqualTo(AWAITING_ADDITIONAL_INFORMATION);
     }
 
@@ -152,7 +165,7 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationInOrderMake() {
+     void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationInOrderMake() {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
@@ -169,7 +182,7 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    public void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
+     void shouldNotReturnOrderAdditionalAddPayment_WhenJudgeUncloakTheApplicationAwaitingDocsOrderMake() {
         CaseData caseData = CaseData.builder()
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecision(new GAJudicialDecision(MAKE_AN_ORDER))
@@ -183,6 +196,35 @@ public class StateGeneratorServiceTest {
             .build();
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(AWAITING_DIRECTIONS_ORDER_DOCS);
+    }
+
+    @Test
+    void shouldReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
+                                                                         NO, YesOrNo.NO).build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+    }
+
+    @Test
+     void shouldRequestMoreInformation_WhenJudgeUncloakTheApplication_AdditionalPaymentIsMadeSuccessfully() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .reference("123456")
+                                                                    .status(PaymentStatus.SUCCESS)
+                                                                    .build())
+                                      .build())
+            .build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
     }
 
     private List<GeneralApplicationTypes> applicationTypeJudgement() {
