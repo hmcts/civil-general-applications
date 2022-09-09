@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -33,7 +34,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
 
     @Test
     public void shouldReturnCorrectEvent() {
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.YES).build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThat(handler.handledEvents()).contains(NOTIFY_GENERAL_APPLICATION_RESPONDENT);
     }
