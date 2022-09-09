@@ -25,6 +25,9 @@
     <notes>
       snakeyaml-1.28.jar vulnerability coming through the launchdarkly-java-server-sdk-5.9.0.jar
     </notes>
+    <cve>CVE-2022-38749</cve>
+    <cve>CVE-2022-38751</cve>
+    <cve>CVE-2022-38750</cve>
     <cve>CVE-2022-25857</cve>
   </suppress>
   <suppress until="2022-09-29">
