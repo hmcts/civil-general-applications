@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -573,10 +574,9 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder judicialOrderMadeWithUncloakRequestForInformationApplication() {
-        /*TODO : This method should be revised in CIV-3759 for uncloaking  'Request more information'.
-           Its created in this US for passing the test and not to remove all the code
-           which will be used again in CIV-3759*/
+    public CaseData.CaseDataBuilder judicialDecisionWithUncloakRequestForInformationApplication(
+        GAJudgeRequestMoreInfoOption requestMoreInfoOption, YesOrNo isWithNotice, YesOrNo isCloak) {
+
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -604,17 +604,17 @@ public class CaseDataBuilder {
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
-                                                 .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                 .requestMoreInfoOption(requestMoreInfoOption)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .applicationIsCloaked(YesOrNo.NO)
+            .applicationIsCloaked(isCloak)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder judicialOrderMadeWithUncloakApplication() {
+    public CaseData.CaseDataBuilder judicialOrderMadeWithUncloakApplication(YesOrNo isCloak) {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -649,7 +649,8 @@ public class CaseDataBuilder {
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-            .applicationIsCloaked(NO)
+            .applicationIsCloaked(isCloak)
+            .submittedOn(APPLICATION_SUBMITTED_DATE)
             .generalApplicationsDetails(wrapElements(GeneralApplicationsDetails.builder()
                                                         .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
                                                          .caseLink(CaseLink.builder()

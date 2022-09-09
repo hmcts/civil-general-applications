@@ -24,6 +24,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SpringBootTest(classes = {
     EndJudgeMakesDecisionBusinessProcessCallbackHandler.class,
@@ -57,7 +59,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldAddRespondentSolicitorDetail_WhenJudeOrderMakeUncloakApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
@@ -74,7 +76,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldNotAddRespondentSolicitorDetail_WhenJudeOrderMake_WithNoticeApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);

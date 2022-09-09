@@ -536,7 +536,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -557,7 +557,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(YES);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -577,7 +577,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String judgeRecitalText = "<Title> <Name> \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -593,7 +593,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String judgeRecitalText = "<Title> <Name> \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -610,7 +610,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -627,7 +627,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_orderText() {
-            when(helper.isApplicationCloaked(any())).thenReturn(NO);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1903,21 +1903,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
         }
 
-        @Test
-        void shouldNotReturnErrors_DeadlineForMoreInfoSubmissionIsPopulated() {
-            CaseData caseData = getApplication_RequestMoreInformation(SEND_APP_TO_OTHER_PARTY,
-                                                                      LocalDate.now().plusDays(1), YES);
-
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(response.getErrors()).isEmpty();
-            assertThat(responseCaseData.getJudicialDecisionRequestMoreInfo().getDeadlineForMoreInfoSubmission())
-                .isEqualTo(deadline.toString());
-        }
-
         private CaseData getApplication_RequestMoreInformation(GAJudgeRequestMoreInfoOption option,
                                                                LocalDate judgeRequestMoreInfoByDate, YesOrNo hasAgree) {
             List<GeneralApplicationTypes> types = List.of(
@@ -1985,6 +1970,59 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null);
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+        }
+
+        @Test
+        void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
+        }
+
+        @Test
+        void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(YES);
+        }
+
+        @Test
+        void shouldBeUncloaked_WhenRequestMoreInformation_WithNoticeApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES, null)
+                .build();
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
+        }
+
+        @Test
+        void shouldUncloakApplication_WhenJudgeUncloaked_OrderMadeApplication() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialOrderMadeWithUncloakApplication(YES)
+                    .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                     .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
         }
 
         private CaseData getApplicationBusinessProcess() {

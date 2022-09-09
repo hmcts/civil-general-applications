@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
 @SpringBootTest(classes = {
     AdditionalFeeValueCallbackHandler.class,
@@ -88,7 +90,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .build();
 
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakRequestForInformationApplication()
+            .judicialDecisionWithUncloakRequestForInformationApplication(
+                REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
             .build();
 
         when(judicialDecisionHelper
@@ -121,7 +124,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
-            .judicialOrderMadeWithUncloakRequestForInformationApplication()
+            .judicialDecisionWithUncloakRequestForInformationApplication(
+                REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
             .build();
 
         when(judicialDecisionHelper

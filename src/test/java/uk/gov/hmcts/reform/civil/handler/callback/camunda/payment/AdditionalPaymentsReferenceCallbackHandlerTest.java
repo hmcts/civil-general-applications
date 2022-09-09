@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
 @SpringBootTest(classes = {
     AdditionalPaymentsReferenceCallbackHandler.class,
@@ -86,7 +88,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @Test
         void shouldMakeAdditionalPaymentReference_whenJudgeUncloakedApplication()  {
             var caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakRequestForInformationApplication()
+                .judicialDecisionWithUncloakRequestForInformationApplication(
+                    REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
                 .build();
             when(judicialDecisionHelper
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
@@ -108,13 +111,14 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
+            verify(paymentsService, never()).createServiceRequest(any(), any());
             assertThat(extractPaymentRequestReferenceFromResponse(response))
                 .isNull();
         }
 
         @Test
         void shouldNotMakeAdditionalPaymentRef_whenJudgeNotUncloakedApplication_OtherThanRequestMoreInformation() {
-            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication()
+            var caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO)
                 .build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -130,7 +134,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createServiceRequest(any(), any());
             var caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakRequestForInformationApplication()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION,
+                                                                             YesOrNo.NO, YesOrNo.NO)
                 .build();
             when(judicialDecisionHelper
                      .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
@@ -145,7 +150,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .when(paymentsService).createServiceRequest(any(), any());
 
             var caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakRequestForInformationApplication()
+                .judicialDecisionWithUncloakRequestForInformationApplication(
+                    REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
                 .build();
 
             when(judicialDecisionHelper
@@ -163,7 +169,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             var caseData = CaseDataBuilder.builder()
-                .judicialOrderMadeWithUncloakApplication()
+                .judicialOrderMadeWithUncloakApplication(YesOrNo.NO)
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
