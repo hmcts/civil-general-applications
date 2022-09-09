@@ -62,4 +62,8 @@ public class JudicialDecisionHelper {
             && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
     }
 
+    public boolean isListForHearingMadeVisibleToDefendant(CaseData caseData) {
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+    }
 }
