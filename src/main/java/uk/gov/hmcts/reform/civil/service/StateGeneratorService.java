@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
@@ -23,7 +26,10 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 
 @Service
+@RequiredArgsConstructor
 public class StateGeneratorService {
+
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
         GAJudgeDecisionOption decision;
@@ -39,7 +45,9 @@ public class StateGeneratorService {
             .getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
             return AWAITING_DIRECTIONS_ORDER_DOCS;
         } else if (decision == REQUEST_MORE_INFO) {
-            return AWAITING_ADDITIONAL_INFORMATION;
+
+            return getNewStateForRequestMoreInfo(data);
+
         } else if (decision == MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return AWAITING_WRITTEN_REPRESENTATIONS;
         } else if (decision == LIST_FOR_A_HEARING) {
@@ -70,4 +78,16 @@ public class StateGeneratorService {
 
         return isJudicialDecisionNotNull && isJudicialDecisionMakeOrderIsDismissed;
     }
+
+    private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
+        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
+                return APPLICATION_ADD_PAYMENT;
+            } else {
+                return AWAITING_RESPONDENT_RESPONSE;
+            }
+        }
+        return AWAITING_ADDITIONAL_INFORMATION;
+    }
+
 }

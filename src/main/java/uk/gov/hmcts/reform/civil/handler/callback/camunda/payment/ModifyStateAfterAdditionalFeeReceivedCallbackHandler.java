@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,6 @@ import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @Slf4j
 @Service
@@ -28,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends CallbackHandler {
 
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final StateGeneratorService stateGeneratorService;
 
     private static final List<CaseEvent> EVENTS = singletonList(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
 
@@ -46,18 +47,23 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private CallbackResponse changeApplicationState(CallbackParams callbackParams) {
         Long caseId = callbackParams.getCaseData().getCcdCaseReference();
-        log.info("Changing state to ORDER_MADE for caseId: {}", caseId);
+        CaseData caseData = callbackParams.getCaseData();
+        String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).toString();
+        log.info("Changing state to {} for caseId: {}", newCaseState, caseId);
         return AboutToStartOrSubmitCallbackResponse.builder()
-                .state(ORDER_MADE.toString())
+                .state(newCaseState)
                 .build();
     }
 
     private CallbackResponse changeGADetailsStatusInParent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        log.info("Updating parent with latest state of application-caseId: {}", caseData.getCcdCaseReference());
-        parentCaseUpdateHelper.updateParentWithGAState(
+        String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData)
+            .getDisplayedValue();
+        log.info("Updating parent with latest state {} of application-caseId: {}",
+                 newCaseState, caseData.getCcdCaseReference());
+        parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
                 caseData,
-                ORDER_MADE.getDisplayedValue()
+                newCaseState
         );
 
         return SubmittedCallbackResponse.builder().build();

@@ -25,7 +25,6 @@ import java.util.Objects;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
@@ -40,6 +39,7 @@ public class PaymentRequestUpdateCallbackService {
     private final JudicialNotificationService judicialNotificationService;
     private final ObjectMapper objectMapper;
     private final Time time;
+    private final StateGeneratorService stateGeneratorService;
 
     private CaseData data;
 
@@ -111,7 +111,7 @@ public class PaymentRequestUpdateCallbackService {
             .build();
 
         caseData = caseData.toBuilder()
-            .ccdState(ORDER_MADE)
+            .ccdState(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData))
             .generalAppPBADetails(pbaDetails.toBuilder()
                                       .additionalPaymentDetails(paymentDetails)
                                       .paymentSuccessfulDate(time.now()).build()
