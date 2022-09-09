@@ -21,6 +21,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
@@ -37,14 +39,14 @@ public class JudicialDecisionHelperTest {
         @Test
         void isApplicationCloaked_shouldReturnNoWhenRespondentAgreementIsNull() {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(null).build();
-            assertThat(helper.isApplicationCloaked(caseData)).isEqualTo(NO);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
         }
 
         @Test
         void isApplicationCloaked_shouldReturnNoWhenRespondentAgreementHasAgreed() {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                 GARespondentOrderAgreement.builder().hasAgreed(YES).build()).build();
-            assertThat(helper.isApplicationCloaked(caseData)).isEqualTo(NO);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
         }
 
         @Test
@@ -52,7 +54,7 @@ public class JudicialDecisionHelperTest {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                     GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppInformOtherParty(null).build();
-            assertThat(helper.isApplicationCloaked(caseData)).isEqualTo(NO);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
         }
 
         @Test
@@ -60,7 +62,7 @@ public class JudicialDecisionHelperTest {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                     GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build()).build();
-            assertThat(helper.isApplicationCloaked(caseData)).isEqualTo(NO);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
         }
 
         @Test
@@ -68,7 +70,7 @@ public class JudicialDecisionHelperTest {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                     GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build()).build();
-            assertThat(helper.isApplicationCloaked(caseData)).isEqualTo(YES);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
         }
     }
 
@@ -225,7 +227,7 @@ public class JudicialDecisionHelperTest {
 
         @Test
         void shouldReturnTrue_WhenJudgeDecideUncloaked_OrderMade() {
-            CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+            CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
             assertThat(helper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).isEqualTo(true);
 
         }
@@ -244,6 +246,39 @@ public class JudicialDecisionHelperTest {
 
         }
 
+    }
+
+    @Nested
+    class IsApplicationUncloakedWithAdditionalFee {
+
+        @Test
+        void shouldReturnTrue_WhenApplicationIsUncloakedTypeRequestMoreInformation() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO).build();
+            assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isTrue();
+
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsCloakedTypeRequestMoreInformation() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
+            assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsWithNoticeTypeRequestMoreInformation() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, NO).build();
+            assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsUncloakedTypeOrderMade() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialOrderMadeWithUncloakApplication(NO).build();
+            assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isFalse();
+        }
     }
 }
 

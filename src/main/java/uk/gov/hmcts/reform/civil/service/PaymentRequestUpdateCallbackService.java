@@ -43,6 +43,7 @@ public class PaymentRequestUpdateCallbackService {
     private final GeneralApplicationCreationNotificationService gaNotificationService;
     private final ObjectMapper objectMapper;
     private final Time time;
+    private final StateGeneratorService stateGeneratorService;
 
     private CaseData data;
 
@@ -121,7 +122,7 @@ public class PaymentRequestUpdateCallbackService {
             .build();
 
         caseData = caseData.toBuilder()
-            .ccdState(ORDER_MADE)
+            .ccdState(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData))
             .generalAppPBADetails(pbaDetails.toBuilder()
                                       .additionalPaymentDetails(paymentDetails)
                                       .paymentSuccessfulDate(time.now()).build()

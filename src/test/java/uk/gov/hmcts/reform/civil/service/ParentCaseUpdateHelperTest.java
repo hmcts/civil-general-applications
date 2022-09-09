@@ -40,7 +40,8 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void updateParentApplicationVisibilityWithNewState() {
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO)
+            .submittedOn(null).build();
 
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
@@ -51,7 +52,7 @@ class ParentCaseUpdateHelperTest {
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(
-            CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication().build())
+            CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build())
             .id(1645779506193000L)
             .state(APPLICATION_ADD_PAYMENT)
             .build();
