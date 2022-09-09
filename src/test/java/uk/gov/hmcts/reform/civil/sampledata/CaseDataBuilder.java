@@ -551,7 +551,7 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
-    public CaseData.CaseDataBuilder hearingOrderApplication() {
+    public CaseData.CaseDataBuilder hearingOrderApplication(YesOrNo isAgreed, YesOrNo isWithNotice) {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -562,6 +562,8 @@ public class CaseDataBuilder {
             .createdDate(LocalDateTime.now())
             .judicialGeneralHearingOrderRecital("Test Judge's recital")
             .judicialGOHearingDirections("Test hearing direction")
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isAgreed).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
