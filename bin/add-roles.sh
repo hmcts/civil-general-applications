@@ -11,6 +11,7 @@
 ./bin/utils/ccd-add-role.sh "admin-access"
 ./bin/utils/ccd-add-role.sh "full-access"
 ./bin/utils/ccd-add-role.sh "legal-adviser"
+./bin/utils/ccd-add-role.sh "GS_profile"
 ./bin/utils/ccd-add-role.sh "civil-administrator-standard"
 ./bin/utils/ccd-add-role.sh "civil-administrator-basic"
 
