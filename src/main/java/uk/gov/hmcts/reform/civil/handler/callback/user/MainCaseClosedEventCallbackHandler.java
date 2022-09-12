@@ -38,7 +38,7 @@ public class MainCaseClosedEventCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = singletonList(MAIN_CASE_CLOSED);
     private static  final List<CaseState> NON_LIVE_STATES =
-        List.of(APPLICATION_CLOSED, PROCEEDS_IN_HERITAGE, ORDER_MADE, LISTING_FOR_A_HEARING, APPLICATION_DISMISSED);
+        List.of(APPLICATION_CLOSED, PROCEEDS_IN_HERITAGE, ORDER_MADE, APPLICATION_DISMISSED);
 
     @Override
     protected Map<String, Callback> callbacks() {

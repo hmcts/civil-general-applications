@@ -46,7 +46,7 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
     private ApplicationProceedsInHeritageEventCallbackHandler handler;
 
     private static  final List<CaseState> NON_LIVE_STATES =
-        List.of(APPLICATION_CLOSED, PROCEEDS_IN_HERITAGE, ORDER_MADE, LISTING_FOR_A_HEARING, APPLICATION_DISMISSED);
+        List.of(APPLICATION_CLOSED, PROCEEDS_IN_HERITAGE, ORDER_MADE, APPLICATION_DISMISSED);
 
     @Nested
     class AboutToSubmitCallback {
