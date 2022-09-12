@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -75,15 +76,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
-
+    private final DeadlinesCalculator deadlinesCalculator;
+    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
     private static final int ONE_V_TWO = 1;
     private static final String EMPTY_STRING = "";
-
-    private final DeadlinesCalculator deadlinesCalculator;
-    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
@@ -191,8 +190,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        YesOrNo isCloaked = helper.isApplicationCloaked(caseData);
-        caseDataBuilder.applicationIsCloaked(isCloaked);
+        if (caseData.getApplicationIsCloaked() == null) {
+            caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
+        }
+
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
             .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
@@ -270,14 +271,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             = GAJudicialRequestMoreInfo.builder();
 
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
-            gaJudicialRequestMoreInfoBuilder
-                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+            if (isAdditionalPaymentMade(caseData).equals(YES)) {
+                gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+            } else {
+                gaJudicialRequestMoreInfoBuilder
+                    .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
+            }
 
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
         }
-
         gaJudicialRequestMoreInfoBuilder.judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build();
 
         return gaJudicialRequestMoreInfoBuilder;
@@ -457,7 +461,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             }
         }
-
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
         if (SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
@@ -517,10 +520,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
-        if (caseData.getMakeAppVisibleToRespondents() != null) {
-            dataBuilder
-                .applicationIsCloaked(NO);
+
+        var isApplicationUncloaked = isApplicationContinuesCloakedAfterJudicialDecision(caseData);
+        if (Objects.isNull(isApplicationUncloaked)
+            && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(NO)) {
+            dataBuilder.applicationIsCloaked(NO);
+        } else {
+            dataBuilder.applicationIsCloaked(isApplicationUncloaked);
         }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
@@ -1041,5 +1049,30 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return YES;
         }
         return NO;
+    }
+
+    private YesOrNo isApplicationContinuesCloakedAfterJudicialDecision(CaseData caseData) {
+        if (caseData.getMakeAppVisibleToRespondents() != null
+            || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
+            return NO;
+        }
+        return caseData.getApplicationIsCloaked();
+    }
+
+    private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
+        if (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != null
+            && caseData.getJudicialDecisionRequestMoreInfo()
+            .getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY)) {
+            return YES;
+        }
+        return NO;
+    }
+
+    private YesOrNo isAdditionalPaymentMade(CaseData caseData) {
+        return caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && Objects.nonNull(caseData.getGeneralAppPBADetails())
+            && Objects.nonNull(caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails()) ? YES : NO;
+
     }
 }
