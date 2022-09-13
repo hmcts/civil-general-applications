@@ -55,7 +55,9 @@ public class FlowStateAllowedEventService {
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
-                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED)
         ),
         entry(PAYMENT_FAILED.fullName(),
               List.of(
@@ -67,8 +69,9 @@ public class FlowStateAllowedEventService {
                       MAKE_DECISION,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
-
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
               )
         ),
         entry(PAYMENT_SUCCESSFUL.fullName(),
@@ -80,7 +83,9 @@ public class FlowStateAllowedEventService {
                       MAKE_DECISION,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
               )
         )
     );

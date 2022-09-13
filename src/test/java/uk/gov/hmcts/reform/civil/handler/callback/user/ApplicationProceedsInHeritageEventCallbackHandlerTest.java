@@ -20,16 +20,13 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.NON_LIVE_STATES;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_CLOSED;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 
 @ExtendWith(SpringExtension.class)
@@ -43,9 +40,6 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
 
     @Autowired
     private ApplicationProceedsInHeritageEventCallbackHandler handler;
-
-    private static  final List<CaseState> NON_LIVE_STATES =
-        List.of(APPLICATION_CLOSED, PROCEEDS_IN_HERITAGE, ORDER_MADE, APPLICATION_DISMISSED);
 
     @Nested
     class AboutToSubmitCallback {
