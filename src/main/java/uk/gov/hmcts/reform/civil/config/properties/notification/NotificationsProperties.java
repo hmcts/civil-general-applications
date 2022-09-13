@@ -68,4 +68,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String judgeApproveOrderToStrikeOutOCMC;
+
+    @NotEmpty
+    private String generalApplicationPaymentFailure;
 }
