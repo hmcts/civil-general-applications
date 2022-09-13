@@ -170,7 +170,7 @@ ccd:
     postgresql:
       enabled: false
     ras:
-      enabled: true
+      enabled: false
 
   global:
     ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
@@ -209,15 +209,10 @@ ccd:
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
-        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
       ingressHost: civil-ga-data-store-staging-aat.service.core-compute-aat.internal
-  am-role-assignment-service:
-    java:
-      keyVaults:
-        am:
-          secrets:
-            - role-assignment-service-LD-SDK-KEY
+
   ccd-definition-store-api:
     java:
       imagePullPolicy: Always

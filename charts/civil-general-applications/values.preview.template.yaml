@@ -51,10 +51,12 @@ java:
     CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
     CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
     REFERENCE_DATABASE_MIGRATION: false
+
     FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     PAY_CALLBACK_URL: http://${SERVICE_FQDN}/payment-request-update
+
     LAUNCH_DARKLY_ENV: ${SERVICE_FQDN}
     TESTING_SUPPORT_ENABLED: true
     POLLING_EVENT_EMITTER_ENABLED: false
@@ -169,7 +171,7 @@ ccd:
     postgresql:
       enabled: false
     ras:
-      enabled: true
+      enabled: false
 
   global:
     ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
@@ -208,16 +210,10 @@ ccd:
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
-        ROLE_ASSIGNMENT_URL: http://${SERVICE_NAME}-am-role-assignment-service
+        ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
-  am-role-assignment-service:
-    java:
-      ingressHost: role-am-${SERVICE_FQDN}
-      keyVaults:
-        am:
-          secrets:
-            - role-assignment-service-LD-SDK-KEY
+
   ccd-definition-store-api:
     java:
       imagePullPolicy: Always
