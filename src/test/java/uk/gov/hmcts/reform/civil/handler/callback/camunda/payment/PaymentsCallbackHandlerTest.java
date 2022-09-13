@@ -35,7 +35,6 @@ import java.util.Map;
 import static feign.Request.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -108,7 +107,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @ParameterizedTest
-        @ValueSource(ints = {403})
+        @ValueSource(ints = {403, 422, 504})
         void shouldUpdateFailureReason_whenForbiddenExceptionThrown(int status) {
             doThrow(buildFeignException(status)).when(paymentsService).createCreditAccountPayment(any(), any());
 
@@ -116,10 +115,6 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getReference()).isNull();
-            assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getErrorMessage())
-                    .isEqualTo(PAYMENT_ERROR_MESSAGE);
-            assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getErrorCode())
-                    .isEqualTo(PAYMENT_ERROR_CODE);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getStatus())
                     .isEqualTo(FAILED);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails().getCustomerReference())
@@ -149,7 +144,7 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @ParameterizedTest
-        @ValueSource(ints = {404, 422, 504})
+        @ValueSource(ints = {404})
         void shouldAddError_whenOtherExceptionThrown(int status) {
             doThrow(buildFeignException(status)).when(paymentsService).createCreditAccountPayment(any(), any());
 
@@ -158,18 +153,17 @@ class PaymentsCallbackHandlerTest extends BaseCallbackHandlerTest {
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
 
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference()).isEqualTo("12345");
-            assertThat(extractPaymentDetailsFromResponse(response).getPaymentDetails()).isNull();
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate()).isNull();
-            assertThat(response.getErrors()).containsOnly("Technical error occurred");
         }
 
         @Test
         void shouldThrowException_whenForbiddenExceptionThrownContainsInvalidResponse() {
             doThrow(buildForbiddenFeignExceptionWithInvalidResponse())
                 .when(paymentsService).createCreditAccountPayment(any(), any());
-
-            assertThrows(FeignException.class, () -> handler.handle(params));
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isEmpty();
             verify(paymentsService).createCreditAccountPayment(caseData, "BEARER_TOKEN");
+
         }
 
         @Test
