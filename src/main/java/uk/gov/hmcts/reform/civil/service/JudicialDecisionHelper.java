@@ -11,13 +11,14 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHelper {
 
-    public YesOrNo isApplicationCloaked(CaseData caseData) {
+    public YesOrNo isApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
         return (caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null
@@ -42,26 +43,27 @@ public class JudicialDecisionHelper {
     }
 
     public boolean isOrderMakeDecisionMadeVisibleToDefendant(CaseData caseData) {
-        if (isApplicationCloaked(caseData).equals(YES)
+        return (isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
             && Objects.nonNull(caseData.getApplicationIsCloaked())
             && caseData.getApplicationIsCloaked().equals(NO)
-            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)) {
-            return true;
-        }
-        return false;
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER));
+
     }
 
     public boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
-        return false;
 
-        /*TODO: Uncomment this code and revise the logic with CIV-3759
-        var decision = Optional.ofNullable(caseData.getJudicialDecision())
-            .map(GAJudicialDecision::getDecision).orElse(null);
-        return !isApplicationCloaked(caseData)
-            && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && Objects.nonNull(decision)
-            && caseData.getJudicialDecision()
-            .getDecision().equals(REQUEST_MORE_INFO);*/
+        var judicialDecisionRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(NO)
+            && Objects.nonNull(judicialDecisionRequestMoreInfo)
+            && Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
+            && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
+    }
+
+    public boolean isListForHearingMadeVisibleToDefendant(CaseData caseData) {
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
 }
