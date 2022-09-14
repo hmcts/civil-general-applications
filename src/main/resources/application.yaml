@@ -65,6 +65,7 @@ genApp:
     keywords:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
+      uncloakFee: HACFOOnNotice
   lrd:
     endpoint: /refdata/location/court-venues
 
@@ -73,6 +74,8 @@ payments:
   api:
     site_id: AAA7
     service: CIVIL
+    spec_site_id: AAA6
+    callback-url: ${PAY_CALLBACK_URL:}
 
 idam:
   s2s-auth:
@@ -130,6 +133,9 @@ notifications:
   judgeRequestForInformationApplicantEmailTemplate: "e16c98d5-8e4a-4d15-9103-1b5970693e80"
   judgeRequestForInformationRespondentEmailTemplate: "d16dd83e-1403-486d-a6d9-0f44ddcbaf01"
   judgeUncloakApplicationEmailTemplate: "251414bb-3f26-47c6-ba1d-d7254349c028"
+  judgeApproveOrderToStrikeOutDamages: "073b4650-c4c5-478a-8824-3c495a8e29e5"
+  judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
+  generalApplicationPaymentFailure: "74b0a9db-6de9-4891-a984-618b34e8b4fc"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
@@ -192,6 +198,7 @@ genApp:
 payments:
   api:
     url: http://localhost:8765
+    callback-url: http://localhost:4550/payment-request-update
 
 idam:
   web:
@@ -256,6 +263,7 @@ genApp:
 payments:
   api:
     url: http://fake-payment-register-api
+    callback-url: http://fake-payment-register-api
 
 idam:
   web:

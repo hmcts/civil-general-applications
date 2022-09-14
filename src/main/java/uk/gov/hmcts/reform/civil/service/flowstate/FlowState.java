@@ -22,7 +22,9 @@ public interface FlowState {
 
     enum Main implements FlowState {
         DRAFT,
-        APPLICATION_SUBMITTED;
+        APPLICATION_SUBMITTED,
+        PAYMENT_FAILED,
+        PAYMENT_SUCCESSFUL;
 
         public static final String FLOW_NAME = "MAIN";
 
