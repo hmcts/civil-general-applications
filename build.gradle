@@ -244,7 +244,7 @@ def versions = [
   reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
-  springfoxSwagger   : '3.0.0',
+  springfoxSwagger   : '2.9.2',
   lombok             : '1.18.24',
   springSecurity     : '5.7.3',
   pact               : '3.5.24'
