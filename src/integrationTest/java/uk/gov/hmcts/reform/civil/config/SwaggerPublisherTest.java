@@ -21,7 +21,7 @@ class SwaggerPublisherTest extends BaseIntegrationTest {
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void generateDocs() throws Exception {
-        byte[] specs = mockMvc.perform(get("/v2/api-docs"))
+        byte[] specs = mockMvc.perform(get("/v3/api-docs"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
