@@ -113,13 +113,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     updatedCaseData.get("generalApplicationsDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSol = objectMapper.convertValue(
                 updatedCaseData.get("gaDetailsRespondentSol"), new TypeReference<>(){});
-            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSolTwo"), new TypeReference<>(){});
 
             assertThat(generalApplications.size()).isEqualTo(1);
             assertThat(generalApplicationDetails.size()).isEqualTo(1);
             assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
-            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
 
             GeneralApplicationsDetails generalApp = objectMapper.convertValue(
                     ((LinkedHashMap<?, ?>) generalApplicationDetails.get(0)).get("value"),
@@ -131,11 +128,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 new TypeReference<>() {});
             assertThat(generalAppResp.getCaseState()).isEqualTo("Application Submitted - Awaiting Judicial Decision");
 
-            GADetailsRespondentSol generalAppRespTwo = objectMapper.convertValue(
-                ((LinkedHashMap<?, ?>) gaDetailsRespondentSolTwo.get(0)).get("value"),
-                new TypeReference<>() {});
-            assertThat(generalAppRespTwo.getCaseState())
-                .isEqualTo("Application Submitted - Awaiting Judicial Decision");
         }
 
         @Test
@@ -161,13 +153,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     updatedCaseData.get("generalApplicationsDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSol = objectMapper.convertValue(
                 updatedCaseData.get("gaDetailsRespondentSol"), new TypeReference<>(){});
-            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSolTwo"), new TypeReference<>(){});
 
             assertThat(generalApplications.size()).isEqualTo(1);
             assertThat(generalApplicationDetails.size()).isEqualTo(1);
             assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
-            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
 
             GeneralApplicationsDetails generalApp = objectMapper.convertValue(
                     ((LinkedHashMap<?, ?>) generalApplicationDetails.get(0)).get("value"),
@@ -178,12 +167,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 ((LinkedHashMap<?, ?>) gaDetailsRespondentSol.get(0)).get("value"),
                 new TypeReference<>() {});
             assertThat(generalAppResp.getCaseState()).isEqualTo("Awaiting Respondent Response");
-
-            GADetailsRespondentSol generalAppRespTwo = objectMapper.convertValue(
-                ((LinkedHashMap<?, ?>) gaDetailsRespondentSolTwo.get(0)).get("value"),
-                new TypeReference<>() {});
-            assertThat(generalAppRespTwo.getCaseState())
-                .isEqualTo("Awaiting Respondent Response");
         }
 
         @Test
@@ -259,10 +242,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                              .caseLink(CaseLink.builder().caseReference(CHILD_CCD_REF.toString()).build())
                              .caseState("General Application Issue Pending")
                              .build()))
-                    .gaDetailsRespondentSolTwo(wrapElements(GADetailsRespondentSol.builder()
-                              .caseLink(CaseLink.builder().caseReference(CHILD_CCD_REF.toString()).build())
-                              .caseState("General Application Issue Pending")
-                              .build()))
                     .build();
         }
     }
