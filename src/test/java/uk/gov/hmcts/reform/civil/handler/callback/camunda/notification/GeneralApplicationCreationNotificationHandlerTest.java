@@ -34,6 +34,7 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
 
     @Test
     public void shouldReturnCorrectEvent() {
+
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.YES).build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThat(handler.handledEvents()).contains(NOTIFY_GENERAL_APPLICATION_RESPONDENT);
