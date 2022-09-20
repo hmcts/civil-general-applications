@@ -8,7 +8,8 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "sprint3integration"
+def generalappCCDBranch = "master"
+
 
 AppPipelineConfig pipelineConf
 
@@ -100,7 +101,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*DJspec.json"
+          ./bin/import-ccd-definition.sh "-e *-prod.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json"
           ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
@@ -144,7 +145,7 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-nonprod.json,*DJspec.json"
+          ./bin/import-ccd-definition.sh "-e *-prod.json"
           ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json"
           ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
