@@ -13,10 +13,27 @@ public class FlowPredicate {
     }
 
     public static final Predicate<CaseData> paymentSuccessful = caseData ->
-        caseData.getGeneralAppPBADetails().getPaymentSuccessfulDate() != null;
+        getPaymentSuccessful(caseData);
+
+    private static boolean getPaymentSuccessful(CaseData caseData) {
+        boolean predicate = false;
+        if (caseData.getGeneralAppPBADetails() != null) {
+            predicate = (caseData.getGeneralAppPBADetails().getPaymentSuccessfulDate() != null);
+        }
+        return predicate;
+    }
 
     public static final Predicate<CaseData> paymentFailed = caseData ->
-        caseData.getGeneralAppPBADetails().getPaymentSuccessfulDate() == null
-            && (caseData.getGeneralAppPBADetails().getPaymentDetails() != null
-            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus() == FAILED);
+        getPaymentFailurePredicate(caseData);
+
+    private static boolean getPaymentFailurePredicate(CaseData caseData) {
+        boolean predicate = false;
+        if (caseData.getGeneralAppPBADetails() != null) {
+            predicate = (caseData.getGeneralAppPBADetails().getPaymentSuccessfulDate() == null
+                && (caseData.getGeneralAppPBADetails().getPaymentDetails() != null
+                && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus() == FAILED));
+        }
+        return predicate;
+    }
+
 }
