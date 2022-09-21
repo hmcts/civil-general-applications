@@ -23,9 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
@@ -34,12 +35,14 @@ import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 public class PaymentRequestUpdateCallbackService {
 
     public static final String PAID = "Paid";
-    public static final String ADDITIONAL_PAYMENT_SUCCESS_CALLBACK = "AdditionalPaymentSuccessCallback";
+
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
     private final JudicialNotificationService judicialNotificationService;
+    private final GeneralApplicationCreationNotificationService gaNotificationService;
     private final ObjectMapper objectMapper;
     private final Time time;
+    private final StateGeneratorService stateGeneratorService;
 
     private CaseData data;
 
@@ -59,9 +62,16 @@ public class PaymentRequestUpdateCallbackService {
 
                     caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
                     judicialNotificationService.sendNotification(caseData);
-                    createEvent(caseData, CaseEvent.ADDITIONAL_PAYMENT_SUCCESS_CALLBACK,
-                                serviceRequestUpdateDto.getCcdCaseNumber()
-                    );
+
+                    createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
+                                serviceRequestUpdateDto.getCcdCaseNumber());
+
+                } else if (caseData.getCcdState().equals(APPLICATION_PAYMENT_FAILED)) {
+
+                    caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
+                    gaNotificationService.sendNotification(caseData);
+                    createEvent(caseData, END_BUSINESS_PROCESS_GASPEC,
+                                serviceRequestUpdateDto.getCcdCaseNumber());
                 }
             }
 
@@ -77,9 +87,8 @@ public class PaymentRequestUpdateCallbackService {
             eventName
         );
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = startEventData.getBusinessProcess()
-            .updateActivityId(ADDITIONAL_PAYMENT_SUCCESS_CALLBACK);
 
+        BusinessProcess businessProcess = startEventData.getBusinessProcess();
         CaseDataContent caseDataContent = buildCaseDataContent(
             startEventResponse,
             caseData,
@@ -87,8 +96,9 @@ public class PaymentRequestUpdateCallbackService {
             generalApplicationCaseId,
             startEventData.getGeneralAppParentCaseLink()
         );
-        data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
-        coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(), MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
+
+        coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(), eventName);
 
     }
 
@@ -111,11 +121,38 @@ public class PaymentRequestUpdateCallbackService {
             .build();
 
         caseData = caseData.toBuilder()
-            .ccdState(ORDER_MADE)
+            .ccdState(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData))
             .generalAppPBADetails(pbaDetails.toBuilder()
                                       .additionalPaymentDetails(paymentDetails)
                                       .paymentSuccessfulDate(time.now()).build()
             ).build();
+
+        return caseData;
+    }
+
+    private CaseData updateCaseDataWithPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
+                                                              CaseData caseData) {
+
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        String paymentReference = ofNullable(serviceRequestUpdateDto.getPayment())
+            .map(PaymentDto::getCustomerReference)
+            .orElse(pbaDetails.getServiceReqReference());
+
+        PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+            .map(PaymentDetails::toBuilder)
+            .orElse(PaymentDetails.builder())
+            .status(SUCCESS)
+            .customerReference(pbaDetails.getPbaReference())
+            .reference(paymentReference)
+            .errorCode(null)
+            .errorMessage(null)
+            .build();
+
+        caseData = caseData.toBuilder()
+            .generalAppPBADetails(pbaDetails.toBuilder()
+                                      .paymentDetails(paymentDetails)
+                                      .paymentSuccessfulDate(time.now()).build())
+            .build();
 
         return caseData;
     }

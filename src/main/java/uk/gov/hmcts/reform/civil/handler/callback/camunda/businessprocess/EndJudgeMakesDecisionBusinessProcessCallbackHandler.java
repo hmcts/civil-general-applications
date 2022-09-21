@@ -45,7 +45,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        if (judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(data)) {
+        if (isApplicationMakeVisibleToDefendant(data)) {
             parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
                 data, getNewStateDependingOn(data).getDisplayedValue());
         } else {
@@ -66,5 +66,10 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
             .state(newState.toString())
             .data(output)
             .build();
+    }
+
+    private boolean isApplicationMakeVisibleToDefendant(CaseData caseData) {
+        return judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)
+            || judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData);
     }
 }
