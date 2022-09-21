@@ -86,10 +86,13 @@ public class ParentCaseUpdateHelper {
             .getGeneralApplicationsDetails()
             .stream().filter(application -> applicationFilterCriteria(application, applicationId)).findAny();
 
-        if (generalApplicationsDetails.isPresent()) {
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+            caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
 
-            List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
-                caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+        boolean isGaDetailsRespondentSolPresent = gaDetailsRespondentSol.stream()
+            .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId));
+
+        if (generalApplicationsDetails.isPresent() && !isGaDetailsRespondentSolPresent) {
 
             gaDetailsRespondentSol.add(
                 element(
