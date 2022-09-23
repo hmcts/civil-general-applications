@@ -35,7 +35,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // -- swagger ui
         "/v2/api-docs",
         "/swagger-resources/**",
-        "/swagger-ui.html",
+        "/swagger-ui/**",
         "/webjars/**",
         // other public endpoints of API
         "/health",
