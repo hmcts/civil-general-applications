@@ -201,7 +201,7 @@ genApp:
 payments:
   api:
     url: http://localhost:8765
-    callback-url: http://localhost:4550/payment-request-update
+    callback-url: http://localhost:4550/service-request-update
 
 idam:
   web:

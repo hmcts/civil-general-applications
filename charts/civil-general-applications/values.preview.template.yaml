@@ -23,7 +23,7 @@ postgresql:
 java:
   image: ${IMAGE_NAME}
   imagePullPolicy: Always
-  ingressHost: ${SERVICE_FQDN}
+  ingressHost: ${SERVICE_NAME}.preview.platform.hmcts.net
   keyVaults:
     civil:
       resourceGroup: civil
@@ -57,8 +57,7 @@ java:
     FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
-    PAY_CALLBACK_URL: http://${SERVICE_FQDN}/payment-request-update
-
+    PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/service-request-update
     LAUNCH_DARKLY_ENV: ${SERVICE_FQDN}
     TESTING_SUPPORT_ENABLED: true
     POLLING_EVENT_EMITTER_ENABLED: false
@@ -71,7 +70,7 @@ civil-service:
   java:
     applicationPort: 4000
     releaseNameOverride: ${SERVICE_NAME}-civil-service
-    image: 'hmctspublic.azurecr.io/civil/service:latest'
+    image: 'hmctspublic.azurecr.io/civil/service:pr-1417'
     imagePullPolicy: Always
     ingressHost: civil-service-${SERVICE_FQDN}
     keyVaults:
@@ -138,7 +137,7 @@ idam-pr:
   enabled: true
   redirect_uris:
     XUI:
-      - https://xui-${SERVICE_FQDN}/oauth2/callback
+      - https://xui-${SERVICE_NAME}.preview.platform.hmcts.net/oauth2/callback
 
 xui-webapp:
   enabled: true
