@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
-import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -54,7 +53,7 @@ public class GeneralApplication implements MappableObject {
     private final String generalAppSuperClaimType;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
-    private final DynamicList caseManagementCategory;
+    private final GACaseManagementCategory caseManagementCategory;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -90,7 +89,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppSuperClaimType") String generalAppSuperClaimType,
                        @JsonProperty("caseManagementLocation") GACaseLocation caseManagementLocation,
                        @JsonProperty("isCcmccLocation") YesOrNo isCcmccLocation,
-                       @JsonProperty("caseManagementCategory")DynamicList caseManagementCategory) {
+                       @JsonProperty("caseManagementCategory") GACaseManagementCategory caseManagementCategory) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;

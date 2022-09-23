@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
-    private static final String PAYMENT_CALLBACK_URL = "/payment-request-update";
+    private static final String PAYMENT_CALLBACK_URL = "/service-request-update";
     private static final String CCD_CASE_NUMBER = "1234";
     private static final String PAID = "Paid";
     private static final String REFERENCE = "reference";
