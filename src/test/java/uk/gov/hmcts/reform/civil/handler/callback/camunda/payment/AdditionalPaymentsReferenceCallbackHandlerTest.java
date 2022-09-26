@@ -197,7 +197,8 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
             status,
             EXCEPTION_MESSAGE,
             Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
-            body
+            body,
+            Map.of()
         );
     }
 

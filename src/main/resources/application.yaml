@@ -29,6 +29,9 @@ spring:
     username: ${CMC_DB_USERNAME:-}
     password: ${CMC_DB_PASSWORD:-}
     url: jdbc:postgresql://${CMC_DB_HOST:}:${CMC_DB_PORT:}/${CMC_DB_NAME:cmc}${CMC_DB_CONNECTION_OPTIONS:}
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
 
   security:
     oauth2:
@@ -198,7 +201,7 @@ genApp:
 payments:
   api:
     url: http://localhost:8765
-    callback-url: http://localhost:4550/payment-request-update
+    callback-url: http://localhost:4550/service-request-update
 
 idam:
   web:
