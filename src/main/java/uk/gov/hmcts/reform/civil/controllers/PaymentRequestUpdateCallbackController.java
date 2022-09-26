@@ -21,7 +21,7 @@ public class PaymentRequestUpdateCallbackController {
 
     private final PaymentRequestUpdateCallbackService requestUpdateCallbackService;
 
-    @PutMapping(path = "/payment-request-update", consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
+    @PutMapping(path = "/service-request-update", consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
     @ApiOperation(value = "Ways to pay will call this API and send the status of payment with other details")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Callback processed.", response = CallbackResponse.class),
