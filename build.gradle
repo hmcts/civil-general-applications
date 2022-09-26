@@ -4,8 +4,8 @@ plugins {
   id 'application'
   id 'checkstyle'
   id 'jacoco'
-  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-  id 'org.springframework.boot' version '2.5.14'
+  id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+  id 'org.springframework.boot' version '2.7.3'
   id 'org.owasp.dependencycheck' version '7.2.0'
   id 'com.github.ben-manes.versions' version '0.42.0'
   id 'org.sonarqube' version '3.4.0.2513'
@@ -86,7 +86,7 @@ allprojects {
       dependency group: 'commons-io', name: 'commons-io', version: '2.11.0'
     }
     imports {
-      mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2020.0.4'
+      mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.3'
     }
   }
 
@@ -244,9 +244,9 @@ def versions = [
   reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
-  springfoxSwagger   : '2.9.2',
+  springfoxSwagger   : '3.0.0',
   lombok             : '1.18.24',
-  springSecurity     : '5.7.1',
+  springSecurity     : '5.7.3',
   pact               : '3.5.24'
 ]
 
@@ -281,7 +281,7 @@ dependencies {
   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-core', version: versions.springStatemachine
   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
 
-  implementation group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
+  implementation group: 'io.springfox', name: 'springfox-boot-starter', version: versions.springfoxSwagger
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
 
@@ -324,7 +324,7 @@ dependencies {
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-core', version: versions.springSecurity
-  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.23'
+  implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.24.2'
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
 
@@ -340,7 +340,7 @@ dependencies {
   implementation group: 'org.camunda.bpm.extension.rest', name: 'camunda-rest-client-spring-boot-starter', version: '0.0.4'
 
   implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.17.0'
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.13.1'
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.13.4'
   implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.13.2'
 
   // JAX-B dependencies for JDK 9+
