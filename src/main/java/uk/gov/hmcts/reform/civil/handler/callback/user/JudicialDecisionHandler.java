@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -463,14 +462,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
-        if (SEND_APP_TO_OTHER_PARTY.equals(judicialRequestMoreInfo.getRequestMoreInfoOption())) {
-            LocalDateTime deadlineForMoreInfoSubmission = deadlinesCalculator
-                .calculateApplicantResponseDeadline(
-                    LocalDateTime.now(), NUMBER_OF_DEADLINE_DAYS);
-
-            gaJudicialRequestMoreInfoBuilder.deadlineForMoreInfoSubmission(deadlineForMoreInfoSubmission).build();
-        }
-
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
@@ -567,12 +558,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         throw new IllegalArgumentException("Missing data during submission of judicial decision");
                     }
                 } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
-                    LocalDateTime submissionEndDate = caseData.getJudicialDecisionRequestMoreInfo()
-                        .getDeadlineForMoreInfoSubmission();
                     confirmationHeader = "# You have requested a response";
-                    body = "<br/><p>The parties will be notified. They will need to provide a response by "
-                        + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate)
-                        + "</p>";
+                    body = "<br/><p>The parties will be notified.</p>";
                 }
             } else {
                 throw new IllegalArgumentException("Missing data during submission of judicial decision");
