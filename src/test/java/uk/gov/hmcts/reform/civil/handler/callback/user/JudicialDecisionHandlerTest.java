@@ -2151,9 +2151,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (SubmittedCallbackResponse) handler.handle(params);
 
             assertThat(response.getConfirmationHeader()).isEqualTo("# You have requested a response");
-            assertThat(response.getConfirmationBody()).isEqualTo("<br/><p>The parties will be notified. "
-                    + "They will need to provide a response by "
-                    + DATE_FORMATTER_SUBMIT_CALLBACK.format(submissionEndDate) + "</p>");
+            assertThat(response.getConfirmationBody()).isEqualTo("<br/><p>The parties will be notified.</p>");
         }
 
         @Test
