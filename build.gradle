@@ -84,6 +84,13 @@ allprojects {
 
       // CVE-2021-29425
       dependency group: 'commons-io', name: 'commons-io', version: '2.11.0'
+      // CVE-2022-25647
+      dependencySet(
+              group: 'org.camunda.bpm',
+              version: '7.17.0'
+      ) {
+        entry 'camunda-engine'
+      }
     }
     imports {
       mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.3'
