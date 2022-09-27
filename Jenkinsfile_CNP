@@ -8,8 +8,8 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "CIV-4438-FIX-CallBackUrl"
-def ccddefbranch = "feature/CIV-3427"
+def generalappCCDBranch = "master"
+def ccddefbranch = "gaintegration"
 
 AppPipelineConfig pipelineConf
 
