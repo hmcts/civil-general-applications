@@ -35,7 +35,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // -- swagger ui
         "/v2/api-docs",
         "/swagger-resources/**",
-        "/swagger-ui.html",
+        "/swagger-ui/**",
         "/webjars/**",
         // other public endpoints of API
         "/health",
@@ -43,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/health/liveness",
         "/health/readiness",
         "/status/health",
-        "/payment-request-update",
+        "/service-request-update",
         "/",
         "/loggers/**"
     };
