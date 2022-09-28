@@ -63,10 +63,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         String caseId = caseData.getCcdCaseReference().toString();
 
-        String caseType = caseData.getGeneralAppSuperClaimType();
-        String specType = "SPEC_CLAIM";
-        String unSpecType = "UNSPEC_CLAIM";
-
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         List<String> errors = new ArrayList<>();
@@ -75,29 +71,27 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
 
-
-                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                                               applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
-                );
+            coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                                           applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+            );
 
             if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
                 GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
                         FIRST_SOLICITOR)
                     .getValue();
 
-                    coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor1.getId(),
-                                    respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                coreCaseUserService
+                    .assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
 
                 if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
 
                     GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
                         .get(SECOND_SOLICITOR).getValue();
 
-                        coreCaseUserService
-                            .assignCase(caseId, respondentSolicitor2.getId(),
-                                        respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
-
+                    coreCaseUserService
+                        .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
                 }
             }
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
