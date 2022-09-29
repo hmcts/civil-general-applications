@@ -77,7 +77,6 @@ public class CreateApplicationTaskHandlerTest {
     private static final String GENERAL_APPLICATIONS = "generalApplications";
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
     private static final LocalDateTime DUMMY_DATE = LocalDateTime.parse("2022-02-22T15:59:59");
 
     List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
@@ -129,7 +128,6 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
-            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
         }
 
@@ -140,7 +138,6 @@ public class CreateApplicationTaskHandlerTest {
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
-            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
         }
 
         @Test
@@ -298,7 +295,6 @@ public class CreateApplicationTaskHandlerTest {
                 .generalApplications(generalApplications)
                 .generalApplicationsDetails(generalApplicationsDetailsList)
                 .gaDetailsRespondentSol(gaDetailsRespondentSolList)
-                .gaDetailsRespondentSolTwo(gaDetailsRespondentSolList)
                 .businessProcess(BusinessProcess.builder().status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
 
