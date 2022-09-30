@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -51,6 +52,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -71,7 +73,7 @@ import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_DECISION);
+    private static final List<CaseEvent> EVENTS = List.of(MAKE_DECISION, MAKE_AN_ORDER);
 
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
@@ -160,6 +162,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
+
+    public static final String MAKE_AN_ORDER_DECISION = "MAKE_AN_ORDER";
+
     private final ObjectMapper objectMapper;
 
     @Override
@@ -495,9 +500,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
+        String eventIt = callbackParams.getRequest().getEventId();
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
-        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
+        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)
+            && !MAKE_AN_ORDER_DECISION.equals(eventIt)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
                 GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
                     .hearingPreferredLocation(
@@ -508,6 +515,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 caseData = updatedCaseData;
                 dataBuilder = updatedCaseData.toBuilder();
             }
+        }
+        if (MAKE_AN_ORDER_DECISION.equals(eventIt)) {
+            GAJudicialDecision gaJudicialDecision = caseData.getJudicialDecision().toBuilder()
+                .decision(GAJudgeDecisionOption.MAKE_AN_ORDER)
+                .build();
+
+            CaseData updaedCaseData = caseData.toBuilder().judicialDecision(gaJudicialDecision)
+                .build();
+            caseData = updaedCaseData;
+            dataBuilder = updaedCaseData.toBuilder();
         }
 
         dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
