@@ -63,7 +63,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -2036,7 +2035,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldPickUpMakeAnOrderEvent() {
             CaseData caseData = getApplicationBusinessProcess();
 
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT,null, "MAKE_AN_ORDER");
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT, null, "MAKE_AN_ORDER");
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
