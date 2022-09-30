@@ -278,7 +278,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             CASE_ID.toString(),
             generalApplication.getGeneralAppApplnSolicitor().getId(),
             "Org1",
-            CaseRole.APPLICANTSOLICITORONESPEC
+            CaseRole.APPLICANTSOLICITORONE
         );
     }
 
@@ -308,7 +308,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             generalApplication.getGeneralAppRespondentSolicitors()
                 .get(RESPONDENT_TWO).getValue().getId(),
             "org2",
-            CaseRole.RESPONDENTSOLICITORONESPEC
+            CaseRole.RESPONDENTSOLICITORONE
         );
     }
 
@@ -318,7 +318,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             generalApplication.getGeneralAppRespondentSolicitors()
                 .get(RESPONDENT_TWO).getValue().getId(),
             "org2",
-            CaseRole.RESPONDENTSOLICITORTWOSPEC
+            CaseRole.RESPONDENTSOLICITORTWO
         );
     }
 }

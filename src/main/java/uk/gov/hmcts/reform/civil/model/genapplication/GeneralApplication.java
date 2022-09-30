@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
+import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -54,6 +55,7 @@ public class GeneralApplication implements MappableObject {
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
     private final GACaseManagementCategory caseManagementCategory;
+    private final CaseCategory caseAccessCategory;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -89,7 +91,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppSuperClaimType") String generalAppSuperClaimType,
                        @JsonProperty("caseManagementLocation") GACaseLocation caseManagementLocation,
                        @JsonProperty("isCcmccLocation") YesOrNo isCcmccLocation,
-                       @JsonProperty("caseManagementCategory") GACaseManagementCategory caseManagementCategory) {
+                       @JsonProperty("caseManagementCategory") GACaseManagementCategory caseManagementCategory,
+                       @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -122,6 +125,7 @@ public class GeneralApplication implements MappableObject {
         this.caseManagementLocation = caseManagementLocation;
         this.isCcmccLocation = isCcmccLocation;
         this.caseManagementCategory = caseManagementCategory;
+        this.caseAccessCategory = caseAccessCategory;
     }
 
     @JsonIgnore
