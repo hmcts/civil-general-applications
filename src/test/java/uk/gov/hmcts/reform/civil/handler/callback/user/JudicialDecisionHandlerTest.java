@@ -63,6 +63,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -2029,6 +2030,20 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
+        }
+
+        @Test
+        void shouldPickUpMakeAnOrderEvent() {
+            CaseData caseData = getApplicationBusinessProcess();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT,null, "MAKE_AN_ORDER");
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck() != null);
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+            assertThat(responseCaseData.getJudicialDecision().getDecision()).isEqualTo(MAKE_AN_ORDER);
         }
 
         private CaseData getApplicationBusinessProcess() {
