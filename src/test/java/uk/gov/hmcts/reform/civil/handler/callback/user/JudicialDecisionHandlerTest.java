@@ -13,6 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
@@ -129,8 +130,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             + " Any application under this paragraph must be made within 7 days.";
 
     @Test
-    void handleEventsReturnsTheExpectedCallbackEvent() {
+    void handleEventsReturnsTheExpectedCallbackEventMakeDecision() {
         assertThat(handler.handledEvents()).contains(MAKE_DECISION);
+    }
+
+    @Test
+    void handleEventsReturnsTheExpectedCallbackEventMakeAnOrder() {
+        assertThat(handler.handledEvents()).contains(CaseEvent.MAKE_AN_ORDER);
     }
 
     @Nested
