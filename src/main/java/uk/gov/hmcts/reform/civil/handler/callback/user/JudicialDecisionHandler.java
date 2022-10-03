@@ -135,13 +135,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
         + "[Insert Draft Order from application]\n\n"
-        + "A person who was not notified of the application before this order was made may apply to have the "
-        + "order set aside or varied. Any application under this paragraph must be made within 7 days after "
-        + "notification of the order.";
+        + "This order has been made by the court of its own initiative. A party affected by it may apply "
+        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
+        + "within 7 days";
+
     private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
-        + "A person who was not notified of the application"
-        + " before the order was made may apply to have the order set aside or varied."
-        + " Any application under this paragraph must be made within 7 days.";
+        + "This order has been made by the court of its own initiative. A party affected by it may apply "
+        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
+        + "within 7 days";
 
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
