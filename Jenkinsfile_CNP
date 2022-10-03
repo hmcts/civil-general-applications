@@ -8,7 +8,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "CIV-3914-Access-Profile-Migration"
+def generalappCCDBranch = "CIV-3726"
 def ccddefbranch = "master"
 
 
