@@ -66,34 +66,40 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         List<String> errors = new ArrayList<>();
-
+        log.info("Start Case Assigning : ".concat(caseId));
         try {
-
+            log.info("Obtaining  caseData.getGeneralAppApplnSolicitor() : ".concat(caseId));
             GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
-
+            log.info("applicantSolicitor value : ".concat(applicantSolicitor.toString()));
+            log.info("Assigning Applicant Solicitor one : ".concat(caseId));
             coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
-
+            log.info("Assigned Successfully : Applicant Solicitor one : ".concat(caseId));
             if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+                log.info("Obtaining the FIRST_SOLICITOR : ".concat(caseId));
                 GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
                         FIRST_SOLICITOR)
                     .getValue();
-
+                log.info("respondentSolicitor1 : ".concat(respondentSolicitor1.toString()));
+                log.info("Assigning Applicant RESPONDENTSOLICITORONE : ".concat(caseId));
                 coreCaseUserService
                     .assignCase(caseId, respondentSolicitor1.getId(),
                                 respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                log.info("Assigned Successfully RESPONDENTSOLICITORONE : ".concat(caseId));
 
                 if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
-
+                    log.info("Obtaining SECOND_SOLICITOR : ".concat(caseId));
                     GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
                         .get(SECOND_SOLICITOR).getValue();
-
+                    log.info("Assigning Applicant SECOND_SOLICITOR : ".concat(caseId));
                     coreCaseUserService
                         .assignCase(caseId, respondentSolicitor2.getId(),
                                     respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
+                    log.info("Assigned Successfully RESPONDENTSOLICITORTWO : ".concat(caseId));
                 }
             }
+            log.info("Assigning Applicant Solicitor one : ".concat(caseId));
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
                 .build();
