@@ -125,6 +125,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo respondent2SameLegalRepresentative;
     private final GAReferToJudgeGAspec referToJudge;
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
+    private final String locationName;
 
     //PDF Documents
     @Builder.Default
