@@ -23,11 +23,8 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONESPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONESPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWOSPEC;
 
 @Service
 @RequiredArgsConstructor
@@ -66,10 +63,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         String caseId = caseData.getCcdCaseReference().toString();
 
-        String caseType = caseData.getGeneralAppSuperClaimType();
-        String specType = "SPEC_CLAIM";
-        String unSpecType = "UNSPEC_CLAIM";
-
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         List<String> errors = new ArrayList<>();
@@ -78,42 +71,27 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
 
-            if (caseType.equals(unSpecType)) {
-                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                                               applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
-                );
-            } else if (caseType.equals(specType)) {
-                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                                               applicantSolicitor.getOrganisationIdentifier(),
-                                               APPLICANTSOLICITORONESPEC
-                );
-            }
+            coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                                           applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+            );
+
             if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
                 GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
                         FIRST_SOLICITOR)
                     .getValue();
-                if (caseType.equals(unSpecType)) {
-                    coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor1.getId(),
-                                    respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
-                } else if (caseType.equals(specType)) {
-                    coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor1.getId(),
-                                    respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONESPEC);
-                }
+
+                coreCaseUserService
+                    .assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+
                 if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
 
                     GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
                         .get(SECOND_SOLICITOR).getValue();
-                    if (caseType.equals(unSpecType)) {
-                        coreCaseUserService
-                            .assignCase(caseId, respondentSolicitor2.getId(),
-                                        respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
-                    } else if (caseType.equals(specType)) {
-                        coreCaseUserService
-                            .assignCase(caseId, respondentSolicitor2.getId(),
-                                        respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWOSPEC);
-                    }
+
+                    coreCaseUserService
+                        .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
                 }
             }
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
