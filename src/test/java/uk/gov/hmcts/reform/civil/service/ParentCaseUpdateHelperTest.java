@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -80,6 +81,7 @@ class ParentCaseUpdateHelperTest {
         verify(coreCaseDataService, times(1)).submitUpdate(any(), any());
 
     }
+
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(
             CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build())
@@ -121,7 +123,7 @@ class ParentCaseUpdateHelperTest {
         return CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO)
                 .generalApplications(generalApplications)
                 .generalApplicationsDetails(generalApplicationsDetailsList)
-                .gaDetailsRespondentSol(withRespondentSol?gaDetailsRespondentSolList:null)
+                .gaDetailsRespondentSol(withRespondentSol ? gaDetailsRespondentSolList : null)
                 .submittedOn(null).build();
     }
 
