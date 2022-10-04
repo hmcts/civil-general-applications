@@ -500,11 +500,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
-        String eventIt = callbackParams.getRequest().getEventId();
+        String eventId = callbackParams.getRequest().getEventId();
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)
-            && !MAKE_AN_ORDER_DECISION.equals(eventIt)) {
+            && !MAKE_AN_ORDER_DECISION.equals(eventId)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
                 GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
                     .hearingPreferredLocation(
@@ -516,7 +516,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 dataBuilder = updatedCaseData.toBuilder();
             }
         }
-        if (MAKE_AN_ORDER_DECISION.equals(eventIt)) {
+        if (MAKE_AN_ORDER_DECISION.equals(eventId)) {
             GAJudicialDecision gaJudicialDecision = caseData.getJudicialDecision().toBuilder()
                 .decision(GAJudgeDecisionOption.MAKE_AN_ORDER)
                 .build();
