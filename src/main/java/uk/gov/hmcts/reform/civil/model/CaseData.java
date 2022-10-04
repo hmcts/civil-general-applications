@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
+import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -127,6 +128,8 @@ public class CaseData implements MappableObject {
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
     private final LocalDateTime applicationClosedDate;
     private final LocalDateTime applicationTakenOfflineDate;
+    @JsonProperty("CaseAccessCategory")
+    private final CaseCategory caseAccessCategory;
 
     //PDF Documents
     @Builder.Default
