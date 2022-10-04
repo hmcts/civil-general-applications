@@ -93,11 +93,12 @@ public class ParentCaseUpdateHelper {
             .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId));
 
         if (generalApplicationsDetails.isPresent()) {
-            if(!isGaDetailsRespondentSolPresent) {
+            if (!isGaDetailsRespondentSolPresent) {
                 gaDetailsRespondentSol.add(
                         element(
                                 GADetailsRespondentSol.builder()
-                                        .generalApplicationType(generalApplicationsDetails.get().getValue().getGeneralApplicationType())
+                                        .generalApplicationType(generalApplicationsDetails
+                                                .get().getValue().getGeneralApplicationType())
                                         .generalAppSubmittedDateGAspec(generalApplicationsDetails
                                                 .get().getValue()
                                                 .getGeneralAppSubmittedDateGAspec())
