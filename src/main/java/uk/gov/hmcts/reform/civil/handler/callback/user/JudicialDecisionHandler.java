@@ -137,12 +137,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "[Insert Draft Order from application]\n\n"
         + "This order has been made by the court of its own initiative. A party affected by it may apply "
         + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days";
+        + "within 7 days.";
 
     private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
         + "This order has been made by the court of its own initiative. A party affected by it may apply "
         + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days";
+        + "within 7 days.";
 
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"

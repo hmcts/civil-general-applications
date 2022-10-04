@@ -122,11 +122,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + "[Insert Draft Order from application]\n\n"
         + "This order has been made by the court of its own initiative. A party affected by it may apply "
         + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days";
+        + "within 7 days.";
     private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
         + "This order has been made by the court of its own initiative. A party affected by it may apply "
         + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days";
+        + "within 7 days.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
