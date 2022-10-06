@@ -20,7 +20,7 @@
 ./bin/utils/ccd-add-role.sh "GS_profile"
 ./bin/utils/ccd-add-role.sh "civil-administrator-standard"
 ./bin/utils/ccd-add-role.sh "civil-administrator-basic"
-/bin/utils/ccd-add-role.sh "hearing-schedule-access"
+./bin/utils/ccd-add-role.sh "hearing-schedule-access"
 
 roles=("solicitor" "systemupdate" "admin" "staff" "judge")
 for role in "${roles[@]}"
