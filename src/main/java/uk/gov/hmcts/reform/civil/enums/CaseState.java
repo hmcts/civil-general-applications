@@ -14,6 +14,8 @@ public enum CaseState {
     CASE_DISMISSED("Case Dismissed"),
     AWAITING_APPLICANT_INTENTION("Awaiting applicant intention"),
     PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
+    JUDICIAL_REFERRAL("Judicial Referral"),
+    CASE_PROGRESSION("Case Progression"),
 
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
