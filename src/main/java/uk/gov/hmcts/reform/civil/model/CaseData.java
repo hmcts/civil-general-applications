@@ -126,7 +126,10 @@ public class CaseData implements MappableObject {
     private final YesOrNo respondent2SameLegalRepresentative;
     private final GAReferToJudgeGAspec referToJudge;
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
+    private final LocalDateTime applicationClosedDate;
+    private final LocalDateTime applicationTakenOfflineDate;
     private final String locationName;
+
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
 
