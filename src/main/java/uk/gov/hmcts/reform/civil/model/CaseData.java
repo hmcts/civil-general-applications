@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAN245Form;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
@@ -128,6 +129,8 @@ public class CaseData implements MappableObject {
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
+    private final YesOrNo generalAppVaryJudgementType;
+    private final GAN245Form gaUploadN245FormUpload;
 
     //PDF Documents
     @Builder.Default
