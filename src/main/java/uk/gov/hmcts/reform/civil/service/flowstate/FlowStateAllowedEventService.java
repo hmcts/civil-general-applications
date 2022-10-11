@@ -13,10 +13,12 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PBA_PAYMENT_FAILED;
@@ -47,10 +49,15 @@ public class FlowStateAllowedEventService {
                                         MAKE_DECISION,
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
-                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO)),
+                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                                        APPLICATION_PROCEEDS_IN_HERITAGE,
+                                        MAIN_CASE_CLOSED)),
+
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
-                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED)
         ),
         entry(PAYMENT_FAILED.fullName(),
               List.of(
@@ -62,8 +69,9 @@ public class FlowStateAllowedEventService {
                       MAKE_DECISION,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
-
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
               )
         ),
         entry(PAYMENT_SUCCESSFUL.fullName(),
@@ -75,7 +83,9 @@ public class FlowStateAllowedEventService {
                       MAKE_DECISION,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
               )
         )
     );

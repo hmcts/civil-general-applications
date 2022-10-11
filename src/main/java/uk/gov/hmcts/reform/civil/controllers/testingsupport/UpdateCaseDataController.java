@@ -6,12 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.util.Map;
@@ -47,6 +49,17 @@ public class UpdateCaseDataController {
             coreCaseDataService.submitGaUpdate(caseId.toString(), caseDataContent(startEventResponse, caseDataMap));
         } catch (FeignException e) {
             log.error(String.format("Updating app case data failed: %s", e.contentUTF8()));
+            throw e;
+        }
+    }
+
+    @PostMapping("/testing-support/case/{caseId}/trigger/{eventName}")
+    public void triggerGAEvent(@PathVariable("caseId") Long caseId, @PathVariable("eventName") CaseEvent eventName) {
+        try {
+            coreCaseDataService.triggerGaEvent(caseId, eventName, Map.of());
+        } catch (FeignException e) {
+            log.error(String.format("Triggering event: %s on case %s failed due to: \n %s",
+                                    eventName, caseId, e.contentUTF8()));
             throw e;
         }
     }
