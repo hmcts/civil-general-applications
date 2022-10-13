@@ -32,7 +32,7 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     private CaseData data;
 
     @Override
-    @java.lang.SuppressWarnings({"java:S2629" , "java:S3457"})
+    @java.lang.SuppressWarnings({"java:S2629", "java:S3457"})
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getGeneralApplicationCaseId();
