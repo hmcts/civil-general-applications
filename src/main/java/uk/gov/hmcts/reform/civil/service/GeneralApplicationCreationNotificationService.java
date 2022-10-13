@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil.isNotificationCriteriaSatisfied;
 
@@ -34,7 +35,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     private final SolicitorEmailValidation solicitorEmailValidation;
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
-
+        log.info("Calling coreCaseDataService.getCase");
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
