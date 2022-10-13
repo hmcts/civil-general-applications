@@ -36,6 +36,8 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getGeneralApplicationCaseId();
+        log.info("variables : " + variables.toString());
+
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
                                                                                 variables.getCaseEvent());
         log.info("starteventresponse " + startEventResponse.getCaseDetails().toString());
@@ -45,6 +47,8 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
 
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
                                                           variables, startEventData.getGeneralAppParentCaseLink());
+
+        log.info("caseDataContent " + caseDataContent.toString());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
