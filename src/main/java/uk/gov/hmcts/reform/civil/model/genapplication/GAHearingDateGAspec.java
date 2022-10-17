@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Data
 @Builder(toBuilder = true)
 public class GAHearingDateGAspec {
+
     private final YesOrNo hearingScheduledPreferenceYesNo;
     private final LocalDate hearingScheduledDate;
 
