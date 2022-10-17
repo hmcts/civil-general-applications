@@ -9,11 +9,15 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -125,6 +129,24 @@ class GeneralAppFeesServiceTest {
         assertThat(queryCaptor.getValue().toString())
             .isEqualTo("dummy_urlgeneral%20application?channel=default&event&jurisdiction1=civil&"
                            + "jurisdiction2=civil&service=general&keyword=GAOnNotice");
+    }
+
+    @Test
+    void shouldPay_whenConsentedWithin14DaysAdjournVacateApplicationIsBeingMade() {
+        CaseData caseData = new CaseDataBuilder()
+                .adjournOrvacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(14))
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isFalse();
+    }
+
+    @Test
+    void shouldBeFree_whenConsentedLateThan14DaysAdjournVacateApplicationIsBeingMade() {
+        CaseData caseData = new CaseDataBuilder()
+                .adjournOrvacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isTrue();
     }
 
     @Test

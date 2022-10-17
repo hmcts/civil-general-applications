@@ -58,7 +58,12 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
-        Fee feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
+        Fee feeForGA;
+        if (feeService.isFreeApplication(caseData)) {
+            feeForGA = feeService.freeFee();
+        } else {
+            feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
+        }
 
         List<String> errors = compareFees(caseData, feeForGA);
 

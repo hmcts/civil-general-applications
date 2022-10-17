@@ -13,13 +13,13 @@ import java.time.LocalDate;
 @Data
 @Builder(toBuilder = true)
 public class GAHearingDateGAspec {
+
     private final YesOrNo hearingScheduledPreferenceYesNo;
     private final LocalDate hearingScheduledDate;
 
     @JsonCreator
     GAHearingDateGAspec(@JsonProperty("hearingScheduledPreferenceYesNo") YesOrNo hearingScheduledPreferenceYesNo,
                         @JsonProperty("hearingScheduledDate") LocalDate hearingScheduledDate) {
-
         this.hearingScheduledPreferenceYesNo = hearingScheduledPreferenceYesNo;
         this.hearingScheduledDate = hearingScheduledDate;
     }

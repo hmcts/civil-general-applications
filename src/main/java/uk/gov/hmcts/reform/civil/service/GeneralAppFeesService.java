@@ -6,13 +6,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.HashMap;
+
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Slf4j
 @Service
@@ -20,7 +25,9 @@ import java.util.HashMap;
 public class GeneralAppFeesService {
 
     private static final BigDecimal PENCE_PER_POUND = BigDecimal.valueOf(100);
-
+    private static final int FREE_GA_DAYS = 14;
+    private static final String FREE_CODE = "FEEFREE";
+    private static final String FREE_VERSION = "2";
     private final RestTemplate restTemplate;
     private final GeneralAppFeesConfiguration feesConfiguration;
 
@@ -47,6 +54,27 @@ public class GeneralAppFeesService {
             throw new RuntimeException("No Fees returned by fee-service while creating General Application");
         }
         return buildFeeDto(feeLookupResponseDto);
+    }
+
+    public boolean isFreeApplication(final CaseData caseData) {
+        if (caseData.getGeneralAppType().getTypes().size() == 1
+                && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
+                && caseData.getGeneralAppRespondentAgreement() != null
+                && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+                && caseData.getGeneralAppHearingDate() != null
+                && caseData.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
+            return caseData.getGeneralAppHearingDate().getHearingScheduledDate()
+                    .isAfter(LocalDate.now().plusDays(FREE_GA_DAYS));
+        }
+        return false;
+    }
+
+    public Fee freeFee() {
+        return Fee.builder()
+                .calculatedAmountInPence(BigDecimal.ZERO)
+                .code(FREE_CODE)
+                .version(FREE_VERSION)
+                .build();
     }
 
     private Fee buildFeeDto(FeeLookupResponseDto feeLookupResponseDto) {
