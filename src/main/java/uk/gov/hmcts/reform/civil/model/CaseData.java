@@ -132,6 +132,8 @@ public class CaseData implements MappableObject {
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
+    private final YesOrNo generalAppVaryJudgementType;
+    private final Document generalAppN245FormUpload;
 
     //PDF Documents
     @Builder.Default
