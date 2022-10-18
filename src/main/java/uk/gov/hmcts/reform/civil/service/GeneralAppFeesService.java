@@ -26,8 +26,6 @@ public class GeneralAppFeesService {
 
     private static final BigDecimal PENCE_PER_POUND = BigDecimal.valueOf(100);
     private static final int FREE_GA_DAYS = 14;
-    private static final String FREE_CODE = "FEEFREE";
-    private static final String FREE_VERSION = "2";
     private final RestTemplate restTemplate;
     private final GeneralAppFeesConfiguration feesConfiguration;
 
@@ -67,14 +65,6 @@ public class GeneralAppFeesService {
                     .isAfter(LocalDate.now().plusDays(FREE_GA_DAYS));
         }
         return false;
-    }
-
-    public Fee freeFee() {
-        return Fee.builder()
-                .calculatedAmountInPence(BigDecimal.ZERO)
-                .code(FREE_CODE)
-                .version(FREE_VERSION)
-                .build();
     }
 
     private Fee buildFeeDto(FeeLookupResponseDto feeLookupResponseDto) {

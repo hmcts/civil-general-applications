@@ -58,12 +58,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
-        Fee feeForGA;
-        if (feeService.isFreeApplication(caseData)) {
-            feeForGA = feeService.freeFee();
-        } else {
-            feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
-        }
+        Fee feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
 
         List<String> errors = compareFees(caseData, feeForGA);
 
@@ -86,6 +81,9 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     }
 
     private String getFeeRegisterKeyword(CaseData caseData) {
+        if (feeService.isFreeApplication(caseData)) {
+            return feesConfiguration.getFreeKeyword();
+        }
         boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null

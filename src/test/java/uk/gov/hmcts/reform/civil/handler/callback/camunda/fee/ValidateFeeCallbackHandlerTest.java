@@ -22,8 +22,6 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -147,28 +145,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.handledEvents()).contains(VALIDATE_FEE_GASPEC);
-        }
-
-        @Test
-        void shouldCallFreeFee_whenGAIsFree() {
-            CaseData caseData =  CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
-            when(feesService.isFreeApplication(any()))
-                    .thenReturn(true);
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-            verify(feesService, times(1)).freeFee();
-            verify(feesService, never()).getFeeForGA(any());
-        }
-
-        @Test
-        void shouldNotCallFreeFee_whenGAIsNotFree() {
-            CaseData caseData =  CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
-            when(feesService.isFreeApplication(any()))
-                    .thenReturn(false);
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-            verify(feesService, never()).freeFee();
-            verify(feesService, times(1)).getFeeForGA(any());
         }
 
     }
