@@ -47,9 +47,10 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
 
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
                                                           variables, startEventData.getGeneralAppParentCaseLink());
+        log.info("before save caseDataContent " + caseDataContent.toString());
 
-        log.info("caseDataContent " + caseDataContent.toString());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        log.info("after save caseDataContent " + data.toString());
     }
 
     @Override
