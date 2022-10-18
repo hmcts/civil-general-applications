@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -33,7 +35,12 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private final SolicitorEmailValidation solicitorEmailValidation;
 
+    Logger log = LoggerFactory.getLogger(GeneralApplicationCreationNotificationService.class);
+
+    @java.lang.SuppressWarnings({"java:S2629", "java:S3457"})
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
+
+        log.info("notification caseData : " + caseData.toString());
 
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
