@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -23,6 +25,7 @@ import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERAL_APPLICATION_CREATION;
+import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class CoreCaseDataService {
     private final SystemUpdateUserConfiguration userConfig;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final ObjectMapper mapper;
 
     public void triggerEvent(Long caseId, CaseEvent eventName) {
         triggerEvent(caseId, eventName, Map.of());
@@ -78,7 +82,13 @@ public class CoreCaseDataService {
 
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
+        try {
+            log.info("submitUpdate- caseDataContent before calling coreCaseDataApi.submitEventForCaseWorker : "
+                         + mapper.writeValueAsString(caseDataContent));
+        } catch (JsonProcessingException e) {
+            log.error(e.toString());
+            throw new RuntimeException(e);
+        }
         CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
             systemUpdateUser.getUserToken(),
             authTokenGenerator.generate(),
@@ -89,6 +99,14 @@ public class CoreCaseDataService {
             true,
             caseDataContent
         );
+        try {
+            log.info("submitUpdate: Request made successfully coreCaseDataApi.submitEventForCaseWorker");
+            log.info("submitUpdate - caseDetails "
+                         + mapper.writeValueAsString(caseDetails));
+        } catch (JsonProcessingException e) {
+            log.error(e.toString());
+            throw new RuntimeException(e);
+        }
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
