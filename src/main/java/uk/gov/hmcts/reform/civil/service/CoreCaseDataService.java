@@ -79,8 +79,8 @@ public class CoreCaseDataService {
             eventName.name()
         );
     }
-    
-    @java.lang.SuppressWarnings({"java:S2629", "java:S3457"})
+
+    @java.lang.SuppressWarnings({"java:S2629", "java:S3457", "java:S2139", "java:S112"})
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
         try {
@@ -100,14 +100,6 @@ public class CoreCaseDataService {
             true,
             caseDataContent
         );
-        try {
-            log.info("submitUpdate: Request made successfully coreCaseDataApi.submitEventForCaseWorker");
-            log.info("submitUpdate - caseDetails "
-                         + mapper.writeValueAsString(caseDetails));
-        } catch (JsonProcessingException e) {
-            log.error(e.toString());
-            throw new RuntimeException(e);
-        }
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
