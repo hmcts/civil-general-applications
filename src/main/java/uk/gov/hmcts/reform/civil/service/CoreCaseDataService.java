@@ -79,6 +79,7 @@ public class CoreCaseDataService {
             eventName.name()
         );
     }
+    
     @java.lang.SuppressWarnings({"java:S2629", "java:S3457"})
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
