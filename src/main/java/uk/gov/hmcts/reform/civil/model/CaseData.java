@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
@@ -134,6 +135,7 @@ public class CaseData implements MappableObject {
     private final CaseCategory caseAccessCategory;
     private final YesOrNo generalAppVaryJudgementType;
     private final Document generalAppN245FormUpload;
+    private final GAHearingDateGAspec generalAppHearingDate;
 
     //PDF Documents
     @Builder.Default
