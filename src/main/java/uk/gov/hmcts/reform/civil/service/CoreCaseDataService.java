@@ -83,13 +83,6 @@ public class CoreCaseDataService {
     @java.lang.SuppressWarnings({"java:S2629", "java:S3457", "java:S2139", "java:S112"})
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-        try {
-            log.info("submitUpdate- caseDataContent before calling coreCaseDataApi.submitEventForCaseWorker : "
-                         + mapper.writeValueAsString(caseDataContent));
-        } catch (JsonProcessingException e) {
-            log.error(e.toString());
-            throw new RuntimeException(e);
-        }
         CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
             systemUpdateUser.getUserToken(),
             authTokenGenerator.generate(),
@@ -103,9 +96,16 @@ public class CoreCaseDataService {
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
+    @java.lang.SuppressWarnings({"java:S2629", "java:S3457", "java:S2139", "java:S112"})
     public CaseData submitGaUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
+        try {
+            log.info("submitUpdate- caseDataContent before calling coreCaseDataApi.submitEventForCaseWorker : "
+                         + mapper.writeValueAsString(caseDataContent));
+        } catch (JsonProcessingException e) {
+            log.error(e.toString());
+            throw new RuntimeException(e);
+        }
         CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
             systemUpdateUser.getUserToken(),
             authTokenGenerator.generate(),
