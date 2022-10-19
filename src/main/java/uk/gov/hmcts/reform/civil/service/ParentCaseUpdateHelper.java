@@ -92,20 +92,19 @@ public class ParentCaseUpdateHelper {
         boolean isGaDetailsRespondentSolPresent = gaDetailsRespondentSol.stream()
             .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId));
 
-        if (generalApplicationsDetails.isPresent()) {
-            if (!isGaDetailsRespondentSolPresent) {
-                gaDetailsRespondentSol.add(
-                        element(
-                                GADetailsRespondentSol.builder()
-                                        .generalApplicationType(generalApplicationsDetails
-                                                .get().getValue().getGeneralApplicationType())
-                                        .generalAppSubmittedDateGAspec(generalApplicationsDetails
-                                                .get().getValue()
-                                                .getGeneralAppSubmittedDateGAspec())
-                                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                                                generalAppCaseData.getCcdCaseReference())).build())
-                                        .caseState(newState).build()));
-            }
+        if (generalApplicationsDetails.isPresent() && !isGaDetailsRespondentSolPresent) {
+
+            gaDetailsRespondentSol.add(
+                element(
+                    GADetailsRespondentSol.builder()
+                        .generalApplicationType(generalApplicationsDetails.get().getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(generalApplicationsDetails
+                                                           .get().getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build())
+                        .caseState(newState).build()));
+
             List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
                 caseData,
                 newState,
