@@ -61,6 +61,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     void setup() {
         when(generalAppFeesConfiguration.getApplicationUncloakAdditionalFee())
             .thenReturn(TEST_FEE_CODE);
+        //TODO set to actual ga free keyword
+        when(generalAppFeesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
     }
 
     @Test

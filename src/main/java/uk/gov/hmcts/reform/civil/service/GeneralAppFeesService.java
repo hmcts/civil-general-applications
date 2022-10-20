@@ -38,6 +38,16 @@ public class GeneralAppFeesService {
             .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
             .queryParam("service", feesConfiguration.getService())
             .queryParam("keyword", feeRegisterKeyword);
+        //TODO remove this if block after we have real free fee for GA
+        if (feesConfiguration.getFreeKeyword().equals(feeRegisterKeyword)) {
+            builder = UriComponentsBuilder.fromUriString(queryURL)
+                    .queryParam("channel", feesConfiguration.getChannel())
+                    .queryParam("event", "copies")
+                    .queryParam("jurisdiction1", feesConfiguration.getJurisdiction1())
+                    .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
+                    .queryParam("service", "insolvency")
+                    .queryParam("keyword", feeRegisterKeyword);
+        }
         URI uri;
         FeeLookupResponseDto feeLookupResponseDto;
         try {

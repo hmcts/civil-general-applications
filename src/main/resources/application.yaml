@@ -69,7 +69,7 @@ genApp:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
-      free: GeneralAppFree
+      free: CopyPagesUpTo10
   lrd:
     endpoint: /refdata/location/court-venues
 

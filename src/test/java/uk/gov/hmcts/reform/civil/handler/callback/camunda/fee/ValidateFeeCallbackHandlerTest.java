@@ -61,6 +61,8 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         void setup() {
             when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
             when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
+            //TODO set to actual ga free keyword
+            when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
         }
 
         @Test
