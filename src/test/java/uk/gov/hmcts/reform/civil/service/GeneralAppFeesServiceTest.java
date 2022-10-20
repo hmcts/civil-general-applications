@@ -198,4 +198,24 @@ class GeneralAppFeesServiceTest {
             .isEqualTo("No Fees returned by fee-service while creating General Application");
     }
 
+    //TODO remove this after we have real free fee for GA
+    @Test
+    void fake_freeFee_getFeeForGA() {
+        when(restTemplate.getForObject(queryCaptor.capture(), eq(FeeLookupResponseDto.class)))
+                .thenReturn(FeeLookupResponseDto.builder()
+                        .feeAmount(TEST_FEE_AMOUNT_POUNDS_275)
+                        .code("test_fee_code")
+                        .version(1)
+                        .build());
+
+        Fee expectedFeeDto = Fee.builder()
+                .calculatedAmountInPence(TEST_FEE_AMOUNT_PENCE_275)
+                .code("test_fee_code")
+                .version("1")
+                .build();
+
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getFreeKeyword());
+        assertThat(feeDto).isEqualTo(expectedFeeDto);
+    }
+
 }
