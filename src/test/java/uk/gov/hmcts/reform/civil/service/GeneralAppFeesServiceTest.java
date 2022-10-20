@@ -134,9 +134,18 @@ class GeneralAppFeesServiceTest {
     }
 
     @Test
+    void shouldPay_whenIsNotAdjournVacateApplication() {
+        CaseData caseData = new CaseDataBuilder()
+                .requestForInformationApplication()
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isFalse();
+    }
+
+    @Test
     void shouldPay_whenConsentedWithin14DaysAdjournVacateApplicationIsBeingMade() {
         CaseData caseData = new CaseDataBuilder()
-                .adjournOrvacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(14))
+                .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(14))
                 .build();
 
         assertThat(feesService.isFreeApplication(caseData)).isFalse();
@@ -145,7 +154,7 @@ class GeneralAppFeesServiceTest {
     @Test
     void shouldBeFree_whenConsentedLateThan14DaysAdjournVacateApplicationIsBeingMade() {
         CaseData caseData = new CaseDataBuilder()
-                .adjournOrvacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
+                .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
                 .build();
 
         assertThat(feesService.isFreeApplication(caseData)).isTrue();

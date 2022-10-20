@@ -738,7 +738,7 @@ public class CaseDataBuilder {
 
     }
 
-    public CaseData.CaseDataBuilder adjournOrvacateHearingApplication(
+    public CaseData.CaseDataBuilder adjournOrVacateHearingApplication(
             YesOrNo isRespondentAgreed, LocalDate gaHearingDate) {
         GAHearingDateGAspec generalAppHearingDate = GAHearingDateGAspec.builder()
                 .hearingScheduledDate(gaHearingDate)
