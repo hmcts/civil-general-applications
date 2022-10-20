@@ -28,7 +28,14 @@ public class DeadlinesCalculator {
         if (checkIf4pmOrAfter(responseDate)) {
             dateTime = responseDate.plusDays(1);
         }
-        return calculateFirstWorkingDay(dateTime.toLocalDate()).plusDays(daysToAdd).atTime(END_OF_BUSINESS_DAY);
+
+        LocalDate startDate = calculateFirstWorkingDay(dateTime.toLocalDate());
+        LocalDate endDate = startDate.plusDays(daysToAdd);
+
+        long noOfHoliday = startDate.datesUntil(endDate.plusDays(1)).filter(data -> !workingDayIndicator
+                .isWorkingDay(data)).count();
+
+        return endDate.plusDays(noOfHoliday).atTime(END_OF_BUSINESS_DAY);
     }
 
     private boolean checkIf4pmOrAfter(LocalDateTime dateOfService) {

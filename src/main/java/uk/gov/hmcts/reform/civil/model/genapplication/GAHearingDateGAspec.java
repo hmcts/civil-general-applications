@@ -20,6 +20,7 @@ public class GAHearingDateGAspec {
     @JsonCreator
     GAHearingDateGAspec(@JsonProperty("hearingScheduledPreferenceYesNo") YesOrNo hearingScheduledPreferenceYesNo,
                         @JsonProperty("hearingScheduledDate") LocalDate hearingScheduledDate) {
+
         this.hearingScheduledPreferenceYesNo = hearingScheduledPreferenceYesNo;
         this.hearingScheduledDate = hearingScheduledDate;
     }
