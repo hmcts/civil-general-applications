@@ -60,6 +60,7 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
                                             GeneralAppParentCaseLink generalAppParentCaseLink) {
         Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
         updatedData.put("businessProcess", businessProcess);
+        // this is second comment
 
         if (generalAppParentCaseLink == null
             || StringUtils.isBlank(generalAppParentCaseLink.getCaseReference())) {
