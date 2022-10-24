@@ -10,15 +10,12 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
 
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.time.LocalDateTime.now;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_ORDER_MADE_END_DATE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,9 +43,9 @@ public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
                 .getJudgeApproveEditOptionDate() != null
                 && caseDetailsConverter.toCaseData(a).getGeneralAppType()
                 .getTypes().contains(STAY_THE_CLAIM)
-                && now().isAfter(
-                ChronoLocalDateTime.from(caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder()
-                    .getJudgeApproveEditOptionDate())))
+                && now().isEqual(
+                caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder()
+                    .getJudgeApproveEditOptionDate()))
             .collect(Collectors.toList());
     }
     private void fireEventForStateChange(CaseDetails caseDetails) {
