@@ -27,4 +27,8 @@ resource "azurerm_key_vault_secret" "app_insights_instrumental_key" {
   name         = "AppInsightsInstrumentationKeyGeneralApplications"
   value        = azurerm_application_insights.appinsights.instrumentation_key
   key_vault_id = data.azurerm_key_vault.civil.id
+  content_type = "secret"
+  tags = merge(var.common_tags, {
+    "source" : "app insights ${azurerm_application_insights.appinsights.name}"
+  })
 }
