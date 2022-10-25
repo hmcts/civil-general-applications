@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -19,9 +20,12 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -61,6 +65,8 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         void setup() {
             when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
             when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
+            //TODO set to actual ga free keyword
+            when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
         }
 
         @Test
@@ -146,5 +152,34 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.handledEvents()).contains(VALIDATE_FEE_GASPEC);
         }
+
+        @Test
+        void shouldReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMade14DaysLater() {
+            LocalDate gaHearingDate = LocalDate.now().plusDays(15);
+            CaseData caseData =  CaseDataBuilder.builder()
+                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
+            when(feesService.isFreeApplication(caseData))
+                    .thenReturn(true);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            handler.handle(params);
+
+            verify(feesConfiguration, times(1)).getFreeKeyword();
+        }
+
+        @Test
+        void shouldNotReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMadeWithin14Days() {
+            LocalDate gaHearingDate = LocalDate.now().plusDays(14);
+            CaseData caseData =  CaseDataBuilder.builder()
+                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
+            when(feesService.isFreeApplication(caseData))
+                    .thenReturn(false);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            handler.handle(params);
+
+            verify(feesConfiguration, never()).getFreeKeyword();
+        }
+
     }
 }
