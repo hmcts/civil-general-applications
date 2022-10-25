@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.GAOrderMadeTaskHandler;
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAOrderMadeSchedulerExternalTaskListener {
+
     private static final String TOPIC = "GAOrderMadeScheduler";
 
     @Autowired

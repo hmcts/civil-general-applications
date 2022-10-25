@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
+import uk.gov.hmcts.reform.civil.service.search.OrderMadeSearchService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
 
-    private final AwaitingResponseStatusSearchService caseSearchService;
+    private final OrderMadeSearchService caseSearchService;
 
     private final CoreCaseDataService coreCaseDataService;
 
@@ -36,6 +36,7 @@ public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
 
         cases.forEach(this::fireEventForStateChange);
     }
+
     private List<CaseDetails> getOrderMadeCasesThatAreEndingToday() {
         List<CaseDetails> orderMadeCases = caseSearchService.getGeneralApplications();
         return orderMadeCases.stream()
@@ -48,6 +49,7 @@ public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
                     .getJudgeApproveEditOptionDate()))
             .collect(Collectors.toList());
     }
+
     private void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
         log.info("Firing event CHECK_ORDER_MADE_END_DATE to check applications with ORDER_MADE"

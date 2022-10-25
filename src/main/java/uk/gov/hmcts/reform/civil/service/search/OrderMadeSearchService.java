@@ -9,7 +9,7 @@ import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @Service
-public class OrderMadeSearchService extends ElasticSearchService{
+public class OrderMadeSearchService extends ElasticSearchService {
 
     public OrderMadeSearchService(CoreCaseDataService coreCaseDataService) {
         super(coreCaseDataService);
