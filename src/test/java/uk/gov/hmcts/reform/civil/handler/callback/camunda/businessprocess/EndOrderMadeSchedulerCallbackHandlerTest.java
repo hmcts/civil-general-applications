@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.civil.service.Time;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @ExtendWith(SpringExtension.class)
@@ -50,6 +50,6 @@ public class EndOrderMadeSchedulerCallbackHandlerTest extends BaseCallbackHandle
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(CHECK_STAY_ORDER_END_DATE);
+        assertThat(handler.handledEvents()).contains(END_SCHEDULER_DEADLINE_STAY_ORDER);
     }
 }

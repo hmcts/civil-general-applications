@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @Slf4j
@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 @RequiredArgsConstructor
 public class StayOrderMadeEndSchedulerCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = singletonList(CHECK_STAY_ORDER_END_DATE);
+    private static final List<CaseEvent> EVENTS = singletonList(END_SCHEDULER_DEADLINE_STAY_ORDER);
 
     @Override
     protected Map<String, Callback> callbacks() {

@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
@@ -52,6 +53,7 @@ public class GAStayOrderMadeTaskHandlerTest {
 
     private CaseDetails caseDetailsWithTodayDeadlineNotProcessed;
     private CaseDetails caseDetailsWithTodayDeadlineProcessed;
+    private CaseDetails caseDetailsWithTodayDeadlineReliefFromSanctionOrder;
     private CaseDetails caseDetailsWithDeadlineCrossedNotProcessed;
     private CaseDetails caseDetailsWithDeadlineCrossedProcessed;
     private CaseDetails caseDetailsWithNoDeadline;
@@ -71,15 +73,28 @@ public class GAStayOrderMadeTaskHandlerTest {
                     .judgeRecitalText("Sample Text")
                     .judgeApproveEditOptionDate(deadLineToday)
                     .reasonForDecisionText("Sample Test")
+                    .esOrderProcessedByStayScheduler(YesOrNo.NO)
                 .build(),
             "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
             .state(ORDER_MADE.toString()).build();
-        caseDetailsWithTodayDeadlineProcessed = CaseDetails.builder().id(2L).data(
+        caseDetailsWithTodayDeadlineProcessed = CaseDetails.builder().id(1L).data(
+
+                Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
+                           .makeAnOrder(APPROVE_OR_EDIT)
+                           .judgeRecitalText("Sample Text")
+                           .judgeApproveEditOptionDate(deadLineToday)
+                           .reasonForDecisionText("Sample Test")
+                           .esOrderProcessedByStayScheduler(YesOrNo.YES)
+                           .build(),
+                       "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
+            .state(ORDER_MADE.toString()).build();
+        caseDetailsWithTodayDeadlineReliefFromSanctionOrder = CaseDetails.builder().id(2L).data(
             Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                 .makeAnOrder(APPROVE_OR_EDIT)
                 .judgeRecitalText("Sample Text")
                 .judgeApproveEditOptionDate(deadLineToday)
                 .reasonForDecisionText("Sample Test")
+                .esOrderProcessedByStayScheduler(YesOrNo.NO)
                 .build(),
                    "generalAppType", GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build()))
             .state(ORDER_MADE.toString()).build();
@@ -89,32 +104,36 @@ public class GAStayOrderMadeTaskHandlerTest {
                 .judgeRecitalText("Sample Text")
                 .judgeApproveEditOptionDate(deadlineCrossed)
                 .reasonForDecisionText("Sample Test")
+                .esOrderProcessedByStayScheduler(YesOrNo.NO)
                 .build(),
                    "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
             .state(ORDER_MADE.toString()).build();
-        caseDetailsWithDeadlineCrossedProcessed = CaseDetails.builder().id(3L).data(
+        caseDetailsWithDeadlineCrossedProcessed = CaseDetails.builder().id(4L).data(
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
                            .judgeApproveEditOptionDate(deadlineCrossed)
                            .reasonForDecisionText("Sample Test")
+                           .esOrderProcessedByStayScheduler(YesOrNo.YES)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
             .state(ORDER_MADE.toString()).build();
-        caseDetailsWithNoDeadline = CaseDetails.builder().id(4L).data(
+        caseDetailsWithNoDeadline = CaseDetails.builder().id(5L).data(
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
                            .reasonForDecisionText("Sample Test")
+                           .esOrderProcessedByStayScheduler(YesOrNo.NO)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
             .state(ORDER_MADE.toString()).build();
-        caseDetailsWithFutureDeadline = CaseDetails.builder().id(5L).data(
+        caseDetailsWithFutureDeadline = CaseDetails.builder().id(6L).data(
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
                            .judgeApproveEditOptionDate(deadlineInFuture)
                            .reasonForDecisionText("Sample Test")
+                           .esOrderProcessedByStayScheduler(YesOrNo.NO)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(List.of(STAY_THE_CLAIM)).build()))
             .state(ORDER_MADE.toString()).build();
@@ -133,8 +152,9 @@ public class GAStayOrderMadeTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetailsWithTodayDeadlineProcessed,
-                                                                        caseDetailsWithDeadlineCrossedNotProcessed
+        when(searchService.getGeneralApplications()).thenReturn(List.of(
+            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
+            caseDetailsWithDeadlineCrossedProcessed
         ));
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
@@ -148,8 +168,9 @@ public class GAStayOrderMadeTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenCasesHaveFutureDeadLine() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetailsWithTodayDeadlineProcessed,
-                                                                        caseDetailsWithDeadlineCrossedNotProcessed
+        when(searchService.getGeneralApplications()).thenReturn(List.of(
+            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
+            caseDetailsWithFutureDeadline
         ));
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
@@ -162,31 +183,24 @@ public class GAStayOrderMadeTaskHandlerTest {
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenDifferentCases() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                                                                        caseDetailsWithTodayDeadlineProcessed,
-                                                                        caseDetailsWithDeadlineCrossedNotProcessed,
-                                                                        caseDetailsWithNoDeadline
+    void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
+        when(searchService.getGeneralApplications()).thenReturn(
+            List.of(caseDetailsWithTodayDeadlineNotProcessed,
+                caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
+                caseDetailsWithDeadlineCrossedNotProcessed,
+                caseDetailsWithTodayDeadlineProcessed,
+                caseDetailsWithFutureDeadline,
+                caseDetailsWithNoDeadline
         ));
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(1L, CHECK_STAY_ORDER_END_DATE);
+        verify(coreCaseDataService).triggerEvent(3L, END_SCHEDULER_DEADLINE_STAY_ORDER);
+        verify(coreCaseDataService).triggerEvent(1L, END_SCHEDULER_DEADLINE_STAY_ORDER);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
-    }
-
-    @Test
-    void shouldEmitBusinessProcessEvent_whenCasesEqualDeadlineFound() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetailsWithTodayDeadlineNotProcessed));
-
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
-
-        verify(searchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(1L, CHECK_STAY_ORDER_END_DATE);
-        verify(externalTaskService).complete(externalTask);
     }
 
     @Test
