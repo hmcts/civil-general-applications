@@ -16,15 +16,15 @@ import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_ORDER_MADE_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EndOrderMadeSchedulerCallbackHandler extends CallbackHandler {
+public class StayOrderMadeEndSchedulerCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = singletonList(CHECK_ORDER_MADE_END_DATE);
+    private static final List<CaseEvent> EVENTS = singletonList(CHECK_STAY_ORDER_END_DATE);
 
     @Override
     protected Map<String, Callback> callbacks() {

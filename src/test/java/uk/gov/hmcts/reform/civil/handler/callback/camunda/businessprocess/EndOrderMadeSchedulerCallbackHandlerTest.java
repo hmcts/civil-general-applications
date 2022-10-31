@@ -17,12 +17,12 @@ import uk.gov.hmcts.reform.civil.service.Time;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_ORDER_MADE_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-    EndOrderMadeSchedulerCallbackHandler.class, JacksonAutoConfiguration.class, Time.class
+    StayOrderMadeEndSchedulerCallbackHandler.class, JacksonAutoConfiguration.class, Time.class
 })
 public class EndOrderMadeSchedulerCallbackHandlerTest extends BaseCallbackHandlerTest {
 
@@ -30,7 +30,7 @@ public class EndOrderMadeSchedulerCallbackHandlerTest extends BaseCallbackHandle
     private Time time;
 
     @Autowired
-    private EndOrderMadeSchedulerCallbackHandler handler;
+    private StayOrderMadeEndSchedulerCallbackHandler handler;
 
     @Nested
     class AboutToSubmitCallback {
@@ -50,6 +50,6 @@ public class EndOrderMadeSchedulerCallbackHandlerTest extends BaseCallbackHandle
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(CHECK_ORDER_MADE_END_DATE);
+        assertThat(handler.handledEvents()).contains(CHECK_STAY_ORDER_END_DATE);
     }
 }

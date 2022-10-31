@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_ORDER_MADE_END_DATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHECK_STAY_ORDER_END_DATE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
-public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
+public class GAStayOrderMadeTaskHandler implements BaseExternalTaskHandler {
 
     private final OrderMadeSearchService caseSearchService;
 
@@ -56,6 +56,6 @@ public class GAOrderMadeTaskHandler implements BaseExternalTaskHandler {
                      + "and with Application type Stay claim andd its end date is today"
                      + "for caseId: {}", caseId);
 
-        coreCaseDataService.triggerEvent(caseId, CHECK_ORDER_MADE_END_DATE);
+        coreCaseDataService.triggerEvent(caseId, CHECK_STAY_ORDER_END_DATE);
     }
 }
