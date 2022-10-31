@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
-public class GAStayOrderMadeTaskHandler implements BaseExternalTaskHandler {
+public class StayOrderDeadlineTaskHandler implements BaseExternalTaskHandler {
 
     private final OrderMadeSearchService caseSearchService;
 

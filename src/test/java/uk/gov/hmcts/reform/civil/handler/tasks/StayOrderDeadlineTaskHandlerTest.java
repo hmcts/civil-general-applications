@@ -33,8 +33,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
-    GAStayOrderMadeTaskHandler.class})
-public class GAStayOrderMadeTaskHandlerTest {
+    StayOrderDeadlineTaskHandler.class})
+public class StayOrderDeadlineTaskHandlerTest {
 
     @MockBean
     private ExternalTask externalTask;
@@ -49,7 +49,7 @@ public class GAStayOrderMadeTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private GAStayOrderMadeTaskHandler gaOrderMadeTaskHandler;
+    private StayOrderDeadlineTaskHandler gaOrderMadeTaskHandler;
 
     private CaseDetails caseDetailsWithTodayDeadlineNotProcessed;
     private CaseDetails caseDetailsWithTodayDeadlineProcessed;

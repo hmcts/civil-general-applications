@@ -5,7 +5,7 @@ import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.GAStayOrderMadeTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.StayOrderDeadlineTaskHandler;
 
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
@@ -14,7 +14,7 @@ public class GAOrderMadeSchedulerExternalTaskListener {
     private static final String TOPIC = "GAOrderMadeScheduler";
 
     @Autowired
-    private GAOrderMadeSchedulerExternalTaskListener(GAStayOrderMadeTaskHandler taskHandler,
+    private GAOrderMadeSchedulerExternalTaskListener(StayOrderDeadlineTaskHandler taskHandler,
                                                      ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(taskHandler).open();
