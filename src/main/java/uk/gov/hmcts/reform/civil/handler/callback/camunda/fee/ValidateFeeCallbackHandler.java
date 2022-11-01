@@ -80,7 +80,10 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
         return new ArrayList<>();
     }
 
-    private String getFeeRegisterKeyword(CaseData caseData) {
+    protected String getFeeRegisterKeyword(CaseData caseData) {
+        if (feeService.isFreeApplication(caseData)) {
+            return feesConfiguration.getFreeKeyword();
+        }
         boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null

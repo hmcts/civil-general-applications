@@ -9,11 +9,15 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,6 +58,8 @@ class GeneralAppFeesServiceTest {
         when(feesConfiguration.getJurisdiction2()).thenReturn("civil");
         when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
         when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
+        //TODO set to actual ga free keyword
+        when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
     }
 
     @Test
@@ -128,6 +134,33 @@ class GeneralAppFeesServiceTest {
     }
 
     @Test
+    void shouldPay_whenIsNotAdjournVacateApplication() {
+        CaseData caseData = new CaseDataBuilder()
+                .requestForInformationApplication()
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isFalse();
+    }
+
+    @Test
+    void shouldPay_whenConsentedWithin14DaysAdjournVacateApplicationIsBeingMade() {
+        CaseData caseData = new CaseDataBuilder()
+                .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(14))
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isFalse();
+    }
+
+    @Test
+    void shouldBeFree_whenConsentedLateThan14DaysAdjournVacateApplicationIsBeingMade() {
+        CaseData caseData = new CaseDataBuilder()
+                .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
+                .build();
+
+        assertThat(feesService.isFreeApplication(caseData)).isTrue();
+    }
+
+    @Test
     void throwRuntimeException_whenFeeServiceThrowsException() {
         when(restTemplate.getForObject(queryCaptor.capture(), eq(FeeLookupResponseDto.class)))
             .thenThrow(new RuntimeException("Some Exception"));
@@ -163,6 +196,26 @@ class GeneralAppFeesServiceTest {
 
         assertThat(exception.getMessage())
             .isEqualTo("No Fees returned by fee-service while creating General Application");
+    }
+
+    //TODO remove this after we have real free fee for GA
+    @Test
+    void fake_freeFee_getFeeForGA() {
+        when(restTemplate.getForObject(queryCaptor.capture(), eq(FeeLookupResponseDto.class)))
+                .thenReturn(FeeLookupResponseDto.builder()
+                        .feeAmount(TEST_FEE_AMOUNT_POUNDS_275)
+                        .code("test_fee_code")
+                        .version(1)
+                        .build());
+
+        Fee expectedFeeDto = Fee.builder()
+                .calculatedAmountInPence(TEST_FEE_AMOUNT_PENCE_275)
+                .code("test_fee_code")
+                .version("1")
+                .build();
+
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getFreeKeyword());
+        assertThat(feeDto).isEqualTo(expectedFeeDto);
     }
 
 }

@@ -57,6 +57,9 @@ public class GeneralApplication implements MappableObject {
     private final GACaseManagementCategory caseManagementCategory;
     private final String locationName;
     private final CaseCategory caseAccessCategory;
+    private final YesOrNo generalAppVaryJudgementType;
+    private final Document generalAppN245FormUpload;
+    private final GAHearingDateGAspec generalAppHearingDate;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -94,7 +97,10 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("isCcmccLocation") YesOrNo isCcmccLocation,
                        @JsonProperty("caseManagementCategory") GACaseManagementCategory caseManagementCategory,
                        @JsonProperty("locationName") String locationName,
-                       @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory) {
+                       @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,
+                       @JsonProperty("generalAppVaryJudgementType") YesOrNo generalAppVaryJudgementType,
+                       @JsonProperty("generalAppN245FormUpload") Document generalAppN245FormUpload,
+                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.businessProcess = businessProcess;
@@ -129,6 +135,9 @@ public class GeneralApplication implements MappableObject {
         this.caseManagementCategory = caseManagementCategory;
         this.locationName = locationName;
         this.caseAccessCategory = caseAccessCategory;
+        this.generalAppVaryJudgementType = generalAppVaryJudgementType;
+        this.generalAppN245FormUpload = generalAppN245FormUpload;
+        this.generalAppHearingDate = generalAppHearingDate;
     }
 
     @JsonIgnore
