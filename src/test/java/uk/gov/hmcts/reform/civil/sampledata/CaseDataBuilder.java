@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -55,6 +56,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_VACATE_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -734,6 +736,40 @@ public class CaseDataBuilder {
                                                                        .caseReference(String.valueOf(CASE_ID)).build())
                                                                        .build()));
 
+    }
+
+    public CaseData.CaseDataBuilder adjournOrVacateHearingApplication(
+            YesOrNo isRespondentAgreed, LocalDate gaHearingDate) {
+        GAHearingDateGAspec generalAppHearingDate = GAHearingDateGAspec.builder()
+                .hearingScheduledDate(gaHearingDate)
+                .build();
+        return CaseData.builder()
+                .ccdCaseReference(CASE_ID)
+                .claimant1PartyName("Test Claimant1 Name")
+                .defendant1PartyName("Test Defendant1 Name")
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
+                        .build())
+                .generalAppPBADetails(
+                        GAPbaDetails.builder()
+                                .applicantsPbaAccounts(
+                                        DynamicList.builder()
+                                                .listItems(asList(
+                                                        DynamicListElement.builder().label("PBA0088192").build(),
+                                                        DynamicListElement.builder().label("PBA0078095").build()
+                                                ))
+                                                .value(DynamicListElement.dynamicElement("PBA0078095"))
+                                                .build())
+                                .fee(FEE108)
+                                .serviceReqReference(CUSTOMER_REFERENCE).build())
+                .createdDate(LocalDateTime.now())
+                .generalAppType(GAApplicationType.builder()
+                        .types(singletonList(ADJOURN_VACATE_HEARING))
+                        .build())
+                .generalAppHearingDate(generalAppHearingDate)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement
+                        .builder().hasAgreed(isRespondentAgreed).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
 }
