@@ -91,7 +91,8 @@ civil-service:
           - sendgrid-api-key
           - robotics-notification-sender
           - robotics-notification-recipient
-          - launch-darkly-sdk-key
+          - name: launch-darkly-sdk-key-non-prod
+            alias: launch-darkly-sdk-key
           - ordnance-survey-api-key
           - robotics-notification-recipient-spec
           - robotics-notification-multipartyrecipient
