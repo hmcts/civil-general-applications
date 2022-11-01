@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -21,8 +20,6 @@ import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_CASE_DATA;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 
 @Slf4j
@@ -37,6 +34,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
+
     @Override
     public void handleTask(ExternalTask externalTask) {
         List<CaseData> cases = getOrderMadeCasesThatAreEndingToday();
@@ -48,7 +46,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {
         List<CaseDetails> orderMadeCases = caseSearchService.getGeneralApplications();
         return orderMadeCases.stream()
-            .map(a -> caseDetailsConverter.toCaseData(a))
+            .map(caseDetailsConverter::toCaseData)
             .filter(caseData -> caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
                 && caseData.getGeneralAppType().getTypes().contains(STAY_THE_CLAIM)
                 && caseData.getJudicialDecisionMakeOrder().getEsOrderProcessedByStayScheduler().equals(YesOrNo.NO)
@@ -78,7 +76,6 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     }
 
     private Map<String, Object> getUpdatedCaseDataMapper(CaseData caseData) {
-        Map<String, Object> output = caseData.toMap(mapper);
-        return output;
+        return caseData.toMap(mapper);
     }
 }
