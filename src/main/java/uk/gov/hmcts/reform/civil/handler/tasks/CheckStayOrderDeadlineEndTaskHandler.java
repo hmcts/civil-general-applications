@@ -16,14 +16,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
-public class StayOrderDeadlineTaskHandler implements BaseExternalTaskHandler {
+public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
 
     private final OrderMadeSearchService caseSearchService;
 
@@ -57,6 +57,6 @@ public class StayOrderDeadlineTaskHandler implements BaseExternalTaskHandler {
                      + "and with Application type Stay claim and its end date is today"
                      + "for caseId: {}", caseId);
 
-        coreCaseDataService.triggerEvent(caseId, END_SCHEDULER_DEADLINE_STAY_ORDER);
+        coreCaseDataService.triggerEvent(caseId, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE);
     }
 }

@@ -19,24 +19,24 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_CASE_DATA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class StayOrderMadeEndSchedulerCallbackHandler extends CallbackHandler {
+public class EndSchedulerCheckStayOrderDeadlineCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = singletonList(END_SCHEDULER_DEADLINE_STAY_ORDER);
+    private static final List<CaseEvent> EVENTS = singletonList(END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE);
     private final CoreCaseDataService coreCaseDataService;
     private final ObjectMapper mapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(SUBMITTED), this::validateApplicationState
+            callbackKey(ABOUT_TO_SUBMIT), this::validateApplicationState
         );
     }
 

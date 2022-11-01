@@ -25,21 +25,21 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_CASE_DATA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-    StayOrderMadeEndSchedulerCallbackHandler.class, JacksonAutoConfiguration.class,
+    EndSchedulerCheckStayOrderDeadlineCallbackHandler.class, JacksonAutoConfiguration.class,
     ObjectMapper.class
 })
-public class StayOrderMadeEndSchedulerCallbackHandlerTest extends BaseCallbackHandlerTest {
+public class EndSchedulerCheckStayOrderDeadlineCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
-    private StayOrderMadeEndSchedulerCallbackHandler handler;
+    private EndSchedulerCheckStayOrderDeadlineCallbackHandler handler;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
     private final ObjectMapper mapper = new ObjectMapper()
@@ -61,7 +61,7 @@ public class StayOrderMadeEndSchedulerCallbackHandlerTest extends BaseCallbackHa
                                                .esOrderProcessedByStayScheduler(YesOrNo.NO).build()
                 ).build();
 
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response.getErrors()).isNull();
@@ -80,7 +80,7 @@ public class StayOrderMadeEndSchedulerCallbackHandlerTest extends BaseCallbackHa
                                                 .esOrderProcessedByStayScheduler(YesOrNo.NO).build()
                 ).build();
 
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData expectedCaseData = CaseDataBuilder.builder()
                 .ccdCaseReference(1234L)
@@ -100,7 +100,7 @@ public class StayOrderMadeEndSchedulerCallbackHandlerTest extends BaseCallbackHa
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        Assertions.assertThat(handler.handledEvents()).contains(END_SCHEDULER_DEADLINE_STAY_ORDER);
+        Assertions.assertThat(handler.handledEvents()).contains(END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE);
     }
 
     private Map<String, Object> getUpdatedCaseDataMapper(CaseData caseData) {

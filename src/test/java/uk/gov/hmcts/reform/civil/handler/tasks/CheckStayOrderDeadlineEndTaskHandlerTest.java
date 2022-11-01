@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_DEADLINE_STAY_ORDER;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
@@ -33,8 +33,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
-    StayOrderDeadlineTaskHandler.class})
-public class StayOrderDeadlineTaskHandlerTest {
+    CheckStayOrderDeadlineEndTaskHandler.class})
+public class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @MockBean
     private ExternalTask externalTask;
@@ -49,7 +49,7 @@ public class StayOrderDeadlineTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private StayOrderDeadlineTaskHandler gaOrderMadeTaskHandler;
+    private CheckStayOrderDeadlineEndTaskHandler gaOrderMadeTaskHandler;
 
     private CaseDetails caseDetailsWithTodayDeadlineNotProcessed;
     private CaseDetails caseDetailsWithTodayDeadlineProcessed;
@@ -196,8 +196,8 @@ public class StayOrderDeadlineTaskHandlerTest {
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getGeneralApplications();
-        verify(coreCaseDataService).triggerEvent(3L, END_SCHEDULER_DEADLINE_STAY_ORDER);
-        verify(coreCaseDataService).triggerEvent(1L, END_SCHEDULER_DEADLINE_STAY_ORDER);
+        verify(coreCaseDataService).triggerEvent(3L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE);
+        verify(coreCaseDataService).triggerEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
