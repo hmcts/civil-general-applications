@@ -49,7 +49,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
             .map(caseDetailsConverter::toCaseData)
             .filter(caseData -> caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
                 && caseData.getGeneralAppType().getTypes().contains(STAY_THE_CLAIM)
-                && caseData.getJudicialDecisionMakeOrder().getisOrderProcessedByStayScheduler().equals(YesOrNo.NO)
+                && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByStayScheduler().equals(YesOrNo.NO)
                 && (!now().isBefore(caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate()))
                 )
             .collect(Collectors.toList());
