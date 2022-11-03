@@ -81,41 +81,31 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             );
 
             /*
-            * Don't assign the case to respondent solicitors if GA is without notice
-            * */
-            List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
-            if (generalApplications != null && !generalApplications.isEmpty()) {
-                var genApps = generalApplications.stream()
-                    .filter(application -> application.getValue() != null
-                        && application.getValue().getBusinessProcess() != null
-                        && application.getValue().getBusinessProcess().getStatus() == BusinessProcessStatus.STARTED
-                        && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
+             * Don't assign the case to respondent solicitors if GA is without notice
+             * */
 
-                if (genApps.isPresent()) {
-                    GeneralApplication generalApplication = genApps.get().getValue();
+            if (ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
 
-                    if (ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                        && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
+                if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+                    GASolicitorDetailsGAspec respondentSolicitor1 =
+                        caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
 
-                        if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
-                            GASolicitorDetailsGAspec respondentSolicitor1 =
-                                caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+                    coreCaseUserService
+                        .assignCase(caseId, respondentSolicitor1.getId(),
+                                    respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE
+                        );
 
-                            coreCaseUserService
-                                .assignCase(caseId, respondentSolicitor1.getId(),
-                                            respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                    if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
 
-                            if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+                        GASolicitorDetailsGAspec respondentSolicitor2 =
+                            caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
 
-                                GASolicitorDetailsGAspec respondentSolicitor2 =
-                                    caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
-
-                                coreCaseUserService
-                                    .assignCase(caseId, respondentSolicitor2.getId(),
-                                                respondentSolicitor2.getOrganisationIdentifier(),
-                                                RESPONDENTSOLICITORTWO);
-                            }
-                        }
+                        coreCaseUserService
+                            .assignCase(caseId, respondentSolicitor2.getId(),
+                                        respondentSolicitor2.getOrganisationIdentifier(),
+                                        RESPONDENTSOLICITORTWO
+                            );
                     }
                 }
             }
