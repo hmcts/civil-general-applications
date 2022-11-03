@@ -33,4 +33,10 @@
     <notes> Latest springboot got latest stable jackson databind which still got the below vulnerabilitites</notes>
     <cve>CVE-2022-42003</cve>
   </suppress>
+  <suppress until="2023-09-29">
+    <notes>temporarily suppressing this as there is a ticket to tackle below new cves</notes>
+    <cve>CVE-2022-31692</cve>
+    <cve>CVE-2022-31690</cve>
+    <cve>CVE-2022-42252</cve>
+  </suppress>
 </suppressions>
