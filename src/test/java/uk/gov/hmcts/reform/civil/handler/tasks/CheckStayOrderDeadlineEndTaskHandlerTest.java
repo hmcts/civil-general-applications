@@ -235,7 +235,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                                            .judgeRecitalText("Sample Text")
                                            .judgeApproveEditOptionDate(deadline)
                                            .reasonForDecisionText("Sample Test")
-                                           .esOrderProcessedByStayScheduler(esProcessed)
+                                           .isOrderProcessedByStayScheduler(esProcessed)
                                            .build()).build();
     }
 
@@ -247,7 +247,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                            .judgeRecitalText("Sample Text")
                            .judgeApproveEditOptionDate(deadline)
                            .reasonForDecisionText("Sample Test")
-                           .esOrderProcessedByStayScheduler(esProcessed)
+                           .isOrderProcessedByStayScheduler(esProcessed)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(List.of(generalApplicationType)).build()))
             .state(ORDER_MADE.toString()).build();
