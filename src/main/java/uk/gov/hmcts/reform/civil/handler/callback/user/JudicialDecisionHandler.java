@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
@@ -27,9 +26,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
-import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -56,8 +54,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
@@ -81,8 +77,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
-    private final DeadlinesCalculator deadlinesCalculator;
-    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
+    private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -541,26 +536,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         /*
         * Assign case respondent solicitors if judge uncloak the application
         * */
-        if (isApplicationUncloaked.equals(NO)) {
-            if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
-                GASolicitorDetailsGAspec respondentSolicitor1 =
-                    caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+        if (isApplicationUncloaked != null
+            && isApplicationUncloaked.equals(NO)) {
 
-                coreCaseUserService
-                    .assignCase(caseId, respondentSolicitor1.getId(),
-                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+            assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
-                if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
-
-                    GASolicitorDetailsGAspec respondentSolicitor2 =
-                        caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
-
-                    coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor2.getId(),
-                                    respondentSolicitor2.getOrganisationIdentifier(),
-                                    RESPONDENTSOLICITORTWO);
-                }
-            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
