@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
@@ -25,6 +27,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
@@ -52,6 +56,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
@@ -161,6 +167,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
+
+    private static final int FIRST_SOLICITOR = 0;
+
+    private static final int SECOND_SOLICITOR = 1;
+
+    private final CoreCaseUserService coreCaseUserService;
+
+    private final CaseDetailsConverter caseDetailsConverter;
+
     private final ObjectMapper objectMapper;
 
     @Override
@@ -498,6 +513,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
+        String caseId = caseData.getCcdCaseReference().toString();
+
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
                 GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
@@ -519,6 +536,31 @@ public class JudicialDecisionHandler extends CallbackHandler {
             dataBuilder.applicationIsCloaked(NO);
         } else {
             dataBuilder.applicationIsCloaked(isApplicationUncloaked);
+        }
+
+        /*
+        * Assign case respondent solicitors if judge uncloak the application
+        * */
+        if (isApplicationUncloaked.equals(NO)) {
+            if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+                GASolicitorDetailsGAspec respondentSolicitor1 =
+                    caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+
+                coreCaseUserService
+                    .assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+
+                if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+
+                    GASolicitorDetailsGAspec respondentSolicitor2 =
+                        caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
+
+                    coreCaseUserService
+                        .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(),
+                                    RESPONDENTSOLICITORTWO);
+                }
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
