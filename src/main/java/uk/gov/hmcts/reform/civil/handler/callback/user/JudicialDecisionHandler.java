@@ -536,7 +536,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         /*
         * Assign case respondent solicitors if judge uncloak the application
         * */
-        if (isApplicationUncloaked.equals(NO)) {
+
+        if (isApplicationUncloaked != null
+            && isApplicationUncloaked.equals(NO)) {
 
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
