@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
@@ -27,7 +26,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
-import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -163,35 +161,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
 
-    private static final int FIRST_SOLICITOR = 0;
-
-    private static final int SECOND_SOLICITOR = 1;
-
-    private final CoreCaseUserService coreCaseUserService;
-
-    private final CaseDetailsConverter caseDetailsConverter;
-
     private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_START),
-            this::checkInputForNextPage,
-            callbackKey(MID, VALIDATE_MAKE_AN_ORDER),
-            this::gaValidateMakeAnOrder,
-            callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN),
-            this::gaValidateMakeDecisionScreen,
-            callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN),
-            this::gaValidateRequestMoreInfoScreen,
-            callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE),
-            this::gaValidateWrittenRepresentationsDate,
-            callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN),
-            this::gaValidateHearingOrder,
-            callbackKey(ABOUT_TO_SUBMIT),
-            this::setJudgeBusinessProcess,
-            callbackKey(SUBMITTED),
-            this::buildConfirmation
+            callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
+            callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder,
+            callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
+            callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
+            callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
+            callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
+            callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
+            callbackKey(SUBMITTED), this::buildConfirmation
         );
 
     }

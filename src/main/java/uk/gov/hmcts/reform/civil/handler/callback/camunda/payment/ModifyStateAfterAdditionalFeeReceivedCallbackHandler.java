@@ -36,7 +36,6 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     private final StateGeneratorService stateGeneratorService;
     private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
 
-
     private static final List<CaseEvent> EVENTS = singletonList(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
 
     @Override

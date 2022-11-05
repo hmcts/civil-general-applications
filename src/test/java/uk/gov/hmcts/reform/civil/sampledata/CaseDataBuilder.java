@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -110,6 +111,7 @@ public class CaseDataBuilder {
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private YesOrNo isMultiParty;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
+    protected GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
     //General Application
     protected LocalDate submittedOn;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
@@ -149,6 +151,11 @@ public class CaseDataBuilder {
     public CaseDataBuilder generalAppRespondentSolicitors(List<Element<GASolicitorDetailsGAspec>>
                                                               generalAppRespondentSolicitors) {
         this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
+        return this;
+    }
+
+    public CaseDataBuilder makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck makeAppVisibleToRespondents) {
+        this.makeAppVisibleToRespondents = makeAppVisibleToRespondents;
         return this;
     }
 
@@ -275,6 +282,7 @@ public class CaseDataBuilder {
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppNotificationDeadlineDate(generalAppDeadlineNotificationDate)
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
+            .makeAppVisibleToRespondents(makeAppVisibleToRespondents)
             .build();
     }
 
