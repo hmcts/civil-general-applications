@@ -32,6 +32,7 @@ public class ParentCaseUpdateHelper {
 
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -43,8 +44,9 @@ public class ParentCaseUpdateHelper {
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = caseData.getGaDetailsRespondentSol();
 
-        if (!isEmpty(respondentSpecficGADetails)) {
+        List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo = caseData.getGaDetailsRespondentSolTwo();
 
+        if (!isEmpty(respondentSpecficGADetails)) {
             /*
             * Check if the application exists in the respondentSpecficGADetails List which matches the applicationId
             * as the current application with applicationId may not present in the respondentSpecficGADetails List
@@ -61,6 +63,23 @@ public class ParentCaseUpdateHelper {
             }
         }
 
+        if (!isEmpty(respondentSpecficGADetailsTwo)) {
+            /*
+             * Check if the application exists in the respondent two List which matches the applicationId
+             * as the current application with applicationId may not present in the respondentSpecficGADetailsTwo List
+             * due to requirement.
+             *
+             * Requirement - A Without Notice application should be hidden from any Legal Reps other than the Applicant
+             *  */
+            if (respondentSpecficGADetailsTwo.stream()
+                .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))) {
+
+                respondentSpecficGADetailsTwo.stream()
+                    .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
+                    .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+            }
+        }
+
         List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
             caseData,
             newState,
@@ -69,7 +88,8 @@ public class ParentCaseUpdateHelper {
 
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                                                respondentSpecficGADetails)));
+                                                   respondentSpecficGADetails,
+                                                   respondentSpecficGADetailsTwo)));
     }
 
     public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
@@ -92,7 +112,16 @@ public class ParentCaseUpdateHelper {
         boolean isGaDetailsRespondentSolPresent = gaDetailsRespondentSol.stream()
             .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId));
 
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = ofNullable(
+            caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
+
+        boolean isGaDetailsRespondentSolTwoPresent = gaDetailsRespondentSolTwo.stream()
+            .anyMatch(gaRespondentTwoApp -> gaRespSolAppFilterCriteria(gaRespondentTwoApp, applicationId));
+
         if (generalApplicationsDetails.isPresent()) {
+            /*
+            * Respondent One Solicitor collection
+            * */
             if (!isGaDetailsRespondentSolPresent) {
                 gaDetailsRespondentSol.add(
                         element(
@@ -106,6 +135,24 @@ public class ParentCaseUpdateHelper {
                                                 generalAppCaseData.getCcdCaseReference())).build())
                                         .caseState(newState).build()));
             }
+
+            /*
+             * Respondent Two Solicitor collection
+             * */
+            if (!isGaDetailsRespondentSolTwoPresent) {
+                gaDetailsRespondentSolTwo.add(
+                    element(
+                        GADetailsRespondentSol.builder()
+                            .generalApplicationType(generalApplicationsDetails
+                                                        .get().getValue().getGeneralApplicationType())
+                            .generalAppSubmittedDateGAspec(generalApplicationsDetails
+                                                               .get().getValue()
+                                                               .getGeneralAppSubmittedDateGAspec())
+                            .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                                generalAppCaseData.getCcdCaseReference())).build())
+                            .caseState(newState).build()));
+            }
+
             List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
                 caseData,
                 newState,
@@ -113,7 +160,8 @@ public class ParentCaseUpdateHelper {
             );
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                       gaDetailsRespondentSol));
+                                                       gaDetailsRespondentSol, gaDetailsRespondentSolTwo));
+
             coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
         }
 
@@ -123,11 +171,16 @@ public class ParentCaseUpdateHelper {
                                                                                String applicationId) {
         List<Element<GeneralApplicationsDetails>> generalApplications = caseData.getGeneralApplicationsDetails();
         if (!isEmpty(generalApplications)) {
-            generalApplications.stream()
-                .filter(application -> applicationFilterCriteria(application, applicationId))
-                .findAny()
-                .orElseThrow(IllegalArgumentException::new)
-                .getValue().setCaseState(newState);
+
+            if (generalApplications.stream()
+                .anyMatch(applicant -> applicationFilterCriteria(applicant, applicationId))) {
+
+                generalApplications.stream()
+                    .filter(application -> applicationFilterCriteria(application, applicationId))
+                    .findAny()
+                    .orElseThrow(IllegalArgumentException::new)
+                    .getValue().setCaseState(newState);
+            }
         }
         return generalApplications;
     }
@@ -145,13 +198,14 @@ public class ParentCaseUpdateHelper {
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                   List<Element<GeneralApplicationsDetails>>
-                                                       generalApplicationsDetails,
-                                                   List<Element<GADetailsRespondentSol>> respondentSpecficGADetails) {
+                                                   List<Element<GeneralApplicationsDetails>> generalApplicationsDetails,
+                                                   List<Element<GADetailsRespondentSol>> respondentSpecficGADetails,
+                                                   List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo)
+    {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSpecficGADetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSpecficGADetailsTwo);
         return output;
     }
-
 }
