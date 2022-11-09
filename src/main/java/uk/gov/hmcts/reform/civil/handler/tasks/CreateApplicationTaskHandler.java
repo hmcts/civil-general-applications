@@ -101,7 +101,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                         .equals(caseData.getRespondent1OrganisationPolicy().getOrganisation().getOrganisationID())) {
 
                         GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
-                                                                                             caseData);
+                            caseData);
 
                         if (gaDetailsRespondentSol != null) {
                             respondentSpecficGADetails = addRespApplication(
@@ -115,8 +115,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                         .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
 
-                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(generalApplication,
-                                                                                                caseData);
+                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                            generalApplication, caseData);
+
                         if (gaDetailsRespondentSolTwo != null) {
                             respondentTwoSpecficGADetails = addRespApplication(
                                 gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
@@ -137,13 +138,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                     GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, caseData);
                     if (gaDetailsRespondentSol != null) {
-                        respondentSpecficGADetails = addRespApplication(gaDetailsRespondentSol,
-                            caseData.getGaDetailsRespondentSol()
-                        );
+                        respondentSpecficGADetails = addRespApplication(
+                            gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
                     }
 
-                    GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(generalApplication,
-                                                                                            caseData);
+                    GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                        generalApplication, caseData);
+
                     if (gaDetailsRespondentSolTwo != null) {
                         respondentTwoSpecficGADetails = addRespApplication(
                             gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
@@ -172,16 +173,16 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     }
 
     private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication, CaseData caseData) {
-            List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
-            String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
-                .collect(Collectors.joining(", "));
+        List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
+        String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
+            .collect(Collectors.joining(", "));
 
-            return GADetailsRespondentSol.builder()
-                .generalApplicationType(collect)
-                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
-                .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                    generalAppCaseData.getCcdCaseReference())).build())
-                .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
+        return GADetailsRespondentSol.builder()
+            .generalApplicationType(collect)
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                generalAppCaseData.getCcdCaseReference())).build())
+            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
 
     }
 
@@ -215,9 +216,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private void createGeneralApplicationCase(GeneralApplication generalApplication) {
         Map<String, Object> map = generalApplication.toMap(mapper);
-        map.put("generalAppNotificationDeadlineDate",
-                generalApplication
-                    .getGeneralAppDateDeadline());
+        map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
+
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
     }
 

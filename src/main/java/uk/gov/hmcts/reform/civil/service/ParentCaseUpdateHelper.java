@@ -200,8 +200,8 @@ public class ParentCaseUpdateHelper {
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
                                                    List<Element<GeneralApplicationsDetails>> generalApplicationsDetails,
                                                    List<Element<GADetailsRespondentSol>> respondentSpecficGADetails,
-                                                   List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo)
-    {
+                                                   List<Element<GADetailsRespondentSol>>
+                                                       respondentSpecficGADetailsTwo) {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSpecficGADetails);

@@ -19,8 +19,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.model.Organisation;
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -28,6 +31,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
@@ -81,6 +85,7 @@ public class CreateApplicationTaskHandlerTest {
 
     List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
     List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
+    List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwoList = Lists.newArrayList();
     List<Element<GeneralApplication>> generalApplications = Lists.newArrayList();
     CaseDataContent caseDataContent = CaseDataContent.builder().build();
 
@@ -107,20 +112,126 @@ public class CreateApplicationTaskHandlerTest {
         when(mockTask.getTopicName()).thenReturn("test");
         when(mockTask.getWorkerId()).thenReturn("worker");
         when(mockTask.getActivityId()).thenReturn("activityId");
+
+        Map<String, Object> variables = Map.of(
+            "caseId", CASE_ID,
+            "caseEvent", CREATE_GENERAL_APPLICATION_CASE.name()
+        );
+
+        when(mockTask.getAllVariables()).thenReturn(variables);
     }
 
     @Nested
     class CreateGeneralApplication {
+        /*
+         * GA without notice application
+         * */
 
-        @BeforeEach
-        void init() {
-            Map<String, Object> variables = Map.of(
-                "caseId", CASE_ID,
-                "caseEvent", CREATE_GENERAL_APPLICATION_CASE.name()
-            );
+        @Test
+        void shouldAddApplicantSolListForWithoutNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO);
+            CaseData data = buildData(generalApplication);
 
-            when(mockTask.getAllVariables()).thenReturn(variables);
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
         }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithoutNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, NO);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldAddRespondentTwoSolListForWithoutNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent2", NO, NO);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+        }
+
+        /*
+         * GA with notice application
+         * */
+
+        @Test
+        void shouldAddApplicantSolListForWithNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, YES);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, YES);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentTwoSolListForWithNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent2", NO, YES);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+        }
+
+        private GeneralApplication getGeneralApplication(String organisationIdentifier,
+                                                         YesOrNo parentClaimantIsApplicant,
+                                                         YesOrNo isWithoutNotice) {
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build());
+
+            return builder
+                .parentClaimantIsApplicant(parentClaimantIsApplicant)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .organisationIdentifier(organisationIdentifier).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                                .isWithNotice(isWithoutNotice)
+                                                .reasonsForWithoutNotice(STRING_CONSTANT)
+                                                .build())
+                .generalAppDateDeadline(DUMMY_DATE)
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
+                                                  .generalAppUrgency(YES)
+                                                  .reasonsForUrgency(STRING_CONSTANT)
+                                                  .urgentAppConsiderationDate(APP_DATE_EPOCH)
+                                                  .build())
+                .isMultiParty(NO)
+                .businessProcess(BusinessProcess.builder()
+                                     .status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID)
+                                     .camundaEvent(CREATE_GENERAL_APPLICATION_CASE.name())
+                                     .build())
+                .build();
+        }
+    }
+
+    @Nested
+    class CreateGeneralApplicationCCDEvent {
 
         @Test
         void shouldTriggerCCDEvent() {
@@ -128,15 +239,6 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
-            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
-        }
-
-        @Test
-        void shouldReturnGADetailsRespodentSolListWithOutApplicationDetails() {
-            GeneralApplication generalApplication = getGeneralApplicationWithoutNotice();
-            CaseData data = buildData(generalApplication);
-
-            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
         }
 
@@ -162,8 +264,10 @@ public class CreateApplicationTaskHandlerTest {
             when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
                 .thenReturn(startEventResponse);
 
-            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
-                    anyMap())).thenReturn(caseDataContent);
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(
+                any(StartEventResponse.class),
+                anyMap()
+            )).thenReturn(caseDataContent);
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
@@ -194,14 +298,18 @@ public class CreateApplicationTaskHandlerTest {
             when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
                 .thenReturn(caseData);
 
-            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
-                                                                           anyMap())).thenReturn(caseDataContent);
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(
+                any(StartEventResponse.class),
+                anyMap()
+            )).thenReturn(caseDataContent);
 
             when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
             Map<String, Object> map = generalApplication.toMap(objectMapper);
-            map.put("generalAppNotificationDeadlineDate",
-                    generalApplication
-                        .getGeneralAppDateDeadline());
+            map.put(
+                "generalAppNotificationDeadlineDate",
+                generalApplication
+                    .getGeneralAppDateDeadline()
+            );
 
             when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
 
@@ -211,10 +319,6 @@ public class CreateApplicationTaskHandlerTest {
 
             verify(coreCaseDataService).createGeneralAppCase(map);
 
-        }
-
-        private List<Element<GeneralApplication>> getGeneralApplications(GeneralApplication generalApplication) {
-            return wrapElements(generalApplication);
         }
 
         private GeneralApplication getGeneralApplication() {
@@ -244,111 +348,105 @@ public class CreateApplicationTaskHandlerTest {
                 .build();
         }
 
-        private GeneralApplication getGeneralApplicationWithoutNotice() {
-            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+    }
 
-            builder.generalAppType(GAApplicationType.builder()
-                                       .types(singletonList(SUMMARY_JUDGEMENT))
-                                       .build());
+    public List<Element<GeneralApplication>> getGeneralApplications(GeneralApplication generalApplication) {
+        return wrapElements(generalApplication);
+    }
 
-            return builder
-                .generalAppInformOtherParty(GAInformOtherParty.builder()
-                                                .isWithNotice(NO)
-                                                .reasonsForWithoutNotice(STRING_CONSTANT)
-                                                .build())
-                .generalAppDateDeadline(DUMMY_DATE)
-                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
-                                                  .generalAppUrgency(YES)
-                                                  .reasonsForUrgency(STRING_CONSTANT)
-                                                  .urgentAppConsiderationDate(APP_DATE_EPOCH)
-                                                  .build())
-                .isMultiParty(NO)
-                .businessProcess(BusinessProcess.builder()
-                                     .status(STARTED)
-                                     .processInstanceId(PROCESS_INSTANCE_ID)
-                                     .camundaEvent(CREATE_GENERAL_APPLICATION_CASE.name())
-                                     .build())
-                .build();
-        }
+    public CaseData buildData(GeneralApplication generalApplication) {
+        generalApplications = getGeneralApplications(generalApplication);
+        generalApplicationsDetailsList = Lists.newArrayList();
+        gaDetailsRespondentSolList = Lists.newArrayList();
+        gaDetailsRespondentSolTwoList = Lists.newArrayList();
 
-        private CaseData buildData(GeneralApplication generalApplication) {
-            generalApplications = getGeneralApplications(generalApplication);
-            generalApplicationsDetailsList = Lists.newArrayList();
-            gaDetailsRespondentSolList = Lists.newArrayList();
+        GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
+            .generalApplicationType("Summary judgment")
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication.getCaseLink())
+            .caseState("pending").build();
+        generalApplicationsDetailsList.add(element(generalApplicationsDetails));
 
-            GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
-                .generalApplicationType("Summary judgment")
-                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
-                .caseLink(generalApplication.getCaseLink())
-                .caseState("pending").build();
-            generalApplicationsDetailsList.add(element(generalApplicationsDetails));
+        GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
+            .generalApplicationType("Summary judgment")
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication.getCaseLink())
+            .caseState("pending").build();
+        gaDetailsRespondentSolList.add(element(gaDetailsRespondentSol));
 
-            GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
-                .generalApplicationType("Summary judgment")
-                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
-                .caseLink(generalApplication.getCaseLink())
-                .caseState("pending").build();
-            gaDetailsRespondentSolList.add(element(gaDetailsRespondentSol));
+        CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .respondent1OrganisationPolicy(OrganisationPolicy
+                                               .builder().organisation(Organisation
+                                                                           .builder()
+                                                                           .organisationID("respondent1").build())
+                                               .build())
+            .respondent2OrganisationPolicy(OrganisationPolicy
+                                               .builder().organisation(Organisation
+                                                                           .builder()
+                                                                           .organisationID("respondent2").build())
+                                               .build())
+            .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
+            .generalApplications(generalApplications)
+            .generalApplicationsDetails(generalApplicationsDetailsList)
+            .gaDetailsRespondentSol(gaDetailsRespondentSolList)
+            .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
+            .businessProcess(BusinessProcess.builder().status(STARTED)
+                                 .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
 
-            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
-                .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
-                .generalApplications(generalApplications)
-                .generalApplicationsDetails(generalApplicationsDetailsList)
-                .gaDetailsRespondentSol(gaDetailsRespondentSolList)
-                .businessProcess(BusinessProcess.builder().status(STARTED)
-                                     .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+        VariableMap variables = Variables.createVariables();
+        variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+        variables.putValue(FLOW_FLAGS, Map.of());
+        variables.putValue("generalApplicationCaseId", GA_ID);
 
-            VariableMap variables = Variables.createVariables();
-            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
-            variables.putValue(FLOW_FLAGS, Map.of());
-            variables.putValue("generalApplicationCaseId", GA_ID);
+        CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+        caseDataContent = CaseDataContent.builder().build();
 
-            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
-            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
-            caseDataContent = CaseDataContent.builder().build();
+        when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
+            .thenReturn(startEventResponse);
 
-            when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
-                .thenReturn(startEventResponse);
+        when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+            .thenReturn(caseData);
 
-            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
-                .thenReturn(caseData);
+        when(coreCaseDataService.caseDataContentFromStartEventResponse(
+            any(StartEventResponse.class),
+            anyMap()
+        )).thenReturn(caseDataContent);
 
-            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(StartEventResponse.class),
-                                                                           anyMap())).thenReturn(caseDataContent);
+        when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
 
-            when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+        Map<String, Object> map = generalApplication.toMap(objectMapper);
+        map.put(
+            "generalAppNotificationDeadlineDate",
+            generalApplication
+                .getGeneralAppDateDeadline()
+        );
 
-            Map<String, Object> map = generalApplication.toMap(objectMapper);
-            map.put("generalAppNotificationDeadlineDate",
-                    generalApplication
-                        .getGeneralAppDateDeadline());
+        when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
 
-            when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
+        createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
-            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+        verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-            verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
+        verify(coreCaseDataService).createGeneralAppCase(map);
 
-            verify(coreCaseDataService).createGeneralAppCase(map);
+        verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
-            verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
+        CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 
-            CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
+        return data;
+    }
 
-            return data;
-        }
-
-        private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                       List<Element<GeneralApplication>> generalApplications,
-                                                       List<Element<GeneralApplicationsDetails>>
-                                                           generalApplicationsDetails,
-                                                       List<Element<GADetailsRespondentSol>>
-                                                           gaDetailsRespondentSol) {
-            Map<String, Object> output = caseData.toMap(objectMapper);
-            output.put(GENERAL_APPLICATIONS, generalApplications);
-            output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
-            output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
-            return output;
-        }
+    public Map<String, Object> getUpdatedCaseData(CaseData caseData,
+                                                  List<Element<GeneralApplication>> generalApplications,
+                                                  List<Element<GeneralApplicationsDetails>>
+                                                      generalApplicationsDetails,
+                                                  List<Element<GADetailsRespondentSol>>
+                                                      gaDetailsRespondentSol) {
+        Map<String, Object> output = caseData.toMap(objectMapper);
+        output.put(GENERAL_APPLICATIONS, generalApplications);
+        output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
+        return output;
     }
 }
