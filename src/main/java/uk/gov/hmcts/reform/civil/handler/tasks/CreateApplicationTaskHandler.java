@@ -41,6 +41,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
@@ -54,6 +55,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         String caseId = variables.getCaseId();
 
         List<Element<GeneralApplicationsDetails>> applications = Collections.emptyList();
+        List<Element<GeneralApplicationsDetails>> judgeApplications = Collections.emptyList();
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = Collections.emptyList();
         List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails = Collections.emptyList();
 
@@ -77,6 +79,14 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                 createGeneralApplicationCase(generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
+
+                /*
+                 * Applications under the collection gaDetailsMasterCollection should be visible Only to Judge,
+                 * legal advisor etc.
+                 * It should not be visible to solicitors
+                 * */
+                judgeApplications = addApplication(
+                    buildApplication(generalApplication, caseData), caseData.getGaDetailsMasterCollection());
 
                 /*
                  * Application should be visible to solicitor who initiates the ga without notice application
@@ -157,7 +167,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
                                                    applications,
                                                    respondentSpecficGADetails,
-                                                   respondentTwoSpecficGADetails)));
+                                                   respondentTwoSpecficGADetails,
+                                                   judgeApplications)));
     }
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
@@ -240,12 +251,15 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                    List<Element<GADetailsRespondentSol>>
                                                        gaDetailsRespondentSol,
                                                    List<Element<GADetailsRespondentSol>>
-                                                       gaDetailsRespondentSolTwo) {
+                                                       gaDetailsRespondentSolTwo,
+                                                   List<Element<GeneralApplicationsDetails>>
+                                                       judgeApplications) {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS, generalApplications);
         output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, gaDetailsRespondentSolTwo);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
         return output;
     }
 }

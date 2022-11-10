@@ -109,6 +109,7 @@ public class CaseDataBuilder {
     protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
     protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
+    protected List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
 
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private YesOrNo isMultiParty;
@@ -181,6 +182,12 @@ public class CaseDataBuilder {
     public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
                                                       gaDetailsRespondentSolTwo) {
         this.gaDetailsRespondentSolTwo = gaDetailsRespondentSolTwo;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsMasterCollection(List<Element<GeneralApplicationsDetails>>
+                                                         gaDetailsMasterCollection) {
+        this.gaDetailsMasterCollection = gaDetailsMasterCollection;
         return this;
     }
 
@@ -269,6 +276,7 @@ public class CaseDataBuilder {
             .ccdState(ccdState)
             .isMultiParty(isMultiParty)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
+            .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
@@ -747,6 +755,11 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .applicationIsCloaked(isCloak)
             .submittedOn(APPLICATION_SUBMITTED_DATE)
+            .gaDetailsMasterCollection(wrapElements(GeneralApplicationsDetails.builder()
+                                                        .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
+                                                        .caseLink(CaseLink.builder()
+                                                                      .caseReference(String.valueOf(CASE_ID)).build())
+                                                        .build()))
             .generalApplicationsDetails(wrapElements(GeneralApplicationsDetails.builder()
                                                         .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
                                                          .caseLink(CaseLink.builder()

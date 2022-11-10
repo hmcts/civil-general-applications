@@ -101,10 +101,8 @@ class ParentCaseUpdateHelperTest {
                 .builder()
                 .caseLink(CaseLink.builder().caseReference(CaseDataBuilder.CASE_ID.toString()).build())
                 .build();
-        List<Element<GeneralApplication>> generalApplications = wrapElements(generalApplication);
 
         List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
-        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
 
         GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
                 .generalApplicationType("Summary judgment")
@@ -113,6 +111,15 @@ class ParentCaseUpdateHelperTest {
                 .caseState("pending").build();
         generalApplicationsDetailsList.add(element(generalApplicationsDetails));
 
+        List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection = Lists.newArrayList();
+        GeneralApplicationsDetails gaDetailsMasterColl = GeneralApplicationsDetails.builder()
+            .generalApplicationType("Summary judgment")
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication.getCaseLink())
+            .caseState("pending").build();
+        gaDetailsMasterCollection.add(element(gaDetailsMasterColl));
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
         GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
                 .generalApplicationType("Summary judgment")
                 .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
@@ -120,10 +127,22 @@ class ParentCaseUpdateHelperTest {
                 .caseState("pending").build();
         gaDetailsRespondentSolList.add(element(gaDetailsRespondentSol));
 
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolListTwo = Lists.newArrayList();
+        GADetailsRespondentSol gaDetailsRespondentSolTwo = GADetailsRespondentSol.builder()
+            .generalApplicationType("Summary judgment")
+            .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication.getCaseLink())
+            .caseState("pending").build();
+        gaDetailsRespondentSolListTwo.add(element(gaDetailsRespondentSolTwo));
+
+        List<Element<GeneralApplication>> generalApplications = wrapElements(generalApplication);
+
         return CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO)
                 .generalApplications(generalApplications)
                 .generalApplicationsDetails(generalApplicationsDetailsList)
+                .gaDetailsMasterCollection(gaDetailsMasterCollection)
                 .gaDetailsRespondentSol(withRespondentSol ? gaDetailsRespondentSolList : null)
+                .gaDetailsRespondentSolTwo(withRespondentSol ? gaDetailsRespondentSolListTwo : null)
                 .submittedOn(null).build();
     }
 

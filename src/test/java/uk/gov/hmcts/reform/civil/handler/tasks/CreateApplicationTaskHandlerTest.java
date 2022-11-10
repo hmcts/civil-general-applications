@@ -84,6 +84,7 @@ public class CreateApplicationTaskHandlerTest {
     private static final LocalDateTime DUMMY_DATE = LocalDateTime.parse("2022-02-22T15:59:59");
 
     List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
+    List<Element<GeneralApplicationsDetails>>  gaDetailsMasterCollection = Lists.newArrayList();
     List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
     List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwoList = Lists.newArrayList();
     List<Element<GeneralApplication>> generalApplications = Lists.newArrayList();
@@ -136,6 +137,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
         }
 
         @Test
@@ -147,6 +149,8 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
         }
 
         @Test
@@ -158,6 +162,8 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
         }
 
         /*
@@ -173,6 +179,8 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
         }
 
         @Test
@@ -184,6 +192,8 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
         }
 
         @Test
@@ -195,6 +205,8 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
         }
 
         private GeneralApplication getGeneralApplication(String organisationIdentifier,
@@ -357,6 +369,7 @@ public class CreateApplicationTaskHandlerTest {
     public CaseData buildData(GeneralApplication generalApplication) {
         generalApplications = getGeneralApplications(generalApplication);
         generalApplicationsDetailsList = Lists.newArrayList();
+        gaDetailsMasterCollection = Lists.newArrayList();
         gaDetailsRespondentSolList = Lists.newArrayList();
         gaDetailsRespondentSolTwoList = Lists.newArrayList();
 
@@ -387,6 +400,7 @@ public class CreateApplicationTaskHandlerTest {
                                                .build())
             .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
             .generalApplications(generalApplications)
+            .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .generalApplicationsDetails(generalApplicationsDetailsList)
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)

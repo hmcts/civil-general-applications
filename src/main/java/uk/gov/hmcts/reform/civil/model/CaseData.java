@@ -81,6 +81,7 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> generalAppEvidenceDocument;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
+    private final List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
     private final List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
     private final List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
     private final GAJudicialDecision judicialDecision;
