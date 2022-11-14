@@ -138,7 +138,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 /*
                  * Application should be visible to all solicitors if it's with notice
                  * */
-                if (ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)
+                    || ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
                     && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
 
                     applications = addApplication(
