@@ -91,7 +91,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 /*
                  * Application should be visible to solicitor who initiates the ga without notice application
                  * */
-                if (ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES) ||
+                    ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
                     && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
                     /*
                      * Add the case to applicant solicitor collection if parent claimant is applicant

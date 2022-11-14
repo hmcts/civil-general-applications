@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
@@ -220,6 +221,7 @@ public class CreateApplicationTaskHandlerTest {
 
             return builder
                 .parentClaimantIsApplicant(parentClaimantIsApplicant)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .organisationIdentifier(organisationIdentifier).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
@@ -346,6 +348,7 @@ public class CreateApplicationTaskHandlerTest {
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
                 .generalAppDateDeadline(DUMMY_DATE)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
                                                   .reasonsForUrgency(STRING_CONSTANT)
