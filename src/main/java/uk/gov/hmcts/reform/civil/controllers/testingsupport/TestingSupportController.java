@@ -12,12 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.util.Objects;
@@ -112,15 +110,15 @@ public class TestingSupportController {
     @GetMapping("/testing-support/trigger-judge-revisit-process-event")
     public ResponseEntity<String> getJudgeRevisitProcessEvent() {
 
-        String response_message = "success";
+        String responseMsg = "success";
         ExternalTaskImpl externalTask = new ExternalTaskImpl();
         try {
             checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
         } catch (Exception e) {
-            response_message = "failed";
+            responseMsg = "failed";
         }
 
-        return new ResponseEntity<>(response_message, HttpStatus.OK);
+        return new ResponseEntity<>(responseMsg, HttpStatus.OK);
     }
 
 }
