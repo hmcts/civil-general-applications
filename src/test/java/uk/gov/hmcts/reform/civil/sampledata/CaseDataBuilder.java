@@ -102,6 +102,7 @@ public class CaseDataBuilder {
     protected OrganisationPolicy respondent1OrganisationPolicy;
     protected YesOrNo respondent2SameLegalRepresentative;
     protected OrganisationPolicy respondent2OrganisationPolicy;
+    protected GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
     protected CaseState ccdState;
     // Claimant Response
     protected BusinessProcess businessProcess;
@@ -250,6 +251,11 @@ public class CaseDataBuilder {
         return new CaseDataBuilder();
     }
 
+    public CaseDataBuilder judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo) {
+        this.judicialDecisionRequestMoreInfo = judicialDecisionRequestMoreInfo;
+        return this;
+    }
+
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
@@ -267,6 +273,7 @@ public class CaseDataBuilder {
             .respondent1OrganisationPolicy(respondent1OrganisationPolicy)
             .respondent2OrganisationPolicy(respondent2OrganisationPolicy)
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
+            .judicialDecisionRequestMoreInfo(judicialDecisionRequestMoreInfo)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)

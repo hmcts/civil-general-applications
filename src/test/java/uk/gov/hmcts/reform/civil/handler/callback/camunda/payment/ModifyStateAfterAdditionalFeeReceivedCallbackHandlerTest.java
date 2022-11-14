@@ -8,9 +8,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -84,6 +86,60 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
 
         verify(coreCaseUserService, times(2)).assignCase(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void shouldRespondWithStateChangedWhenApplicationUncloaked() {
+
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        assertThat(response.getErrors()).isNull();
+        assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
+
+        verify(coreCaseUserService, times(2)).assignCase(
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
+
+    @Test
+    void shouldNotRespondWithStateChangedWhenApplicationUncloaked() {
+
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        assertThat(response.getErrors()).isNull();
+        assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
+
+        verify(coreCaseUserService, times(0)).assignCase(
             any(),
             any(),
             any(),
