@@ -118,6 +118,8 @@ public class CaseDataBuilder {
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private YesOrNo parentClaimantIsApplicant;
     private static final Long CASE_REFERENCE = 111111L;
+    protected GAJudicialMakeAnOrder judicialMakeAnOrder;
+    protected GAApplicationType generalAppType;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -247,6 +249,16 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder judicialDecisionMakeOrder(GAJudicialMakeAnOrder judicialMakeAnOrder) {
+        this.judicialMakeAnOrder = judicialMakeAnOrder;
+        return this;
+    }
+
+    public CaseDataBuilder generalAppType(GAApplicationType generalAppType) {
+        this.generalAppType = generalAppType;
+        return this;
+    }
+
     public static CaseDataBuilder builder() {
         return new CaseDataBuilder();
     }
@@ -290,6 +302,8 @@ public class CaseDataBuilder {
             .generalAppNotificationDeadlineDate(generalAppDeadlineNotificationDate)
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .makeAppVisibleToRespondents(makeAppVisibleToRespondents)
+            .judicialDecisionMakeOrder(judicialMakeAnOrder)
+            .generalAppType(generalAppType)
             .build();
     }
 

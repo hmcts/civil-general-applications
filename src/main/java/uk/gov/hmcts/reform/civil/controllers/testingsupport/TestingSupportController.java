@@ -5,12 +5,14 @@ import io.swagger.annotations.Api;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.client.task.impl.ExternalTaskImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -30,6 +32,8 @@ public class TestingSupportController {
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
     private final CamundaRestEngineClient camundaRestEngineClient;
+
+    private final CheckStayOrderDeadlineEndTaskHandler checkStayOrderDeadlineEndTaskHandler;
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
     public ResponseEntity<BusinessProcessInfo> getBusinessProcess(@PathVariable("caseId") Long caseId) {
@@ -102,4 +106,19 @@ public class TestingSupportController {
             this.businessProcess = businessProcess;
         }
     }
+
+    @GetMapping("/testing-support/trigger-judge-revisit-process-event")
+    public ResponseEntity<String> getJudgeRevisitProcessEvent() {
+
+        String responseMsg = "success";
+        ExternalTaskImpl externalTask = new ExternalTaskImpl();
+        try {
+            checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
+        } catch (Exception e) {
+            responseMsg = "failed";
+        }
+
+        return new ResponseEntity<>(responseMsg, HttpStatus.OK);
+    }
+
 }
