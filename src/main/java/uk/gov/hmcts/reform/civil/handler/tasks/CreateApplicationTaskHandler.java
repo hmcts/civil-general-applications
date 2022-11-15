@@ -49,15 +49,15 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private CaseData data;
     private CaseData generalAppCaseData;
 
+    List<Element<GeneralApplicationsDetails>> applications = Collections.emptyList();
+    List<Element<GeneralApplicationsDetails>> judgeApplications = Collections.emptyList();
+    List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = Collections.emptyList();
+    List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails = Collections.emptyList();
+
     @Override
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
-
-        List<Element<GeneralApplicationsDetails>> applications = Collections.emptyList();
-        List<Element<GeneralApplicationsDetails>> judgeApplications = Collections.emptyList();
-        List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = Collections.emptyList();
-        List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails = Collections.emptyList();
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
 
@@ -89,58 +89,31 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     buildApplication(generalApplication, caseData), caseData.getGaDetailsMasterCollection());
 
                 /*
-                 * Application should be visible to solicitor who initiates the ga without notice application
+                 * Application should be hidden to respondent solicitor if
+                 * respondent agreement is Yes
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES) ||
-                    ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
-                    /*
-                     * Add the case to applicant solicitor collection if parent claimant is applicant
-                     * Hide the case if parent claimant isn't GA applicant and initiate without notice application
-                     * */
-                    if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
-                        applications = addApplication(
-                            buildApplication(generalApplication, caseData),
-                            caseData.getGeneralApplicationsDetails()
-                        );
-                    }
-
-                    /*
-                     * Add the GA in respondent one collection if he/she initiate without notice application.
-                     * */
-                    if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent1OrganisationPolicy().getOrganisation().getOrganisationID())) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
-                            caseData);
-
-                        if (gaDetailsRespondentSol != null) {
-                            respondentSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
-                        }
-                    }
-
-                    /*
-                     * Add the GA in respondent two collection if he/she initiate without notice application.
-                     * */
-                    if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                            generalApplication, caseData);
-
-                        if (gaDetailsRespondentSolTwo != null) {
-                            respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
-                        }
-                    }
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+                    addGAToSolicitorCollection(caseData, generalApplication);
                 }
 
                 /*
-                 * Application should be visible to all solicitors if it's with notice
+                 * Respondent Agreement is No and without notice application.
+                 * Application should be visible to solicitor who initiates the ga
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)
-                    || ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO) &&
+                    ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
+
+                    addGAToSolicitorCollection(caseData, generalApplication);
+
+                }
+
+                /*
+                 * Respondent Agreement is Yes and with notice.
+                 * Application should be visible to all solicitors
+                 * */
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+                    && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
                     && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
 
                     applications = addApplication(
@@ -154,12 +127,14 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                             gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
                     }
 
-                    GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                        generalApplication, caseData);
+                    if (generalApplication.getIsMultiParty().equals(YES)) {
+                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                            generalApplication, caseData);
 
-                    if (gaDetailsRespondentSolTwo != null) {
-                        respondentTwoSpecficGADetails = addRespApplication(
-                            gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+                        if (gaDetailsRespondentSolTwo != null) {
+                            respondentTwoSpecficGADetails = addRespApplication(
+                                gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+                        }
                     }
                 }
             }
@@ -171,6 +146,50 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                    respondentSpecficGADetails,
                                                    respondentTwoSpecficGADetails,
                                                    judgeApplications)));
+    }
+
+    private void addGAToSolicitorCollection(CaseData caseData, GeneralApplication generalApplication) {
+        /*
+         * Add the case to applicant solicitor collection if parent claimant is applicant
+         * Hide the case if parent claimant isn't GA applicant and initiate without notice application
+         * */
+        if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
+            applications = addApplication(
+                buildApplication(generalApplication, caseData),
+                caseData.getGeneralApplicationsDetails()
+            );
+        }
+
+        /*
+         * Add the GA in respondent one collection if he/she initiate without notice application.
+         * */
+        if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
+            .equals(caseData.getRespondent1OrganisationPolicy().getOrganisation().getOrganisationID())) {
+
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
+                                                                                 caseData);
+
+            if (gaDetailsRespondentSol != null) {
+                respondentSpecficGADetails = addRespApplication(
+                    gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
+            }
+        }
+
+        /*
+         * Add the GA in respondent two collection if he/she initiate without notice application.
+         * */
+        if (generalApplication.getIsMultiParty().equals(YES)
+            && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
+            .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
+
+            GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                generalApplication, caseData);
+
+            if (gaDetailsRespondentSolTwo != null) {
+                respondentTwoSpecficGADetails = addRespApplication(
+                    gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+            }
+        }
     }
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {

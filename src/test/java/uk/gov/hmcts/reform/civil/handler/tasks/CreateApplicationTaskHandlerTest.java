@@ -132,7 +132,7 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, NO);
+                getGeneralApplication("applicant", YES, NO, NO);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
@@ -144,7 +144,7 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentOneSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO);
+                getGeneralApplication("respondent1", NO, NO, NO);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
@@ -155,9 +155,9 @@ public class CreateApplicationTaskHandlerTest {
         }
 
         @Test
-        void shouldAddRespondentTwoSolListForWithoutNoticeAppln() {
+        void shouldAddRespondentTwoSolListForWithoutNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, NO);
+                getGeneralApplication("respondent2", NO, NO, YES);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
@@ -174,33 +174,68 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, YES);
+                getGeneralApplication("applicant", YES, YES, NO);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+
+        }
+
+        @Test
+        void shouldAddApplicantSolListForWithNoticeApplnMultiParty() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, YES, YES);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
-
         }
 
         @Test
         void shouldAddRespondentOneSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, YES);
+                getGeneralApplication("respondent1", NO, NO, NO);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithNoticeApplnMultiParty() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, NO, YES);
+            CaseData data = buildData(generalApplication);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithOutNoticeAppln() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, YES, NO);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
-            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
-
         }
 
         @Test
         void shouldAddRespondentTwoSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, YES);
+                getGeneralApplication("respondent2", YES, YES, YES);
             CaseData data = buildData(generalApplication);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
@@ -212,7 +247,7 @@ public class CreateApplicationTaskHandlerTest {
 
         private GeneralApplication getGeneralApplication(String organisationIdentifier,
                                                          YesOrNo parentClaimantIsApplicant,
-                                                         YesOrNo isWithoutNotice) {
+                                                         YesOrNo isWithoutNotice, YesOrNo isMultiParty) {
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
 
             builder.generalAppType(GAApplicationType.builder()
@@ -234,7 +269,7 @@ public class CreateApplicationTaskHandlerTest {
                                                   .reasonsForUrgency(STRING_CONSTANT)
                                                   .urgentAppConsiderationDate(APP_DATE_EPOCH)
                                                   .build())
-                .isMultiParty(NO)
+                .isMultiParty(isMultiParty)
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
