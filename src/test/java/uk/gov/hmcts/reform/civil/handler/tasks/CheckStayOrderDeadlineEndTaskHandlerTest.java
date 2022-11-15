@@ -66,6 +66,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     private CaseDetails caseDetailsWithTodayDeadlineReliefFromSanctionOrder;
     private CaseDetails caseDetailsWithDeadlineCrossedNotProcessed;
     private CaseDetails caseDetailsWithDeadlineCrossedProcessed;
+    private CaseDetails caseDetailsWithTodayDeadLineWithOrderProcessedNull;
 
     private CaseDetails caseDetailsWithNoDeadline;
     private CaseDetails caseDetailsWithFutureDeadline;
@@ -74,6 +75,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     private CaseData caseDataWithTodayDeadlineProcessed;
     private CaseData caseDataWithTodayDeadlineReliefFromSanctionOrder;
     private CaseData caseDataWithDeadlineCrossedProcessed;
+    private CaseData caseDataWithTodayDeadLineWithOrderProcessedNull;
     private CaseData caseDataWithNoDeadline;
     private CaseData caseDataWithFutureDeadline;
 
@@ -117,6 +119,10 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                                                        deadlineInFuture, YesOrNo.NO);
         caseDataWithFutureDeadline = getCaseData(6L, STAY_THE_CLAIM,
                                                  deadlineInFuture, YesOrNo.NO);
+        caseDetailsWithTodayDeadLineWithOrderProcessedNull = getCaseDetails(7L, STAY_THE_CLAIM,
+                                                                             deadLineToday, null);
+        caseDataWithTodayDeadLineWithOrderProcessedNull = getCaseData(7L, STAY_THE_CLAIM,
+                                                                  deadLineToday, null);
     }
 
     @Test
@@ -168,6 +174,29 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
+    }
+
+    @Test
+    void shouldNotTriggerBusinessProcessEventWhenIsOrderProcessedIsNull() {
+        when(searchService.getGeneralApplications()).thenReturn(
+            List.of(caseDetailsWithTodayDeadlineNotProcessed,
+                    caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
+                    caseDetailsWithTodayDeadLineWithOrderProcessedNull));
+        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
+            .thenReturn(caseDataWithTodayDeadlineNotProcessed);
+        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
+            .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
+        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadLineWithOrderProcessedNull))
+            .thenReturn(caseDataWithTodayDeadLineWithOrderProcessedNull);
+
+        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(searchService).getGeneralApplications();
+        verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+                                                   getCaseData(1L, STAY_THE_CLAIM, deadLineToday,
+                                                               YesOrNo.YES).toMap(mapper));
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
     }
 
     @Test
@@ -240,14 +269,14 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     }
 
     private CaseDetails getCaseDetails(Long ccdId, GeneralApplicationTypes generalApplicationType,
-                                 LocalDate deadline, YesOrNo esProcessed) {
+                                 LocalDate deadline, YesOrNo isProcessed) {
         return CaseDetails.builder().id(ccdId).data(
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
                            .judgeApproveEditOptionDate(deadline)
                            .reasonForDecisionText("Sample Test")
-                           .isOrderProcessedByStayScheduler(esProcessed)
+                           .isOrderProcessedByStayScheduler(isProcessed)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(List.of(generalApplicationType)).build()))
             .state(ORDER_MADE.toString()).build();
