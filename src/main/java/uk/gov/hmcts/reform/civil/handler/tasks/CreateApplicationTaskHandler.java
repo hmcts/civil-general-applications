@@ -100,8 +100,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                  * Respondent Agreement is No and without notice application.
                  * Application should be visible to solicitor who initiates the ga
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO) &&
-                    ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+                    && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
                     && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
 
                     addGAToSolicitorCollection(caseData, generalApplication);
