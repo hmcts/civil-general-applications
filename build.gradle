@@ -92,8 +92,8 @@ allprojects {
       }
      // CVE-2022-41854
       dependencySet(
-              group: 'org.elasticsearch',
-              version: '7.15.2'
+              group: 'org.yaml',
+              version: '1.33'
       ) {
         entry 'snakeyaml'
       }
