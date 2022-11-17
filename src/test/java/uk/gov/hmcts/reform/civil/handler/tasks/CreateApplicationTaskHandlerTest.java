@@ -124,6 +124,90 @@ public class CreateApplicationTaskHandlerTest {
     }
 
     @Nested
+    class CreateGAFor2V1and1V2SameSol {
+        @Test
+        void shouldAddApplicantSolListForWithoutNoticeAppln2V1() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO);
+            CaseData data = buildData(generalApplication, YES, NO);
+
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithoutNoticeAppln2V1() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, NO);
+            CaseData data = buildData(generalApplication, YES, NO);
+
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddApplicantSolListForWithoutNoticeAppln1V2SameSol() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO);
+            CaseData data = buildData(generalApplication, NO, YES);
+
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithoutNoticeAppln1V2SameSol() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, NO);
+            CaseData data = buildData(generalApplication, NO, YES);
+
+            assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
+            assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+        }
+
+        private GeneralApplication getGeneralApplication(String organisationIdentifier,
+                                                         YesOrNo parentClaimantIsApplicant,
+                                                         YesOrNo isWithoutNotice) {
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build());
+
+            return builder
+                .parentClaimantIsApplicant(parentClaimantIsApplicant)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .organisationIdentifier(organisationIdentifier).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                                .isWithNotice(isWithoutNotice)
+                                                .reasonsForWithoutNotice(STRING_CONSTANT)
+                                                .build())
+                .generalAppDateDeadline(DUMMY_DATE)
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
+                                                  .generalAppUrgency(YES)
+                                                  .reasonsForUrgency(STRING_CONSTANT)
+                                                  .urgentAppConsiderationDate(APP_DATE_EPOCH)
+                                                  .build())
+                .isMultiParty(YES)
+                .businessProcess(BusinessProcess.builder()
+                                     .status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID)
+                                     .camundaEvent(CREATE_GENERAL_APPLICATION_CASE.name())
+                                     .build())
+                .build();
+        }
+    }
+
+    @Nested
     class CreateGeneralApplication {
         /*
          * GA without notice application
@@ -133,7 +217,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddApplicantSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, NO);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
@@ -145,7 +229,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentOneSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, NO, NO);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
@@ -158,7 +242,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentTwoSolListForWithoutNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent2", NO, NO, YES);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(1);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
@@ -175,7 +259,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddApplicantSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, YES, NO);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
@@ -188,7 +272,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddApplicantSolListForWithNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, YES, YES);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
@@ -200,7 +284,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentOneSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, NO, NO);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
@@ -212,7 +296,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentOneSolListForWithNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, NO, YES);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(1);
@@ -224,7 +308,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentOneSolListForWithOutNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, YES, NO);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
@@ -236,7 +320,7 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentTwoSolListForWithNoticeAppln() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent2", YES, YES, YES);
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGaDetailsRespondentSolTwo().size()).isEqualTo(1);
@@ -285,7 +369,7 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldTriggerCCDEvent() {
             GeneralApplication generalApplication = getGeneralApplication();
-            CaseData data = buildData(generalApplication);
+            CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getGaDetailsRespondentSol().size()).isEqualTo(2);
             assertThat(data.getGeneralApplicationsDetails().size()).isEqualTo(2);
@@ -404,7 +488,8 @@ public class CreateApplicationTaskHandlerTest {
         return wrapElements(generalApplication);
     }
 
-    public CaseData buildData(GeneralApplication generalApplication) {
+    public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
+                              YesOrNo respondent2SameLegalRepresentative) {
         generalApplications = getGeneralApplications(generalApplication);
         generalApplicationsDetailsList = Lists.newArrayList();
         gaDetailsMasterCollection = Lists.newArrayList();
@@ -439,7 +524,8 @@ public class CreateApplicationTaskHandlerTest {
             .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
             .generalApplications(generalApplications)
             .isMultiParty(YES)
-            .addApplicant2(YES)
+            .addApplicant2(addApplicant2)
+            .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .generalApplicationsDetails(generalApplicationsDetailsList)
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
