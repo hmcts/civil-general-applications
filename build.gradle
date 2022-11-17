@@ -90,6 +90,13 @@ allprojects {
       ) {
         entry 'camunda-engine'
       }
+     // CVE-2022-41854
+      dependencySet(
+              group: 'org.yaml',
+              version: '1.33'
+      ) {
+        entry 'snakeyaml'
+      }
     }
     imports {
       mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.5'
