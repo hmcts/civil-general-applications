@@ -43,7 +43,8 @@ public class ParentCaseUpdateHelper {
                                                                                 UPDATE_CASE_WITH_GA_STATE);
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
-        List<Element<GADetailsRespondentSol>> respondentSpecficGADetails = caseData.getGaDetailsRespondentSol();
+        List<Element<GADetailsRespondentSol>> respondentSpecficGADetails =
+            ofNullable(caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
 
         if (!isEmpty(respondentSpecficGADetails)) {
             /*
@@ -62,7 +63,8 @@ public class ParentCaseUpdateHelper {
             }
         }
 
-        List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo = caseData.getGaDetailsRespondentSolTwo();
+        List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo =
+            ofNullable(caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
 
         if (!isEmpty(respondentSpecficGADetailsTwo)) {
             /*
@@ -236,16 +238,6 @@ public class ParentCaseUpdateHelper {
                                                        gaDetailsRespondentSolTwo,
                                                        gaDetailsMasterCollection));
 
-            /*private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                   List<Element<GADetailsRespondentSol>>
-                                                       respondentSpecficGADetailsTwo,
-                                                ) {
-        Map<String, Object> output = caseData.toMap(mapper);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSpecficGADetailsTwo);
-
-        return output;
-    }*/
-
             coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
         }
 
@@ -253,7 +245,9 @@ public class ParentCaseUpdateHelper {
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
                                                                                String applicationId) {
-        List<Element<GeneralApplicationsDetails>> generalApplications = caseData.getGeneralApplicationsDetails();
+        List<Element<GeneralApplicationsDetails>> generalApplications = ofNullable(
+            caseData.getGeneralApplicationsDetails()).orElse(newArrayList());
+
         if (!isEmpty(generalApplications)) {
 
             if (generalApplications.stream()
@@ -289,7 +283,8 @@ public class ParentCaseUpdateHelper {
 
     private List<Element<GADetailsRespondentSol>> updateGaDetailsRespondentOne(CaseData caseData, String newState,
                                                                                String applicationId) {
-        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = caseData.getGaDetailsRespondentSol();
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+            caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
         if (!isEmpty(gaDetailsRespondentSol)) {
 
             if (gaDetailsRespondentSol.stream()
@@ -307,7 +302,8 @@ public class ParentCaseUpdateHelper {
 
     private List<Element<GADetailsRespondentSol>> updateGaDetailsRespondentTwo(CaseData caseData, String newState,
                                                                                String applicationId) {
-        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = caseData.getGaDetailsRespondentSolTwo();
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = ofNullable(
+            caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
 
         if (!isEmpty(gaDetailsRespondentSolTwo)) {
 

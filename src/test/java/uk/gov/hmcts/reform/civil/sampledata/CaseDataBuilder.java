@@ -114,6 +114,7 @@ public class CaseDataBuilder {
 
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private YesOrNo isMultiParty;
+    protected YesOrNo addApplicant2;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
     protected GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
     //General Application
@@ -146,6 +147,11 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder isMultiParty(YesOrNo isMultiParty) {
         this.isMultiParty = isMultiParty;
+        return this;
+    }
+
+    public CaseDataBuilder addApplicant2(YesOrNo addApplicant2) {
+        this.addApplicant2 = addApplicant2;
         return this;
     }
 
@@ -293,6 +299,7 @@ public class CaseDataBuilder {
             .businessProcess(businessProcess)
             .ccdState(ccdState)
             .isMultiParty(isMultiParty)
+            .addApplicant2(addApplicant2)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)

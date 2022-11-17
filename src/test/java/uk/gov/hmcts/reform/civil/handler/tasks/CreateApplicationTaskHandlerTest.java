@@ -438,6 +438,8 @@ public class CreateApplicationTaskHandlerTest {
                                                .build())
             .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
             .generalApplications(generalApplications)
+            .isMultiParty(YES)
+            .addApplicant2(YES)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .generalApplicationsDetails(generalApplicationsDetailsList)
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
