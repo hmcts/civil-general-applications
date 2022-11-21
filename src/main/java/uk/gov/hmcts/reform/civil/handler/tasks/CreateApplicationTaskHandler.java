@@ -38,8 +38,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
     private static final String GENERAL_APPLICATIONS_DETAILS = "claimantGaAppDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
