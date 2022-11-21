@@ -10,7 +10,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.42.0'
   id 'org.sonarqube' version '3.4.0.2513'
   id 'au.com.dius.pact' version '4.3.15'
-  id "org.flywaydb.flyway" version "9.5.1"
+  id "org.flywaydb.flyway" version "9.8.2"
   id "io.freefair.lombok" version "6.5.1"
 }
 
@@ -311,7 +311,7 @@ dependencies {
   implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
   implementation group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
 
-  implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '12.0'
+  implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '12.1'
   implementation group: 'org.springframework.retry', name: 'spring-retry'
 
   implementation group: 'uk.gov.hmcts.reform', name: 'core-case-data-store-client', version: '4.7.6'
@@ -363,9 +363,8 @@ dependencies {
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '5.10.3'
 
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.9.0'
-  testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.8.1'
-
-  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.6.1'
+  testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.9.0'
+  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.9.0'
 
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
