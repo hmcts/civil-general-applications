@@ -9,14 +9,14 @@ maintainers:
 
 dependencies:
   - name: java
-    version: 4.0.1
+    version: 4.0.2
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
   - name: civil-service
     version: 0.0.23
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
     condition: civil-service.enabled
   - name: ccd
-    version: 8.0.19
+    version: 8.0.20
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
     condition: ccd.enabled
   - name: xui-webapp
