@@ -113,11 +113,11 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                                                               .get("gaDetailsMasterCollection"),
                                                                           new TypeReference<>(){});
             List<?> generalApplicationDetails = objectMapper.convertValue(
-                    updatedCaseData.get("generalApplicationsDetails"), new TypeReference<>(){});
+                    updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSol = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSol"), new TypeReference<>(){});
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSolTwo"), new TypeReference<>(){});
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
 
             assertThat(generalApplications.size()).isEqualTo(1);
             assertThat(generalApplicationDetails.size()).isEqualTo(1);
@@ -168,11 +168,11 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
                     new TypeReference<>(){});
             List<?> generalApplicationDetails = objectMapper.convertValue(
-                    updatedCaseData.get("generalApplicationsDetails"), new TypeReference<>(){});
+                    updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSol = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSol"), new TypeReference<>(){});
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
             List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
-                updatedCaseData.get("gaDetailsRespondentSolTwo"), new TypeReference<>(){});
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
             List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
                                                                               .get("gaDetailsMasterCollection"),
                                                                           new TypeReference<>(){});
