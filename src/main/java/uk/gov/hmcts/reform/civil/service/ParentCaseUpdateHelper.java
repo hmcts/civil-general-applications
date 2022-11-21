@@ -30,9 +30,9 @@ public class ParentCaseUpdateHelper {
     private final CoreCaseDataService coreCaseDataService;
     private final ObjectMapper mapper;
 
-    private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT = "claimantGaAppDetails";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
@@ -44,7 +44,7 @@ public class ParentCaseUpdateHelper {
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails =
-            ofNullable(caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+            ofNullable(caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
 
         if (!isEmpty(respondentSpecficGADetails)) {
             /*
@@ -64,7 +64,7 @@ public class ParentCaseUpdateHelper {
         }
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetailsTwo =
-            ofNullable(caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
+            ofNullable(caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (!isEmpty(respondentSpecficGADetailsTwo)) {
             /*
@@ -136,7 +136,7 @@ public class ParentCaseUpdateHelper {
             * Respondent One Solicitor collection
             * */
             List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
-                caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+                caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
 
             boolean isGaDetailsRespondentSolPresent = gaDetailsRespondentSol.stream()
                 .anyMatch(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId));
@@ -167,7 +167,7 @@ public class ParentCaseUpdateHelper {
              * Respondent Two Solicitor collection
              * */
             List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = ofNullable(
-                caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
+                caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
             boolean isGaDetailsRespondentSolTwoPresent = gaDetailsRespondentSolTwo.stream()
                 .anyMatch(gaRespondentTwoApp -> gaRespSolAppFilterCriteria(gaRespondentTwoApp, applicationId));
@@ -195,7 +195,7 @@ public class ParentCaseUpdateHelper {
              * Claimant Solicitor collection
              * */
             List<Element<GeneralApplicationsDetails>> gaDetailsClaimant = ofNullable(
-                caseData.getGeneralApplicationsDetails()).orElse(newArrayList());
+                caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
             boolean isGaDetailsClaimantPresent = gaDetailsClaimant.stream()
                 .anyMatch(gaClaimant -> applicationFilterCriteria(gaClaimant, applicationId));
@@ -246,7 +246,7 @@ public class ParentCaseUpdateHelper {
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
                                                                                String applicationId) {
         List<Element<GeneralApplicationsDetails>> generalApplications = ofNullable(
-            caseData.getGeneralApplicationsDetails()).orElse(newArrayList());
+            caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
         if (!isEmpty(generalApplications)) {
 
@@ -284,7 +284,7 @@ public class ParentCaseUpdateHelper {
     private List<Element<GADetailsRespondentSol>> updateGaDetailsRespondentOne(CaseData caseData, String newState,
                                                                                String applicationId) {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
-            caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+            caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
         if (!isEmpty(gaDetailsRespondentSol)) {
 
             if (gaDetailsRespondentSol.stream()
@@ -303,7 +303,7 @@ public class ParentCaseUpdateHelper {
     private List<Element<GADetailsRespondentSol>> updateGaDetailsRespondentTwo(CaseData caseData, String newState,
                                                                                String applicationId) {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = ofNullable(
-            caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
+            caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (!isEmpty(gaDetailsRespondentSolTwo)) {
 
@@ -333,16 +333,16 @@ public class ParentCaseUpdateHelper {
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                   List<Element<GeneralApplicationsDetails>> gaDetailsClaimant,
-                                                   List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol,
+                                                   List<Element<GeneralApplicationsDetails>> claimantGaAppDetails,
+                                                   List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails,
                                                    List<Element<GADetailsRespondentSol>>
-                                                       gaDetailsRespondentSolTwo,
+                                                       respondentSolTwoGaAppDetails,
                                                    List<Element<GeneralApplicationsDetails>>
                                                        gaDetailsMasterCollection) {
         Map<String, Object> output = caseData.toMap(mapper);
-        output.put(GENERAL_APPLICATIONS_DETAILS, gaDetailsClaimant);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, gaDetailsRespondentSolTwo);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT, claimantGaAppDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, gaDetailsMasterCollection);
         return output;
     }

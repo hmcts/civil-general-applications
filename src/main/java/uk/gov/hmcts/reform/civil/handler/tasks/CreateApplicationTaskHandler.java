@@ -37,7 +37,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
-    private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
+    private static final String GENERAL_APPLICATIONS_DETAILS = "claimantGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "gaDetailsRespondentSolTwo";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
@@ -63,13 +63,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             ofNullable(caseData.getGaDetailsMasterCollection()).orElse(newArrayList());
 
         List<Element<GeneralApplicationsDetails>> applications =
-            ofNullable(caseData.getGeneralApplicationsDetails()).orElse(newArrayList());
+            ofNullable(caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
         List<Element<GADetailsRespondentSol>> respondentSpecficGADetails =
-            ofNullable(caseData.getGaDetailsRespondentSol()).orElse(newArrayList());
+            ofNullable(caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
 
         List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails =
-            ofNullable(caseData.getGaDetailsRespondentSolTwo()).orElse(newArrayList());
+            ofNullable(caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (generalApplications != null && !generalApplications.isEmpty()) {
 
@@ -107,7 +107,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
                         applications = addApplication(
                             buildApplication(generalApplication, caseData),
-                            caseData.getGeneralApplicationsDetails()
+                            caseData.getClaimantGaAppDetails()
                         );
                     }
 
@@ -122,7 +122,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                         if (gaDetailsRespondentSol != null) {
                             respondentSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
+                                gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
                         }
                     }
 
@@ -139,7 +139,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                         if (gaDetailsRespondentSolTwo != null) {
                             respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
                         }
                     }
                 }
@@ -159,7 +159,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
                         applications = addApplication(
                             buildApplication(generalApplication, caseData),
-                            caseData.getGeneralApplicationsDetails()
+                            caseData.getClaimantGaAppDetails()
                         );
                     }
 
@@ -174,7 +174,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                         if (gaDetailsRespondentSol != null) {
                             respondentSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
+                                gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
                         }
                     }
 
@@ -191,7 +191,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                         if (gaDetailsRespondentSolTwo != null) {
                             respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
                         }
                     }
 
@@ -207,13 +207,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                     applications = addApplication(
                         buildApplication(generalApplication, caseData),
-                        caseData.getGeneralApplicationsDetails()
+                        caseData.getClaimantGaAppDetails()
                     );
 
                     GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, caseData);
                     if (gaDetailsRespondentSol != null) {
                         respondentSpecficGADetails = addRespApplication(
-                            gaDetailsRespondentSol, caseData.getGaDetailsRespondentSol());
+                            gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
                     }
 
                     if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
@@ -223,7 +223,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                         if (gaDetailsRespondentSolTwo != null) {
                             respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getGaDetailsRespondentSolTwo());
+                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
                         }
                     }
                 }
@@ -266,8 +266,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private List<Element<GeneralApplicationsDetails>> addApplication(GeneralApplicationsDetails application,
                                                                      List<Element<GeneralApplicationsDetails>>
-                                                                         generalApplicationsDetails) {
-        List<Element<GeneralApplicationsDetails>> newApplication = ofNullable(generalApplicationsDetails)
+                                                                         claimantGaAppDetails) {
+        List<Element<GeneralApplicationsDetails>> newApplication = ofNullable(claimantGaAppDetails)
             .orElse(newArrayList());
         newApplication.add(element(application));
         return newApplication;
@@ -314,18 +314,18 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
                                                    List<Element<GeneralApplication>> generalApplications,
                                                    List<Element<GeneralApplicationsDetails>>
-                                                       generalApplicationsDetails,
+                                                       claimantGaAppDetails,
                                                    List<Element<GADetailsRespondentSol>>
-                                                       gaDetailsRespondentSol,
+                                                       respondentSolGaAppDetails,
                                                    List<Element<GADetailsRespondentSol>>
-                                                       gaDetailsRespondentSolTwo,
+                                                       respondentSolTwoGaAppDetails,
                                                    List<Element<GeneralApplicationsDetails>>
                                                        judgeApplications) {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS, generalApplications);
-        output.put(GENERAL_APPLICATIONS_DETAILS, generalApplicationsDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, gaDetailsRespondentSol);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, gaDetailsRespondentSolTwo);
+        output.put(GENERAL_APPLICATIONS_DETAILS, claimantGaAppDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
         return output;
     }

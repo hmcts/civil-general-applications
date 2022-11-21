@@ -107,9 +107,9 @@ public class CaseDataBuilder {
     // Claimant Response
     protected BusinessProcess businessProcess;
     protected List<Element<GeneralApplication>> generalApplications;
-    protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
-    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
-    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo;
+    protected List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
+    protected List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails;
+    protected List<Element<GADetailsRespondentSol>> respondentSolTwoGaAppDetails;
     protected List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
 
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
@@ -178,19 +178,19 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalApplicationsDetails(List<Element<GeneralApplicationsDetails>>
                                                           generalApplicationsDetails) {
-        this.generalApplicationsDetails = generalApplicationsDetails;
+        this.claimantGaAppDetails = generalApplicationsDetails;
         return this;
     }
 
     public CaseDataBuilder gaDetailsRespondentSol(List<Element<GADetailsRespondentSol>>
                                                       gaDetailsRespondentSol) {
-        this.gaDetailsRespondentSol = gaDetailsRespondentSol;
+        this.respondentSolGaAppDetails = gaDetailsRespondentSol;
         return this;
     }
 
     public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
                                                       gaDetailsRespondentSolTwo) {
-        this.gaDetailsRespondentSolTwo = gaDetailsRespondentSolTwo;
+        this.respondentSolTwoGaAppDetails = gaDetailsRespondentSolTwo;
         return this;
     }
 
@@ -300,7 +300,7 @@ public class CaseDataBuilder {
             .ccdState(ccdState)
             .isMultiParty(isMultiParty)
             .addApplicant2(addApplicant2)
-            .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwo)
+            .respondentSolTwoGaAppDetails(respondentSolTwoGaAppDetails)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
@@ -319,8 +319,8 @@ public class CaseDataBuilder {
             .generalAppUrgencyRequirement(gaUrgencyRequirement)
             .generalAppRespondentAgreement(gaRespondentOrderAgreement)
             .generalAppParentCaseLink(generalAppParentCaseLink)
-            .generalApplicationsDetails(generalApplicationsDetails)
-            .gaDetailsRespondentSol(gaDetailsRespondentSol)
+            .claimantGaAppDetails(claimantGaAppDetails)
+            .respondentSolGaAppDetails(respondentSolGaAppDetails)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppNotificationDeadlineDate(generalAppDeadlineNotificationDate)
@@ -788,7 +788,7 @@ public class CaseDataBuilder {
                                                         .caseLink(CaseLink.builder()
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
-            .generalApplicationsDetails(wrapElements(GeneralApplicationsDetails.builder()
+            .claimantGaAppDetails(wrapElements(GeneralApplicationsDetails.builder()
                                                         .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
                                                          .caseLink(CaseLink.builder()
                                                                        .caseReference(String.valueOf(CASE_ID)).build())

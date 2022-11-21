@@ -139,10 +139,10 @@ class ParentCaseUpdateHelperTest {
 
         return CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO)
                 .generalApplications(generalApplications)
-                .generalApplicationsDetails(generalApplicationsDetailsList)
+                .claimantGaAppDetails(generalApplicationsDetailsList)
                 .gaDetailsMasterCollection(gaDetailsMasterCollection)
-                .gaDetailsRespondentSol(withRespondentSol ? gaDetailsRespondentSolList : null)
-                .gaDetailsRespondentSolTwo(withRespondentSol ? gaDetailsRespondentSolListTwo : null)
+                .respondentSolGaAppDetails(withRespondentSol ? gaDetailsRespondentSolList : null)
+                .respondentSolTwoGaAppDetails(withRespondentSol ? gaDetailsRespondentSolListTwo : null)
                 .submittedOn(null).build();
     }
 
