@@ -364,7 +364,6 @@ dependencies {
 
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.9.0'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.9.0'
-
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.9.0'
 
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
