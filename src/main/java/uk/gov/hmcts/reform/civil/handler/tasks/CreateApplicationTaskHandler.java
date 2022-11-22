@@ -95,62 +95,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     buildApplication(generalApplication, caseData), caseData.getGaDetailsMasterCollection());
 
                 /*
-                 * Application should be hidden to respondent solicitor if
-                 * respondent agreement is Yes
-                 * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
-
-                    /*
-                     * Add the case to applicant solicitor collection if parent claimant is applicant
-                     * Hide the case if parent claimant isn't GA applicant and initiate without notice application
-                     * */
-                    if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
-                        applications = addApplication(
-                            buildApplication(generalApplication, caseData),
-                            caseData.getClaimantGaAppDetails()
-                        );
-                    }
-
-                    /*
-                     * Add the GA in respondent one collection if he/she initiate without notice application.
-                     * */
-                    if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent1OrganisationPolicy().getOrganisation().getOrganisationID())) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
-                                                                                             caseData);
-
-                        if (gaDetailsRespondentSol != null) {
-                            respondentSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
-                        }
-                    }
-
-                    /*
-                     * Add the GA in respondent two collection if he/she initiate without notice application.
-                     * */
-                    if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
-                        && caseData.getRespondent2SameLegalRepresentative().equals(NO)
-                        && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                            generalApplication, caseData);
-
-                        if (gaDetailsRespondentSolTwo != null) {
-                            respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
-                        }
-                    }
-                }
-
-                /*
                  * Respondent Agreement is No and without notice application.
                  * Application should be visible to solicitor who initiates the ga
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+                if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
                     && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
+                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
+                    || (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
 
                     /*
                      * Add the case to applicant solicitor collection if parent claimant is applicant
