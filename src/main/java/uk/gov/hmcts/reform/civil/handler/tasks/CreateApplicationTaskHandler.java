@@ -37,7 +37,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
-    private static final String GENERAL_APPLICATIONS_DETAILS = "claimantGaAppDetails";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT = "claimantGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
@@ -323,7 +323,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                        judgeApplications) {
         Map<String, Object> output = caseData.toMap(mapper);
         output.put(GENERAL_APPLICATIONS, generalApplications);
-        output.put(GENERAL_APPLICATIONS_DETAILS, claimantGaAppDetails);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT, claimantGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
