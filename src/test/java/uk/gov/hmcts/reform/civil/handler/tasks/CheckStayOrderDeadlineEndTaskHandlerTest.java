@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.OrderMadeSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,7 +47,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     private ExternalTaskService externalTaskService;
 
     @MockBean
-    private OrderMadeSearchService searchService;
+    private CaseStateSearchService searchService;
 
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
@@ -127,18 +127,18 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenZeroCasesFound() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of());
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(List.of());
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(List.of(
             caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithDeadlineCrossedProcessed
         ));
@@ -148,7 +148,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
             .thenReturn(caseDataWithDeadlineCrossedProcessed);
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -157,7 +157,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesHaveFutureDeadLine() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(List.of(
             caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithFutureDeadline
         ));
@@ -169,7 +169,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -178,7 +178,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotTriggerBusinessProcessEventWhenIsOrderProcessedIsNull() {
-        when(searchService.getGeneralApplications()).thenReturn(
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
                     caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                     caseDetailsWithTodayDeadLineWithOrderProcessedNull));
@@ -191,7 +191,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
                                                    getCaseData(1L, STAY_THE_CLAIM, deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
@@ -201,7 +201,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
-        when(searchService.getGeneralApplications()).thenReturn(
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
                 caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                 caseDetailsWithDeadlineCrossedNotProcessed,
@@ -227,7 +227,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
                                                    getCaseData(1L, STAY_THE_CLAIM, deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
@@ -241,14 +241,14 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetailsWithNoDeadline));
+        when(searchService.getGeneralApplications(ORDER_MADE)).thenReturn(List.of(caseDetailsWithNoDeadline));
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithNoDeadline))
             .thenReturn(caseDataWithNoDeadline);
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
