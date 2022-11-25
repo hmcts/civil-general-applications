@@ -56,9 +56,6 @@ public class JudicialNotificationService implements NotificationData {
             case SEQUENTIAL_WRITTEN_REP:
                 sequentialWrittenRepNotification(caseData);
                 break;
-            case LIST_FOR_HEARING:
-                applicationListForHearing(caseData);
-                break;
             case JUDGE_APPROVED_THE_ORDER:
                 applicationApprovedNotification(caseData);
                 break;
@@ -288,21 +285,6 @@ public class JudicialNotificationService implements NotificationData {
 
     private boolean isSendEmailToDefendant(CaseData caseData) {
         return areRespondentSolicitorsPresent(caseData) && !isApplicationCloaked(caseData);
-    }
-
-    private void applicationListForHearing(CaseData caseData) {
-        if (areRespondentSolicitorsPresent(caseData)) {
-            sendEmailToRespondent(
-                caseData,
-                notificationProperties.getJudgeListsForHearingRespondentEmailTemplate()
-            );
-        }
-
-        sendNotificationForJudicialDecision(
-            caseData,
-            caseData.getGeneralAppApplnSolicitor().getEmail(),
-            notificationProperties.getJudgeListsForHearingApplicantEmailTemplate()
-        );
     }
 
     private void applicationDismissedByJudge(CaseData caseData) {
