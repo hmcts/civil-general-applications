@@ -60,6 +60,8 @@ public class PaymentRequestUpdateCallbackService {
             if (!Objects.isNull(caseData)) {
                 if (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)) {
 
+                    log.info("Processing the callback for making Additional Payment" +
+                                 "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
                     judicialNotificationService.sendNotification(caseData);
 
@@ -68,6 +70,8 @@ public class PaymentRequestUpdateCallbackService {
 
                 } else if (caseData.getCcdState().equals(APPLICATION_PAYMENT_FAILED)) {
 
+                    log.info("Processing the callback for Application Payment Failed " +
+                                 "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
                     gaNotificationService.sendNotification(caseData);
                     createEvent(caseData, END_BUSINESS_PROCESS_GASPEC,
