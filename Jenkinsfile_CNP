@@ -66,7 +66,7 @@ withPipeline(type, product, component) {
     onPR {
         env.ENVIRONMENT = "preview"
         loadVaultSecrets(secrets)
-        enableCleanupOfHelmReleaseOnSuccess()
+       // enableCleanupOfHelmReleaseOnSuccess()
     }
     onMaster {
         env.ENVIRONMENT = "aat"
