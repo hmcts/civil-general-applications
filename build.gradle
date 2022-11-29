@@ -10,7 +10,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.42.0'
   id 'org.sonarqube' version '3.4.0.2513'
   id 'au.com.dius.pact' version '4.3.15'
-  id "org.flywaydb.flyway" version "9.8.2"
+  id "org.flywaydb.flyway" version "9.8.3"
   id "io.freefair.lombok" version "6.5.1"
 }
 
@@ -296,7 +296,7 @@ dependencies {
 
   implementation group: 'io.springfox', name: 'springfox-boot-starter', version: versions.springfoxSwagger
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.0'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
 
   implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.31.0'
   implementation group: 'org.jdbi', name: 'jdbi3-spring4', version: '3.19.0'
@@ -327,7 +327,7 @@ dependencies {
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache'
-  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.0.3'
+  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.1.2'
 
   implementation group: 'org.springframework.security', name: 'spring-security-web', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-config', version : versions.springSecurity
@@ -352,8 +352,8 @@ dependencies {
   implementation group: 'org.camunda.bpm.extension.rest', name: 'camunda-rest-client-spring-boot-starter', version: '0.0.4'
 
   implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.17.0'
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.14.0'
-  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.14.0'
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.14.1'
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.14.1'
 
   // JAX-B dependencies for JDK 9+
   implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
