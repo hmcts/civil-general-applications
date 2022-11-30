@@ -57,17 +57,17 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient)
         throws NotificationException {
-            try {
-                notificationService.sendMail(
-                    recipient,
-                    notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
-                    addProperties(caseData),
-                    String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
-                );
-            }catch (NotificationException e) {
-                throw new NotificationException(e);
-            }
+        try {
+            notificationService.sendMail(
+                recipient,
+                notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
+                addProperties(caseData),
+                String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
+            );
+        } catch (NotificationException e) {
+            throw new NotificationException(e);
         }
+    }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
