@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.search.Query;
@@ -20,6 +23,23 @@ public class CaseStateSearchServiceTest extends ElasticSearchServiceTest {
             matchQuery("state", caseState.toString()),
             emptyList(),
             fromValue
+        );
+    }
+
+    @Override
+    protected Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState) {
+        MatchQueryBuilder queryCaseState = QueryBuilders.matchQuery("state", caseState.toString());
+        MatchQueryBuilder queryGaType = QueryBuilders.matchQuery("data.generalAppType.types", "STAY_THE_CLAIM");
+        MatchQueryBuilder queryOrderProcessStatus = QueryBuilders
+            .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByStayScheduler", "No");
+
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        query.must(queryCaseState).must(queryGaType).must(queryOrderProcessStatus);
+
+        return new Query(
+            query,
+            emptyList(),
+            startIndex
         );
     }
 }

@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.search.Query;
@@ -25,4 +28,20 @@ public class CaseStateSearchService extends ElasticSearchService {
         );
     }
 
+    @Override
+    Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState) {
+        MatchQueryBuilder queryCaseState = QueryBuilders.matchQuery("state", caseState.toString());
+        MatchQueryBuilder queryGaType = QueryBuilders.matchQuery("data.generalAppType.types", "STAY_THE_CLAIM");
+        MatchQueryBuilder queryOrderProcessStatus = QueryBuilders
+            .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByStayScheduler", "No");
+
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        query.must(queryCaseState).must(queryGaType).must(queryOrderProcessStatus);
+
+        return new Query(
+            query,
+            emptyList(),
+            startIndex
+        );
+    }
 }

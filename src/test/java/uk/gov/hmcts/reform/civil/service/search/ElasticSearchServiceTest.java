@@ -38,9 +38,11 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplications(CaseState.ORDER_MADE)).isEqualTo(searchResult.getCases());
+        assertThat(searchService.getGeneralApplications(CaseState.AWAITING_WRITTEN_REPRESENTATIONS))
+            .isEqualTo(searchResult.getCases());
         verify(coreCaseDataService).searchGeneralApplication(queryCaptor.capture());
-        assertThat(queryCaptor.getValue()).usingRecursiveComparison().isEqualTo(buildQuery(0, CaseState.ORDER_MADE));
+        assertThat(queryCaptor.getValue()).usingRecursiveComparison()
+            .isEqualTo(buildQuery(0, CaseState.AWAITING_WRITTEN_REPRESENTATIONS));
     }
 
     @Test
@@ -49,9 +51,10 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplications(CaseState.ORDER_MADE)).isEmpty();
+        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).isEmpty();
         verify(coreCaseDataService).searchGeneralApplication(queryCaptor.capture());
-        assertThat(queryCaptor.getValue()).usingRecursiveComparison().isEqualTo(buildQuery(0, CaseState.ORDER_MADE));
+        assertThat(queryCaptor.getValue()).usingRecursiveComparison()
+            .isEqualTo(queryForOrderMade_StayClaim(0, CaseState.ORDER_MADE));
     }
 
     @Test
@@ -60,9 +63,10 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplications(CaseState.ORDER_MADE)).hasSize(1);
+        assertThat(searchService.getGeneralApplications(CaseState.AWAITING_RESPONDENT_RESPONSE)).hasSize(1);
         verify(coreCaseDataService).searchGeneralApplication(queryCaptor.capture());
-        assertThat(queryCaptor.getValue()).usingRecursiveComparison().isEqualTo(buildQuery(0, CaseState.ORDER_MADE));
+        assertThat(queryCaptor.getValue()).usingRecursiveComparison()
+            .isEqualTo(buildQuery(0, CaseState.AWAITING_RESPONDENT_RESPONSE));
     }
 
     @Test
@@ -71,12 +75,14 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplications(CaseState.ORDER_MADE)).hasSize(2);
+        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).hasSize(2);
         verify(coreCaseDataService, times(2)).searchGeneralApplication(queryCaptor.capture());
 
         List<Query> capturedQueries = queryCaptor.getAllValues();
-        assertThat(capturedQueries.get(0)).usingRecursiveComparison().isEqualTo(buildQuery(0, CaseState.ORDER_MADE));
-        assertThat(capturedQueries.get(1)).usingRecursiveComparison().isEqualTo(buildQuery(10, CaseState.ORDER_MADE));
+        assertThat(capturedQueries.get(0)).usingRecursiveComparison()
+            .isEqualTo(queryForOrderMade_StayClaim(0, CaseState.ORDER_MADE));
+        assertThat(capturedQueries.get(1)).usingRecursiveComparison()
+            .isEqualTo(queryForOrderMade_StayClaim(10, CaseState.ORDER_MADE));
     }
 
     protected SearchResult buildSearchResultWithTotalCases(int i) {
@@ -91,4 +97,6 @@ abstract class ElasticSearchServiceTest {
     }
 
     protected abstract Query buildQuery(int fromValue, CaseState caseState);
+
+    protected abstract Query queryForOrderMade_StayClaim(int fromValue, CaseState caseState);
 }

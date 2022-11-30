@@ -45,7 +45,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     }
 
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {
-        List<CaseDetails> orderMadeCases = caseSearchService.getGeneralApplications(ORDER_MADE);
+        List<CaseDetails> orderMadeCases = caseSearchService.getOrderMadeGeneralApplications(ORDER_MADE);
         return orderMadeCases.stream()
             .map(caseDetailsConverter::toCaseData)
             .filter(caseData -> caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null

@@ -35,7 +35,26 @@ public abstract class ElasticSearchService {
         return caseDetails;
     }
 
+    public List<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState) {
+
+        SearchResult searchResult = coreCaseDataService
+            .searchGeneralApplication(queryForOrderMade_StayClaim(START_INDEX, caseState));
+
+        int pages = calculatePages(searchResult);
+        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+
+        for (int i = 1; i < pages; i++) {
+            SearchResult result = coreCaseDataService
+                .searchGeneralApplication(queryForOrderMade_StayClaim(i * ES_DEFAULT_SEARCH_LIMIT, caseState));
+            caseDetails.addAll(result.getCases());
+        }
+
+        return caseDetails;
+    }
+
     abstract Query query(int startIndex, CaseState caseState);
+
+    abstract Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState);
 
     private int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();
