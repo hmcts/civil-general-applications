@@ -64,33 +64,32 @@ public class PaymentRequestUpdateCallbackService {
                                  + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     try {
                         judicialNotificationService.sendNotification(caseData);
+
+                        caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
+
+                        createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
+                                    serviceRequestUpdateDto.getCcdCaseNumber());
+
                     } catch (NotificationException e) {
                         log.info("processing callback failed at Judicial Notification service, "
                                      + "please update the caseData with the Additional payment details "
                                      + "and trigger MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID event  %s ", e);
                     }
-
-                    caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
-
-                    createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
-                                serviceRequestUpdateDto.getCcdCaseNumber());
-
                 } else if (caseData.getCcdState().equals(APPLICATION_PAYMENT_FAILED)) {
 
-                    log.info("Processing the callback for Application Payment Failed "
+                    log.error("Processing the callback for Application Payment Failed "
                                  + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     try {
                         gaNotificationService.sendNotification(caseData);
+                        caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
+
+                        createEvent(caseData, END_BUSINESS_PROCESS_GASPEC,
+                                    serviceRequestUpdateDto.getCcdCaseNumber());
                     } catch (NotificationException e) {
-                        log.info("processing callback failed at GA Notification service, "
+                        log.error("processing callback failed at GA Notification service, "
                                     + "please update the caseData with the payment details "
                                     + "and trigger END_BUSINESS_PROCESS_GASPEC event  %s ", e);
                     }
-
-                    caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
-
-                    createEvent(caseData, END_BUSINESS_PROCESS_GASPEC,
-                                serviceRequestUpdateDto.getCcdCaseNumber());
                 }
             }
 

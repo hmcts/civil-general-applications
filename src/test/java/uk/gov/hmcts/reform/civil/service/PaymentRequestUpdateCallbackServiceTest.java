@@ -30,6 +30,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
@@ -149,6 +150,40 @@ class PaymentRequestUpdateCallbackServiceTest {
     }
 
     @Test
+    public void shouldNotProceed_WhenAdditionalPaymentExist_WithPaymentFail_AndNotificationServiceIsDown() {
+
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
+        caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .status(FAILED)
+                                                                    .customerReference(null)
+                                                                    .reference(REFERENCE)
+                                                                    .errorCode(null)
+                                                                    .errorMessage(null)
+                                                                    .build())
+                                      .build())
+            .build();
+        CaseDetails caseDetails = buildCaseDetails(caseData);
+
+        when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
+        when(caseDetailsConverter.toCaseData(caseDetails))
+            .thenReturn(caseData);
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
+
+        doThrow(buildNotificationException())
+            .when(judicialNotificationService)
+            .sendNotification(caseData);
+
+        paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
+
+        verify(coreCaseDataService, never()).startGaUpdate(any(), any());
+        verify(coreCaseDataService, never()).submitGaUpdate(any(), any());
+        verify(coreCaseDataService, never()).triggerEvent(any(), any());
+    }
+
+    @Test
     public void shouldNotProceed_WhenPaymentFailed() {
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build();
@@ -226,7 +261,6 @@ class PaymentRequestUpdateCallbackServiceTest {
             .thenReturn(caseData);
         when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
-
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
         CaseState c = caseData.getCcdState();
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
@@ -234,6 +268,35 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
 
+    }
+
+    @Test
+    public void shouldNotProceedAfterInitialPaymentFailureIsSuccessAndNotificationServiceDown() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder().build();
+        caseData = caseData.toBuilder().ccdState(APPLICATION_PAYMENT_FAILED).build();
+        CaseDetails caseDetails = buildCaseDetails(caseData);
+
+        when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
+        when(caseDetailsConverter.toCaseData(caseDetails))
+            .thenReturn(caseData);
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
+
+        doThrow(buildNotificationException())
+            .when(gaNotificationService)
+            .sendNotification(caseData);
+
+        paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
+
+        verify(coreCaseDataService, never()).startGaUpdate(any(), any());
+        verify(coreCaseDataService, never()).submitGaUpdate(any(), any());
+        verify(coreCaseDataService, never()).triggerEvent(any(), any());
+
+    }
+
+    private NotificationException buildNotificationException() {
+        return new NotificationException(new Exception("Notification Exception"));
     }
 
 }
