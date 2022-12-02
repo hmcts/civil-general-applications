@@ -52,6 +52,8 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -110,6 +112,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private DeadlinesCalculator deadlinesCalculator;
 
+    @MockBean
+    private IdamClient idamClient;
+
+    @MockBean
+    private UserDetails userDetails;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -136,6 +144,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class AboutToStartCallbackHandling {
         YesOrNo hasRespondentResponseVul = NO;
+
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
 
         @Test
         void testAboutToStartForHearingGeneralOrderRecital() {
@@ -532,7 +546,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
+            String expectedRecitalText = "test judge \n"
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
@@ -553,7 +567,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForCloakedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
+            String expectedRecitalText = "test judge \n"
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
@@ -574,7 +588,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForRequestMoreInfoCloakedAppln() {
-            String judgeRecitalText = "<Title> <Name> \n"
+            String judgeRecitalText = "test judge \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -590,7 +604,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForRequestMoreInfoUrgentAppln() {
-            String judgeRecitalText = "<Title> <Name> \n"
+            String judgeRecitalText = "test judge \n"
                 + "Upon reviewing the application made and upon considering the information provided by the parties, "
                 + "the court requests more information from the applicant.";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -606,7 +620,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "<Title> <Name> \n"
+            String expectedRecitalText = "test judge \n"
                 + "Upon reading the application of Defendant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
@@ -1596,6 +1610,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
 
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
+
         @Test
         void shouldReturnNOForJudgeApproveEditOptionDate() {
 
@@ -1697,7 +1717,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
+            String expectedRecitalText = "test judge \n"
                 + "Upon reading the application of Claimant dated 15 January 22 and upon the "
                 + "application of ApplicantPartyName dated %s and upon considering the information "
                 + "provided by the parties";
@@ -1722,6 +1742,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + " should be given, is required.";
         public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
                 + " should be given, cannot be in past.";
+
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
 
         @Test
         void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
