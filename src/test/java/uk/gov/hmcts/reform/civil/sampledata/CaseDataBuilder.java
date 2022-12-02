@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -101,15 +102,21 @@ public class CaseDataBuilder {
     protected OrganisationPolicy respondent1OrganisationPolicy;
     protected YesOrNo respondent2SameLegalRepresentative;
     protected OrganisationPolicy respondent2OrganisationPolicy;
+    protected GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
     protected CaseState ccdState;
     // Claimant Response
     protected BusinessProcess businessProcess;
     protected List<Element<GeneralApplication>> generalApplications;
-    protected List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
-    protected List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
+    protected List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
+    protected List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails;
+    protected List<Element<GADetailsRespondentSol>> respondentSolTwoGaAppDetails;
+    protected List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
+
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private YesOrNo isMultiParty;
+    protected YesOrNo addApplicant2;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
+    protected GAMakeApplicationAvailableCheck makeAppVisibleToRespondents;
     //General Application
     protected LocalDate submittedOn;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
@@ -143,6 +150,11 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder addApplicant2(YesOrNo addApplicant2) {
+        this.addApplicant2 = addApplicant2;
+        return this;
+    }
+
     public CaseDataBuilder applicantSolicitor1UserDetails(IdamUserDetails applicantSolicitor1UserDetails) {
         this.applicantSolicitor1UserDetails = applicantSolicitor1UserDetails;
         return this;
@@ -154,6 +166,11 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck makeAppVisibleToRespondents) {
+        this.makeAppVisibleToRespondents = makeAppVisibleToRespondents;
+        return this;
+    }
+
     public CaseDataBuilder ccdState(CaseState ccdState) {
         this.ccdState = ccdState;
         return this;
@@ -161,13 +178,25 @@ public class CaseDataBuilder {
 
     public CaseDataBuilder generalApplicationsDetails(List<Element<GeneralApplicationsDetails>>
                                                           generalApplicationsDetails) {
-        this.generalApplicationsDetails = generalApplicationsDetails;
+        this.claimantGaAppDetails = generalApplicationsDetails;
         return this;
     }
 
     public CaseDataBuilder gaDetailsRespondentSol(List<Element<GADetailsRespondentSol>>
                                                       gaDetailsRespondentSol) {
-        this.gaDetailsRespondentSol = gaDetailsRespondentSol;
+        this.respondentSolGaAppDetails = gaDetailsRespondentSol;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsRespondentSolTwo(List<Element<GADetailsRespondentSol>>
+                                                      gaDetailsRespondentSolTwo) {
+        this.respondentSolTwoGaAppDetails = gaDetailsRespondentSolTwo;
+        return this;
+    }
+
+    public CaseDataBuilder gaDetailsMasterCollection(List<Element<GeneralApplicationsDetails>>
+                                                         gaDetailsMasterCollection) {
+        this.gaDetailsMasterCollection = gaDetailsMasterCollection;
         return this;
     }
 
@@ -255,6 +284,11 @@ public class CaseDataBuilder {
         return new CaseDataBuilder();
     }
 
+    public CaseDataBuilder judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo) {
+        this.judicialDecisionRequestMoreInfo = judicialDecisionRequestMoreInfo;
+        return this;
+    }
+
     public CaseDataBuilder atStateClaimDraft() {
 
         return this;
@@ -265,6 +299,9 @@ public class CaseDataBuilder {
             .businessProcess(businessProcess)
             .ccdState(ccdState)
             .isMultiParty(isMultiParty)
+            .addApplicant2(addApplicant2)
+            .respondentSolTwoGaAppDetails(respondentSolTwoGaAppDetails)
+            .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .applicantSolicitor1UserDetails(applicantSolicitor1UserDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .respondentSolicitor1EmailAddress(respondentSolicitor1EmailAddress)
@@ -272,6 +309,7 @@ public class CaseDataBuilder {
             .respondent1OrganisationPolicy(respondent1OrganisationPolicy)
             .respondent2OrganisationPolicy(respondent2OrganisationPolicy)
             .generalAppApplnSolicitor(generalAppApplnSolicitor)
+            .judicialDecisionRequestMoreInfo(judicialDecisionRequestMoreInfo)
             .generalAppRespondentSolicitors(generalAppRespondentSolicitors)
             .ccdCaseReference(ccdCaseReference)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
@@ -281,12 +319,13 @@ public class CaseDataBuilder {
             .generalAppUrgencyRequirement(gaUrgencyRequirement)
             .generalAppRespondentAgreement(gaRespondentOrderAgreement)
             .generalAppParentCaseLink(generalAppParentCaseLink)
-            .generalApplicationsDetails(generalApplicationsDetails)
-            .gaDetailsRespondentSol(gaDetailsRespondentSol)
+            .claimantGaAppDetails(claimantGaAppDetails)
+            .respondentSolGaAppDetails(respondentSolGaAppDetails)
             .generalAppPBADetails(gaPbaDetails)
             .applicant1OrganisationPolicy(applicant1OrganisationPolicy)
             .generalAppNotificationDeadlineDate(generalAppDeadlineNotificationDate)
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
+            .makeAppVisibleToRespondents(makeAppVisibleToRespondents)
             .judicialDecisionMakeOrder(judicialMakeAnOrder)
             .generalAppType(generalAppType)
             .build();
@@ -744,7 +783,12 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .applicationIsCloaked(isCloak)
             .submittedOn(APPLICATION_SUBMITTED_DATE)
-            .generalApplicationsDetails(wrapElements(GeneralApplicationsDetails.builder()
+            .gaDetailsMasterCollection(wrapElements(GeneralApplicationsDetails.builder()
+                                                        .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
+                                                        .caseLink(CaseLink.builder()
+                                                                      .caseReference(String.valueOf(CASE_ID)).build())
+                                                        .build()))
+            .claimantGaAppDetails(wrapElements(GeneralApplicationsDetails.builder()
                                                         .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
                                                          .caseLink(CaseLink.builder()
                                                                        .caseReference(String.valueOf(CASE_ID)).build())
