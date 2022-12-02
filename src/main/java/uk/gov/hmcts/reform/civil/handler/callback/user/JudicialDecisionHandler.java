@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -75,8 +75,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
-    private final DeadlinesCalculator deadlinesCalculator;
-    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
+    private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -161,27 +160,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
+
     private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_START),
-            this::checkInputForNextPage,
-            callbackKey(MID, VALIDATE_MAKE_AN_ORDER),
-            this::gaValidateMakeAnOrder,
-            callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN),
-            this::gaValidateMakeDecisionScreen,
-            callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN),
-            this::gaValidateRequestMoreInfoScreen,
-            callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE),
-            this::gaValidateWrittenRepresentationsDate,
-            callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN),
-            this::gaValidateHearingOrder,
-            callbackKey(ABOUT_TO_SUBMIT),
-            this::setJudgeBusinessProcess,
-            callbackKey(SUBMITTED),
-            this::buildConfirmation
+            callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
+            callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder,
+            callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
+            callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
+            callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
+            callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
+            callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
+            callbackKey(SUBMITTED), this::buildConfirmation
         );
 
     }
@@ -499,6 +491,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
+        String caseId = caseData.getCcdCaseReference().toString();
+
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
                 GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
@@ -520,6 +514,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             dataBuilder.applicationIsCloaked(NO);
         } else {
             dataBuilder.applicationIsCloaked(isApplicationUncloaked);
+        }
+
+        /*
+        * Assign case respondent solicitors if judge uncloak the application
+        * */
+
+        if (isApplicationUncloaked != null
+            && isApplicationUncloaked.equals(NO)) {
+
+            assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
+
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -14,28 +13,29 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
+    private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
+
     private final ObjectMapper mapper;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
-    private static final int FIRST_SOLICITOR = 0;
-    private static final int SECOND_SOLICITOR = 1;
 
     private final CoreCaseUserService coreCaseUserService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -75,25 +75,16 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
 
-            if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
-                GASolicitorDetailsGAspec respondentSolicitor1 = caseData.getGeneralAppRespondentSolicitors().get(
-                        FIRST_SOLICITOR)
-                    .getValue();
+            /*
+             * Don't assign the case to respondent solicitors if GA is without notice
+             * */
+            if (ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
 
-                coreCaseUserService
-                    .assignCase(caseId, respondentSolicitor1.getId(),
-                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
-                if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
-
-                    GASolicitorDetailsGAspec respondentSolicitor2 = caseData.getGeneralAppRespondentSolicitors()
-                        .get(SECOND_SOLICITOR).getValue();
-
-                    coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor2.getId(),
-                                    respondentSolicitor2.getOrganisationIdentifier(), RESPONDENTSOLICITORTWO);
-                }
             }
+
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
                 .build();
