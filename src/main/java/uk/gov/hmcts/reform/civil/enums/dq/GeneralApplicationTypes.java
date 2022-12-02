@@ -12,12 +12,12 @@ public enum GeneralApplicationTypes {
     EXTEND_TIME("Extend time"),
     AMEND_A_STMT_OF_CASE("Amend a statement of case"),
     RELIEF_FROM_SANCTIONS("Relief from sanctions"),
-    SET_ASIDE_JUDGEMENT("Set aside judgement"),
+    SET_ASIDE_JUDGEMENT("Set aside judgment"),
     VARY_ORDER("Vary order"),
     ADJOURN_VACATE_HEARING("Adjourn or vacate a hearing"),
     UNLESS_ORDER("Unless order"),
     OTHER("Other"),
-    VARY_JUDGEMENT("Vary judgement");
+    VARY_JUDGEMENT("Vary judgment");
 
     private final String displayedValue;
 }
