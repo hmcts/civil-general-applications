@@ -80,8 +80,10 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails civilServiceUserRoles;
     private final List<Element<Document>> generalAppEvidenceDocument;
     private final List<Element<GeneralApplication>> generalApplications;
-    private final List<Element<GeneralApplicationsDetails>> generalApplicationsDetails;
-    private final List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol;
+    private final List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
+    private final List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
+    private final List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails;
+    private final List<Element<GADetailsRespondentSol>> respondentSolTwoGaAppDetails;
     private final GAJudicialDecision judicialDecision;
     private final List<Element<SolicitorDetails>> applicantSolicitors;
     private final List<Element<SolicitorDetails>> defendantSolicitors;
