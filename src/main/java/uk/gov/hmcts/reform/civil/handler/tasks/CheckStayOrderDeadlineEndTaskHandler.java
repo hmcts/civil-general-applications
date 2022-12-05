@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.OrderMadeSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 
 @Slf4j
@@ -28,7 +29,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @ConditionalOnExpression("${judge.revisit.event.emitter.enabled:true}")
 public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
 
-    private final OrderMadeSearchService caseSearchService;
+    private final CaseStateSearchService caseSearchService;
 
     private final CoreCaseDataService coreCaseDataService;
 
@@ -44,7 +45,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     }
 
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {
-        List<CaseDetails> orderMadeCases = caseSearchService.getGeneralApplications();
+        List<CaseDetails> orderMadeCases = caseSearchService.getOrderMadeGeneralApplications(ORDER_MADE);
         return orderMadeCases.stream()
             .map(caseDetailsConverter::toCaseData)
             .filter(caseData -> caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
