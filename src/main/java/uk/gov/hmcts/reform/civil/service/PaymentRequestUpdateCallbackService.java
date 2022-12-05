@@ -72,7 +72,8 @@ public class PaymentRequestUpdateCallbackService {
 
                     } catch (NotificationException e) {
                         log.info("processing callback failed at Judicial Notification service, "
-                                     + "please update the caseData with the Additional payment details "
+                                     + "please update the caseData with ga status "
+                                     + "along with the Additional payment details "
                                      + "and trigger MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID event  %s ", e);
                     }
                 } else if (caseData.getCcdState().equals(APPLICATION_PAYMENT_FAILED)) {
