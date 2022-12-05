@@ -118,13 +118,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "%s \n"
         + "Upon reading the application of %s dated %s and upon the "
-        + "application of %s dated %s and upon considering the information provided by the parties";
+        + "application of %s dated %s and upon considering the information provided by the %s";
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
         + "Upon reading the "
-        + "application of %s dated %s and upon considering the information provided by the parties";
+        + "application of %s dated %s and upon considering the information provided by the %s";
     private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
         + "Upon reviewing the application made and upon considering the information "
-        + "provided by the parties, the court requests more information from the applicant.";
+        + "provided by the %s, the court requests more information from the applicant.";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -283,8 +283,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
         }
-        gaJudicialRequestMoreInfoBuilder.judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
-                                                                 judgeNameTitle)).build();
+        gaJudicialRequestMoreInfoBuilder
+            .judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
+                                     judgeNameTitle, (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                    == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
+                    || YES.equals(caseData.getParentClaimantIsApplicant()))
+                    ? "Claimant" : "Defendant"))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
     }
@@ -384,7 +388,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 ? "Claimant" : "Defendant",
             DATE_FORMATTER.format(caseData.getCreatedDate()),
             caseData.getApplicantPartyName(),
-            DATE_FORMATTER.format(LocalDate.now())
+            DATE_FORMATTER.format(LocalDate.now()),
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? "parties" : (caseData
+                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant")
         );
     }
 
@@ -395,7 +402,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
-            DATE_FORMATTER.format(caseData.getCreatedDate())
+            DATE_FORMATTER.format(caseData.getCreatedDate()),
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? "parties" : (caseData
+                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant")
         );
     }
 
