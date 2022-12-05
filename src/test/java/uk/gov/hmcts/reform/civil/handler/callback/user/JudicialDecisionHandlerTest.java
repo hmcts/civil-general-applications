@@ -47,6 +47,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
@@ -65,7 +67,10 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -89,6 +94,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     JudicialDecisionHandler.class,
+    AssignCaseToResopondentSolHelper.class,
     DeadlinesCalculator.class,
     JacksonAutoConfiguration.class},
     properties = {"reference.database.enabled=false"})
@@ -120,6 +126,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private CoreCaseUserService coreCaseUserService;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -2001,7 +2010,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
+                .generalAppRespondentSolicitors(getRespondentSolicitors()).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -2011,9 +2021,44 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldCallAssignCase_2Times() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
+            verify(coreCaseUserService, times(2)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            try {
+                var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            } catch (Exception e) {
+                assertEquals("java.lang.NullPointerException", e.toString());
+            }
+        }
+
+        @Test
         void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES)
+                .generalAppRespondentSolicitors(getRespondentSolicitors()).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -2026,6 +2071,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldBeUncloaked_WhenRequestMoreInformation_WithNoticeApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES, null)
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .build();
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -2040,8 +2086,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldUncloakApplication_WhenJudgeUncloaked_OrderMadeApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakApplication(YES)
-                    .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
-                                                     .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
+                                                 .makeAppAvailableCheck(getMakeAppVisible()).build())
                 .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -2052,9 +2099,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getApplicationBusinessProcess() {
-            List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
             return CaseData.builder()
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .ccdCaseReference(123345689L)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(LIST_FOR_A_HEARING).build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
@@ -2073,9 +2121,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         private CaseData getApplicationWithPreferredTypeNotInPerson() {
-            List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+
             return CaseData.builder()
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .ccdCaseReference(123345689L)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(LIST_FOR_A_HEARING).build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
@@ -2604,6 +2653,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return DynamicList.builder()
             .listItems(List.of(location1, location2, location3, location4))
             .value(location1).build();
+    }
+
+    public List<Element<GASolicitorDetailsGAspec>> getRespondentSolicitors() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email("test@gmail.com").organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email("test@gmail.com").organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
+
+        return respondentSols;
     }
 }
 
