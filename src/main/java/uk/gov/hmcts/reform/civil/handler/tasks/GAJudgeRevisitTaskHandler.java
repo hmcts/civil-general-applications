@@ -8,15 +8,16 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.DirectionOrderSearchService;
-import uk.gov.hmcts.reform.civil.service.search.RequestForInformationrSearchService;
-import uk.gov.hmcts.reform.civil.service.search.WrittenRepresentationSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
@@ -27,9 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
-    private final WrittenRepresentationSearchService writtenRepresentationSearchService;
-    private final DirectionOrderSearchService directionOrderSearchService;
-    private final RequestForInformationrSearchService requestForInformationrSearchService;
+    private final CaseStateSearchService caseStateSearchService;
 
     private final CoreCaseDataService coreCaseDataService;
 
@@ -62,8 +61,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     }
 
     private List<CaseDetails> getWrittenRepCaseReadyToJudgeRevisit() {
-        List<CaseDetails> judgeReadyToRevisitWrittenRepCases = writtenRepresentationSearchService
-            .getGeneralApplications();
+        List<CaseDetails> judgeReadyToRevisitWrittenRepCases = caseStateSearchService
+            .getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
 
         return judgeReadyToRevisitWrittenRepCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
@@ -80,8 +79,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     }
 
     private List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
-        List<CaseDetails> judgeReadyToRevisitDirectionOrderCases = directionOrderSearchService
-            .getGeneralApplications();
+        List<CaseDetails> judgeReadyToRevisitDirectionOrderCases = caseStateSearchService
+            .getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
 
         return judgeReadyToRevisitDirectionOrderCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
@@ -93,8 +92,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     }
 
     private List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
-        List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = requestForInformationrSearchService
-            .getGeneralApplications();
+        List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = caseStateSearchService
+            .getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
 
         return judgeReadyToRevisitRequestForInfoCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a)

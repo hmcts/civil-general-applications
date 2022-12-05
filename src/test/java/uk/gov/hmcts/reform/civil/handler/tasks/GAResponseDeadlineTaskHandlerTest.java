@@ -11,7 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
@@ -38,7 +39,7 @@ class GAResponseDeadlineTaskHandlerTest {
     private ExternalTaskService externalTaskService;
 
     @MockBean
-    private AwaitingResponseStatusSearchService searchService;
+    private CaseStateSearchService searchService;
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
@@ -68,22 +69,23 @@ class GAResponseDeadlineTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenZeroCasesFound() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of());
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of());
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFound() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
+            .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         verifyNoMoreInteractions(coreCaseDataService);
@@ -93,22 +95,22 @@ class GAResponseDeadlineTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineNotFound() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetails3));
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of(caseDetails3));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
-        when(searchService.getGeneralApplications()).thenReturn(List.of(caseDetails4));
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of(caseDetails4));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplications();
+        verify(searchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
