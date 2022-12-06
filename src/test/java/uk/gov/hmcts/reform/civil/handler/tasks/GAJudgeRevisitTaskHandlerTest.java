@@ -15,9 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.DirectionOrderSearchService;
-import uk.gov.hmcts.reform.civil.service.search.RequestForInformationrSearchService;
-import uk.gov.hmcts.reform.civil.service.search.WrittenRepresentationSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -52,13 +50,7 @@ class GAJudgeRevisitTaskHandlerTest {
     private ExternalTaskService externalTaskService;
 
     @MockBean
-    private WrittenRepresentationSearchService writtenRepresentationSearchService;
-
-    @MockBean
-    private DirectionOrderSearchService directionOrderSearchService;
-
-    @MockBean
-    private RequestForInformationrSearchService requestForInformationrSearchService;
+    private CaseStateSearchService caseStateSearchService;
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
@@ -101,22 +93,23 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenZeroCasesFound() {
-        when(directionOrderSearchService.getGeneralApplications()).thenReturn(List.of());
+        when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS)).thenReturn(List.of());
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(directionOrderSearchService).getGeneralApplications();
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verifyNoInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
     void shouldEmitBusinessProcessEvent_whenDirectionOrderDateIsToday() {
-        when(directionOrderSearchService.getGeneralApplications()).thenReturn(List.of(caseDetailsDirectionOrder));
+        when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS))
+            .thenReturn(List.of(caseDetailsDirectionOrder));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(directionOrderSearchService).getGeneralApplications();
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -125,12 +118,12 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsToday() {
-        when(writtenRepresentationSearchService.getGeneralApplications())
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationC));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(writtenRepresentationSearchService).getGeneralApplications();
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -139,12 +132,12 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
-        when(writtenRepresentationSearchService.getGeneralApplications())
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationS));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(writtenRepresentationSearchService).getGeneralApplications();
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService).triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -153,12 +146,12 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsToday() {
-        when(requestForInformationrSearchService.getGeneralApplications())
+        when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
             .thenReturn(List.of(caseDetailRequestForInformation));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(requestForInformationrSearchService).getGeneralApplications();
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);

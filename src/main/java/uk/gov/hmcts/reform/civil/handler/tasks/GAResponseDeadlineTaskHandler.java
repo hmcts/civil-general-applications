@@ -8,13 +8,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.search.AwaitingResponseStatusSearchService;
+import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAIT
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
 public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
 
-    private final AwaitingResponseStatusSearchService caseSearchService;
+    private final CaseStateSearchService caseSearchService;
 
     private final CoreCaseDataService coreCaseDataService;
 
@@ -45,7 +46,8 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
     }
 
     private List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
-        List<CaseDetails> awaitingResponseCases = caseSearchService.getGeneralApplications();
+        List<CaseDetails> awaitingResponseCases = caseSearchService
+            .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         return awaitingResponseCases.stream()
             .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
                 && now().isAfter(
