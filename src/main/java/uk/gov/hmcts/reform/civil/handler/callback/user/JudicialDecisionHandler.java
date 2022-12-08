@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -440,14 +439,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
-            } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
-                && caseData.getJudicialListForHearing() != null) {
-                judgeDecision = hearingOrderGenerator.generate(
-                    caseDataBuilder.build(),
-                    callbackParams.getParams().get(BEARER_TOKEN).toString()
-                );
-                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
-        }
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -669,6 +661,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+
+        CaseDocument judgeDecision = null;
+        if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
+            && caseData.getJudicialListForHearing() != null) {
+            judgeDecision = hearingOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.judicialListHearingDocPreview(judgeDecision.getDocumentLink());
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
