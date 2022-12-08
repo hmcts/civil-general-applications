@@ -90,7 +90,7 @@ public class CaseData implements MappableObject {
     private final List<Element<GARespondentResponse>> respondentsResponses;
     private final YesOrNo applicationIsCloaked;
     private final GAJudicialMakeAnOrder judicialDecisionMakeOrder;
-    private final CaseDocument judicialOrderDocPreview;
+    private final Document judicialMakeOrderDocPreview;
     private final GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
     private final GAJudicialWrittenRepresentations judicialDecisionMakeAnOrderForWrittenRepresentations;
     private final String judgeRecitalText;

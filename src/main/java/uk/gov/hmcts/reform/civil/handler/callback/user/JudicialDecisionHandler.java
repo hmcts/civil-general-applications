@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -423,7 +424,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.judicialOrderDocPreview(judgeDecision);
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
                 && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
                 && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
@@ -431,21 +432,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.judicialOrderDocPreview(judgeDecision);
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
                 && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
                 judgeDecision = dismissalOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.judicialOrderDocPreview(judgeDecision);
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
                 && caseData.getJudicialListForHearing() != null) {
                 judgeDecision = hearingOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.judicialOrderDocPreview(judgeDecision);
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
         }
         }
 
