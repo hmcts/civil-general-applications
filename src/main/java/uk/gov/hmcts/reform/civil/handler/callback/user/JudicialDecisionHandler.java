@@ -191,7 +191,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
 
-        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData, judgeNameTitle)).build();
+        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(
+                caseData,
+                judgeNameTitle
+            ))
+            .build();
 
         YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
