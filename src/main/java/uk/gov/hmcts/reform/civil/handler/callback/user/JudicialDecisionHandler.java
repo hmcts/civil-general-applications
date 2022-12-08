@@ -64,6 +64,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
@@ -77,6 +78,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
 @RequiredArgsConstructor
@@ -641,6 +643,31 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 getJudicalApplicantSequentialDatePupulatedText(caseData)).build();
         } else {
             caseDataBuilder.judicialConcurrentDateText(getJudicalConcurrentDatePupulatedText(caseData)).build();
+        }
+
+        CaseDocument judgeDecision = null;
+
+        if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+            && judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null
+            && judicialWrittenRepresentationsDate.getSequentialApplicantMustRespondWithin() != null) {
+
+            judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
+
+        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+            && judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy() != null) {
+
+            judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
+
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
