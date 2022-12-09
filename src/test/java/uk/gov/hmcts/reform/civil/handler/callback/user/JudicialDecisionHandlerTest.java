@@ -33,6 +33,8 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -54,6 +56,13 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -121,6 +130,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private CoreCaseUserService coreCaseUserService;
+
+    @MockBean
+    private GeneralOrderGenerator generalOrderGenerator;
+
+    @MockBean
+    private RequestForInformationGenerator requestForInformationGenerator;
+
+    @MockBean
+    private DirectionOrderGenerator directionOrderGenerator;
+
+    @MockBean
+    private DismissalOrderGenerator dismissalOrderGenerator;
+
+    @MockBean
+    private HearingOrderGenerator hearingOrderGenerator;
+
+    @MockBean
+    private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
+
+    @MockBean
+    private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -1315,6 +1345,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         private static final String VALIDATE_WRITTEN_REPRESENTATION_PAGE = "ga-validate-written-representation-date";
         private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
 
+        @BeforeEach
+        void setup() {
+            when(hearingOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+
+            when(writtenRepresentationSequentailOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+
+            when(writtenRepresentationConcurrentOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+
+        }
+
         @Test
         void shouldReturnErrors_whenSequentialWrittenRepresentationDateIsInPast() {
             CallbackParams params = callbackParamsOf(
@@ -1726,6 +1772,19 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class MidEventForRespondToDirectionsDateValidity {
 
+        @BeforeEach
+        void setup() {
+            when(generalOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+            when(directionOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+            when(dismissalOrderGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
+        }
+
         private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
         public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
                 + " should be given, is required.";
@@ -1838,6 +1897,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             when(time.now()).thenReturn(responseDate);
             when(deadlinesCalculator.calculateApplicantResponseDeadline(
                 any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
+            when(requestForInformationGenerator.generate(any(), any()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
+                                .build());
         }
 
         private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";

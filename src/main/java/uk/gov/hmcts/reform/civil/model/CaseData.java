@@ -93,6 +93,7 @@ public class CaseData implements MappableObject {
     private final Document judicialMakeOrderDocPreview;
     private final Document judicialListHearingDocPreview;
     private final Document judicialWrittenRepDocPreview;
+    private final Document judicialRequestMoreInfoDocPreview;
     private final GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
     private final GAJudicialWrittenRepresentations judicialDecisionMakeAnOrderForWrittenRepresentations;
     private final String judgeRecitalText;

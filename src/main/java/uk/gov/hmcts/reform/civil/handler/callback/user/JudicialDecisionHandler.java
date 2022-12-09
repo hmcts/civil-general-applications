@@ -62,9 +62,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
@@ -78,7 +75,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
 @RequiredArgsConstructor
@@ -418,24 +414,21 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
             CaseDocument judgeDecision = null;
-            if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-                && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
-                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
+            if (judicialDecisionMakeOrder.getOrderText() != null
+                && judicialDecisionMakeOrder.getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
                 judgeDecision = generalOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
-            } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-                && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
-                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
+            } else if (judicialDecisionMakeOrder.getDirectionsText() != null
+                && judicialDecisionMakeOrder.getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
                 judgeDecision = directionOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
-            } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
+            } else if (judicialDecisionMakeOrder.getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
                 judgeDecision = dismissalOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
@@ -505,6 +498,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
+
+        CaseDocument judgeDecision = null;
+
+        if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+            && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null) {
+            judgeDecision = requestForInformationGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
@@ -647,8 +651,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         CaseDocument judgeDecision = null;
 
-        if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
-            && judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null
+        if (judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null
             && judicialWrittenRepresentationsDate.getSequentialApplicantMustRespondWithin() != null) {
 
             judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
@@ -658,8 +661,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
-            && judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy() != null) {
+        } else if (judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy() != null) {
 
             judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
                 caseDataBuilder.build(),
@@ -690,8 +692,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
 
         CaseDocument judgeDecision = null;
-        if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
-            && caseData.getJudicialListForHearing() != null) {
+        if (caseData.getJudicialListForHearing() != null) {
             judgeDecision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
