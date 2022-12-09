@@ -117,11 +117,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "%s \n"
-        + "Upon reading the application of %s dated %s and upon the "
-        + "application of %s dated %s and upon considering the information provided by the %s";
+        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
-        + "Upon reading the "
-        + "application of %s dated %s and upon considering the information provided by the %s";
+        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
     private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
         + "Upon reviewing the application made and upon considering the information "
         + "provided by the %s, the court requests more information from the applicant.";
@@ -375,8 +373,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
             DATE_FORMATTER.format(caseData.getCreatedDate()),
-            caseData.getApplicantPartyName(),
-            DATE_FORMATTER.format(LocalDate.now()),
             (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? "parties" : (caseData
                 .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant")
