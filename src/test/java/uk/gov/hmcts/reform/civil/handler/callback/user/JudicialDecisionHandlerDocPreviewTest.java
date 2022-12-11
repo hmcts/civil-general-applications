@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -123,7 +124,7 @@ public class JudicialDecisionHandlerDocPreviewTest extends BaseCallbackHandlerTe
     }
 
     @Nested
-    class MidEventForRespondToDirectionsDateValidity {
+    class MidEventForMakeDecisionPdfGeneration {
 
         private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
 
@@ -176,6 +177,90 @@ public class JudicialDecisionHandlerDocPreviewTest extends BaseCallbackHandlerTe
 
             assertThat(updatedData.getJudicialMakeOrderDocPreview())
                 .isEqualTo(PDFBuilder.DISMISSAL_ORDER_DOCUMENT.getDocumentLink());
+        }
+    }
+
+    @Nested
+    class MidEventForRequestMoreInfoPdfGeneration {
+
+        private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
+
+        @Test
+        void shouldGenerateRequestMoreInfoDocument() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+        }
+    }
+
+    @Nested
+    class MidEventForWrittenRepPdfGeneration {
+
+        private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
+
+        @Test
+        void shouldGenerateConcurrentApplicationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_DATE);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationConcurrentOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialWrittenRepDocPreview())
+                .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldGenerateSequentialApplicationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_DATE);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationSequentailOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialWrittenRepDocPreview())
+                .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT.getDocumentLink());
+        }
+    }
+
+    @Nested
+    class MidEventForListingForHearingPdfGeneration {
+
+        private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
+
+        @Test
+        void shouldGenerateListingForHearingDocument() {
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_HEARING_ORDER_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(hearingOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialListHearingDocPreview())
+                .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT.getDocumentLink());
         }
     }
 }
