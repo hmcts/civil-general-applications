@@ -628,10 +628,14 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForRequestMoreInfoCloakedAppln() {
+
+            // Without notice application
             String judgeRecitalText = "test judge \n"
-                + "Upon reviewing the application made and upon considering the information provided by the parties, "
-                + "the court requests more information from the applicant.";
-            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+                + "Upon the application of Claimant dated 15 January 22 and upon considering "
+                + "the information provided by the Claimant";
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
             CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -643,10 +647,30 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void testAboutToStartForRequestMoreInfoUrgentAppln() {
+        void testJudgeRecitalTextForRequestMoreInfoCloakedApplnByDefendant() {
+
+            // Without Notice application by Civil Defendant
             String judgeRecitalText = "test judge \n"
-                + "Upon reviewing the application made and upon considering the information provided by the parties, "
-                + "the court requests more information from the applicant.";
+                + "Upon the application of Defendant dated 15 January 22 and upon considering "
+                + "the information provided by the Defendant";
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
+        void testAboutToStartForRequestMoreInfoUrgentAppln() {
+
+            // With notice application by Claimant
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and "
+                + "upon considering the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -655,6 +679,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
 
             assertThat(gaJudicialRequestMoreInfo.getIsWithNotice()).isEqualTo(YES);
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
+        void testJudgeRecitalTextForRequestMoreInfoWithNoticeByDefendant() {
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and "
+                + "upon considering the information provided by the parties";
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
             assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
         }
 

@@ -121,8 +121,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
         + "Upon the application of %s dated %s and upon considering the information provided by the %s";
     private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
-        + "Upon reviewing the application made and upon considering the information "
-        + "provided by the %s, the court requests more information from the applicant.";
+        + "Upon the application of %s dated %s and upon considering the information "
+        + "provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -276,10 +276,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         gaJudicialRequestMoreInfoBuilder
             .judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
-                                     judgeNameTitle, (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
-                    == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
-                    || YES.equals(caseData.getParentClaimantIsApplicant()))
-                    ? "Claimant" : "Defendant"))).build();
+                                     judgeNameTitle,
+                                     (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant",
+                                     DATE_FORMATTER.format(caseData.getCreatedDate()),
+                                     (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                                         == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant"))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
     }
