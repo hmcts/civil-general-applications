@@ -55,13 +55,18 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         return caseData;
     }
 
-    private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient) {
-        notificationService.sendMail(
-            recipient,
-            notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
-            addProperties(caseData),
-            String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
-        );
+    private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient)
+        throws NotificationException {
+        try {
+            notificationService.sendMail(
+                recipient,
+                notificationProperties.getGeneralApplicationRespondentEmailTemplate(),
+                addProperties(caseData),
+                String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
+            );
+        } catch (NotificationException e) {
+            throw new NotificationException(e);
+        }
     }
 
     @Override

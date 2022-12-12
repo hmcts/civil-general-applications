@@ -122,8 +122,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
 
         private Map<String, String> getNotificationDataMap() {
             return Map.of(
-                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.APPLICANT_REFERENCE, "claimant",
+                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
             );
