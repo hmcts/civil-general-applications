@@ -578,6 +578,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         }
 
+        if (Objects.nonNull(caseData.getJudicialMakeOrderDocPreview())) {
+            dataBuilder.judicialMakeOrderDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialListHearingDocPreview())) {
+            dataBuilder.judicialListHearingDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialWrittenRepDocPreview())) {
+            dataBuilder.judicialWrittenRepDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialRequestMoreInfoDocPreview())) {
+            dataBuilder.judicialRequestMoreInfoDocPreview(null);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
