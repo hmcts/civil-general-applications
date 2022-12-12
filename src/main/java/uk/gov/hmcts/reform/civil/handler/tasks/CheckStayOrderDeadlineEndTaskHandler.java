@@ -26,7 +26,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@ConditionalOnExpression("${judge.revisit.event.emitter.enabled:true}")
+@ConditionalOnExpression("${judge.revisit.stayOrder.event.emitter.enabled:true}")
 public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
