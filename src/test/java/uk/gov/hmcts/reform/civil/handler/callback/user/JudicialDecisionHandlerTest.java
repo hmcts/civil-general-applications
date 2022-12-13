@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -1040,11 +1041,17 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldPrepopulateLocationIfApplicantAndRespondentHaveSameLocationPref() {
+
+            List<LocationRefData> locations = new ArrayList<>();
+            locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address")
+                              .postcode("post code").courtName("Court Name").region("Region").build());
+            when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+
+            when(helper.isApplicantAndRespondentLocationPrefSame(any())).thenReturn(true);
+
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-            when(locationRefDataService.getCourtLocations(any()))
-                .thenReturn(List.of("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH"));
-            when(helper.isApplicantAndRespondentLocationPrefSame(any())).thenReturn(true);
+
             CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1053,8 +1060,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(responseCaseData.getHearingPreferredLocation()).isNotNull();
             assertThat(responseCaseData.getHearingPreferredLocation().getValue()).isNotNull();
-            assertThat(responseCaseData.getHearingPreferredLocation().getValue().getLabel())
-                .isEqualTo("ABCD - RG0 0AL");
+            assertThat(responseCaseData.getHearingPreferredLocation().getListItems().get(0).getLabel())
+                .isEqualTo("siteName - court Address - post code");
 
         }
 

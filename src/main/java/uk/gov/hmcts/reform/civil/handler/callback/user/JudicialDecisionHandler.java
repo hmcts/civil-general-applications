@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -221,7 +222,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             ? YES : NO;
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
-        DynamicList dynamicLocationList = fromList(locationRefDataService.getCourtLocations(authToken));
+        DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
+
         boolean isAppAndRespSameCourtLocPref = helper.isApplicantAndRespondentLocationPrefSame(caseData);
         if (isAppAndRespSameCourtLocPref) {
             String applicationLocationLabel = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
@@ -255,6 +257,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
+        return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
+                .append(" - ").append(location.getCourtAddress())
+                .append(" - ").append(location.getPostcode()).toString())
+                            .collect(Collectors.toList()));
     }
 
     public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData) {

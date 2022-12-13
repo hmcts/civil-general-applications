@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -104,13 +105,21 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .hearingDetailsResp(
                 GAHearingDetails
                     .builder()
-                    .hearingPreferredLocation(fromList(locationRefDataService.getCourtLocations(authToken)))
+                    .hearingPreferredLocation(getLocationsFromList(locationRefDataService
+                                                                       .getCourtLocations(authToken)))
                     .build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(applicationExistsValidation(callbackParams))
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
+        return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
+                .append(" - ").append(location.getCourtAddress())
+                .append(" - ").append(location.getPostcode()).toString())
+                            .collect(Collectors.toList()));
     }
 
     @Override
