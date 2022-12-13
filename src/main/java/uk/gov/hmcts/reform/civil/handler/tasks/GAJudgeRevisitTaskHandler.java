@@ -25,7 +25,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
+@ConditionalOnExpression("${judge.revisit.check.event.emitter.enabled:true}")
 public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseStateSearchService;
