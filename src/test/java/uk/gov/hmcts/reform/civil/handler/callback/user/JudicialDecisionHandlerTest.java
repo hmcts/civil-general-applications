@@ -55,6 +55,8 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -117,6 +119,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private DeadlinesCalculator deadlinesCalculator;
 
+    @MockBean
+    private IdamClient idamClient;
+
+    @MockBean
+    private UserDetails userDetails;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -146,6 +154,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @Nested
     class AboutToStartCallbackHandling {
         YesOrNo hasRespondentResponseVul = NO;
+
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
 
         @Test
         void testAboutToStartForHearingGeneralOrderRecital() {
@@ -542,12 +556,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
-            CallbackParams params = callbackParamsOf(getNotifiedApplication(), ABOUT_TO_START);
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -562,13 +575,52 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void testAboutToStartForCloakedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
+        void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering the information "
                 + "provided by the parties";
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(NO);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(
+                expectedRecitalText,
+                DATE_FORMATTER.format(LocalDate.now())
+            ));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForCloakedApplicationInitiatedByClaimant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and upon considering the information "
+                + "provided by the Claimant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
-            CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(getApplicationIsCloakedStatus(response)).isEqualTo(YES);
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText()).isEqualTo(String.format(
+                expectedRecitalText,
+                DATE_FORMATTER.format(LocalDate.now())
+            ));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForUnCloakedApplicationInitiatedByDefendant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering the information "
+                + "provided by the Defendant";
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -584,11 +636,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForRequestMoreInfoCloakedAppln() {
-            String judgeRecitalText = "<Title> <Name> \n"
-                + "Upon reviewing the application made and upon considering the information provided by the parties, "
-                + "the court requests more information from the applicant.";
-            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
-            CallbackParams params = callbackParamsOf(getCloakedApplication(), ABOUT_TO_START);
+
+            // Without notice application
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and upon considering "
+                + "the information provided by the Claimant";
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -599,10 +655,30 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testJudgeRecitalTextForRequestMoreInfoCloakedApplnByDefendant() {
+
+            // Without Notice application by Civil Defendant
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering "
+                + "the information provided by the Defendant";
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+            CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
         void testAboutToStartForRequestMoreInfoUrgentAppln() {
-            String judgeRecitalText = "<Title> <Name> \n"
-                + "Upon reviewing the application made and upon considering the information provided by the parties, "
-                + "the court requests more information from the applicant.";
+
+            // With notice application by Claimant
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and "
+                + "upon considering the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -615,10 +691,24 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testJudgeRecitalTextForRequestMoreInfoWithNoticeByDefendant() {
+            String judgeRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and "
+                + "upon considering the information provided by the parties";
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo = getJudicialRequestMoreInfo(response);
+
+            assertThat(gaJudicialRequestMoreInfo.getJudgeRecitalText()).isEqualTo(judgeRecitalText);
+        }
+
+        @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Defendant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering the information "
                 + "provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
@@ -1233,7 +1323,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return applSupportReq;
         }
 
-        private CaseData getCloakedApplication() {
+        private CaseData getCloakedApplication(YesOrNo parentClaimantIsApplicant) {
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1241,7 +1331,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             hasRespondentResponseVul = NO;
 
             return CaseData.builder()
-                .parentClaimantIsApplicant(YES)
+                .parentClaimantIsApplicant(parentClaimantIsApplicant)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .respondentsResponses(getRespodentResponses(hasRespondentResponseVul))
                 .generalAppHearingDetails(GAHearingDetails.builder()
@@ -1612,6 +1702,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
 
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
+
         @Test
         void shouldReturnNOForJudgeApproveEditOptionDate() {
 
@@ -1712,13 +1808,50 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "<Title> <Name> \n"
-                + "Upon reading the application of Claimant dated 15 January 22 and upon the "
-                + "application of ApplicantPartyName dated %s and upon considering the information "
+        void testAboutToStartForNotifiedApplicationInitiatedByClaimant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Claimant dated 15 January 22 and upon considering the information "
+                + "provided by the Claimant";
+
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(NO, YES), MID, VALIDATE_MAKE_AN_ORDER);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText())
+                .isEqualTo(String.format(expectedRecitalText, DATE_FORMATTER.format(LocalDate.now())));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering the information "
+                + "provided by the Defendant";
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), MID, VALIDATE_MAKE_AN_ORDER);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getJudgeRecitalText())
+                .isEqualTo(String.format(expectedRecitalText, DATE_FORMATTER.format(LocalDate.now())));
+            assertThat(makeAnOrder.getDismissalOrderText()).isEqualTo(expectedDismissalOrder);
+        }
+
+        @Test
+        void testAboutToStartForNonNotifiedApplicationByDefendant() {
+            String expectedRecitalText = "test judge \n"
+                + "Upon the application of Defendant dated 15 January 22 and upon considering the information "
                 + "provided by the parties";
 
-            CallbackParams params = callbackParamsOf(getNotifiedApplication(), MID, VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CallbackParams params = callbackParamsOf(getNotifiedApplication(NO, NO), MID, VALIDATE_MAKE_AN_ORDER);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -1738,6 +1871,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + " should be given, is required.";
         public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
                 + " should be given, cannot be in past.";
+
+        @BeforeEach
+        void setup() {
+            when(idamClient.getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
 
         @Test
         void shouldNotCauseAnyErrors_whenApplicationDetailsNotProvided() {
@@ -2569,15 +2708,16 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         return applSupportReq;
     }
 
-    public CaseData getNotifiedApplication() {
+    public CaseData getNotifiedApplication(YesOrNo isWithNotice, YesOrNo parentClaimantIsApplicant) {
 
         YesOrNo hasRespondentResponseVul = YES;
 
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
+            .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
             .generalAppDetailsOfOrder("Draft order text entered by applicant.")
             .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
             .applicantPartyName("ApplicantPartyName")
