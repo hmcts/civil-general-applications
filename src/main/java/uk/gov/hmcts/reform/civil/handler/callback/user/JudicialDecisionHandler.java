@@ -133,15 +133,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         "The applicant and respondent must respond with written representations by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
-        + "[Insert Draft Order from application]\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
-
-    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
+        + "[Insert Draft Order from application]\n\n";
 
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
@@ -192,15 +184,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
-        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
-            .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
+        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle)).build();
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData,
                                                                                                   judgeNameTitle))
-            .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
+            .build();
 
         YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
@@ -306,22 +297,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
 
-            makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText() == null
-                                             ? caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT
-                                             : caseData.getJudicialDecisionMakeOrder().getOrderText())
+            makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .judgeRecitalText(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
                                         ? DISMISSAL_ORDER_TEXT
                                         : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText() == null
-                                    ? PERSON_NOT_NOTIFIED_TEXT
-                                    : caseData.getJudicialDecisionMakeOrder().getDirectionsText());
+                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
-            makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
+            makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
-                .directionsText(PERSON_NOT_NOTIFIED_TEXT)
                 .isOrderProcessedByStayScheduler(NO);
         }
 
