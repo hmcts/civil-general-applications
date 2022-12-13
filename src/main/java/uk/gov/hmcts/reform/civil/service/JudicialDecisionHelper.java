@@ -20,8 +20,8 @@ public class JudicialDecisionHelper {
 
     public YesOrNo isApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
         return (caseData.getGeneralAppRespondentAgreement() != null
-            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            && caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed()))
+            ? YES : (caseData.getGeneralAppInformOtherParty() != null
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
             ? YES : NO;
     }
