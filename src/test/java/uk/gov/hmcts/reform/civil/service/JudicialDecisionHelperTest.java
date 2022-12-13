@@ -46,7 +46,7 @@ public class JudicialDecisionHelperTest {
         void isApplicationCloaked_shouldReturnNoWhenRespondentAgreementHasAgreed() {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                 GARespondentOrderAgreement.builder().hasAgreed(YES).build()).build();
-            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
+            assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
         }
 
         @Test
