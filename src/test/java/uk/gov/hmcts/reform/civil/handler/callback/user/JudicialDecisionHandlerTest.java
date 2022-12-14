@@ -137,14 +137,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String expectedDismissalOrder = "This application is dismissed.\n\n"
-        + "[Insert Draft Order from application]\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
-    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
+        + "[Insert Draft Order from application]\n\n";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -736,7 +729,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
             assertThat(makeAnOrder.getOrderText())
-                .isEqualTo("Draft order text entered by applicant." + PERSON_NOT_NOTIFIED_TEXT);
+                .isEqualTo("Draft order text entered by applicant.");
 
         }
 
@@ -870,7 +863,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(PERSON_NOT_NOTIFIED_TEXT);
+            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(null);
         }
 
         @Test
@@ -1770,7 +1763,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(PERSON_NOT_NOTIFIED_TEXT);
+            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(null);
         }
 
         @Test
