@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.GAJudgeRevisitTaskHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -34,6 +35,8 @@ public class TestingSupportController {
     private final CamundaRestEngineClient camundaRestEngineClient;
 
     private final CheckStayOrderDeadlineEndTaskHandler checkStayOrderDeadlineEndTaskHandler;
+
+    private final GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
     public ResponseEntity<BusinessProcessInfo> getBusinessProcess(@PathVariable("caseId") Long caseId) {
@@ -107,13 +110,17 @@ public class TestingSupportController {
         }
     }
 
-    @GetMapping("/testing-support/trigger-judge-revisit-process-event")
-    public ResponseEntity<String> getJudgeRevisitProcessEvent() {
+    @GetMapping("/testing-support/trigger-judge-revisit-process-event/{state}")
+    public ResponseEntity<String> getJudgeRevisitProcessEvent(@PathVariable("state") String ccdState) {
 
         String responseMsg = "success";
         ExternalTaskImpl externalTask = new ExternalTaskImpl();
         try {
-            checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
+            if (ccdState.equals("ORDER_MADE")) {
+                checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
+            } else {
+                gaJudgeRevisitTaskHandler.handleTask(externalTask);
+            }
         } catch (Exception e) {
             responseMsg = "failed";
         }

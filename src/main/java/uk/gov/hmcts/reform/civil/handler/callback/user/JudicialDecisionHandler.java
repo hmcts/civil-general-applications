@@ -30,6 +30,8 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
@@ -123,15 +125,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "<Title> <Name> \n"
-        + "Upon reading the application of %s dated %s and upon the "
-        + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "<Title> <Name> \n"
-        + "Upon reading the "
-        + "application of %s dated %s and upon considering the information provided by the parties";
-    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
-        + "Upon reviewing the application made and upon considering the information "
-        + "provided by the parties, the court requests more information from the applicant.";
+    private static final String JUDICIAL_RECITAL_TEXT = "%s \n"
+        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
+    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
+        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
+    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
+        + "Upon the application of %s dated %s and upon considering the information "
+        + "provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -142,15 +142,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         "The applicant and respondent must respond with written representations by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
-        + "[Insert Draft Order from application]\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
-
-    private static final String PERSON_NOT_NOTIFIED_TEXT = "\n\n"
-        + "This order has been made by the court of its own initiative. A party affected by it may apply "
-        + "to have it set aside, varied or stayed. Any application under this paragraph must be made "
-        + "within 7 days.";
+        + "[Insert Draft Order from application]\n\n";
 
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
@@ -180,6 +172,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
 
+    private final IdamClient idamClient;
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -196,6 +190,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
+        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        String judgeNameTitle = userDetails.getFullName();
+
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
@@ -204,14 +201,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
-        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
-            .directionInRelationToHearingText(PERSON_NOT_NOTIFIED_TEXT).build();
+        caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle)).build();
 
         caseDataBuilder
-            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
 
-        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData))
-            .judicialGOHearingDirections(PERSON_NOT_NOTIFIED_TEXT).build();
+        caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData,
+                                                                                                  judgeNameTitle))
+            .build();
 
         YesOrNo isAppAndRespSameHearingPref = (caseData.getGeneralAppHearingDetails() != null
             && caseData.getRespondentsResponses() != null
@@ -274,7 +271,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .build();
     }
 
-    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData) {
+    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData,
+                                                                                           String judgeNameTitle) {
 
         GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
             = GAJudicialRequestMoreInfo.builder();
@@ -291,33 +289,42 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
         }
-        gaJudicialRequestMoreInfoBuilder.judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT).build();
+        gaJudicialRequestMoreInfoBuilder
+            .judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
+                                     judgeNameTitle,
+                                     (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant",
+                                     DATE_FORMATTER.format(caseData.getCreatedDate()),
+                                     (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                                         == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant"))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
     }
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
                                                                                  CallbackParams callbackParams) {
+
+        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        String judgeNameTitle = userDetails.getFullName();
+
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
         if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
 
-            makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText() == null
-                                             ? caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT
-                                             : caseData.getJudicialDecisionMakeOrder().getOrderText())
+            makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .judgeRecitalText(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
                                         ? DISMISSAL_ORDER_TEXT
                                         : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText() == null
-                                    ? PERSON_NOT_NOTIFIED_TEXT
-                                    : caseData.getJudicialDecisionMakeOrder().getDirectionsText());
+                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
-            makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder() + PERSON_NOT_NOTIFIED_TEXT)
-                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData))
+            makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
+                .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
-                .directionsText(PERSON_NOT_NOTIFIED_TEXT)
                 .isOrderProcessedByStayScheduler(NO);
         }
 
@@ -378,25 +385,31 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return false;
     }
 
-    private String getJudgeRecitalPrepopulatedText(CaseData caseData) {
+    private String getJudgeRecitalPrepopulatedText(CaseData caseData, String judgeNameTitle) {
         return format(
             JUDICIAL_RECITAL_TEXT,
+            judgeNameTitle,
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
             DATE_FORMATTER.format(caseData.getCreatedDate()),
-            caseData.getApplicantPartyName(),
-            DATE_FORMATTER.format(LocalDate.now())
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? "parties" : (caseData
+                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant")
         );
     }
 
-    private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData) {
+    private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData, String judgeNameTitle) {
         return format(
             JUDICIAL_HEARING_RECITAL_TEXT,
+            judgeNameTitle,
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
-            DATE_FORMATTER.format(caseData.getCreatedDate())
+            DATE_FORMATTER.format(caseData.getCreatedDate()),
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? "parties" : (caseData
+                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
+                ? "Claimant" : "Defendant")
         );
     }
 
@@ -461,13 +474,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse gaValidateMakeAnOrder(CallbackParams callbackParams) {
+
+        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        String judgeNameTitle = userDetails.getFullName();
+
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
         caseDataBuilder
-            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
