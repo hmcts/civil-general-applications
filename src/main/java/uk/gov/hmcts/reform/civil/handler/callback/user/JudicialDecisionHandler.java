@@ -668,7 +668,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
 
         List<String> errors;
-        errors = judicialWrittenRepresentationsDate != null
+        errors = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
             ? judicialDecisionWrittenRepService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
             : Collections.emptyList();
 
@@ -684,7 +684,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         CaseDocument judgeDecision = null;
 
-        if (judicialWrittenRepresentationsDate.getWrittenSequentailRepresentationsBy() != null
+        if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenSequentailRepresentationsBy() != null
             && judicialWrittenRepresentationsDate.getSequentialApplicantMustRespondWithin() != null) {
 
             judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
@@ -694,7 +696,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
-        } else if (judicialWrittenRepresentationsDate.getWrittenConcurrentRepresentationsBy() != null) {
+        } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenConcurrentRepresentationsBy() != null) {
 
             judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
                 caseDataBuilder.build(),

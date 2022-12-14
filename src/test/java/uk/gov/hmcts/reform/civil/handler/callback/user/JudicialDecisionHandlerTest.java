@@ -33,8 +33,6 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -49,6 +47,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
@@ -78,6 +77,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -1430,18 +1430,66 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
-            when(hearingOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
 
             when(writtenRepresentationSequentailOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
+
+            when(hearingOrderGenerator.generate(any(), any()))
+                .thenReturn(PDFBuilder.HEARING_ORDER_DOCUMENT);
 
             when(writtenRepresentationConcurrentOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
 
+        }
+
+        @Test
+        void shouldGenerateListingForHearingDocument() {
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_HEARING_ORDER_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(hearingOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialListHearingDocPreview())
+                .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldGenerateConcurrentApplicationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_PAGE);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationConcurrentOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialWrittenRepDocPreview())
+                .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldGenerateSequentialApplicationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_PAGE);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationSequentailOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialWrittenRepDocPreview())
+                .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT.getDocumentLink());
         }
 
         @Test
@@ -1901,14 +1949,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(generalOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             when(directionOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
             when(dismissalOrderGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.DISMISSAL_ORDER_DOCUMENT);
             when(idamClient.getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
         }
@@ -1978,6 +2023,57 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getErrors()).isEmpty();
         }
 
+        @Test
+        void shouldReturnGenerateOrderDocument() {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isEmpty();
+
+            verify(generalOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialMakeOrderDocPreview())
+                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldGenerateDirectionOrderDocument() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .build();
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(directionOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialMakeOrderDocPreview())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldGenerateDismissalOrderDocument() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dismissalOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialMakeOrderDocPreview())
+                .isEqualTo(PDFBuilder.DISMISSAL_ORDER_DOCUMENT.getDocumentLink());
+        }
+
         private CaseData getApplication_MakeDecision_GiveDirections(GAJudgeMakeAnOrderOption orderOption,
                                                                     LocalDate directionsResponseByDate) {
             List<GeneralApplicationTypes> types = List.of(
@@ -2025,9 +2121,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             when(time.now()).thenReturn(responseDate);
             when(deadlinesCalculator.calculateApplicantResponseDeadline(
                 any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
+
             when(requestForInformationGenerator.generate(any(), any()))
-                .thenReturn(CaseDocument.builder().documentLink(Document.builder().documentUrl("abcd").build())
-                                .build());
+                .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
         }
 
         private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
@@ -2035,6 +2131,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "respond, is required.";
         public static final String REQUESTED_MORE_INFO_BY_DATE_IN_PAST = "The date, by which the applicant must "
                 + "respond, cannot be in past.";
+
+        @Test
+        void shouldGenerateRequestMoreInfoDocument() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+        }
 
         @Test
         void shouldNotReturnErrors_whenRequestedMoreInfoAndTheDateIsInFuture() {
