@@ -29,6 +29,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 
@@ -94,6 +96,12 @@ public class JudicialDecisionHandlerDocPreviewTest extends BaseCallbackHandlerTe
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
+    @MockBean
+    private IdamClient idamClient;
+
+    @MockBean
+    private UserDetails userDetails;
+
     @Autowired
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -121,6 +129,8 @@ public class JudicialDecisionHandlerDocPreviewTest extends BaseCallbackHandlerTe
         when(requestForInformationGenerator.generate(any(), any()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
     }
 
     @Nested
