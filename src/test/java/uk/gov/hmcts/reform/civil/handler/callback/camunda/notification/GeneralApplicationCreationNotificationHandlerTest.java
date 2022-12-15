@@ -1,44 +1,23 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.notification;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
-import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
-import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
-import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.NotificationService;
+import uk.gov.hmcts.reform.civil.service.GeneralApplicationCreationNotificationService;
+import uk.gov.hmcts.reform.civil.service.NotificationException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 
 @SpringBootTest(classes = {
     GeneralApplicationCreationNotificationHandler.class,
@@ -48,119 +27,35 @@ public class GeneralApplicationCreationNotificationHandlerTest extends BaseCallb
 
     @Autowired
     private GeneralApplicationCreationNotificationHandler handler;
-
     @MockBean
-    private NotificationService notificationService;
+    private GeneralApplicationCreationNotificationService gaNotificationService;
 
-    @MockBean
-    private NotificationsProperties notificationsProperties;
+    private CallbackParams params;
 
-    private static final Long CASE_REFERENCE = 111111L;
-    private static final String PROCESS_INSTANCE_ID = "1";
-    private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
-    private static final LocalDateTime DUMMY_DATE = LocalDateTime.of(2022, 02, 15, 12, 00, 00);
-    public static LocalDateTime NOTIFICATION_DEADLINE = LocalDateTime.of(2022, 02, 15, 12, 00, 00);
+    @Test
+    public void shouldReturnCorrectEvent() {
 
-    @Nested
-    class AboutToSubmitCallback {
-
-        @BeforeEach
-        void setup() {
-            when(notificationsProperties.getGeneralApplicationRespondentEmailTemplate())
-                .thenReturn("general-application-respondent-template-id");
-        }
-
-        @Test
-        void notificationShouldSendWhenInvoked() {
-            CaseData caseData = getCaseData(true);
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
-            handler.handle(params);
-
-            verify(notificationService, times(2)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-respondent-template-id",
-                getNotificationDataMap(),
-                "general-application-respondent-notification-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSendWhenInvokedTwice() {
-            CaseData caseData = getCaseData(true);
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
-            handler.handle(params);
-
-            verify(notificationService, times(2)).sendMail(
-                any(),
-                any(),
-                any(),
-                any()
-            );
-        }
-
-        @Test
-        void notificationShouldNotSendWhenInvokedWhenConditionsAreNotMet() {
-            CaseData caseData = getCaseData(false);
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId("NOTIFY_GENERAL_APPLICATION_RESPONDENT").build()).build();
-            handler.handle(params);
-            verifyNoInteractions(notificationService);
-        }
-
-        private Map<String, String> getNotificationDataMap() {
-            return Map.of(
-                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
-                NotificationData.APPLICANT_REFERENCE, "claimant",
-                NotificationData.GA_NOTIFICATION_DEADLINE,
-                NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-            );
-        }
-
-        private CaseData getCaseData(boolean isMet) {
-
-            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
-
-            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
-
-            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
-
-            respondentSols.add(element(respondent1));
-            respondentSols.add(element(respondent2));
-
-            if (isMet) {
-
-                return new CaseDataBuilder()
-                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
-                                                 .email(DUMMY_EMAIL).organisationIdentifier("org2").build())
-                    .generalAppRespondentSolicitors(respondentSols)
-                    .businessProcess(BusinessProcess.builder().status(STARTED)
-                                         .processInstanceId(PROCESS_INSTANCE_ID).build())
-                    .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
-                    .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
-                    .parentClaimantIsApplicant(YES)
-                    .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                    .generalAppParentCaseLink(
-                        GeneralAppParentCaseLink
-                            .builder()
-                            .caseReference(CASE_REFERENCE.toString())
-                            .build())
-                    .generalAppDeadlineNotificationDate(DUMMY_DATE)
-                    .build();
-            } else {
-                return new CaseDataBuilder()
-                    .businessProcess(BusinessProcess.builder().status(STARTED)
-                                         .processInstanceId(PROCESS_INSTANCE_ID).build())
-                    .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
-                    .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
-                    .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
-                    .ccdCaseReference(CASE_REFERENCE)
-                    .generalAppDeadlineNotificationDate(DUMMY_DATE)
-                    .build();
-            }
-        }
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.YES).build();
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        assertThat(handler.handledEvents()).contains(NOTIFY_GENERAL_APPLICATION_RESPONDENT);
     }
+
+    @Test
+    void shouldThrowException_whenNotificationSendingFails() {
+        var caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build();
+
+        doThrow(buildNotificationException())
+            .when(gaNotificationService)
+            .sendNotification(caseData);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        assertThrows(NotificationException.class, () -> handler.handle(params));
+    }
+
+    private NotificationException buildNotificationException() {
+        return new NotificationException(new Exception("Notification Exception"));
+    }
+
 }
+

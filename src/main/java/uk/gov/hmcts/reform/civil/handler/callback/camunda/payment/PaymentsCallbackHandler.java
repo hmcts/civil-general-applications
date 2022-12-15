@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +37,7 @@ public class PaymentsCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PBA_PAYMENT_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
-    private static final String TASK_ID = "GeneralApplicationMakePayment";
+    private static final String TASK_ID = "GeneralAppServiceReqPbaPayment";
     public static final String DUPLICATE_PAYMENT_MESSAGE
             = "You attempted to retry the payment to soon. Try again later.";
 
@@ -68,11 +66,11 @@ public class PaymentsCallbackHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-
         try {
             log.info("processing payment for case " + caseData.getCcdCaseReference());
             paymentsService.validateRequest(caseData);
-            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken).getReference();
+            var paymentReference = paymentsService.createCreditAccountPayment(caseData, authToken)
+                                            .getPaymentReference();
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                     .map(PaymentDetails::toBuilder)
@@ -90,12 +88,8 @@ public class PaymentsCallbackHandler extends CallbackHandler {
                             .paymentSuccessfulDate(time.now()).build())
                     .build();
         } catch (FeignException e) {
-            log.info(String.format("Http Status %s ", e.status()), e);
-            if (e.status() == 403) {
-                caseData = updateWithBusinessError(caseData, e);
-            } else {
-                errors.add(ERROR_MESSAGE);
-            }
+            log.warn(String.format("Payment Failure with Http Status %s ", e.status()), e);
+            caseData = updateWithBusinessError(caseData, e);
         } catch (InvalidPaymentRequestException e) {
             log.error(String.format("Error handling payment for general application: %s, response body: [%s]",
                     caseData.getCcdCaseReference(), e.getMessage()
@@ -110,28 +104,18 @@ public class PaymentsCallbackHandler extends CallbackHandler {
     }
 
     private CaseData updateWithBusinessError(CaseData caseData, FeignException e) {
-        try {
-            GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-            var paymentDto = objectMapper.readValue(e.contentUTF8(), PaymentDto.class);
-            var statusHistory = paymentDto.getStatusHistories()[0];
-            PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
-                    .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
-                    .customerReference(pbaDetails.getPbaReference())
-                    .status(FAILED)
-                    .errorCode(statusHistory.getErrorCode())
-                    .errorMessage(statusHistory.getErrorMessage())
-                    .build();
 
-            return caseData.toBuilder().generalAppPBADetails(pbaDetails.toBuilder()
-                            .paymentDetails(paymentDetails).build())
-                    .build();
-        } catch (JsonProcessingException jsonException) {
-            log.error(jsonException.getMessage());
-            log.error(String.format("Unknown payment error for case: %s, response body: %s",
-                    caseData.getCcdCaseReference(), e.contentUTF8()
-            ));
-            throw e;
-        }
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+            .map(PaymentDetails::toBuilder).orElse(PaymentDetails.builder())
+            .customerReference(pbaDetails.getPbaReference())
+            .status(FAILED)
+            .build();
+
+        return caseData.toBuilder().generalAppPBADetails(pbaDetails.toBuilder()
+                                                             .paymentDetails(paymentDetails).build())
+            .build();
+
     }
 
     private CaseData updateWithDuplicatePaymentError(CaseData caseData, InvalidPaymentRequestException e) {

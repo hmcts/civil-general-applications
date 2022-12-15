@@ -13,16 +13,25 @@ import java.util.Map;
 
 import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.JUDGE_MAKES_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PBA_PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_SUCCESSFUL;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +43,50 @@ public class FlowStateAllowedEventService {
 
     private static final Map<String, List<CaseEvent>> ALLOWED_EVENTS_ON_FLOW_STATE = Map.ofEntries(
         entry(DRAFT.fullName(), List.of(INITIATE_GENERAL_APPLICATION,
-                                        RESPOND_TO_APPLICATION, JUDGE_MAKES_DECISION,
+                                        RESPOND_TO_APPLICATION,
+                                        REFER_TO_JUDGE,
+                                        REFER_TO_LEGAL_ADVISOR,
+                                        MAKE_DECISION,
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
-                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO)),
+                                        RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                                        APPLICATION_PROCEEDS_IN_HERITAGE,
+                                        MAIN_CASE_CLOSED)),
 
         entry(APPLICATION_SUBMITTED.fullName(),
               List.of(CREATE_GENERAL_APPLICATION_CASE,
-                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE)
+                  LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED)
+        ),
+        entry(PAYMENT_FAILED.fullName(),
+              List.of(
+                      PBA_PAYMENT_FAILED,
+                      END_BUSINESS_PROCESS_GASPEC,
+                      RESPOND_TO_APPLICATION,
+                      REFER_TO_JUDGE,
+                      REFER_TO_LEGAL_ADVISOR,
+                      MAKE_DECISION,
+                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                      RESPOND_TO_JUDGE_DIRECTIONS,
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
+              )
+        ),
+        entry(PAYMENT_SUCCESSFUL.fullName(),
+              List.of(
+                      NOTIFY_GENERAL_APPLICATION_RESPONDENT,
+                      RESPOND_TO_APPLICATION,
+                      REFER_TO_JUDGE,
+                      REFER_TO_LEGAL_ADVISOR,
+                      MAKE_DECISION,
+                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                      RESPOND_TO_JUDGE_DIRECTIONS,
+                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
+                      APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAIN_CASE_CLOSED
+              )
         )
     );
 

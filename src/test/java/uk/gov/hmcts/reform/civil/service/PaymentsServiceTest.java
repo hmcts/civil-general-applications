@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
-import uk.gov.hmcts.reform.payments.client.models.FeeDto;
-import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
-import uk.gov.hmcts.reform.payments.request.CreditAccountPaymentRequest;
+import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
+import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.prd.model.ContactInformation;
 import uk.gov.hmcts.reform.prd.model.Organisation;
 
@@ -40,9 +40,15 @@ import static org.mockito.Mockito.verify;
 class PaymentsServiceTest {
 
     private static final String SERVICE = "service";
+
     private static final String SITE_ID = "site_id";
+    private static final String SPEC_SITE_ID = "spec_site_id";
     private static final String AUTH_TOKEN = "Bearer token";
-    private static final PaymentDto PAYMENT_DTO = PaymentDto.builder().reference("RC-1234-1234-1234-1234").build();
+    private static final PBAServiceRequestResponse PAYMENT_DTO = PBAServiceRequestResponse.builder()
+        .paymentReference("RC-1234-1234-1234-1234").build();
+
+    private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE = PaymentServiceResponse.builder()
+        .serviceRequestReference("RC-1234-1234-1234-1234").build();
     private static final Organisation ORGANISATION = Organisation.builder()
         .name("test org")
         .contactInformation(List.of(ContactInformation.builder().build()))
@@ -64,9 +70,11 @@ class PaymentsServiceTest {
 
     @BeforeEach
     void setUp() {
-        given(paymentsClient.createCreditAccountPayment(any(), any())).willReturn(PAYMENT_DTO);
+        given(paymentsClient.createServiceRequest(any(), any())).willReturn(PAYMENT_SERVICE_RESPONSE);
         given(paymentsConfiguration.getService()).willReturn(SERVICE);
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
+        given(paymentsConfiguration.getSpecSiteId()).willReturn(SPEC_SITE_ID);
+        given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
         given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
     }
 
@@ -194,25 +202,41 @@ class PaymentsServiceTest {
 
         var expectedCreditAccountPaymentRequest = getExpectedCreditAccountPaymentRequest(caseData);
 
-        PaymentDto paymentResponse = paymentsService.createCreditAccountPayment(caseData, AUTH_TOKEN);
+        PBAServiceRequestResponse paymentResponse = paymentsService.createCreditAccountPayment(caseData, AUTH_TOKEN);
 
         verify(organisationService).findOrganisationById("OrgId");
-        verify(paymentsClient).createCreditAccountPayment(AUTH_TOKEN, expectedCreditAccountPaymentRequest);
         assertThat(paymentResponse).isEqualTo(PAYMENT_DTO);
     }
 
-    private CreditAccountPaymentRequest getExpectedCreditAccountPaymentRequest(CaseData caseData) {
-        return CreditAccountPaymentRequest.builder()
+    private PBAServiceRequestDTO getExpectedCreditAccountPaymentRequest(CaseData caseData) {
+        return PBAServiceRequestDTO.builder()
             .accountNumber("PBA0078095")
             .amount(caseData.getGeneralAppPBADetails().getFee().toFeeDto().getCalculatedAmount())
-            .caseReference("000DC001")
-            .ccdCaseNumber(caseData.getCcdCaseReference().toString())
             .customerReference(CUSTOMER_REFERENCE)
-            .description("Claim issue payment")
             .organisationName(ORGANISATION.getName())
-            .service(SERVICE)
-            .siteId(SITE_ID)
-            .fees(new FeeDto[]{caseData.getGeneralAppPBADetails().getFee().toFeeDto()})
+            .idempotencyKey("2634946490")
             .build();
     }
+
+    @Test
+    void shouldCreatePaymentServiceRequest_whenValidCaseDetails() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
+        assertThat(caseData.getGeneralAppSuperClaimType()).isEqualTo("UNSPEC_CLAIM");
+        assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+
+    }
+
+    @Test
+    void shouldCreatePaymentServiceRequest_whenGaTypeIsSpecClaim() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        caseData = caseData.toBuilder().generalAppSuperClaimType("SPEC_CLAIM").build();
+        PaymentServiceResponse serviceRequestResponse = paymentsService.createServiceRequest(caseData, AUTH_TOKEN);
+        assertThat(caseData.getGeneralAppSuperClaimType()).isEqualTo("SPEC_CLAIM");
+        assertThat(serviceRequestResponse).isEqualTo(PAYMENT_SERVICE_RESPONSE);
+
+    }
+
 }

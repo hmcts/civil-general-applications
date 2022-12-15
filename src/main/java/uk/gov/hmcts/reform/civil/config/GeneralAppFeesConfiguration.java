@@ -17,6 +17,8 @@ public class GeneralAppFeesConfiguration {
     private final String event;
     private final String withNoticeKeyword;
     private final String consentedOrWithoutNoticeKeyword;
+    private final String applicationUncloakAdditionalFee;
+    private final String freeKeyword;
 
     public GeneralAppFeesConfiguration(
             @Value("${fees.api.url}") String url,
@@ -27,7 +29,9 @@ public class GeneralAppFeesConfiguration {
             @Value("${genApp.fee.channel}") String channel,
             @Value("${genApp.fee.event}") String event,
             @Value("${genApp.fee.keywords.withNotice}") String withNoticeKeyword,
-            @Value("${genApp.fee.keywords.consentedOrWithoutNotice}") String consentedOrWithoutNoticeKeyword) {
+            @Value("${genApp.fee.keywords.consentedOrWithoutNotice}") String consentedOrWithoutNoticeKeyword,
+            @Value("${genApp.fee.keywords.uncloakFee}") String applicationUncloakAdditionalFee,
+            @Value("${genApp.fee.keywords.free}") String freeKeyword) {
         this.url = url;
         this.endpoint = endpoint;
         this.service = service;
@@ -37,5 +41,8 @@ public class GeneralAppFeesConfiguration {
         this.event = event;
         this.withNoticeKeyword = withNoticeKeyword;
         this.consentedOrWithoutNoticeKeyword = consentedOrWithoutNoticeKeyword;
+        this.applicationUncloakAdditionalFee = applicationUncloakAdditionalFee;
+        this.freeKeyword = freeKeyword;
     }
+
 }

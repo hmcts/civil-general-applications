@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.model.search;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.List;
@@ -14,6 +15,16 @@ public class Query {
     private final int startIndex;
 
     public Query(QueryBuilder queryBuilder, List<String> dataToReturn, int startIndex) {
+        Objects.requireNonNull(queryBuilder, "QueryBuilder cannot be null in search");
+        if (startIndex < 0) {
+            throw new IllegalArgumentException("Start index cannot be less than 0");
+        }
+        this.queryBuilder = queryBuilder;
+        this.dataToReturn = dataToReturn;
+        this.startIndex = startIndex;
+    }
+
+    public Query(BoolQueryBuilder queryBuilder, List<String> dataToReturn, int startIndex) {
         Objects.requireNonNull(queryBuilder, "QueryBuilder cannot be null in search");
         if (startIndex < 0) {
             throw new IllegalArgumentException("Start index cannot be less than 0");

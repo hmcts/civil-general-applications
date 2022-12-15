@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -64,7 +65,7 @@ class HearingOrderGeneratorTest {
 
     @Test
     void shouldGenerateHearingOrderDocument() {
-        CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO).build();
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_ORDER)))
             .thenReturn(new DocmosisDocument(HEARING_ORDER.getDocumentTitle(), bytes));
@@ -95,7 +96,8 @@ class HearingOrderGeneratorTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
-            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication().build().toBuilder()
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .build();
 
             when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
@@ -116,12 +118,12 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
-                                   caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue())
+                                   caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),
+                () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections())
             );
         }
 

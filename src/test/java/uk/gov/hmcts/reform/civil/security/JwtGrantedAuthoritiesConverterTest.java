@@ -47,7 +47,7 @@ class JwtGrantedAuthoritiesConverterTest {
         @Test
         void shouldReturnEmptyAuthorities_whenClaimNotAvailable() {
             Jwt jwt = Mockito.mock(Jwt.class);
-            when(jwt.containsClaim(anyString())).thenReturn(false);
+            when(jwt.hasClaim(anyString())).thenReturn(false);
             Collection<GrantedAuthority> authorities = converter.convert(jwt);
             assertNotNull(authorities);
             assertEquals(0, authorities.size());

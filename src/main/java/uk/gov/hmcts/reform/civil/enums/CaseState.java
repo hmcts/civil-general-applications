@@ -14,20 +14,25 @@ public enum CaseState {
     CASE_DISMISSED("Case Dismissed"),
     AWAITING_APPLICANT_INTENTION("Awaiting applicant intention"),
     PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
+    JUDICIAL_REFERRAL("Judicial Referral"),
+    CASE_PROGRESSION("Case Progression"),
 
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
     AWAITING_RESPONDENT_RESPONSE("Awaiting Respondent Response"),
+    APPLICATION_ADD_PAYMENT("Application Additional Payment"),
     APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION("Application Submitted - Awaiting Judicial Decision"),
     ADDITIONAL_RESPONSE_TIME_EXPIRED("Additional Response Time Expired"),
     ADDITIONAL_RESPONSE_TIME_PROVIDED("Additional Response Time Provided"),
     AWAITING_DIRECTIONS_ORDER_DOCS("Directions Order Made"),
     ORDER_MADE("Order Made"),
     LISTING_FOR_A_HEARING("Listed for a Hearing"),
+    APPLICATION_PAYMENT_FAILED("Application Payment Failed"),
     AWAITING_WRITTEN_REPRESENTATIONS("Awaiting Written Representations"),
     AWAITING_ADDITIONAL_INFORMATION("Additional Information Required"),
     APPLICATION_DISMISSED("Application Dismissed"),
     APPLICATION_CLOSED("Application Closed"),
+    PROCEEDS_IN_HERITAGE("Proceeds In Heritage"),
     RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION("Respond to judge for Written Representations");
 
     private final String displayedValue;

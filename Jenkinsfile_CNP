@@ -7,8 +7,9 @@ import uk.gov.hmcts.contino.AppPipelineDsl
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-
-def generalappCCDBranch = "master"
+def camundaBranch = "master"
+def generalappCCDBranch = "CIV-6118"
+def ccddefbranch = "master"
 
 AppPipelineConfig pipelineConf
 
@@ -28,11 +29,13 @@ def secrets = [
         ],
         'ccd-${env}': [
                 secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_IDAM_CLIENT_SECRET'),
+                secret('ccd-api-gateway-oauth2-client-secret', 'CCD_API_GATEWAY_OAUTH2_CLIENT_SECRET'),
                 secret('postcode-info-address-lookup-token', 'ADDRESS_LOOKUP_TOKEN'),
                 secret('ccd-admin-web-oauth2-client-secret', 'ADMIN_WEB_IDAM_SECRET'),
                 secret('idam-data-store-client-secret','IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET'),
                 secret('idam-data-store-system-user-username','IDAM_DATA_STORE_SYSTEM_USER_USERNAME'),
-                secret('idam-data-store-system-user-password','IDAM_DATA_STORE_SYSTEM_USER_PASSWORD')
+                secret('idam-data-store-system-user-password','IDAM_DATA_STORE_SYSTEM_USER_PASSWORD'),
+                secret('microservicekey-ccd-gw', 'CCD_API_GATEWAY_S2S_KEY')
         ],
         'civil-${env}': [
                 secret('microservicekey-civil-service', 'S2S_SECRET'),
@@ -61,17 +64,20 @@ withPipeline(type, product, component) {
     enableAksStagingDeployment()
 
     onPR {
+        env.ENVIRONMENT = "preview"
         loadVaultSecrets(secrets)
         enableCleanupOfHelmReleaseOnSuccess()
     }
     onMaster {
+        env.ENVIRONMENT = "aat"
         loadVaultSecrets(secrets)
     }
     onDemo {
+        env.ENVIRONMENT = "demo"
         loadVaultSecrets(secrets)
     }
 
-    after('checkout') {
+    afterAlways('checkout') {
         onMaster {
             withCredentials([usernamePassword(credentialsId: 'jenkins-github-hmcts-api-token', usernameVariable: 'USERNAME', passwordVariable: 'BEARER_TOKEN')]) {
                 try {
@@ -98,35 +104,40 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-prod.json,*-nonprod.json,*DJspec.json"
-          ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json,*-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/import-ccd-definition.sh "-e *-prod.json,*-GAR2GAspec-nonprod.json,*HNL-nonprod.json" ${ccddefbranch}
+          ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json"
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
-        env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-        env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+        env.CIVIL_SERVICE_URL="https://civil-service-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-        env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+        env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
+        env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
 
-    after('smoketest:preview') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+    afterAlways('smoketest:preview') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/smokeTest/**/*'
     }
 
     before('functionalTest:preview') {
       env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
-      env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-      env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
-      env.CIVIL_SERVICE_URL="http://civil-service-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.URL="https://xui-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      env.CIVIL_SERVICE_URL="https://civil-service-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-      env.CCD_DATA_STORE_URL = "http://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.service.core-compute-preview.internal"
+      env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
     }
 
-    after('functionalTest:preview') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+    afterAlways('functionalTest:preview') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+    }
+
+    afterAlways('functionalTest:aat') {
+        steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
     }
 
     before('smoketest:aat') {
@@ -137,22 +148,22 @@ withPipeline(type, product, component) {
           ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
           ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
-          ./bin/import-ccd-definition.sh "-e *-nonprod.json,*DJspec.json"
-          ./bin/import-general-apps-ccd-definition.sh "-e *-nonprod.json"
-          ./bin/import-bpmn-diagram.sh .
+          ./bin/import-ccd-definition.sh "-e *-prod.json,*-GAR2GAspec-nonprod.json,*HNL-nonprod.json" ${ccddefbranch}
+          ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json"
+          ./bin/pull-latest-camunda-files.sh ${camundaBranch}
         """
-
+        env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         env.URL="https://civil-ga-xui-staging.aat.platform.hmcts.net"
-        env.CIVIL_GENERAL_APPLICATIONS_URL="http://civil-general-applications-staging.service.core-compute-aat.internal"
-        env.CIVIL_SERVICE_URL="http://civil-ga-civil-service-staging-aat.service.core-compute-aat.internal"
+        env.CIVIL_GENERAL_APPLICATIONS_URL="https://civil-general-applications-staging.aat.platform.hmcts.net"
+        env.CIVIL_SERVICE_URL="https://civil-ga-civil-service-staging-aat.service.core-compute-aat.internal"
         env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-        env.CCD_DATA_STORE_URL = "http://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
-        env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
+        env.CCD_DATA_STORE_URL = "https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
+        env.DM_STORE_URL = "https://dm-store-aat.service.core-compute-aat.internal"
     }
 
-  after('smoketest:aat') {
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'output/**/*'
+  afterAlways('smoketest:aat') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/smokeTest/**/*'
   }
 
     onMaster() {

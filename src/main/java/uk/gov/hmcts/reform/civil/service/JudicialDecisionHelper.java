@@ -4,17 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHelper {
 
-    public YesOrNo isApplicationCloaked(CaseData caseData) {
+    public YesOrNo isApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
         return (caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null
@@ -36,5 +40,30 @@ public class JudicialDecisionHelper {
             .filter(e -> !applicantLocation.equals(
                 e.getValue().getGaHearingDetails().getHearingPreferredLocation().getValue().getLabel())).count();
         return count == 0;
+    }
+
+    public boolean isOrderMakeDecisionMadeVisibleToDefendant(CaseData caseData) {
+        return (isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(NO)
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER));
+
+    }
+
+    public boolean isApplicationUncloakedWithAdditionalFee(CaseData caseData) {
+
+        var judicialDecisionRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(NO)
+            && Objects.nonNull(judicialDecisionRequestMoreInfo)
+            && Objects.nonNull(judicialDecisionRequestMoreInfo.getRequestMoreInfoOption())
+            && judicialDecisionRequestMoreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY);
+    }
+
+    public boolean isListForHearingMadeVisibleToDefendant(CaseData caseData) {
+        return isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
     }
 }

@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
@@ -29,6 +30,7 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
     private final StateGeneratorService stateGeneratorService;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -42,7 +44,13 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
 
     private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+
+        if (isApplicationMakeVisibleToDefendant(data)) {
+            parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+                data, getNewStateDependingOn(data).getDisplayedValue());
+        } else {
+            parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+        }
         return evaluateReady(callbackParams, getNewStateDependingOn(data));
     }
 
@@ -58,5 +66,10 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
             .state(newState.toString())
             .data(output)
             .build();
+    }
+
+    private boolean isApplicationMakeVisibleToDefendant(CaseData caseData) {
+        return judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)
+            || judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData);
     }
 }
