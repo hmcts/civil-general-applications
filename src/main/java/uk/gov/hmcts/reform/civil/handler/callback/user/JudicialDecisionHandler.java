@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -30,6 +31,13 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -59,6 +67,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
@@ -155,6 +164,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
 
     private final ObjectMapper objectMapper;
+
+    private final GeneralOrderGenerator generalOrderGenerator;
+    private final RequestForInformationGenerator requestForInformationGenerator;
+    private final DirectionOrderGenerator directionOrderGenerator;
+    private final DismissalOrderGenerator dismissalOrderGenerator;
+    private final HearingOrderGenerator hearingOrderGenerator;
+    private final WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
+    private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
 
     private final IdamClient idamClient;
 
@@ -417,6 +434,29 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             caseDataBuilder
                 .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
+
+            CaseDocument judgeDecision = null;
+            if (judicialDecisionMakeOrder.getOrderText() != null
+                && judicialDecisionMakeOrder.getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
+                judgeDecision = generalOrderGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
+            } else if (judicialDecisionMakeOrder.getDirectionsText() != null
+                && judicialDecisionMakeOrder.getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
+                judgeDecision = directionOrderGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
+            } else if (judicialDecisionMakeOrder.getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
+                judgeDecision = dismissalOrderGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+                caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -484,6 +524,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
+
+        CaseDocument judgeDecision = null;
+
+        if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+            && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null) {
+            judgeDecision = requestForInformationGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
@@ -553,6 +604,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         }
 
+        if (Objects.nonNull(caseData.getJudicialMakeOrderDocPreview())) {
+            dataBuilder.judicialMakeOrderDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialListHearingDocPreview())) {
+            dataBuilder.judicialListHearingDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialWrittenRepDocPreview())) {
+            dataBuilder.judicialWrittenRepDocPreview(null);
+        }
+
+        if (Objects.nonNull(caseData.getJudicialRequestMoreInfoDocPreview())) {
+            dataBuilder.judicialRequestMoreInfoDocPreview(null);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
@@ -610,7 +677,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
 
         List<String> errors;
-        errors = judicialWrittenRepresentationsDate != null
+        errors = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
             ? judicialDecisionWrittenRepService.validateWrittenRepresentationsDates(judicialWrittenRepresentationsDate)
             : Collections.emptyList();
 
@@ -622,6 +689,33 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 getJudicalApplicantSequentialDatePupulatedText(caseData)).build();
         } else {
             caseDataBuilder.judicialConcurrentDateText(getJudicalConcurrentDatePupulatedText(caseData)).build();
+        }
+
+        CaseDocument judgeDecision = null;
+
+        if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenSequentailRepresentationsBy() != null
+            && judicialWrittenRepresentationsDate.getSequentialApplicantMustRespondWithin() != null) {
+
+            judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
+
+        } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+            .getWrittenConcurrentRepresentationsBy() != null) {
+
+            judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
+
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -642,6 +736,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+
+        CaseDocument judgeDecision = null;
+        if (caseData.getJudicialListForHearing() != null) {
+            judgeDecision = hearingOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.judicialListHearingDocPreview(judgeDecision.getDocumentLink());
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
