@@ -7,12 +7,6 @@
     <cve>CVE-2022-38752</cve>
     <cve>CVE-2022-38751</cve>
   </suppress>
-  <suppress until="2023-09-29">
-    <notes>
-      Upgrading to tomcat embed core to 9.0.64 has got startup issues which requires investigation
-    </notes>
-    <cve>CVE-2022-34305</cve>
-  </suppress>
   <suppress>
     <notes>
       stable spring boot 2.7.3 still got the vulnerable snakeyaml 1.30 jar. This would be fixed once its upgraded
@@ -28,10 +22,6 @@
       spring-web-5.3.22.jar
     </notes>
     <cve>CVE-2016-1000027</cve>
-  </suppress>
-  <suppress until="2023-09-29">
-    <notes> Latest springboot got latest stable jackson databind which still got the below vulnerabilitites</notes>
-    <cve>CVE-2022-42003</cve>
   </suppress>
   <suppress>
     <notes>Temporariy suppressing it as the latest camunda connector 1.5.6 seem to have the vulnerability.</notes>
