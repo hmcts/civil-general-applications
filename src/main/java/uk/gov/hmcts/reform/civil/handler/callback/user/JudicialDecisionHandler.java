@@ -135,7 +135,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_SEQUENTIAL_APPLICANT_DATE =
         "The applicant may upload any written representations by 4pm on %s";
     private static final String JUDICIAL_CONCURRENT_DATE =
-        "The applicant and respondent must respond with written representations by 4pm on %s";
+        "The applicant and respondent may respond with written representations by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
         + "[Insert Draft Order from application]\n\n";

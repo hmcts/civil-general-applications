@@ -1559,7 +1559,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldNotReturnErrors_whenConcurrentWrittenRepresentationDateIsInFuture() {
 
             String expectedConcurrentText =
-                "The applicant and respondent must respond with written representations by 4pm on %s";
+                "The applicant and respondent may respond with written representations by 4pm on %s";
 
             CallbackParams params = callbackParamsOf(
                 getConcurrentWrittenRepresentationDecision(LocalDate.now()),
