@@ -1825,6 +1825,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnNoForJudgeApproveEditOptionDate() {
+
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.EXTEND_TIME));
+
+            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
+                                                     VALIDATE_MAKE_AN_ORDER);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
+                .isEqualTo(NO);
+        }
+
+        @Test
         void shouldReturnCorrectDirectionsText() {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),

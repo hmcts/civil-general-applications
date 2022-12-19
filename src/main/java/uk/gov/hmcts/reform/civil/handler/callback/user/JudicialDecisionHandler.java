@@ -352,14 +352,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     }
 
-    /*Return True if General Application types are Extend Time or/and Stay the Claim
+    /*Return True if General Application types contains Stay the Claim
     Else, Return False*/
     private boolean checkApplicationTypeForDate(CaseData caseData) {
 
         if (caseData.getGeneralAppType() == null) {
             return false;
         }
-        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(STAY_THE_CLAIM);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 
