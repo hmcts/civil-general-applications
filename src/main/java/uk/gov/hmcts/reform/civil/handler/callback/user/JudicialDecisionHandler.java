@@ -125,13 +125,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
-    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information "
-        + "provided by the %s";
+    private static final String JUDICIAL_RECITAL_TEXT = "%s \n\n"
+        + "The Judge considered the%sapplication of %s dated %s \nAnd the Judge considering "
+        + "the information provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -290,8 +286,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         }
         gaJudicialRequestMoreInfoBuilder
-            .judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
+            .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
                                      judgeNameTitle,
+                                     helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES
+                                         ? " without notice " : " ",
                                      (caseData.getParentClaimantIsApplicant() == null
                                          || YES.equals(caseData.getParentClaimantIsApplicant()))
                                          ? "Claimant" : "Defendant",
@@ -389,6 +387,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return format(
             JUDICIAL_RECITAL_TEXT,
             judgeNameTitle,
+            helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES ? " without notice " : " ",
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
@@ -401,8 +400,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData, String judgeNameTitle) {
         return format(
-            JUDICIAL_HEARING_RECITAL_TEXT,
+            JUDICIAL_RECITAL_TEXT,
             judgeNameTitle,
+            helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES ? " without notice " : " ",
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
