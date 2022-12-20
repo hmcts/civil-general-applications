@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudgeOrderClaimantOrDefenseFixedList;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ public class GAJudicialMakeAnOrder {
     private YesOrNo displayjudgeApproveEditOptionDoc;
     private GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc;
     private YesOrNo isOrderProcessedByStayScheduler;
+    private GAByCourtsInitiativeGAspec judicialByCourtsInitiative;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
@@ -44,7 +46,9 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("judgeApproveEditOptionDoc")
                               GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc,
                           @JsonProperty("isOrderProcessedByStayScheduler")
-                          YesOrNo isOrderProcessedByStayScheduler) {
+                          YesOrNo isOrderProcessedByStayScheduler,
+                          @JsonProperty("judicialByCourtsInitiative") GAByCourtsInitiativeGAspec
+                              judicialByCourtsInitiative) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -57,5 +61,6 @@ public class GAJudicialMakeAnOrder {
         this.displayjudgeApproveEditOptionDoc = displayjudgeApproveEditOptionDoc;
         this.judgeApproveEditOptionDoc = judgeApproveEditOptionDoc;
         this.isOrderProcessedByStayScheduler = isOrderProcessedByStayScheduler;
+        this.judicialByCourtsInitiative = judicialByCourtsInitiative;
     }
 }
