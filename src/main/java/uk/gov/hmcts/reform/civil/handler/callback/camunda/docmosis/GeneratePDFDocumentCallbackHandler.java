@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
@@ -23,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
@@ -87,7 +90,14 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
-            caseDataBuilder.directionOrderDocument(wrapElements(judgeDecision));
+
+            List<Element<CaseDocument>> newDirectionOrderDocumentList =
+                ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
+
+            newDirectionOrderDocumentList.addAll(wrapElements(judgeDecision));
+
+            caseDataBuilder.directionOrderDocument(newDirectionOrderDocumentList);
+
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
             judgeDecision = dismissalOrderGenerator.generate(
@@ -111,7 +121,14 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-            caseDataBuilder.writtenRepSequentialDocument(wrapElements(judgeDecision));
+
+            List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
+                ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
+
+            newWrittenRepSequentialDocumentList.addAll(wrapElements(judgeDecision));
+
+            caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
+
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
             && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getWrittenConcurrentRepresentationsBy() != null) {
@@ -119,7 +136,14 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
-            caseDataBuilder.writtenRepConcurrentDocument(wrapElements(judgeDecision));
+
+            List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
+                ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
+
+            newWrittenRepConcurrentDocumentList.addAll(wrapElements(judgeDecision));
+
+            caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
+
         } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
@@ -127,7 +151,13 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
-            caseDataBuilder.requestForInformationDocument(wrapElements(judgeDecision));
+
+            List<Element<CaseDocument>> newRequestForInfoDocumentList =
+                ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
+
+            newRequestForInfoDocumentList.addAll(wrapElements(judgeDecision));
+
+            caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
