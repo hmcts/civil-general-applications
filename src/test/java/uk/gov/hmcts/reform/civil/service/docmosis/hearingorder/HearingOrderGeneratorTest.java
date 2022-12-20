@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -28,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,13 +43,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 class HearingOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
-    private static final Long REFERENCE_NUMBER = 1594901956117591L;
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String fileName = format(HEARING_ORDER.getDocumentTitle(), REFERENCE_NUMBER);
-    private static final CaseDocument CASE_DOCUMENT = CaseDocument.builder()
-        .documentName(fileName)
-        .documentType(DocumentType.HEARING_ORDER)
-        .build();
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -70,22 +61,15 @@ class HearingOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_ORDER)))
             .thenReturn(new DocmosisDocument(HEARING_ORDER.getDocumentTitle(), bytes));
 
-        when(documentManagementService.uploadDocument(
-            BEARER_TOKEN,
-            new PDF(fileName, bytes, DocumentType.HEARING_ORDER)
-        ))
-            .thenReturn(CASE_DOCUMENT);
-
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
-        CaseDocument caseDocument = hearingOrderGenerator.generate(caseData, BEARER_TOKEN);
-        assertThat(caseDocument).isNotNull().isEqualTo(CASE_DOCUMENT);
+        hearingOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
             BEARER_TOKEN,
-            new PDF(fileName, bytes, DocumentType.HEARING_ORDER)
+            new PDF(any(), any(), DocumentType.HEARING_ORDER)
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
                                                                   eq(HEARING_ORDER));
