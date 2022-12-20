@@ -16,6 +16,9 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
@@ -37,6 +40,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -135,6 +139,29 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldHaveListOfTwoGenerateDirectionOrderDocIfElementInListAlreadyPresent() {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                                  .documentBinaryUrl("binaryUrl").build())
+                .documentType(DocumentType.DIRECTION_ORDER).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .directionOrderDocument(wrapElements(caseDocument))
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(directionOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getDirectionOrderDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
         void shouldGenerateDismissalOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication()
                 .build();
@@ -186,6 +213,30 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldHaveListOfTwoGenerateWrittenRepSequentialDocIfElementInListAlreadyPresent() {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                                  .documentBinaryUrl("binaryUrl").build())
+                .documentType(DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
+                .writtenRepSequentialDocument(wrapElements(caseDocument))
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationSequentailOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getWrittenRepSequentialDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
         void shouldGenerateWrittenRepresentationConccurentDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
                 .build();
@@ -203,6 +254,30 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldHaveListOfTwoGenerateWrittenRepConcurrentDocIfElementInListAlreadyPresent() {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                                  .documentBinaryUrl("binaryUrl").build())
+                .documentType(DocumentType.WRITTEN_REPRESENTATION_CONCURRENT).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
+                .writtenRepConcurrentDocument(wrapElements(caseDocument))
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationConcurrentOrderGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getWrittenRepConcurrentDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
         void shouldGenerateRequestForInformationDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .build();
@@ -216,6 +291,30 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getRequestForInformationDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldHaveListOfTwoGenerateRequestForInfotDocIfElementInListAlreadyPresent() {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                                  .documentBinaryUrl("binaryUrl").build())
+                .documentType(DocumentType.REQUEST_FOR_INFORMATION).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .requestForInformationDocument(wrapElements(caseDocument))
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator)
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getRequestForInformationDocument().size()).isEqualTo(2);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 

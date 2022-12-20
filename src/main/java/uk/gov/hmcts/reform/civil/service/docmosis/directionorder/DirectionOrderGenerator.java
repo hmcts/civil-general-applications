@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
 
@@ -38,13 +40,15 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
         return documentManagementService.uploadDocument(
             authorisation,
-            new PDF(getFileName(docmosisTemplate, caseData), docmosisDocument.getBytes(),
+            new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),
                     DocumentType.DIRECTION_ORDER)
         );
     }
 
-    private String getFileName(DocmosisTemplates docmosisTemplate, CaseData caseData) {
-        return String.format(docmosisTemplate.getDocumentTitle(), caseData.getCcdCaseReference());
+    private String getFileName(DocmosisTemplates docmosisTemplate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        return String.format(docmosisTemplate.getDocumentTitle(), LocalDateTime.now().format(formatter));
     }
 
     @Override
