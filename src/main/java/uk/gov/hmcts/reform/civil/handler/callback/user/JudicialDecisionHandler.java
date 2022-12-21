@@ -125,7 +125,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "%s \n\n"
+    private static final String JUDICIAL_RECITAL_TEXT = "Judge: %s \n\n"
         + "The Judge considered the%sapplication of %s dated %s \nAnd the Judge considering "
         + "the information provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
