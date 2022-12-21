@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -105,6 +106,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getUploadDeadlineDate(),
                                    caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                        .getWrittenConcurrentRepresentationsBy()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), StringUtils.EMPTY),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
             );

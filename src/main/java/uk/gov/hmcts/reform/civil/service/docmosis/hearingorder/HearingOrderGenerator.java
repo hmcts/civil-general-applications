@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -71,9 +73,19 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
-                .submittedOn(LocalDate.now());
+                .submittedOn(LocalDate.now())
+                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+
+        if (caseData.getJudicialByCourtsInitiativeListForHearing().equals(GAByCourtsInitiativeGAspec
+                                                                                               .OPTION_3)) {
+            return StringUtils.EMPTY;
+        }
+        return caseData.getJudicialByCourtsInitiativeListForHearing().getDisplayedValue();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

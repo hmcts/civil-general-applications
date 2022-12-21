@@ -103,11 +103,11 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
                 () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
+                    .getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative().getDisplayedValue()),
                 () -> assertEquals(templateData.getDismissalOrder(),
-                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
-                () -> assertEquals(templateData.getReasonForDecision(),
-                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-            );
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
         }
 
         private String getClaimats(CaseData caseData) {

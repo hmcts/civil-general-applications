@@ -95,6 +95,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
+    private static final String POPULATE_HEARING_ORDER_DOC = "populate-hearing-order-doc";
+    private static final String POPULATE_WRITTEN_REP_PREVIEW_DOC = "populate-written-rep-preview-doc";
 
     private static final String JUDICIAL_TIME_EST_TEXT_1 = "Applicant estimates "
         + "%s. Respondent estimates %s.";
@@ -183,6 +185,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
             callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
             callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
+            callbackKey(MID, POPULATE_HEARING_ORDER_DOC), this::gaPopulateHearingOrderDoc,
+            callbackKey(MID, POPULATE_WRITTEN_REP_PREVIEW_DOC), this::gaPopulateWrittenRepPreviewDoc,
             callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
             callbackKey(SUBMITTED), this::buildConfirmation
         );
@@ -682,6 +686,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseDataBuilder.judicialConcurrentDateText(getJudicalConcurrentDatePupulatedText(caseData)).build();
         }
 
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .errors(errors)
+            .build();
+    }
+
+    private CallbackResponse gaPopulateWrittenRepPreviewDoc(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate =
+            caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
+
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         CaseDocument judgeDecision = null;
 
         if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
@@ -711,7 +728,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
-            .errors(errors)
             .build();
     }
 
@@ -728,6 +744,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
             .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
 
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private CallbackResponse gaPopulateHearingOrderDoc(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         CaseDocument judgeDecision = null;
         if (caseData.getJudicialListForHearing() != null) {
             judgeDecision = hearingOrderGenerator.generate(
@@ -738,7 +764,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .errors(errors)
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }

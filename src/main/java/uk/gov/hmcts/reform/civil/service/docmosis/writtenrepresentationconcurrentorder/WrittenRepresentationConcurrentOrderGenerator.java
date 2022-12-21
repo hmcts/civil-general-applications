@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -68,9 +70,20 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                         .getWrittenConcurrentRepresentationsBy())
-                .submittedOn(LocalDate.now());
+                .submittedOn(LocalDate.now())
+                .locationName(caseData.getLocationName())
+                .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+
+        if (caseData.getJudicialByCourtsInitiativeForWrittenRep().equals(GAByCourtsInitiativeGAspec
+                                                                              .OPTION_3)) {
+            return StringUtils.EMPTY;
+        }
+        return caseData.getJudicialByCourtsInitiativeForWrittenRep().getDisplayedValue();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

@@ -104,6 +104,7 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getDateBy(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoByDate()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
