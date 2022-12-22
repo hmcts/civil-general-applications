@@ -100,7 +100,6 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getSubmittedOn(), caseData.getSubmittedOn()),
                 () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
                 () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),

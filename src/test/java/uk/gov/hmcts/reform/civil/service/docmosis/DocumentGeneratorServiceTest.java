@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisRequest;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,8 +51,7 @@ class DocumentGeneratorServiceTest {
 
     @Test
     void shouldInvokesTornado() {
-        JudgeDecisionPdfDocument judgeDecisionPdfDocument = JudgeDecisionPdfDocument.builder()
-            .submittedOn(LocalDate.now()).build();
+        JudgeDecisionPdfDocument judgeDecisionPdfDocument = JudgeDecisionPdfDocument.builder().build();
 
         when(restTemplate.exchange(eq(configuration.getUrl() + API_RENDER),
                                    eq(HttpMethod.POST), argumentCaptor.capture(), eq(byte[].class)

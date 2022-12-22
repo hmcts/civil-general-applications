@@ -19,8 +19,10 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_SEQUENTIAL;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +74,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
                                         .getWrittenSequentailRepresentationsBy())
                 .responseDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                           .getSequentialApplicantMustRespondWithin())
-                .submittedOn(LocalDate.now())
+                .submittedOn(getFormattedDate(new Date()))
                 .locationName(caseData.getLocationName())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 

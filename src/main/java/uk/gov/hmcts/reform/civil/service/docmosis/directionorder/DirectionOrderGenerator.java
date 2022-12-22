@@ -19,8 +19,10 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +72,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-                .submittedOn(LocalDate.now())
+                .submittedOn(getFormattedDate(new Date()))
                 .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
                 .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData))
                 .locationName(caseData.getLocationName());
