@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICAT
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.SCHEDULE_HEARING;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GA_HEARING_SCHEDULED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PBA_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
@@ -82,7 +82,7 @@ public class FlowStateAllowedEventService {
                       REFER_TO_JUDGE,
                       REFER_TO_LEGAL_ADVISOR,
                       MAKE_DECISION,
-                      SCHEDULE_HEARING,
+                      GA_HEARING_SCHEDULED,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
                       RESPOND_TO_JUDGE_ADDITIONAL_INFO,
