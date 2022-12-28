@@ -66,29 +66,104 @@ class GeneralAppLocationRefDataServiceTest {
     private ResponseEntity<List<LocationRefData>> getAllLocationsRefDataResponse() {
         List<LocationRefData> responseData = new ArrayList<LocationRefData>();
         responseData.add(getLocationRefData("site_name_01", "London", "AA0 0BB",
-                                            "court address 1111"));
+                                            "court address 1111"
+        ));
         responseData.add(getLocationRefData("site_name_02", "London", "AA0 0BB",
-                                            "court address 2222"));
+                                            "court address 2222"
+        ));
         responseData.add(getLocationRefData("site_name_03", "Midlands", "AA0 0BB",
-                                            "court address 3333"));
+                                            "court address 3333"
+        ));
         responseData.add(getLocationRefData("site_name_04", "Midlands", "AA0 0BB",
-                                            "court address 4444"));
+                                            "court address 4444"
+        ));
         responseData.add(getLocationRefData("site_name_05", "North East", "AA0 0BB",
-                                            "court address 5555"));
+                                            "court address 5555"
+        ));
         responseData.add(getLocationRefData("site_name_06", "South East", "AA0 0BB",
-                                            "court address 6666"));
+                                            "court address 6666"
+        ));
         responseData.add(getLocationRefData("site_name_07", "North West", "AA0 0BB",
-                                            "court address 7777"));
+                                            "court address 7777"
+        ));
         responseData.add(getLocationRefData("site_name_08", "South West", "AA0 0BB",
-                                            "court address 8888"));
+                                            "court address 8888"
+        ));
         responseData.add(getLocationRefData("site_name_09", "Wales", "AA0 0BB",
-                                            "court address 9999"));
+                                            "court address 9999"
+        ));
         responseData.add(getLocationRefData("site_name_10", "London", "AA0 0BB",
-                                            "court address 1001"));
+                                            "court address 1001"
+        ));
         responseData.add(getLocationRefData("site_name_11", "Scotland", "AA0 0BB",
-                                            "court address 1011"));
+                                            "court address 1011"
+        ));
         responseData.add(getLocationRefData("site_name_12", "Scotland", "AA0 0BB",
-                                            "court address 1012"));
+                                            "court address 1012"
+        ));
+
+        return new ResponseEntity<List<LocationRefData>>(responseData, OK);
+    }
+
+    private ResponseEntity<List<LocationRefData>> getNonScotlandLocationsRefDataResponse() {
+        List<LocationRefData> responseData = new ArrayList<LocationRefData>();
+        responseData.add(getLocationRefData("site_name_01", "London", "AA0 0BB",
+                                            "court address 1111"
+        ));
+        responseData.add(getLocationRefData("site_name_02", "London", "AA0 0BB",
+                                            "court address 2222"
+        ));
+        responseData.add(getLocationRefData("site_name_03", "Midlands", "AA0 0BB",
+                                            "court address 3333"
+        ));
+        responseData.add(getLocationRefData("site_name_04", "Midlands", "AA0 0BB",
+                                            "court address 4444"
+        ));
+        responseData.add(getLocationRefData("site_name_05", "North East", "AA0 0BB",
+                                            "court address 5555"
+        ));
+        responseData.add(getLocationRefData("site_name_06", "South East", "AA0 0BB",
+                                            "court address 6666"
+        ));
+        responseData.add(getLocationRefData("site_name_07", "North West", "AA0 0BB",
+                                            "court address 7777"
+        ));
+        responseData.add(getLocationRefData("site_name_08", "South West", "AA0 0BB",
+                                            "court address 8888"
+        ));
+        responseData.add(getLocationRefData("site_name_09", "Wales", "AA0 0BB",
+                                            "court address 9999"
+        ));
+        responseData.add(getLocationRefData("site_name_10", "London", "AA0 0BB",
+                                            "court address 1001"
+        ));
+        responseData.add(getLocationRefData("site_name_11", "Midlands", "AA0 0BB",
+                                            "court address 1011"
+        ));
+        responseData.add(getLocationRefData("site_name_12", "Wales", "AA0 0BB",
+                                            "court address 1012"
+        ));
+
+        return new ResponseEntity<List<LocationRefData>>(responseData, OK);
+    }
+
+    private ResponseEntity<List<LocationRefData>> getOnlyScotlandLocationsRefDataResponse() {
+        List<LocationRefData> responseData = new ArrayList<LocationRefData>();
+        responseData.add(getLocationRefData("site_name_01", "Scotland", "AA0 0BB",
+                                            "court address 1111"
+        ));
+        responseData.add(getLocationRefData("site_name_02", "Scotland", "AA0 0BB",
+                                            "court address 2222"
+        ));
+        responseData.add(getLocationRefData("site_name_03", "Scotland", "AA0 0BB",
+                                            "court address 3333"
+        ));
+        responseData.add(getLocationRefData("site_name_04", "Scotland", "AA0 0BB",
+                                            "court address 4444"
+        ));
+        responseData.add(getLocationRefData("site_name_05", "Scotland", "AA0 0BB",
+                                            "court address 5555"
+        ));
 
         return new ResponseEntity<List<LocationRefData>>(responseData, OK);
     }
@@ -115,11 +190,12 @@ class GeneralAppLocationRefDataServiceTest {
     void shouldReturnLocations_whenLRDReturnsAllLocations() {
         when(authTokenGenerator.generate()).thenReturn("service_token");
         when(restTemplate.exchange(
-                uriCaptor.capture(),
-                httpMethodCaptor.capture(),
-                httpEntityCaptor.capture(),
-                ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()))
-                .thenReturn(getAllLocationsRefDataResponse());
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getAllLocationsRefDataResponse());
 
         List<LocationRefData> courtLocations = refDataService
             .getCourtLocations("user_token");
@@ -127,45 +203,20 @@ class GeneralAppLocationRefDataServiceTest {
         DynamicList courtLocationString = getLocationsFromList(courtLocations);
 
         assertThat(locationsFromDynamicList(courtLocationString))
-            .containsOnly("site_name_01 - court address 1111 - AA0 0BB",
-                          "site_name_02 - court address 2222 - AA0 0BB",
-                          "site_name_03 - court address 3333 - AA0 0BB",
-                          "site_name_04 - court address 4444 - AA0 0BB",
-                          "site_name_05 - court address 5555 - AA0 0BB",
-                          "site_name_06 - court address 6666 - AA0 0BB",
-                          "site_name_07 - court address 7777 - AA0 0BB",
-                          "site_name_08 - court address 8888 - AA0 0BB",
-                          "site_name_09 - court address 9999 - AA0 0BB",
-                          "site_name_10 - court address 1001 - AA0 0BB",
-                          "site_name_11 - court address 1011 - AA0 0BB",
-                          "site_name_12 - court address 1012 - AA0 0BB");
+            .containsOnly(
+                "site_name_01 - court address 1111 - AA0 0BB",
+                "site_name_02 - court address 2222 - AA0 0BB",
+                "site_name_03 - court address 3333 - AA0 0BB",
+                "site_name_04 - court address 4444 - AA0 0BB",
+                "site_name_05 - court address 5555 - AA0 0BB",
+                "site_name_06 - court address 6666 - AA0 0BB",
+                "site_name_07 - court address 7777 - AA0 0BB",
+                "site_name_08 - court address 8888 - AA0 0BB",
+                "site_name_09 - court address 9999 - AA0 0BB",
+                "site_name_10 - court address 1001 - AA0 0BB"
+            );
 
-        assertThat(courtLocations.size()).isEqualTo(12);
-        verify(lrdConfiguration, times(1)).getUrl();
-        verify(lrdConfiguration, times(1)).getEndpoint();
-        assertThat(uriCaptor.getValue().toString())
-                .isEqualTo("dummy_url/fees-register/fees/lookup?is_hearing_location=Y&is_case_management"
-                               + "_location=Y&court_type_id=10&location_type=Court");
-        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
-        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
-        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
-                .isEqualTo("service_token");
-    }
-
-    @Test
-    void shouldReturnLocations_whenLRDReturnsNullBody() {
-        when(authTokenGenerator.generate()).thenReturn("service_token");
-        when(restTemplate.exchange(
-                uriCaptor.capture(),
-                httpMethodCaptor.capture(),
-                httpEntityCaptor.capture(),
-                ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()))
-                .thenReturn(new ResponseEntity<List<LocationRefData>>(OK));
-
-        List<LocationRefData> courtLocations = refDataService
-            .getCourtLocations("user_token");
-
-        assertThat(courtLocations).isNull();
+        assertThat(courtLocations.size()).isEqualTo(10);
         verify(lrdConfiguration, times(1)).getUrl();
         verify(lrdConfiguration, times(1)).getEndpoint();
         assertThat(uriCaptor.getValue().toString())
@@ -174,18 +225,111 @@ class GeneralAppLocationRefDataServiceTest {
         assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
-                .isEqualTo("service_token");
+            .isEqualTo("service_token");
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsNullBody() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(new ResponseEntity<List<LocationRefData>>(OK));
+
+        List<LocationRefData> courtLocations = refDataService
+            .getCourtLocations("user_token");
+
+        assertThat(courtLocations).isEmpty();
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue().toString())
+            .isEqualTo("dummy_url/fees-register/fees/lookup?is_hearing_location=Y&is_case_management"
+                           + "_location=Y&court_type_id=10&location_type=Court");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsOnlyScotlandLocations() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getOnlyScotlandLocationsRefDataResponse());
+
+        List<LocationRefData> courtLocations = refDataService.getCourtLocations("user_token");
+
+        assertThat(courtLocations.size()).isEqualTo(0);
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue().toString())
+            .isEqualTo("dummy_url/fees-register/fees/lookup?is_hearing_location=Y&is_case_management"
+                           + "_location=Y&court_type_id=10&location_type=Court");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsNonScotlandLocations() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getNonScotlandLocationsRefDataResponse());
+
+        List<LocationRefData> courtLocations = refDataService.getCourtLocations("user_token");
+
+        DynamicList courtLocationString = getLocationsFromList(courtLocations);
+
+        assertThat(courtLocations.size()).isEqualTo(12);
+        assertThat(locationsFromDynamicList(courtLocationString)).containsOnly(
+            "site_name_01 - court address 1111 - AA0 0BB",
+            "site_name_02 - court address 2222 - AA0 0BB",
+            "site_name_03 - court address 3333 - AA0 0BB",
+            "site_name_04 - court address 4444 - AA0 0BB",
+            "site_name_05 - court address 5555 - AA0 0BB",
+            "site_name_06 - court address 6666 - AA0 0BB",
+            "site_name_07 - court address 7777 - AA0 0BB",
+            "site_name_08 - court address 8888 - AA0 0BB",
+            "site_name_09 - court address 9999 - AA0 0BB",
+            "site_name_10 - court address 1001 - AA0 0BB",
+            "site_name_11 - court address 1011 - AA0 0BB",
+            "site_name_12 - court address 1012 - AA0 0BB"
+        );
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue().toString())
+            .isEqualTo("dummy_url/fees-register/fees/lookup?is_hearing_location=Y&is_case_management"
+                           + "_location=Y&court_type_id=10&location_type=Court");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
     }
 
     @Test
     void shouldReturnEmptyList_whenLRDThrowsException() {
         when(authTokenGenerator.generate()).thenReturn("service_token");
         when(restTemplate.exchange(
-                uriCaptor.capture(),
-                httpMethodCaptor.capture(),
-                httpEntityCaptor.capture(),
-                ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()))
-                .thenThrow(new RestClientException("403"));
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenThrow(new RestClientException("403"));
 
         List<LocationRefData> courtLocations = refDataService
             .getCourtLocations("user_token");

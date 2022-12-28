@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.logging.log4j.util.Strings.concat;
 
@@ -39,7 +40,7 @@ public class GeneralAppLocationRefDataService {
                 new ParameterizedTypeReference<>() {
                 }
             );
-            return responseEntity.getBody();
+            return onlyEnglandAndWalesLocations(responseEntity.getBody());
         } catch (Exception e) {
             log.error("Location Reference Data Lookup Failed - " + e.getMessage(), e);
         }
@@ -61,6 +62,13 @@ public class GeneralAppLocationRefDataService {
         headers.add("Authorization", authToken);
         headers.add("ServiceAuthorization", authTokenGenerator.generate());
         return new HttpEntity<>(headers);
+    }
+
+    private List<LocationRefData> onlyEnglandAndWalesLocations(List<LocationRefData> locationRefData) {
+        return locationRefData == null
+                ? new ArrayList<>()
+                : locationRefData.stream().filter(location -> !"Scotland".equals(location.getRegion()))
+                .collect(Collectors.toList());
     }
 
     private String getDisplayEntry(LocationRefData location) {
