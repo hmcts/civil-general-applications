@@ -126,13 +126,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
-    private static final String JUDICIAL_HEARING_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information provided by the %s";
-    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "%s \n"
-        + "Upon the application of %s dated %s and upon considering the information "
-        + "provided by the %s";
+    private static final String JUDICIAL_RECITAL_TEXT = "Judge: %s \n\n"
+        + "The Judge considered the%sapplication of %s dated %s \nAnd the Judge considering "
+        + "the information provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -140,7 +136,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_SEQUENTIAL_APPLICANT_DATE =
         "The applicant may upload any written representations by 4pm on %s";
     private static final String JUDICIAL_CONCURRENT_DATE =
-        "The applicant and respondent must respond with written representations by 4pm on %s";
+        "The applicant and respondent may respond with written representations by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
         + "[Insert Draft Order from application]\n\n";
@@ -299,8 +295,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         }
         gaJudicialRequestMoreInfoBuilder
-            .judgeRecitalText(format(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT,
+            .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
                                      judgeNameTitle,
+                                     helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES
+                                         ? " without notice " : " ",
                                      (caseData.getParentClaimantIsApplicant() == null
                                          || YES.equals(caseData.getParentClaimantIsApplicant()))
                                          ? "Claimant" : "Defendant",
@@ -363,14 +361,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     }
 
-    /*Return True if General Application types are Extend Time or/and Stay the Claim
+    /*Return True if General Application types contains Stay the Claim
     Else, Return False*/
     private boolean checkApplicationTypeForDate(CaseData caseData) {
 
         if (caseData.getGeneralAppType() == null) {
             return false;
         }
-        List<GeneralApplicationTypes> validGATypes = Arrays.asList(EXTEND_TIME, STAY_THE_CLAIM);
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(STAY_THE_CLAIM);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 
@@ -398,6 +396,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return format(
             JUDICIAL_RECITAL_TEXT,
             judgeNameTitle,
+            helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES ? " without notice " : " ",
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",
@@ -410,8 +409,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingRecitalPrepopulatedText(CaseData caseData, String judgeNameTitle) {
         return format(
-            JUDICIAL_HEARING_RECITAL_TEXT,
+            JUDICIAL_RECITAL_TEXT,
             judgeNameTitle,
+            helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES ? " without notice " : " ",
             (caseData.getParentClaimantIsApplicant() == null
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? "Claimant" : "Defendant",

@@ -10,8 +10,8 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.42.0'
   id 'org.sonarqube' version '3.4.0.2513'
   id 'au.com.dius.pact' version '4.3.15'
-  id "org.flywaydb.flyway" version "9.10.0"
-  id "io.freefair.lombok" version "6.6"
+  id "org.flywaydb.flyway" version "9.10.1"
+  id "io.freefair.lombok" version "6.6.1"
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -59,10 +59,17 @@ allprojects {
     // range of 0-10 fails the build, anything greater and it doesn't fail the build
     failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
     suppressionFile = 'config/owasp/suppressions.xml'
+    cveValidForHours = 24
 
     analyzers {
       // Disable scanning of .NET related binaries
       assemblyEnabled = false
+      retirejs {
+        enabled = false
+      }
+      ossIndex {
+        enabled = false
+      }
     }
   }
 
@@ -89,6 +96,22 @@ allprojects {
               version: '7.17.0'
       ) {
         entry 'camunda-engine'
+      }
+      // Solves CVE-2022-31159, happens only on local builds when running dependencyCheck gradle task
+      dependencySet(
+        group: 'com.amazonaws',
+        version: '1.12.367'
+      ) {
+        entry 'aws-java-sdk-core'
+        entry 'aws-java-sdk-kms'
+        entry 'aws-java-sdk-s3'
+      }
+      // Solves CVE-2020-17521
+      dependencySet(
+        group: 'org.codehaus.groovy',
+        version: '2.4.21'
+      ) {
+        entry 'groovy-all'
       }
       // CVE-2022-41854
       dependencySet(
@@ -306,7 +329,7 @@ dependencies {
   implementation group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
   implementation group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.10.RELEASE'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '3.1.5'
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.0'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '3.1.5'
   implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0'
   implementation group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '4.0.0'
@@ -362,9 +385,9 @@ dependencies {
 
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.0.0'
 
-  testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.9.0'
-  testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.9.0'
-  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.9.0'
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.10.0'
+  testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.10.0'
+  testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.10.0'
 
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   testCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
