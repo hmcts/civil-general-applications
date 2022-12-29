@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -14,11 +16,12 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -71,9 +74,19 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
-                .submittedOn(LocalDate.now());
+                .submittedOn(getFormattedDate(new Date()))
+                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+
+        if (caseData.getJudicialByCourtsInitiativeListForHearing().equals(GAByCourtsInitiativeGAspec
+                                                                                               .OPTION_3)) {
+            return StringUtils.EMPTY;
+        }
+        return caseData.getJudicialByCourtsInitiativeListForHearing().getDisplayedValue();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

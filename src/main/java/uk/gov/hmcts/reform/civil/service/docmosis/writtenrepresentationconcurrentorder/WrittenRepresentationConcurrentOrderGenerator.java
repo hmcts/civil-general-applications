@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -14,11 +16,12 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -68,9 +71,20 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                         .getWrittenConcurrentRepresentationsBy())
-                .submittedOn(LocalDate.now());
+                .submittedOn(getFormattedDate(new Date()))
+                .locationName(caseData.getLocationName())
+                .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+
+        if (caseData.getJudicialByCourtsInitiativeForWrittenRep().equals(GAByCourtsInitiativeGAspec
+                                                                              .OPTION_3)) {
+            return StringUtils.EMPTY;
+        }
+        return caseData.getJudicialByCourtsInitiativeForWrittenRep().getDisplayedValue();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

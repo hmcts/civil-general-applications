@@ -1456,7 +1456,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldGenerateListingForHearingDocument() {
             CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
                 .build();
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_HEARING_ORDER_SCREEN);
+            CallbackParams params = callbackParamsOf(caseData, MID, "populate-hearing-order-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1472,7 +1472,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldGenerateConcurrentApplicationDocument() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
                 .build();
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_PAGE);
+            CallbackParams params = callbackParamsOf(caseData, MID, "populate-written-rep-preview-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1489,7 +1489,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldGenerateSequentialApplicationDocument() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
                 .build();
-            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_WRITTEN_REPRESENTATION_PAGE);
+            CallbackParams params = callbackParamsOf(caseData, MID, "populate-written-rep-preview-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
