@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,7 +41,8 @@ public class GeneralAppLocationRefDataService {
                 new ParameterizedTypeReference<>() {
                 }
             );
-            return onlyEnglandAndWalesLocations(responseEntity.getBody());
+            return onlyEnglandAndWalesLocations(responseEntity.getBody())
+                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("Location Reference Data Lookup Failed - " + e.getMessage(), e);
         }
