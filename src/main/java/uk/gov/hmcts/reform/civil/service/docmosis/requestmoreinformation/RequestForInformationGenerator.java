@@ -14,11 +14,12 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +67,9 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .defendantName(defendantName)
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
-                .submittedOn(LocalDate.now())
-                .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate());
+                .submittedOn(getFormattedDate(new Date()))
+                .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate())
+                .locationName(caseData.getLocationName());
 
         return judgeDecisionPdfDocumentBuilder.build();
     }

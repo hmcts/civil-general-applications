@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -14,11 +16,12 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -69,9 +72,28 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
                 .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-                .submittedOn(LocalDate.now());
+                .submittedOn(getFormattedDate(new Date()))
+                .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
+                .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData))
+                .locationName(caseData.getLocationName());
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private String populateJudgeReasonForDecisionText(CaseData caseData) {
+        return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
+            ? "Reasons for decision: \n" + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
+            : "";
+    }
+
+    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+
+        if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative().equals(GAByCourtsInitiativeGAspec
+                                                                                               .OPTION_3)) {
+            return StringUtils.EMPTY;
+        }
+        return caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative()
+            .getDisplayedValue();
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
