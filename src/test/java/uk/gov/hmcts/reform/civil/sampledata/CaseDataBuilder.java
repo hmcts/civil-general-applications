@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
@@ -547,6 +548,7 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .orderText("Test Order")
+                                           .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
                                            .judgeRecitalText("Test Judge's recital")
@@ -569,6 +571,7 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .directionsText("Test Direction")
+                                           .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
@@ -593,6 +596,7 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .dismissalOrderText("Test Dismissal")
                                            .reasonForDecisionText("Test Reason")
+                                           .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .makeAnOrder(DISMISS_THE_APPLICATION)
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
@@ -603,6 +607,7 @@ public class CaseDataBuilder {
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
+            .judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_1)
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
@@ -631,6 +636,7 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
             .judgeRecitalText("Test Judge's recital")
             .directionInRelationToHearingText("Test written order")
             .createdDate(LocalDateTime.now())
@@ -653,6 +659,7 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
+            .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3)
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
@@ -674,6 +681,7 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
+            .locationName("abcd")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
