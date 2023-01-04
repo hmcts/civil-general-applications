@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -50,7 +51,6 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
@@ -150,7 +150,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void aboutToStartCallbackChecksApplicationStateBeforeProceeding() {
-        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
+
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address").postcode("post code")
+                          .courtName("Court Name").region("Region").build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+
         CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
                                                  CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
@@ -162,7 +167,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void aboutToStartCallbackChecksRespondendResponseBeforeProceeding() {
-        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
+
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address").postcode("post code")
+                          .courtName("Court Name").region("Region").build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+
         CallbackParams params = callbackParamsOf(getCaseWithRespondentResponse(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
         errors.add(RESPONDENT_ERROR);
@@ -173,7 +183,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void aboutToStartCallbackAddsLocationDetails() {
-        given(locationRefDataService.getCourtLocations(any())).willReturn(getSampleCourLocations());
+
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address").postcode("post code")
+                          .courtName("Court Name").region("Region").build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+
         CallbackParams params = callbackParamsOf(getCase(AWAITING_RESPONDENT_RESPONSE),
                                                  CallbackType.ABOUT_TO_START);
 
@@ -185,7 +200,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         DynamicList dynamicList = getLocationDynamicList(data);
         assertThat(dynamicList).isNotNull();
         assertThat(locationsFromDynamicList(dynamicList))
-            .containsOnly("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH");
+            .containsOnly("siteName - court Address - post code");
     }
 
     @Test
