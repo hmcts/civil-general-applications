@@ -1,10 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED;
-
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -16,14 +13,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED;
 
 @Service
 @RequiredArgsConstructor
 public class NotifyHearingHandler extends CallbackHandler {
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(HEARING_SCHEDULED);
 
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(HEARING_SCHEDULED);
 
     @Override
     protected Map<String, Callback> callbacks() {
