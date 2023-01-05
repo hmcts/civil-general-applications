@@ -75,7 +75,8 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(getFormattedDate(new Date()))
-                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData));
+                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData))
+                .locationName(caseData.getLocationName());
 
         return judgeDecisionPdfDocumentBuilder.build();
     }
