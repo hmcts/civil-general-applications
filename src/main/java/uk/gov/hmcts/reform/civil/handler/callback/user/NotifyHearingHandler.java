@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GA_HEARING_SCHEDULED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED;
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class NotifyHearingHandler extends CallbackHandler {
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(GA_HEARING_SCHEDULED);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(HEARING_SCHEDULED);
 
 
     @Override
