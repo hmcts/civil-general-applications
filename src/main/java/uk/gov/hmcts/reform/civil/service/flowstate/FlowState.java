@@ -25,8 +25,7 @@ public interface FlowState {
         APPLICATION_SUBMITTED,
         PAYMENT_FAILED,
         PAYMENT_SUCCESSFUL,
-        LISTING_FOR_A_HEARING
-        ;
+        LISTING_FOR_A_HEARING;
 
         public static final String FLOW_NAME = "MAIN";
 
