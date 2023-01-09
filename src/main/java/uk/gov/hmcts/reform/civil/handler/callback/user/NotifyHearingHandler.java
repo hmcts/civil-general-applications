@@ -12,12 +12,14 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -42,7 +44,8 @@ public class NotifyHearingHandler extends CallbackHandler {
     protected Map<String, Callback> callbacks() {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-                callbackKey(MID, "locationName"), this::locationList,
+                callbackKey(MID, "hearing-locations"), this::locationList,
+                callbackKey(MID, "checkFutureDate"), this::locationList,
                 callbackKey(ABOUT_TO_SUBMIT), this::nothing,
                 callbackKey(SUBMITTED), this::nothing
         );
@@ -54,8 +57,14 @@ public class NotifyHearingHandler extends CallbackHandler {
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
-        if(Objects.nonNull(caseData)) {
-
+        if(Objects.nonNull(caseData.getJudicialListForHearing())
+                && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation())
+                && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue())
+        ) {
+            String preLabel = caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue().getLabel();
+            Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
+                    .filter(l -> l.getLabel().equals(preLabel)).findFirst();
+            first.ifPresent(dynamicLocationList::setValue);
         }
         caseDataBuilder.hearingLocation(dynamicLocationList)
                 .build();
