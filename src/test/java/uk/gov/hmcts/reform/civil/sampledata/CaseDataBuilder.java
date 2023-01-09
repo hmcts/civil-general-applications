@@ -609,6 +609,7 @@ public class CaseDataBuilder {
             .claimant2PartyName("Test Claimant2 Name")
             .judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_1)
             .defendant1PartyName("Test Defendant1 Name")
+            .locationName("location name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
