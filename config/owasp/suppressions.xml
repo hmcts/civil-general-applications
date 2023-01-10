@@ -14,4 +14,8 @@
     <cve>CVE-2022-3064</cve>
     <cve>CVE-2021-4235</cve>
   </suppress>
+  <suppress>
+    <notes>Latency utils is still 2.0.3 with the latest spring boot jar and also that is the latest version available for 2.7.7. spring boot</notes>
+    <cve>CVE-2021-4277</cve>
+  </suppress>
 </suppressions>
