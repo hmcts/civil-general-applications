@@ -15,6 +15,10 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +49,7 @@ public class NotifyHearingHandler extends CallbackHandler {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
                 callbackKey(MID, "hearing-locations"), this::locationList,
-                callbackKey(MID, "checkFutureDate"), this::locationList,
+                callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
                 callbackKey(ABOUT_TO_SUBMIT), this::nothing,
                 callbackKey(SUBMITTED), this::nothing
         );
@@ -79,6 +83,42 @@ public class NotifyHearingHandler extends CallbackHandler {
                         .append(" - ").append(location.getCourtAddress())
                         .append(" - ").append(location.getPostcode()).toString())
                 .collect(Collectors.toList()));
+    }
+
+    private CallbackResponse checkFutureDate(CallbackParams callbackParams) {
+        List<String> errors = new ArrayList<>();
+        LocalDateTime hearingDateTime = null;
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        LocalDate date = caseData.getHearingDate();
+        String hourMinute = caseData.getHearingTimeHourMinute();
+        if (hourMinute != null) {
+            int hours = Integer.parseInt(hourMinute.substring(0, 2));
+            int minutes = Integer.parseInt(hourMinute.substring(2, 4));
+            LocalTime time = LocalTime.of(hours, minutes, 0);
+            hearingDateTime = LocalDateTime.of(date, time);
+        } else {
+            errors.add("Time is required");
+        }
+
+        errors = (Objects.isNull(hearingDateTime)) ? null :
+                isFutureDate(hearingDateTime);
+        return AboutToStartOrSubmitCallbackResponse.builder()
+                .data(caseDataBuilder.build().toMap(objectMapper))
+                .errors(errors)
+                .build();
+    }
+
+    private List<String> isFutureDate(LocalDateTime hearingDateTime) {
+        List<String> errors = new ArrayList<>();
+        if (!checkFutureDateValidation(hearingDateTime)) {
+            errors.add("The Date & Time must be 24hs in advance from now");
+        }
+        return errors;
+    }
+
+    private boolean checkFutureDateValidation(LocalDateTime localDateTime) {
+        return localDateTime != null && localDateTime.isAfter(LocalDateTime.now().plusHours(24));
     }
 
     private CallbackResponse nothing(CallbackParams callbackParams) {
