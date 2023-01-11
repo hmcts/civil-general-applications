@@ -36,17 +36,17 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-        NotifyHearingHandler.class,
+        HearingScheduledEventCallbackHandler.class,
         JacksonAutoConfiguration.class,
         ValidationAutoConfiguration.class,
         CaseDetailsConverter.class,
 })
-class NotifyHearingHandlerTest extends BaseCallbackHandlerTest {
+class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
-    private NotifyHearingHandler handler;
+    private HearingScheduledEventCallbackHandler handler;
     @MockBean
     private GeneralAppLocationRefDataService locationRefDataService;
 

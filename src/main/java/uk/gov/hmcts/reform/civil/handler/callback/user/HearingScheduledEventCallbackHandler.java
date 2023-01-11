@@ -31,14 +31,14 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @Service
 @RequiredArgsConstructor
-public class NotifyHearingHandler extends CallbackHandler {
+public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(HEARING_SCHEDULED);
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(HEARING_SCHEDULED_GA);
 
     private final GeneralAppLocationRefDataService locationRefDataService;
 

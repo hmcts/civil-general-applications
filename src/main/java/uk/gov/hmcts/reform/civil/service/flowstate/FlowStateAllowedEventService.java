@@ -16,7 +16,7 @@ import static java.util.Map.entry;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
@@ -82,7 +82,7 @@ public class FlowStateAllowedEventService {
                       REFER_TO_JUDGE,
                       REFER_TO_LEGAL_ADVISOR,
                       MAKE_DECISION,
-                      HEARING_SCHEDULED,
+                      HEARING_SCHEDULED_GA,
                       RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       RESPOND_TO_JUDGE_DIRECTIONS,
                       RESPOND_TO_JUDGE_ADDITIONAL_INFO,
