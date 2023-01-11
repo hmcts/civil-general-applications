@@ -50,8 +50,8 @@ public class NotifyHearingHandler extends CallbackHandler {
                 callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
                 callbackKey(MID, "hearing-locations"), this::locationList,
                 callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
-                callbackKey(ABOUT_TO_SUBMIT), this::nothing,
-                callbackKey(SUBMITTED), this::nothing
+                callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse,
+                callbackKey(SUBMITTED), this::emptyCallbackResponse
         );
     }
 
@@ -61,7 +61,7 @@ public class NotifyHearingHandler extends CallbackHandler {
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
-        if(Objects.nonNull(caseData.getJudicialListForHearing())
+        if (Objects.nonNull(caseData.getJudicialListForHearing())
                 && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation())
                 && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue())
         ) {
@@ -119,11 +119,6 @@ public class NotifyHearingHandler extends CallbackHandler {
 
     private boolean checkFutureDateValidation(LocalDateTime localDateTime) {
         return localDateTime != null && localDateTime.isAfter(LocalDateTime.now().plusHours(24));
-    }
-
-    private CallbackResponse nothing(CallbackParams callbackParams) {
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .build();
     }
 
     @Override
