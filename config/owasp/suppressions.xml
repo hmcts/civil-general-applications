@@ -23,4 +23,19 @@
     <packageUrl regex="true">^pkg:maven/org\.camunda\.commons/camunda\-commons\-utils@.*$</packageUrl>
     <cve>CVE-2021-4277</cve>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: launchdarkly-java-server-sdk-6.0.0.jar (shaded: org.yaml:snakeyaml:1.32)
+   file name: snakeyaml-1.33.jar
+   ]]></notes>
+    <cve>CVE-2022-3064</cve>
+    <cve>CVE-2021-4235</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: tomcat-embed-core-9.0.68.jar,
+   file name: tomcat-embed-websocket-9.0.68.jar
+   ]]></notes>
+    <cve>CVE-2022-45143</cve>
+  </suppress>
 </suppressions>
