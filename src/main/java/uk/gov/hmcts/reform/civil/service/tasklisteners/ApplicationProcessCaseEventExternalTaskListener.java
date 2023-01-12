@@ -12,7 +12,8 @@ public class ApplicationProcessCaseEventExternalTaskListener {
     private static final String TOPIC = "applicationProcessCaseEventGASpec";
 
     @Autowired
-    private ApplicationProcessCaseEventExternalTaskListener(ApplicationProcessCaseEventTaskHandler applicationProcessCaseEventTaskHandler,
+    private ApplicationProcessCaseEventExternalTaskListener(
+        ApplicationProcessCaseEventTaskHandler applicationProcessCaseEventTaskHandler,
                                                             ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(applicationProcessCaseEventTaskHandler).open();

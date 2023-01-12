@@ -23,6 +23,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class StartHearingScheduledBusinessProcessTaskHandler implements BaseExternalTaskHandler {
+
     public static final String BUSINESS_PROCESS = "businessProcess";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;

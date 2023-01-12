@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,9 +36,9 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
     @Override
     public String camundaActivityId(CallbackParams callbackParams) {
-
         return TASK_ID;
     }
 

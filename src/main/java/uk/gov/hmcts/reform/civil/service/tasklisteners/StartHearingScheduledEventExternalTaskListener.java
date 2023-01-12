@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.StartHearingScheduledBusinessProc
 
 @Component
 public class StartHearingScheduledEventExternalTaskListener {
+
     private static final String TOPIC = "START_HEARING_SCHEDULED_BUSINESS_PROCESS";
 
     @Autowired

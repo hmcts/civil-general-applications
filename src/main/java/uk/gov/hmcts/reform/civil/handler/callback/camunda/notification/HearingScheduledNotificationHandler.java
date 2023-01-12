@@ -29,7 +29,6 @@ public class HearingScheduledNotificationHandler extends CallbackHandler {
         NOTIFY_HEARING_NOTICE
     );
 
-
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -41,9 +40,9 @@ public class HearingScheduledNotificationHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
     private CallbackResponse hearingScheduledNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-
         try {
             caseData = judicialNotificationService.sendNotification(caseData);
         } catch (NotificationException notificationException) {

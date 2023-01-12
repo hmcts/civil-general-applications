@@ -21,6 +21,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_HEARING_SCHEDUL
 @Service
 @RequiredArgsConstructor
 public class StartHearingScheduledBusinessProcessCallbackHandler extends CallbackHandler {
+
     private static final List<CaseEvent> EVENTS = List.of(START_HEARING_SCHEDULED_BUSINESS_PROCESS);
     public static final String BUSINESS_PROCESS = "businessProcess";
 
