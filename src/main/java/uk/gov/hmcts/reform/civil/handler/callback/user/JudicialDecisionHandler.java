@@ -103,28 +103,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "%s. Respondent estimates %s.";
     private static final String JUDICIAL_TIME_EST_TEXT_2 = "Both applicant and respondent estimate it would take %s.";
     private static final String JUDICIAL_TIME_EST_TEXT_3 = "Applicant estimates "
-        + "%s. Respondent1 estimates %s. Respondent2 estimates %s.";
+        + "%s. Respondent 1 estimates %s. Respondent 2 estimates %s.";
     private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = "Applicant requires support with regards to "
         + "vulnerability\n";
     private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\nRespondent requires support with "
         + "regards to vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT = "\n\nRespondent1 requires support with "
+    private static final String JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT = "\n\nRespondent 1 requires support with "
         + "regards to vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent2 requires support with "
+    private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent 2 requires support with "
         + "regards to vulnerability\n";
     private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT = "Respondent1 prefers Location %s.";
-    private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT = "Respondent2 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT = "Respondent 1 prefers Location %s.";
+    private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT = "Respondent 2 prefers Location %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_1 = "Applicant prefers "
         + "%s. Respondent prefers %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = "Both applicant and respondent prefer %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_3 = "Applicant prefers "
-        + "%s. Respondent1 prefers %s. Respondent2 prefers %s.";
-    private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = "Applicant require "
-        + "%s. Respondent require %s.";
+        + "%s. Respondent 1 prefers %s. Respondent 2 prefers %s.";
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = "Applicant requires "
+        + "%s. Respondent requires %s.";
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_2 = " Both applicant and respondent require %s.";
-    private static final String JUDICIAL_SUPPORT_REQ_TEXT_3 = "Applicant require "
-        + "%s. Respondent1 require %s. Respondent2 require %s.";
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_3 = "Applicant requires "
+        + "%s. Respondent 1 requires %s. Respondent 2 requires %s.";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
@@ -1077,7 +1077,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if ((caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
             || caseData.getGeneralAppHearingDetails() != null) {
-            return "Applicant require(s) ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
+            return "Applicant requires ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
 
         }
         return StringUtils.EMPTY;
