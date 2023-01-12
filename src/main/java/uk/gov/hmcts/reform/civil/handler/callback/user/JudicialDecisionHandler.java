@@ -104,7 +104,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_TIME_EST_TEXT_2 = "Both applicant and respondent estimate it would take %s.";
     private static final String JUDICIAL_TIME_EST_TEXT_3 = "Applicant estimates "
         + "%s. Respondent 1 estimates %s. Respondent 2 estimates %s.";
-    private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = "Applicant requires support with regards to "
+    private static final String APPLICANT_REQUIRES = "Applicant requires ";
+    private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = APPLICANT_REQUIRES + "support with regards to "
         + "vulnerability\n";
     private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\nRespondent requires support with "
         + "regards to vulnerability\n";
@@ -120,10 +121,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_PREF_TYPE_TEXT_2 = "Both applicant and respondent prefer %s.";
     private static final String JUDICIAL_PREF_TYPE_TEXT_3 = "Applicant prefers "
         + "%s. Respondent 1 prefers %s. Respondent 2 prefers %s.";
-    private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = "Applicant requires "
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_1 = APPLICANT_REQUIRES
         + "%s. Respondent requires %s.";
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_2 = " Both applicant and respondent require %s.";
-    private static final String JUDICIAL_SUPPORT_REQ_TEXT_3 = "Applicant requires "
+    private static final String JUDICIAL_SUPPORT_REQ_TEXT_3 = APPLICANT_REQUIRES
         + "%s. Respondent 1 requires %s. Respondent 2 requires %s.";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yy");
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -1077,7 +1078,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if ((caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
             || caseData.getGeneralAppHearingDetails() != null) {
-            return "Applicant requires ".concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
+            return APPLICANT_REQUIRES.concat(applicantSupportReq.isEmpty() ? "no support" : appSupportReq);
 
         }
         return StringUtils.EMPTY;
