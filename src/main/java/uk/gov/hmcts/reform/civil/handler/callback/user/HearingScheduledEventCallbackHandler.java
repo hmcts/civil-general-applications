@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
@@ -52,8 +54,8 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
                 callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
                 callbackKey(MID, "hearing-locations"), this::locationList,
                 callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
-                callbackKey(ABOUT_TO_SUBMIT), this::clearData,
-                callbackKey(SUBMITTED), this::emptyCallbackResponse
+                callbackKey(ABOUT_TO_SUBMIT), this::validateHearingScheduledProcess,
+                callbackKey(SUBMITTED), this::buildConfirmation
         );
     }
 
@@ -123,14 +125,26 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
         return localDateTime != null && localDateTime.isAfter(LocalDateTime.now().plusHours(24));
     }
 
-    private CallbackResponse clearData(CallbackParams callbackParams) {
+    private CallbackResponse validateHearingScheduledProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
         if (nonNull(caseData.getGaHearingNoticeDetail().getHearingLocation())) {
             caseData.getGaHearingNoticeDetail().getHearingLocation().setListItems(null);
         }
+        dataBuilder.businessProcess(BusinessProcess.ready(HEARING_SCHEDULED_GA)).build();
         return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(caseData.toMap(objectMapper))
-                .build();
+            .data(dataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        String confirmationHeader = "# Your order has been made";
+        String body = "<br/><br/>";
+        return SubmittedCallbackResponse.builder()
+            .confirmationHeader(confirmationHeader)
+            .confirmationBody(body)
+            .build();
     }
 
     @Override

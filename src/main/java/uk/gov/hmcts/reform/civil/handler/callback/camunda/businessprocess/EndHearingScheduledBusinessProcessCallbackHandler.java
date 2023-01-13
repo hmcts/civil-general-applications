@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.util.List;
@@ -29,7 +28,6 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
-    private final JudicialDecisionHelper judicialDecisionHelper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -43,13 +41,9 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
 
     private CallbackResponse endHearingScheduledBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-
-        if (isApplicationMakeVisibleToDefendant(data)) {
-            parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+        parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
                 data, HEARING_SCHEDULED.getDisplayedValue());
-        } else {
-            parentCaseUpdateHelper.updateParentWithGAState(data, HEARING_SCHEDULED.getDisplayedValue());
-        }
+
         return evaluateReady(callbackParams, HEARING_SCHEDULED);
     }
 
@@ -61,10 +55,5 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
             .state(newState.toString())
             .data(output)
             .build();
-    }
-
-    private boolean isApplicationMakeVisibleToDefendant(CaseData caseData) {
-        return judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)
-            || judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData);
     }
 }

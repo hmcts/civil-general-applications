@@ -39,7 +39,6 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     @Override
     public String camundaActivityId(CallbackParams callbackParams) {
-
         return TASK_ID;
     }
 

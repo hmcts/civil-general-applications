@@ -43,7 +43,6 @@ public class HearingScheduledNotificationHandler extends CallbackHandler {
 
     private CallbackResponse hearingScheduledNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-
         try {
             caseData = judicialNotificationService.sendNotification(caseData);
         } catch (NotificationException notificationException) {
