@@ -2164,6 +2164,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldGenerateRequestMoreInfoDocument() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .build();
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -2175,6 +2176,30 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldNotGenerateRequestMoreInfoDocumentForSend_App_OtherParty() {
+            String judgeRecitalText = "<Title> <Name> \n"
+                + "Upon reviewing the application made and upon considering the information "
+                + "provided by the parties, the court requests more information from the applicant.";
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText(judgeRecitalText)
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .judgeRequestMoreInfoText("test").build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(null);
         }
 
         @Test
@@ -2216,7 +2241,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_RequestMoreInformation2(null,
-                    LocalDate.now(), NO);
+                    LocalDate.now(), YES);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
