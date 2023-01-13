@@ -529,15 +529,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
-        CaseDocument judgeDecision = null;
+        // Generate Request More Information preview Doc if it's without notice application
+        if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
+            CaseDocument judgeDecision = null;
 
-        if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
-            && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null) {
-            judgeDecision = requestForInformationGenerator.generate(
-                caseDataBuilder.build(),
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-            );
-            caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
+            if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+                && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+                .equals(REQUEST_MORE_INFORMATION)) {
+                judgeDecision = requestForInformationGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+                caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
