@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 
 @ExtendWith(SpringExtension.class)
@@ -66,7 +68,8 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder().build();
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(((Map)((ArrayList)((Map)(response.getData().get("hearingLocation"))).get("list_items")).get(0))
+            assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
+                    .get("hearingLocation")).get("list_items")).get(0))
                     .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
         }
 
@@ -88,7 +91,9 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseData.builder().judicialListForHearing(gaJudgesHearingListGAspec).build();
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            String label = (((Map)((Map)(response.getData().get("hearingLocation"))).get("value")).get("label"))
+            String label = ((Map)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
+                    .get("hearingLocation")).get("value"))
+                    .get("label")
                     .toString();
             assertThat(label).isEqualTo("Site Name 2 - Address2 - 28000");
         }
@@ -107,7 +112,10 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             hours = hours.substring(hours.length() - 2);
             minutes = minutes.substring(minutes.length() - 2);
             CaseData caseData = CaseDataBuilder.builder().build().toBuilder()
-                    .hearingDate(LocalDate.from(localDateTime)).hearingTimeHourMinute(hours + minutes).build();
+                    .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
+                    .hearingDate(LocalDate.from(localDateTime))
+                    .hearingTimeHourMinute(hours + minutes).build())
+                    .build();
 
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
 
@@ -123,11 +131,39 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             hours = hours.substring(hours.length() - 2);
             minutes = minutes.substring(minutes.length() - 2);
             CaseData caseData = CaseDataBuilder.builder().build().toBuilder()
-                    .hearingDate(LocalDate.from(localDateTime)).hearingTimeHourMinute(hours + minutes).build();
+                    .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
+                            .hearingDate(LocalDate.from(localDateTime))
+                            .hearingTimeHourMinute(hours + minutes).build())
+                    .build();
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response.getErrors()).isEmpty();
+        }
+    }
+
+    @Nested
+    class AboutToSubmitCallback {
+
+        @Test
+        void shouldGetDueDateAndFeeSmallClaim_whenAboutToSubmit() {
+            List<LocationRefData> locations = new ArrayList<>();
+            locations.add(LocationRefData.builder().siteName("Site Name 1").courtAddress("Address1").postcode("18000")
+                    .build());
+            locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
+                    .build());
+            DynamicListElement location1 = DynamicListElement.builder()
+                    .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            CaseData caseData = CaseDataBuilder.builder().build().toBuilder()
+                    .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
+                            .hearingLocation(DynamicList.builder()
+                                    .listItems(List.of(location1))
+                                    .value(location1).build()).build())
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            assertThat(updatedData.getGaHearingNoticeDetail().getHearingLocation().getListItems()).isNull();
         }
     }
 }

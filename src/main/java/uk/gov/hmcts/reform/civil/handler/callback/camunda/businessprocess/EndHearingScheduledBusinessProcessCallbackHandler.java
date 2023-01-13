@@ -13,14 +13,13 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.HEARING_SCHEDULED;
 
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_HEARING_SCHEDULED_PROCESS_GASPEC;
-
+import static uk.gov.hmcts.reform.civil.enums.CaseState.HEARING_SCHEDULED;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,6 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
         }
         return evaluateReady(callbackParams, HEARING_SCHEDULED);
     }
-
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
