@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -675,9 +676,10 @@ public class CaseDataBuilder {
                                                         .caseLink(CaseLink.builder()
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
-            .channel(HearingChannel.TELEPHONE)
-            .hearingLocation(getLocationDynamicList)
-            .information("testing");
+            .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
+                .channel(HearingChannel.TELEPHONE)
+                .hearingLocation(getLocationDynamicList).build())
+            .gaHearingNoticeInformation("testing");
     }
 
     public CaseData.CaseDataBuilder writtenRepresentationSequentialApplication() {
