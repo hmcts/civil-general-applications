@@ -4,7 +4,7 @@ import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.StartHearingScheduledBusinessProcessTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.StartGeneralApplicationBusinessProcessTaskHandler;
 
 @Component
 public class StartHearingScheduledEventExternalTaskListener {
@@ -13,7 +13,7 @@ public class StartHearingScheduledEventExternalTaskListener {
 
     @Autowired
     private StartHearingScheduledEventExternalTaskListener(
-        StartHearingScheduledBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
+        StartGeneralApplicationBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
         ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(startGeneralApplicationBusinessProcessTaskHandler).open();
