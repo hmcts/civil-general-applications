@@ -127,10 +127,10 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private CallbackResponse validateHearingScheduledProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
         if (nonNull(caseData.getGaHearingNoticeDetail().getHearingLocation())) {
             caseData.getGaHearingNoticeDetail().getHearingLocation().setListItems(null);
         }
+        CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
         dataBuilder.businessProcess(BusinessProcess.ready(HEARING_SCHEDULED_GA)).build();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
