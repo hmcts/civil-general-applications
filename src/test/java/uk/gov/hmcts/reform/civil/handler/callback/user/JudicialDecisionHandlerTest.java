@@ -580,7 +580,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplication() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, YES), ABOUT_TO_START);
@@ -600,7 +600,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), ABOUT_TO_START);
@@ -620,7 +620,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForCloakedApplicationInitiatedByClaimant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the Claimant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
@@ -640,7 +640,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForUnCloakedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the Defendant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
@@ -662,7 +662,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // Without notice application
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
@@ -682,7 +682,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // Without Notice application by Civil Defendant
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the Defendant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
@@ -700,7 +700,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // With notice application by Claimant
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
@@ -716,7 +716,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testJudgeRecitalTextForRequestMoreInfoWithNoticeByDefendant() {
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -733,7 +733,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -1916,7 +1916,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForWithOutNotifiedApplicationInitiatedByClaimant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
@@ -1936,7 +1936,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -1955,7 +1955,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNonNotifiedApplicationByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
