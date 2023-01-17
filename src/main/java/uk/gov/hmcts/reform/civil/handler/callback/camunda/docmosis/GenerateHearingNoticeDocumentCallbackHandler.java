@@ -10,13 +10,20 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenerator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static io.jsonwebtoken.lang.Collections.isEmpty;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTICE_DOCUMENT;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +31,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_HEARING_NOTICE_DOCUMENT);
     private static final String TASK_ID = "GenerateHearingNoticeDocument";
-
+    private final HearingFormGenerator hearingFormGenerator;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -46,9 +53,23 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
+        buildDocument(callbackParams, caseDataBuilder, caseData);
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private void buildDocument(CallbackParams callbackParams, CaseData.CaseDataBuilder caseDataBuilder,
+                               CaseData caseData) {
+        List<CaseDocument> caseDocuments = hearingFormGenerator.generate(
+                callbackParams.getCaseData(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+        );
+        List<Element<CaseDocument>> systemGeneratedCaseDocuments = new ArrayList<>();
+        systemGeneratedCaseDocuments.add(element(caseDocuments.get(0)));
+        if (!isEmpty(caseData.getHearingDocuments())) {
+            systemGeneratedCaseDocuments.addAll(caseData.getHearingDocuments());
+        }
+        caseDataBuilder.hearingDocuments(systemGeneratedCaseDocuments);
     }
 }
