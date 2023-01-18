@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -88,6 +89,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
     private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
+    private final FeatureToggleService featureToggleService;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -573,6 +575,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
         String caseId = caseData.getCcdCaseReference().toString();
+        if (featureToggleService.isGaCaseProgressionEnabled() == true) {
+            dataBuilder.isCaseProgressionEnabled(YES);
+        }
 
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
@@ -623,7 +628,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (Objects.nonNull(caseData.getJudicialRequestMoreInfoDocPreview())) {
             dataBuilder.judicialRequestMoreInfoDocPreview(null);
         }
-
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
