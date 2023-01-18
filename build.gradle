@@ -85,7 +85,7 @@ allprojects {
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: '1.8.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '1.8.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.8.0'
-      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.7.22'
+      dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.8.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.8.0'
       dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
       // CVE-2021-29425
@@ -100,7 +100,7 @@ allprojects {
       // Solves CVE-2022-31159, happens only on local builds when running dependencyCheck gradle task
       dependencySet(
         group: 'com.amazonaws',
-        version: '1.12.380'
+        version: '1.12.385'
       ) {
         entry 'aws-java-sdk-core'
         entry 'aws-java-sdk-kms'
@@ -276,7 +276,7 @@ jacocoTestReport.dependsOn {
 
 def versions = [
   junit              : '5.7.0',
-  junitPlatform      : '1.9.1',
+  junitPlatform      : '1.9.2',
   reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
@@ -321,7 +321,7 @@ dependencies {
   implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
 
-  implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.35.0'
+  implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.36.0'
   implementation group: 'org.jdbi', name: 'jdbi3-spring4', version: '3.19.0'
 
   implementation group: 'org.flywaydb', name: 'flyway-core'
@@ -383,11 +383,11 @@ dependencies {
   implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.0'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.0.3'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.0.4'
 
 
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.11.0'
-  testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.11.0'
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.0.0'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.10.0'
   testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.10.0'
 
@@ -416,7 +416,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.19.0'
 
-  testImplementation(platform('org.junit:junit-bom:5.9.1'))
+  testImplementation(platform('org.junit:junit-bom:5.9.2'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
