@@ -76,7 +76,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
-                                         .getGeneralAppNotificationDeadlineDate(), DATE)
+                                         .getGeneralAppNotificationDeadlineDate().minusDays(17), DATE)
         );
     }
 
