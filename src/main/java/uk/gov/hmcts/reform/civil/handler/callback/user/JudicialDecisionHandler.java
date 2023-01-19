@@ -531,7 +531,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
         // Generate Request More Information preview Doc if it's without notice application
-        if ((caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+        if ((caseData.getGeneralAppInformOtherParty() != null
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
             && caseData.getApplicationIsCloaked() == null)
             || (caseData.getApplicationIsCloaked() != null && caseData.getApplicationIsCloaked().equals(YES))) {
 
