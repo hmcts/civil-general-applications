@@ -19,8 +19,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
+import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.*;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationCloaked;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
@@ -124,7 +123,7 @@ public class JudicialNotificationService implements NotificationData {
                 .formatLocalDate(
                     LocalDate.parse(
                         concurrentDateText.toString(),
-                        JUDICIAL_FORMATTER
+                        JUDICIAL_FORMATTER_WITH_MONTH_NAME
                     ), DATE) : null
         );
         if (areRespondentSolicitorsPresent(caseData)) {
@@ -399,7 +398,7 @@ public class JudicialNotificationService implements NotificationData {
                 .formatLocalDate(
                     LocalDate.parse(
                         requestForInformationDeadline.toString(),
-                        JUDICIAL_FORMATTER
+                        JUDICIAL_FORMATTER_WITH_MONTH_NAME
                     ), DATE) : null
         );
     }
