@@ -2049,9 +2049,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForWithOutNotifiedApplicationInitiatedByClaimant() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
-                + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             // isWithNotice = No
@@ -2065,8 +2062,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Claimant";
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Claimant";
 
             assertThat(makeAnOrder.getJudgeRecitalText())
                 .isEqualTo(String.format(expectedRecitalText, DATE_FORMATTER.format(LocalDate.now())));
