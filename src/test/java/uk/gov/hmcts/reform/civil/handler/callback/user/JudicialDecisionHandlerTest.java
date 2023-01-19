@@ -81,6 +81,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -2162,13 +2163,14 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 + "respond, cannot be in past.";
 
         @Test
-        void shouldGenerateRequestMoreInfoDocument() {
+        void shouldGenerateRequestMoreInfoDocument_JudgeRevisit_Without_Uncloaked() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .applicationIsCloaked(YES)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .build();
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
 
             verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
 
@@ -2179,9 +2181,26 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldNot_GenerateRequestMoreInfoDocument_JudgeRevisit_After_Uncloaked() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .applicationIsCloaked(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
+
+            verifyNoInteractions(requestForInformationGenerator);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview()).isNull();
+        }
+
+        @Test
         void shouldNotGenerateRequestMoreInfoDocumentForSend_App_OtherParty() {
-            String judgeRecitalText = "<Title> <Name> \n"
-                + "Upon reviewing the application made and upon considering the information "
+            String judgeRecitalText = "<Title><Name>\n"
+                + "Upon reviewing the application made and upon considering the information"
                 + "provided by the parties, the court requests more information from the applicant.";
 
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
@@ -2194,7 +2213,32 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .build();
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(null);
+        }
+
+        @Test
+        void shouldNotGenerateRequestMoreInfoDocumentForSend_App_OtherParty_JudgeRevisit_Cloaked() {
+            String judgeRecitalText = "<Title><Name>\n"
+                + "Uponreviewingtheapplicationmadeanduponconsideringtheinformation"
+                + "providedbytheparties,thecourtrequestsmoreinformationfromtheapplicant.";
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .applicationIsCloaked(YES)
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText(judgeRecitalText)
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .judgeRequestMoreInfoText("test").build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
