@@ -123,7 +123,7 @@ public class JudicialNotificationService implements NotificationData {
                 .formatLocalDate(
                     LocalDate.parse(
                         concurrentDateText.toString(),
-                        JUDICIAL_FORMATTER_WITH_MONTH_NAME
+                        JUDICIAL_FORMATTER
                     ), DATE) : null
         );
         if (areRespondentSolicitorsPresent(caseData)) {
@@ -398,7 +398,7 @@ public class JudicialNotificationService implements NotificationData {
                 .formatLocalDate(
                     LocalDate.parse(
                         requestForInformationDeadline.toString(),
-                        JUDICIAL_FORMATTER_WITH_MONTH_NAME
+                        JUDICIAL_FORMATTER
                     ), DATE) : null
         );
     }
