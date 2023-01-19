@@ -1069,10 +1069,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             Optional<Element<GARespondentResponse>> response1 = response1(caseData);
             Optional<Element<GARespondentResponse>> response2 = response2(caseData);
 
+            String respondentOne = retrieveSupportRequirementsFromResponse(response1);
+            String respondentTwo = retrieveSupportRequirementsFromResponse(response2);
             return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
-                          appSupportReq,
-                          retrieveSupportRequirementsFromResponse(response1),
-                          retrieveSupportRequirementsFromResponse(response2));
+                          appSupportReq.isEmpty() ? "no support" : appSupportReq,
+                          respondentOne.isEmpty() ? "no support" : respondentOne,
+                          respondentTwo.isEmpty() ? "no support" : respondentTwo);
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
