@@ -139,6 +139,7 @@ public class CaseData implements MappableObject {
     private final String locationName;
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeListForHearing;
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeForWrittenRep;
+    private final YesOrNo showRequestInfoPreviewDoc;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;

@@ -524,27 +524,44 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             }
         }
+
+        /*
+         * Show Request More Information preview Doc Screen if it's without notice application and Request More Info
+         * OR General Application is With notice
+         * */
+
+        if (caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(YES)
+            || (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+            .equals(REQUEST_MORE_INFORMATION))) {
+            caseDataBuilder.showRequestInfoPreviewDoc(YES);
+        }
+
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
-        // Generate Request More Information preview Doc if it's without notice application
-        if ((caseData.getGeneralAppInformOtherParty() != null
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && caseData.getApplicationIsCloaked() == null)
-            || (caseData.getApplicationIsCloaked() != null && caseData.getApplicationIsCloaked().equals(YES))) {
+        if (isApplicationEligibleForRequestMoreInfoPreOrderDoc(caseData)) {
 
             CaseDocument judgeDecision = null;
 
-            if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+            /*
+             * Generate Request More Information preview Doc if it's without notice application and Request More Info
+             * OR General Application is With notice
+             * */
+
+            if (caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(YES)
+                ||
+                (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
                 && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-                .equals(REQUEST_MORE_INFORMATION)) {
+                .equals(REQUEST_MORE_INFORMATION))) {
+
                 judgeDecision = requestForInformationGenerator.generate(
                     caseDataBuilder.build(),
-                    callbackParams.getParams().get(BEARER_TOKEN).toString()
-                );
+                    callbackParams.getParams().get(BEARER_TOKEN).toString());
+
                 caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
             }
         }
@@ -553,6 +570,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
             .errors(errors)
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    public boolean isApplicationEligibleForRequestMoreInfoPreOrderDoc(CaseData caseData) {
+        return (caseData.getGeneralAppInformOtherParty() != null
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(YES))
+            ||
+            (caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+                && caseData.getApplicationIsCloaked() == null)
+            ||
+            (caseData.getApplicationIsCloaked() != null && caseData.getApplicationIsCloaked().equals(YES));
     }
 
     public List<String> validateDatesForRequestMoreInfoScreen(CaseData caseData,
