@@ -2185,6 +2185,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .applicationIsCloaked(NO)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .build();
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
 
@@ -2205,6 +2206,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .judgeRecitalText(judgeRecitalText)
                                                      .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
@@ -2224,11 +2226,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotGenerateRequestMoreInfoDocumentForSend_App_OtherParty_JudgeRevisit_Cloaked() {
             String judgeRecitalText = "<Title><Name>\n"
-                + "Uponreviewingtheapplicationmadeanduponconsideringtheinformation"
-                + "providedbytheparties,thecourtrequestsmoreinformationfromtheapplicant.";
+                + "Upon reviewing the application made and upon considering the information "
+                + "provided by the parties,the court requests more information from the applicant.";
 
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .applicationIsCloaked(YES)
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .judgeRecitalText(judgeRecitalText)
@@ -2244,6 +2247,32 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(null);
+        }
+
+        @Test
+        void shouldGenerateRequestMoreInfoDocumentWithNotice() {
+            String judgeRecitalText = "<Title><Name>\n"
+                + "Upon reviewing the application made and upon considering the information "
+                + "provided by the parties,the court requests more information from the applicant.";
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText(judgeRecitalText)
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .judgeRequestMoreInfoText("test").build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_REQUEST_MORE_INFO_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview()).isNotNull();
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+
         }
 
         @Test
@@ -2301,6 +2330,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(hasAgree).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .requestMoreInfoOption(option)
@@ -2317,6 +2347,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                 .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
                 .parentClaimantIsApplicant(YES)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(hasAgree).build())
