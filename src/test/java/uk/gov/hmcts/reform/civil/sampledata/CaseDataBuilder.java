@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
-import uk.gov.hmcts.reform.civil.enums.hearing.HearingChannel;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -677,7 +676,7 @@ public class CaseDataBuilder {
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
-                .channel(HearingChannel.TELEPHONE)
+                .channel(GAJudicialHearingType.TELEPHONE)
                 .hearingLocation(getLocationDynamicList).build())
             .gaHearingNoticeInformation("testing");
     }
