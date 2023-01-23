@@ -14,12 +14,12 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenerator;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static io.jsonwebtoken.lang.Collections.isEmpty;
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTICE_DOCUMENT;
@@ -61,15 +61,14 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     private void buildDocument(CallbackParams callbackParams, CaseData.CaseDataBuilder caseDataBuilder,
                                CaseData caseData) {
-        List<CaseDocument> caseDocuments = hearingFormGenerator.generate(
+        CaseDocument caseDocument = hearingFormGenerator.generate(
                 callbackParams.getCaseData(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
         );
-        List<Element<CaseDocument>> systemGeneratedCaseDocuments = new ArrayList<>();
-        systemGeneratedCaseDocuments.add(element(caseDocuments.get(0)));
-        if (!isEmpty(caseData.getHearingDocuments())) {
-            systemGeneratedCaseDocuments.addAll(caseData.getHearingDocuments());
-        }
-        caseDataBuilder.hearingDocuments(systemGeneratedCaseDocuments);
+        List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingOrderDocument())
+                .orElse(newArrayList());
+        documents.add(element(caseDocument));
+
+        caseDataBuilder.hearingOrderDocument(documents);
     }
 }

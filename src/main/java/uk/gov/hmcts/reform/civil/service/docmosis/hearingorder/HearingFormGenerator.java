@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -9,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.HearingForm;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -17,9 +21,11 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
 
 @Service
@@ -28,55 +34,52 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private final CoreCaseDataService coreCaseDataService;
 
-    public List<CaseDocument> generate(CaseData caseData, String authorisation) {
+    public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        List<CaseDocument> caseDocuments = new ArrayList<>();
         HearingForm templateData = getTemplateData(caseData);
         DocmosisTemplates template = getTemplate(caseData);
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
-        caseDocuments.add(documentManagementService.uploadDocument(
+        return documentManagementService.uploadDocument(
                 authorisation,
                 new PDF(
                         getFileName(caseData, template),
                         document.getBytes(),
                         DocumentType.HEARING_FORM
                 )
-        ));
-        return caseDocuments;
+        );
     }
 
     @Override
     public HearingForm getTemplateData(CaseData caseData) {
-
+        CaseDetails parentCase = coreCaseDataService
+                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference()));
         return HearingForm.builder()
-                .court(caseData.getHearingLocation().getValue().getLabel())
+                .court(caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel())
                 .caseNumber(caseData.getLegacyCaseReference())
                 .creationDate(getDateFormatted(LocalDate.now()))
-                .claimant(caseData.getApplicant1().getPartyName())
-                .claimantReference(checkReference(caseData)
-                        ? caseData.getSolicitorReferences().getApplicantSolicitor1Reference() : null)
-                .defendant(caseData.getRespondent1().getPartyName())
-                .defendantReference(checkReference(caseData)
-                        ? caseData.getSolicitorReferences().getRespondentSolicitor1Reference() : null)
-                .hearingDate(getDateFormatted(caseData.getHearingDate()))
-                .hearingTime(getHearingTimeFormatted(caseData.getHearingTimeHourMinute()))
-                .hearingType(getHearingType(caseData))
-                .applicationDate(getDateFormatted(caseData.getDateOfApplication()))
-                .hearingDuration(formatHearingDuration(caseData.getHearingDuration()))
-                .additionalInfo(caseData.getInformation())
-                //.feeAmount(HearingUtils.formatHearingFee(caseData.getHearingFee()))
-                .hearingDueDate(getDateFormatted(caseData.getHearingDueDate()))
-                .additionalText(caseData.getHearingNoticeListOther())
-                .claimant2exists(nonNull(caseData.getApplicant2()))
-                .defendant2exists(nonNull(caseData.getRespondent2()))
-                .claimant2(nonNull(caseData.getApplicant2()) ? caseData.getApplicant2().getPartyName() : null)
-                .defendant2(nonNull(caseData.getRespondent2()) ? caseData.getRespondent2().getPartyName() : null)
-                .claimant2Reference(checkReference(caseData)
-                        ? caseData.getSolicitorReferences().getApplicantSolicitor1Reference() : null)
-                .defendant2Reference(checkReference(caseData)
-                        ? caseData.getSolicitorReferences().getRespondentSolicitor2Reference() : null)
+                .claimant(caseData.getClaimant1PartyName())
+                .claimantReference(getReference(parentCase, "applicantSolicitor1Reference"))
+                .defendant(caseData.getDefendant1PartyName())
+                .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
+                .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
+                .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
+                .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
+                .applicationDate(getDateFormatted(caseData.getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
+                .hearingDuration(getHearingDurationString(caseData))
+                .additionalInfo(caseData.getGaHearingNoticeInformation())
+                .applicant(caseData.getApplicantPartyName())
+                //.feeAmount("0")
+                //.hearingDueDate("date")
+                //.additionalText("text")
+                .claimant2exists(nonNull(caseData.getClaimant2PartyName()))
+                .defendant2exists(nonNull(caseData.getDefendant2PartyName()))
+                .claimant2(nonNull(caseData.getClaimant2PartyName()) ? caseData.getClaimant2PartyName() : null)
+                .defendant2(nonNull(caseData.getDefendant2PartyName()) ? caseData.getDefendant2PartyName() : null)
+                .claimant2Reference(getReference(parentCase, "applicantSolicitor1Reference"))
+                .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"))
                 .build();
     }
 
@@ -91,8 +94,29 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
     }
 
-    private boolean checkReference(CaseData caseData) {
-        return nonNull(caseData.getSolicitorReferences());
+    @SuppressWarnings("unchecked")
+    private String getReference(CaseDetails caseData, String refKey) {
+        if(nonNull(caseData.getData().get("solicitorReferences"))) {
+            return ((Map<String, String>) caseData.getData().get("solicitorReferences")).get(refKey);
+        }
+        return null;
+    }
+
+    public static String getHearingTimeFormatted(String hearingTime) {
+        if (isEmpty(hearingTime) || hearingTime.length() != 4 || !hearingTime.matches("[0-9]+")) {
+            return null;
+        }
+
+        StringBuilder hearingTimeBuilder = new StringBuilder(hearingTime);
+        hearingTimeBuilder.insert(2, ':');
+        return hearingTimeBuilder.toString();
+    }
+
+    private static String getHearingDurationString(CaseData caseData) {
+        if (caseData.getGaHearingNoticeDetail().getHearingDuration().equals(GAHearingDuration.OTHER)) {
+            return caseData.getGaHearingNoticeDetail().getHearingDurationOther();
+        }
+        return caseData.getGaHearingNoticeDetail().getHearingDuration().getDisplayedValue();
     }
 
     private DocmosisTemplates getTemplate(CaseData caseData) {
