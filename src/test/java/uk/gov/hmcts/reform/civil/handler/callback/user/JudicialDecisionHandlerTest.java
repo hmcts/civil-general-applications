@@ -1958,7 +1958,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-            caseDataBuilder.applicationIsUncloackedOnce(NO)
+            caseDataBuilder.applicationIsUncloakedOnce(NO)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build());
             CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
@@ -1979,7 +1979,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-            caseDataBuilder.applicationIsUncloackedOnce(YES)
+            caseDataBuilder.applicationIsUncloakedOnce(YES)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build());
             CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
@@ -1999,7 +1999,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-            caseDataBuilder.applicationIsUncloackedOnce(NO)
+            caseDataBuilder.applicationIsUncloakedOnce(NO)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(LIST_FOR_A_HEARING).build());
             CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);

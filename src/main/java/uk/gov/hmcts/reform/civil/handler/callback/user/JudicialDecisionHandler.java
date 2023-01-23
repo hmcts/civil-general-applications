@@ -505,12 +505,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         ArrayList<String> errors = new ArrayList<>();
 
-        if ((caseData.getApplicationIsUncloackedOnce() == null
+        if ((caseData.getApplicationIsUncloakedOnce() == null
             && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS))
-            || (caseData.getApplicationIsUncloackedOnce() != null
+            || (caseData.getApplicationIsUncloakedOnce() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
-            && caseData.getApplicationIsUncloackedOnce().equals(NO))) {
+            && caseData.getApplicationIsUncloakedOnce().equals(NO))) {
             errors.add("The application needs to be uncloaked before requesting written representations");
         }
 
@@ -619,7 +619,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (isApplicationUncloaked != null
             && isApplicationUncloaked.equals(NO)) {
-            dataBuilder.applicationIsUncloackedOnce(YES);
+            dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
         }
