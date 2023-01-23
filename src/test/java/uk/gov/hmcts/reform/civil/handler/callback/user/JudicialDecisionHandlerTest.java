@@ -218,7 +218,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testAboutToStartForHearingPreferLocationsApplicantRespondent() {
 
             String expectedJudicialPreferenceLocationApplicantRespondent1Text =
-                "Applicant prefers Location %s. Respondent1 prefers Location %s.";
+                "Applicant prefers Location %s. Respondent 1 prefers Location %s.";
 
             when(helper.isApplicantAndRespondentLocationPrefSame(any())).thenReturn(false);
 
@@ -244,7 +244,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             responseCaseData = getJudicialHearingOrder(response);
             String expectedJudicialPreferenceLocationApplicantRespondent2Text =
-                "Applicant prefers Location %s. Respondent2 prefers Location %s.";
+                "Applicant prefers Location %s. Respondent 2 prefers Location %s.";
 
             assertThat(response).isNotNull();
             assertThat(responseCaseData.getJudgeHearingCourtLocationText1())
@@ -261,7 +261,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testAboutToStartForHearingOnlyRespondent1Respondent2LocationPreference() {
 
             String expectedOnlyRespondent1LocationText =
-                "Respondent1 prefers Location %s. Respondent2 prefers Location %s.";
+                "Respondent 1 prefers Location %s. Respondent 2 prefers Location %s.";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -285,7 +285,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForHearingOnlyRespondent1LocationPreference() {
 
-            String expectedOnlyRespondent1LocationText = "Respondent1 prefers Location %s.";
+            String expectedOnlyRespondent1LocationText = "Respondent 1 prefers Location %s.";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -307,7 +307,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForHearingOnlyRespondent2LocationPreference() {
 
-            String expectedOnlyRespondent2LocationText = "Respondent2 prefers Location %s.";
+            String expectedOnlyRespondent2LocationText = "Respondent 2 prefers Location %s.";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -351,13 +351,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testAboutToStartForHearingDetails() {
 
             String expecetedJudicialTimeEstimateText =
-                "Applicant estimates %s. Respondent1 estimates %s. Respondent2 estimates %s.";
+                "Applicant estimates %s. Respondent 1 estimates %s. Respondent 2 estimates %s.";
             String expecetedJudicialPreferrenceText =
-                "Applicant prefers %s. Respondent1 prefers %s. Respondent2 prefers %s.";
+                "Applicant prefers %s. Respondent 1 prefers %s. Respondent 2 prefers %s.";
             String expecetedJudicialSupportText =
-                "Applicant require %s. Respondent1 require %s. Respondent2 require %s.";
+                "Applicant requires %s. Respondent 1 requires %s. Respondent 2 requires %s.";
             String expectedJudicialPreferenceLocationText =
-                "Applicant prefers Location %s. Respondent1 prefers Location %s. Respondent2 prefers Location %s.";
+                "Applicant prefers Location %s. Respondent 1 prefers Location %s. Respondent 2 prefers Location %s.";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -453,7 +453,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo("Applicant prefers In person");
 
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
-                .isEqualTo("Applicant require(s) no support");
+                .isEqualTo("Applicant requires no support");
 
             assertThat(responseCaseData.getJudgeHearingCourtLocationText1())
                 .isEqualTo(StringUtils.EMPTY);
@@ -465,7 +465,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expecetedJudicialTimeEstimateText = "Applicant estimates 1 hour";
             String expecetedJudicialPreferrenceText = "Applicant prefers In person";
-            String expecetedJudicialSupportReqText = "Applicant require(s) Hearing loop, Other support";
+            String expecetedJudicialSupportReqText = "Applicant requires Hearing loop, Other support";
 
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -487,7 +487,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testHearingScreenSupportReqWithNoApplnHearingSupport() {
 
-            String expecetedJudicialSupportReqText = "Applicant require(s) no support";
+            String expecetedJudicialSupportReqText = "Applicant requires no support";
 
             GAUrgencyRequirement urgentApp = GAUrgencyRequirement.builder().generalAppUrgency(YES).build();
 
@@ -508,8 +508,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testHearingScreenSupportReqWithNoApplnHearingSupportAndRespWithSupportReq() {
 
-            String expecetedJudicialSupportReqText = "Applicant require no support. "
-                + "Respondent require Other support, Hearing loop.";
+            String expecetedJudicialSupportReqText = "Applicant requires no support. "
+                + "Respondent requires Other support, Hearing loop.";
 
             GAUrgencyRequirement urgentApp = GAUrgencyRequirement.builder().generalAppUrgency(YES).build();
 
@@ -558,8 +558,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             String expecetedJudicialTimeEstimateText = "Applicant estimates 45 minutes. Respondent estimates 1 hour.";
             String expecetedJudicialPreferrenceText = "Applicant prefers Video conference hearing. Respondent "
                 + "prefers In person.";
-            String expecetedJudicialSupportReqText = "Applicant require Disabled access, Sign language interpreter. "
-                + "Respondent require Other support, Hearing loop.";
+            String expecetedJudicialSupportReqText = "Applicant requires Disabled access, Sign language interpreter. "
+                + "Respondent requires Other support, Hearing loop.";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -584,8 +584,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplication() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -604,8 +604,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -624,8 +624,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForCloakedApplicationInitiatedByClaimant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Claimant";
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Claimant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -644,8 +644,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForUnCloakedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Defendant";
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Defendant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -666,8 +666,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // Without notice application
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Claimant";
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
 
@@ -686,8 +686,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // Without Notice application by Civil Defendant
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Defendant";
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Defendant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
@@ -704,8 +704,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             // With notice application by Claimant
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -720,8 +720,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testJudgeRecitalTextForRequestMoreInfoWithNoticeByDefendant() {
             String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             // isWithNotice = YES
@@ -737,8 +737,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getApplicationByParentCaseDefendant(), ABOUT_TO_START);
@@ -983,8 +983,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldHaveVulTextWithRespondent1and2Respond() {
 
-            String expecetedVulnerabilityText = "\n\nRespondent1 requires support with regards to vulnerability\n"
-                + "dummy1\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+            String expecetedVulnerabilityText = "\n\nRespondent 1 requires support with regards to vulnerability\n"
+                + "dummy1\n\nRespondent 2 requires support with regards to vulnerability\ndummy2";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1007,8 +1007,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveVulTextWithApplicantRespondent1and2Respond() {
 
             String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
-                + "\n\nRespondent1 requires support with regards to vulnerability\n"
-                + "dummy1\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+                + "\n\nRespondent 1 requires support with regards to vulnerability\n"
+                + "dummy1\n\nRespondent 2 requires support with regards to vulnerability\ndummy2";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1031,7 +1031,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveVulTextWithApplicantRespondent1Respond() {
 
             String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
-                + "\n\nRespondent1 requires support with regards to vulnerability\n"
+                + "\n\nRespondent 1 requires support with regards to vulnerability\n"
                 + "dummy1";
 
             List<GeneralApplicationTypes> types = List.of(
@@ -1055,7 +1055,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveVulTextWithApplicantRespondent2Respond() {
 
             String expecetedVulnerabilityText = "Applicant requires support with regards to vulnerability\ndummy"
-                + "\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+                + "\n\nRespondent 2 requires support with regards to vulnerability\ndummy2";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1078,7 +1078,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveVulTextWithRespondent2Respond() {
 
             String expecetedVulnerabilityText =
-                "\n\nRespondent2 requires support with regards to vulnerability\ndummy2";
+                "\n\nRespondent 2 requires support with regards to vulnerability\ndummy2";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1101,7 +1101,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveVulTextWithRespondent1Respond() {
 
             String expecetedVulnerabilityText =
-                "\n\nRespondent1 requires support with regards to vulnerability\ndummy1";
+                "\n\nRespondent 1 requires support with regards to vulnerability\ndummy1";
 
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
@@ -1920,8 +1920,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForWithOutNotifiedApplicationInitiatedByClaimant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the Claimant";
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
 
@@ -1940,8 +1940,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             //isWithNotice = Yes
@@ -1959,8 +1959,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void testAboutToStartForNonNotifiedApplicationByDefendant() {
             String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 22 \n"
-                + "And the Judge considering the information provided by the parties";
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             //isWithNotice = No
