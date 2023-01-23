@@ -2339,7 +2339,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void should_GenerateRequestMoreInfoDocument_JudgeRevisit_Without_Uncloaked() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
-                .applicationIsUncloackedOnce(NO)
+                .applicationIsUncloakedOnce(NO)
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
                                                      .requestMoreInfoOption(REQUEST_MORE_INFORMATION)

@@ -305,8 +305,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         /*
          * Set isWithNotice to Yes if Judge uncloaks the application
          * */
-        if (caseData.getApplicationIsUncloackedOnce() != null
-            && caseData.getApplicationIsUncloackedOnce().equals(YES)) {
+        if (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES)) {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
         }
 
@@ -525,7 +525,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
             = judicialRequestMoreInfo.toBuilder();
 
-        if (judicialRequestMoreInfo.getIsWithNotice() == null && caseData.getApplicationIsUncloackedOnce() == null) {
+        if (judicialRequestMoreInfo.getIsWithNotice() == null && caseData.getApplicationIsUncloakedOnce() == null) {
 
             if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
                 gaJudicialRequestMoreInfoBuilder
@@ -642,7 +642,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (isApplicationUncloaked != null
             && isApplicationUncloaked.equals(NO)) {
-            dataBuilder.applicationIsUncloackedOnce(YES);
+            dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
         }
