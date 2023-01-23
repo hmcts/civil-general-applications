@@ -170,6 +170,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String expectedDismissalOrder = "This application is dismissed.\n\n"
         + "[Insert Draft Order from application]\n\n";
 
+    private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
+        + "Upon reviewing the application made and upon considering the information "
+        + "provided by the parties, the court requests more information from the applicant.";
+
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(MAKE_DECISION);
@@ -2333,9 +2337,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldNot_GenerateRequestMoreInfoDocument_JudgeRevisit_After_Uncloaked() {
+        void should_GenerateRequestMoreInfoDocument_JudgeRevisit_Without_Uncloaked() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
-                .applicationIsCloaked(NO)
+                .applicationIsUncloackedOnce(NO)
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
+                                                     .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .isWithNotice(NO)
+                                                     .judgeRequestMoreInfoText("test").build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .build();
@@ -2343,11 +2353,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
 
-            verifyNoInteractions(requestForInformationGenerator);
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview()).isNull();
+            assertThat(updatedData.getShowRequestInfoPreviewDoc().equals(YES));
+            assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
         }
 
         @Test
@@ -2370,6 +2382,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse)handler.handle(params);
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            verifyNoInteractions(requestForInformationGenerator);
 
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(null);
@@ -2397,6 +2411,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
+            verifyNoInteractions(requestForInformationGenerator);
+
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(null);
         }
@@ -2412,6 +2428,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                      .judgeRecitalText(judgeRecitalText)
+                                                     .isWithNotice(YES)
                                                      .judgeRequestMoreInfoByDate(LocalDate.now())
                                                      .judgeRequestMoreInfoText("test").build())
                 .build();

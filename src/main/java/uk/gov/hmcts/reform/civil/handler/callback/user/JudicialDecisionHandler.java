@@ -557,45 +557,32 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(gaJudicialRequestMoreInfoBuilder.build());
 
-        //if (isApplicationEligibleForRequestMoreInfoPreOrderDoc(caseData)) {
+        CaseDocument judgeDecision = null;
 
-            CaseDocument judgeDecision = null;
+        /*
+         * Generate Request More Information preview Doc if it's without notice application and Request More Info
+         * OR General Application is With notice
+         * */
 
-            /*
-             * Generate Request More Information preview Doc if it's without notice application and Request More Info
-             * OR General Application is With notice
-             * */
-
-            if ((judicialRequestMoreInfo.getIsWithNotice() != null
-                && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
-                ||
-                (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+        if ((judicialRequestMoreInfo.getIsWithNotice() != null
+            && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
+            ||
+            (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
                 && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null
                 && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
                 .equals(REQUEST_MORE_INFORMATION))) {
 
-                judgeDecision = requestForInformationGenerator.generate(
-                    caseDataBuilder.build(),
-                    callbackParams.getParams().get(BEARER_TOKEN).toString());
+            judgeDecision = requestForInformationGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString());
 
-                caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
-            }
-        //}
+            caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
-    }
-
-    public boolean isApplicationEligibleForRequestMoreInfoPreOrderDoc(CaseData caseData) {
-        return (caseData.getGeneralAppInformOtherParty() != null
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(YES))
-            ||
-            (caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-                && caseData.getApplicationIsCloaked() == null)
-            ||
-            (caseData.getApplicationIsCloaked() != null && caseData.getApplicationIsCloaked().equals(YES));
     }
 
     public List<String> validateDatesForRequestMoreInfoScreen(CaseData caseData,
