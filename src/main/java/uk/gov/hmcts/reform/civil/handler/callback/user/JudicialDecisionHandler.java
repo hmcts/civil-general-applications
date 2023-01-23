@@ -127,7 +127,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_2 = " Both applicant and respondent require %s.";
     private static final String JUDICIAL_SUPPORT_REQ_TEXT_3 = APPLICANT_REQUIRES
         + "%s. Respondent 1 requires %s. Respondent 2 requires %s.";
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
+
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
     private static final String JUDICIAL_RECITAL_TEXT = "Judge: %s \n\n"
@@ -1082,10 +1084,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
             Optional<Element<GARespondentResponse>> response1 = response1(caseData);
             Optional<Element<GARespondentResponse>> response2 = response2(caseData);
 
+            String respondentOne = retrieveSupportRequirementsFromResponse(response1);
+            String respondentTwo = retrieveSupportRequirementsFromResponse(response2);
             return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
-                          appSupportReq,
-                          retrieveSupportRequirementsFromResponse(response1),
-                          retrieveSupportRequirementsFromResponse(response2));
+                          appSupportReq.isEmpty() ? "no support" : appSupportReq,
+                          respondentOne.isEmpty() ? "no support" : respondentOne,
+                          respondentTwo.isEmpty() ? "no support" : respondentTwo);
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
