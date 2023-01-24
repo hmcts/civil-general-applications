@@ -301,6 +301,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
         }
+
+        /*
+         * Set isWithNotice to Yes if Judge uncloaks the application
+         * */
+        if (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES)) {
+            gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+        }
+
         gaJudicialRequestMoreInfoBuilder
             .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
                                      judgeNameTitle,
@@ -516,7 +525,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
             = judicialRequestMoreInfo.toBuilder();
 
-        if (judicialRequestMoreInfo.getIsWithNotice() == null) {
+        if (judicialRequestMoreInfo.getIsWithNotice() == null && caseData.getApplicationIsUncloakedOnce() == null) {
 
             if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
                 gaJudicialRequestMoreInfoBuilder
@@ -527,6 +536,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             }
         }
+
+        if ((judicialRequestMoreInfo.getIsWithNotice() != null
+            && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
+            ||
+            (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+            .equals(REQUEST_MORE_INFORMATION))) {
+
+            caseDataBuilder.showRequestInfoPreviewDoc(YES);
+
+        } else {
+
+            caseDataBuilder.showRequestInfoPreviewDoc(NO);
+
+        }
+
         List<String> errors = validateDatesForRequestMoreInfoScreen(caseData, judicialRequestMoreInfo);
 
         caseDataBuilder
@@ -534,12 +559,23 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         CaseDocument judgeDecision = null;
 
-        if (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
-            && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null) {
+        /*
+         * Generate Request More Information preview Doc if it's without notice application and Request More Info
+         * OR General Application is With notice
+         * */
+
+        if ((judicialRequestMoreInfo.getIsWithNotice() != null
+            && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
+            ||
+            (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
+                && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+                .equals(REQUEST_MORE_INFORMATION))) {
+
             judgeDecision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-            );
+                callbackParams.getParams().get(BEARER_TOKEN).toString());
+
             caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
         }
 
@@ -606,7 +642,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (isApplicationUncloaked != null
             && isApplicationUncloaked.equals(NO)) {
-
+            dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
         }
