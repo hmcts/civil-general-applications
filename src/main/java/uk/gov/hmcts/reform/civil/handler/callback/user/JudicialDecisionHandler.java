@@ -523,6 +523,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
             errors.add("The application needs to be uncloaked before requesting written representations");
         }
 
+        /*
+        * Set showRequestInfoPreview to NO as it caches and display Request More Information Document in Hearing screen
+        *  */
+        caseDataBuilder.showRequestInfoPreviewDoc(NO);
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .errors(errors)
