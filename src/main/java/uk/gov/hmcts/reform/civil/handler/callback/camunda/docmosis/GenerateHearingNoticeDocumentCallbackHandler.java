@@ -67,7 +67,6 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         );
         List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingOrderDocument())
                 .orElse(newArrayList());
-        //documents.add(element(caseDocument));
         documents.addAll(wrapElements(caseDocument));
         caseDataBuilder.hearingOrderDocument(documents);
     }
