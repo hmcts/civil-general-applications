@@ -65,6 +65,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
@@ -511,8 +512,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
 
+        ArrayList<String> errors = new ArrayList<>();
+
+        if ((caseData.getApplicationIsUncloakedOnce() == null
+            && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+            && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS))
+            || (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+            && caseData.getApplicationIsUncloakedOnce().equals(NO))) {
+            errors.add("The application needs to be uncloaked before requesting written representations");
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
+            .errors(errors)
             .build();
     }
 

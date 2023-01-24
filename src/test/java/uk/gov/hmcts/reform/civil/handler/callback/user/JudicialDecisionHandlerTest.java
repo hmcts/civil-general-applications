@@ -1956,12 +1956,117 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnErrorForWrittenRepresentationWithOutNoticeApplnForJudgeRevisit() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.applicationIsUncloakedOnce(NO)
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors()).isNotNull();
+            response.getErrors().get(0)
+                .equals("The application needs to be uncloaked before requesting written representations");
+        }
+
+        @Test
+        void shouldReturnNoErrorForWrittenRepresentationWhenJudgeRevisit_AfterUncloak() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.applicationIsUncloakedOnce(YES)
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors().size()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldReturnNoErrorForHearingWhenJudgeRevisit_AfterUncloak() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.applicationIsUncloakedOnce(NO)
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(LIST_FOR_A_HEARING).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors().size()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldReturnNoErrorForMakeOrderWithNoticeAppln() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder()
+                                                 .decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors().size()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldReturnErrorForWrittenRepWithOutNoticeAppln() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder()
+                                                 .decision(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            assertThat(response.getErrors()).isNotNull();
+            response.getErrors().get(0)
+                .equals("The application needs to be uncloaked before requesting written representations");
+        }
+
+        @Test
         void shouldReturnNOForJudgeApproveEditOptionDate() {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -1977,8 +2082,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),
                                                           (GeneralApplicationTypes.EXTEND_TIME));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -1993,8 +2103,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.EXTEND_TIME));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2009,9 +2124,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),
                                                           (GeneralApplicationTypes.EXTEND_TIME));
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
 
-            CallbackParams params = callbackParamsOf(getDirectionsText(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            CaseData caseData = getDirectionsText(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2026,8 +2145,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),
                                                           (GeneralApplicationTypes.EXTEND_TIME));
 
-            CallbackParams params = callbackParamsOf(getMakeAnOrder(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getMakeAnOrder(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2042,8 +2166,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2059,8 +2188,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
 
-            CallbackParams params = callbackParamsOf(getHearingOrderApplnAndResp(types, NO, NO), MID,
-                                                     VALIDATE_MAKE_AN_ORDER);
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2072,18 +2206,21 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForWithOutNotifiedApplicationInitiatedByClaimant() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
-                + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
-
             // isWithNotice = No
-            CallbackParams params = callbackParamsOf(getNotifiedApplication(NO, YES), MID, VALIDATE_MAKE_AN_ORDER);
+            CaseData caseData = getNotifiedApplication(NO, YES);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            String expectedRecitalText = "Judge: test judge \n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+                + "And the Judge considered the information provided by the Claimant";
 
             assertThat(makeAnOrder.getJudgeRecitalText())
                 .isEqualTo(String.format(expectedRecitalText, DATE_FORMATTER.format(LocalDate.now())));
@@ -2092,13 +2229,18 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            //isWithNotice = Yes
+
+            CaseData caseData = getNotifiedApplication(YES, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             String expectedRecitalText = "Judge: test judge \n"
                 + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
                 + "And the Judge considered the information provided by the parties";
 
-            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
-            //isWithNotice = Yes
-            CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), MID, VALIDATE_MAKE_AN_ORDER);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
@@ -2111,13 +2253,17 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNonNotifiedApplicationByDefendant() {
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+            //isWithNotice = No
+            CaseData caseData = getNotifiedApplication(NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
             String expectedRecitalText = "Judge: test judge \n"
                 + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
                 + "And the Judge considered the information provided by the parties";
 
-            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
-            //isWithNotice = No
-            CallbackParams params = callbackParamsOf(getNotifiedApplication(NO, NO), MID, VALIDATE_MAKE_AN_ORDER);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
