@@ -64,7 +64,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
                 .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
                 .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
-                .hearingType(getHearingType(caseData))
+                .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
                 .applicationDate(getDateFormatted(caseData.getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
                 .hearingDuration(getHearingDurationString(caseData))
                 .additionalInfo(caseData.getGaHearingNoticeInformation())
@@ -78,19 +78,17 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .build();
     }
 
-    private String getCaseNumberFormatted(CaseData caseData) {
+    protected String getCaseNumberFormatted(CaseData caseData) {
         String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
         return String.join("-", parts);
     }
 
-    private String getFileName(CaseData caseData, DocmosisTemplates template) {
-        return ("Application_Hearing_Notice_"
-                + DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy")
-                + ".pdf");
-        //return String.format(template.getDocumentTitle(), DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy"));
+    protected String getFileName(CaseData caseData, DocmosisTemplates template) {
+        return String.format(template.getDocumentTitle(),
+                DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy"));
     }
 
-    private String getDateFormatted(LocalDate date) {
+    protected String getDateFormatted(LocalDate date) {
         if (isNull(date)) {
             return null;
         }
@@ -99,14 +97,14 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
 
 
     @SuppressWarnings("unchecked")
-    private String getReference(CaseDetails caseData, String refKey) {
+    protected String getReference(CaseDetails caseData, String refKey) {
         if(nonNull(caseData.getData().get("solicitorReferences"))) {
             return ((Map<String, String>) caseData.getData().get("solicitorReferences")).get(refKey);
         }
         return null;
     }
 
-    private static String getHearingTimeFormatted(String hearingTime) {
+    protected static String getHearingTimeFormatted(String hearingTime) {
         if (isEmpty(hearingTime) || hearingTime.length() != 4 || !hearingTime.matches("[0-9]+")) {
             return null;
         }
@@ -116,27 +114,14 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         return hearingTimeBuilder.toString();
     }
 
-    private static String getHearingDurationString(CaseData caseData) {
+    protected static String getHearingDurationString(CaseData caseData) {
         if (caseData.getGaHearingNoticeDetail().getHearingDuration().equals(GAHearingDuration.OTHER)) {
             return caseData.getGaHearingNoticeDetail().getHearingDurationOther();
         }
         return caseData.getGaHearingNoticeDetail().getHearingDuration().getDisplayedValue();
     }
 
-    private static String getHearingType(CaseData caseData) {
-        switch (caseData.getGaHearingNoticeDetail().getChannel()) {
-            case IN_PERSON:
-                return caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel();
-            case VIDEO:
-                return "video hearing";
-            case TELEPHONE:
-                return "telephone hearing";
-            default:
-                return "not defined";
-        }
-    }
-
-    private DocmosisTemplates getTemplate(CaseData caseData) {
+    protected DocmosisTemplates getTemplate(CaseData caseData) {
         return HEARING_APPLICATION;
     }
 }
