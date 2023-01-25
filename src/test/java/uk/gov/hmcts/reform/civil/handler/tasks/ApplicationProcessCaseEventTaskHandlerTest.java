@@ -47,13 +47,13 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_FLAGS;
 
 @SpringBootTest(classes = {
-    MakeJudgesDecisionTaskHandler.class,
+    ApplicationProcessCaseEventTaskHandler.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
     StateFlowEngine.class
 })
 @ExtendWith(SpringExtension.class)
-class MakeJudgesDecisionTaskHandlerTest {
+class ApplicationProcessCaseEventTaskHandlerTest {
 
     private static final String CASE_ID = "1";
     private static final String PARENT_CASE_ID = "2";
@@ -68,7 +68,7 @@ class MakeJudgesDecisionTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private MakeJudgesDecisionTaskHandler makeJudgesDecisionTaskHandler;
+    private ApplicationProcessCaseEventTaskHandler applicationProcessCaseEventTaskHandler;
 
     @BeforeEach
     void init() {
@@ -108,7 +108,7 @@ class MakeJudgesDecisionTaskHandlerTest {
 
             when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
-            makeJudgesDecisionTaskHandler.execute(mockTask, externalTaskService);
+            applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService);
 
             verify(coreCaseDataService).startGaUpdate(CASE_ID, GENERATE_JUDGES_FORM);
             verify(coreCaseDataService).submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class));
@@ -125,7 +125,7 @@ class MakeJudgesDecisionTaskHandlerTest {
                     throw new Exception(errorMessage);
                 });
 
-            makeJudgesDecisionTaskHandler.execute(mockTask, externalTaskService);
+            applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService);
 
             verify(externalTaskService, never()).complete(mockTask);
             verify(externalTaskService).handleFailure(
@@ -161,7 +161,7 @@ class MakeJudgesDecisionTaskHandlerTest {
                         .build());
                 });
 
-            makeJudgesDecisionTaskHandler.execute(mockTask, externalTaskService);
+            applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService);
 
             verify(externalTaskService, never()).complete(mockTask);
             verify(externalTaskService).handleFailure(
@@ -179,7 +179,7 @@ class MakeJudgesDecisionTaskHandlerTest {
 
             doThrow(new NotFoundException(errorMessage)).when(externalTaskService).complete(mockTask);
 
-            makeJudgesDecisionTaskHandler.execute(mockTask, externalTaskService);
+            applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService);
 
             verify(externalTaskService, never()).handleFailure(
                 any(ExternalTask.class),

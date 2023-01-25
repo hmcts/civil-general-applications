@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.hearing.HearingChannel;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -47,6 +48,7 @@ import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
@@ -78,6 +80,8 @@ public class CaseDataBuilder {
     public static final String CUSTOMER_REFERENCE = "12345";
 
     private static final String JUDGES_DECISION = "MAKE_DECISION";
+
+    private static final String HEARING_SCHEDULED = "HEARING_SCHEDULED_GA";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
@@ -125,6 +129,7 @@ public class CaseDataBuilder {
     private static final Long CASE_REFERENCE = 111111L;
     protected GAJudicialMakeAnOrder judicialMakeAnOrder;
     protected GAApplicationType generalAppType;
+    private DynamicList getLocationDynamicList;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -629,6 +634,52 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
+    public CaseData.CaseDataBuilder hearingScheduledApplication(YesOrNo isCloak) {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .generalAppParentCaseLink(
+                GeneralAppParentCaseLink
+                    .builder()
+                    .caseReference(CASE_REFERENCE.toString())
+                    .build())
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
+                                 .camundaEvent(HEARING_SCHEDULED).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(FEE108)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .createdDate(LocalDateTime.now())
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(EXTEND_TIME))
+                                .build())
+            .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(HEARING_SCHEDULED).build())
+            .applicationIsCloaked(isCloak)
+            .gaDetailsMasterCollection(wrapElements(GeneralApplicationsDetails.builder()
+                                                        .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
+                                                        .caseLink(CaseLink.builder()
+                                                                      .caseReference(String.valueOf(CASE_ID)).build())
+                                                        .build()))
+            .channel(HearingChannel.TELEPHONE)
+            .hearingLocation(getLocationDynamicList)
+            .information("testing");
+    }
+
     public CaseData.CaseDataBuilder writtenRepresentationSequentialApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
@@ -798,45 +849,43 @@ public class CaseDataBuilder {
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
             .claimantGaAppDetails(wrapElements(GeneralApplicationsDetails.builder()
-                                                        .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
-                                                         .caseLink(CaseLink.builder()
-                                                                       .caseReference(String.valueOf(CASE_ID)).build())
-                                                                       .build()));
-
+                                                   .caseState(APPLICATION_ADD_PAYMENT.getDisplayedValue())
+                                                   .caseLink(CaseLink.builder()
+                                                                 .caseReference(String.valueOf(CASE_ID)).build())
+                                                   .build()));
     }
 
     public CaseData.CaseDataBuilder adjournOrVacateHearingApplication(
             YesOrNo isRespondentAgreed, LocalDate gaHearingDate) {
         GAHearingDateGAspec generalAppHearingDate = GAHearingDateGAspec.builder()
-                .hearingScheduledDate(gaHearingDate)
-                .build();
+            .hearingScheduledDate(gaHearingDate)
+            .build();
         return CaseData.builder()
-                .ccdCaseReference(CASE_ID)
-                .claimant1PartyName("Test Claimant1 Name")
-                .defendant1PartyName("Test Defendant1 Name")
-                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
-                        .build())
-                .generalAppPBADetails(
-                        GAPbaDetails.builder()
-                                .applicantsPbaAccounts(
-                                        DynamicList.builder()
-                                                .listItems(asList(
-                                                        DynamicListElement.builder().label("PBA0088192").build(),
-                                                        DynamicListElement.builder().label("PBA0078095").build()
-                                                ))
-                                                .value(DynamicListElement.dynamicElement("PBA0078095"))
-                                                .build())
-                                .fee(FEE108)
-                                .serviceReqReference(CUSTOMER_REFERENCE).build())
-                .createdDate(LocalDateTime.now())
-                .generalAppType(GAApplicationType.builder()
-                        .types(singletonList(ADJOURN_VACATE_HEARING))
-                        .build())
-                .generalAppHearingDate(generalAppHearingDate)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement
-                        .builder().hasAgreed(isRespondentAgreed).build())
-                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
-                .submittedOn(APPLICATION_SUBMITTED_DATE);
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
+                                 .build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .applicantsPbaAccounts(
+                        DynamicList.builder()
+                            .listItems(asList(
+                                DynamicListElement.builder().label("PBA0088192").build(),
+                                DynamicListElement.builder().label("PBA0078095").build()
+                            ))
+                            .value(DynamicListElement.dynamicElement("PBA0078095"))
+                            .build())
+                    .fee(FEE108)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .createdDate(LocalDateTime.now())
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(ADJOURN_VACATE_HEARING))
+                                .build())
+            .generalAppHearingDate(generalAppHearingDate)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement
+                                               .builder().hasAgreed(isRespondentAgreed).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
-
 }
