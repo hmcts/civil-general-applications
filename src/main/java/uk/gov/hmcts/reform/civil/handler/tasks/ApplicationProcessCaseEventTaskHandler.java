@@ -21,7 +21,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class MakeJudgesDecisionTaskHandler implements BaseExternalTaskHandler {
+public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
