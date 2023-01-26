@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,8 +44,6 @@ public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseC
     private CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
-    @Autowired
-    private ObjectMapper objectMapper;
     @MockBean
     private ParentCaseUpdateHelper parentCaseUpdateHelper;
     private CallbackParams params;
@@ -66,6 +66,9 @@ public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseC
     }
 
     private CallbackParams getCallbackParams(CaseData caseData) {
+        ObjectMapper objectMapper = JsonMapper.builder()
+                .addModule(new JavaTimeModule())
+                .build();
         return CallbackParams.builder()
                               .type(ABOUT_TO_SUBMIT)
                               .pageId(null)

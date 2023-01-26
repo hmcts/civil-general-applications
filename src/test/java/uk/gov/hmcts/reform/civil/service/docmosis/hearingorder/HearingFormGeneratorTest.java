@@ -1,26 +1,16 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType.IN_PERSON;
-import static uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType.VIDEO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_FORM;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
-
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.DynamicList;
-import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -29,23 +19,22 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_FORM;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -86,11 +75,11 @@ class HearingFormGeneratorTest {
                 .uploadDocument(BEARER_TOKEN, new PDF(fileName_application, bytes, HEARING_FORM)))
                 .thenReturn(CASE_DOCUMENT);
 
-        Map<String, Object> caseDataContent = new HashMap<>();
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
         refMap.put("respondentSolicitor1Reference", "resp1ref");
         refMap.put("respondentSolicitor2Reference", "resp2ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
         caseDataContent.put("solicitorReferences", refMap);
         CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
         when(coreCaseDataService.getCase(
@@ -128,11 +117,11 @@ class HearingFormGeneratorTest {
 
     @Test
     void test_getReference() {
-        Map<String, Object> caseDataContent = new HashMap<>();
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
         refMap.put("respondentSolicitor1Reference", "resp1ref");
         refMap.put("respondentSolicitor2Reference", "resp2ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
         caseDataContent.put("solicitorReferences", refMap);
         CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
 

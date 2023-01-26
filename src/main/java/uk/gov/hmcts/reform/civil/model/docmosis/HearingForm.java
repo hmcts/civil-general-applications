@@ -1,11 +1,10 @@
 package uk.gov.hmcts.reform.civil.model.docmosis;
 
-import uk.gov.hmcts.reform.civil.model.common.MappableObject;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 @Getter
 @Builder

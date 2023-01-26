@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
@@ -65,7 +64,8 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
                 .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
                 .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
-                .applicationDate(getDateFormatted(caseData.getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
+                .applicationDate(getDateFormatted(caseData
+                        .getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
                 .hearingDuration(getHearingDurationString(caseData))
                 .additionalInfo(caseData.getGaHearingNoticeInformation())
                 .applicant(caseData.getApplicantPartyName())
@@ -95,10 +95,9 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
     }
 
-
     @SuppressWarnings("unchecked")
     protected String getReference(CaseDetails caseData, String refKey) {
-        if(nonNull(caseData.getData().get("solicitorReferences"))) {
+        if (nonNull(caseData.getData().get("solicitorReferences"))) {
             return ((Map<String, String>) caseData.getData().get("solicitorReferences")).get(refKey);
         }
         return null;
