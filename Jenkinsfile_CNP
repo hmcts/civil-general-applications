@@ -3,6 +3,7 @@
 @Library("Infrastructure")
 import uk.gov.hmcts.contino.AppPipelineConfig
 import uk.gov.hmcts.contino.AppPipelineDsl
+import uk.gov.hmcts.contino.GithubAPI
 
 def type = "java"
 def product = "civil"
@@ -58,6 +59,10 @@ def publishRpaContract() {
     sh """ ./gradlew pactPublish """
 }
 
+def checkForEnableHelmLabel(branch_name) {
+  return new GithubAPI(this).getLabelsbyPattern(branch_name, "enableHelm").contains("enableHelm")
+}
+
 withPipeline(type, product, component) {
     pipelineConf = config
     disableLegacyDeployment()
@@ -66,7 +71,9 @@ withPipeline(type, product, component) {
     onPR {
         env.ENVIRONMENT = "preview"
         loadVaultSecrets(secrets)
-        enableCleanupOfHelmReleaseOnSuccess()
+       if (!checkForEnableHelmLabel(env.BRANCH_NAME)) {
+        enableCleanupOfHelmReleaseAlways();
+      }
     }
     onMaster {
         env.ENVIRONMENT = "aat"

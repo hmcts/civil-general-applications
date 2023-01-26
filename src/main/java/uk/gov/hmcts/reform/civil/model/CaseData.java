@@ -9,10 +9,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
-import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
-import uk.gov.hmcts.reform.civil.enums.hearing.HearingChannel;
-import uk.gov.hmcts.reform.civil.enums.hearing.HearingDuration;
-import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -23,6 +19,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -145,16 +143,9 @@ public class CaseData implements MappableObject {
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeListForHearing;
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeForWrittenRep;
     //Hearing Scheduled
-    private HearingApplicationDetails hearingNoticeApplicationDetail;
-    private String hearingNoticeApplicationType;
-    private DynamicList hearingLocation;
-    private LocalDate hearingNoticeApplicationDate;
-    private LocalDate hearingDate;
-    private String hearingTimeHourMinute;
-    private HearingChannel channel;
-    private HearingDuration hearingDuration;
-    private String hearingDurationOther;
-    private String information;
+    private GAHearingNoticeApplication gaHearingNoticeApplication;
+    private GAHearingNoticeDetail gaHearingNoticeDetail;
+    private String gaHearingNoticeInformation;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
