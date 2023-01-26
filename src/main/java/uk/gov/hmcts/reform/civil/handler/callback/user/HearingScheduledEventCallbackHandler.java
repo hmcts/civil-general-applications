@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -72,8 +74,8 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
                     .filter(l -> l.getLabel().equals(preLabel)).findFirst();
             first.ifPresent(dynamicLocationList::setValue);
         }
-        caseDataBuilder.hearingLocation(dynamicLocationList)
-                .build();
+        caseDataBuilder.gaHearingNoticeDetail(GAHearingNoticeDetail
+                        .builder().hearingLocation(dynamicLocationList).build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
@@ -92,8 +94,8 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
         LocalDateTime hearingDateTime = null;
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        LocalDate date = caseData.getHearingDate();
-        String hourMinute = caseData.getHearingTimeHourMinute();
+        LocalDate date = caseData.getGaHearingNoticeDetail().getHearingDate();
+        String hourMinute = caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute();
         if (hourMinute != null) {
             int hours = Integer.parseInt(hourMinute.substring(0, 2));
             int minutes = Integer.parseInt(hourMinute.substring(2, 4));
@@ -125,6 +127,9 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private CallbackResponse validateHearingScheduledProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        if (nonNull(caseData.getGaHearingNoticeDetail().getHearingLocation())) {
+            caseData.getGaHearingNoticeDetail().getHearingLocation().setListItems(null);
+        }
         CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
         dataBuilder.businessProcess(BusinessProcess.ready(HEARING_SCHEDULED_GA)).build();
         return AboutToStartOrSubmitCallbackResponse.builder()
