@@ -71,4 +71,7 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String generalApplicationPaymentFailure;
+
+    @NotEmpty
+    private String hearingNoticeTemplate;
 }
