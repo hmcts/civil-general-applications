@@ -52,7 +52,7 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
     public static final String HEARING_CONFIRMATION_BODY = "%n%n You may need to complete other tasks for the hearing"
         + ", for example, book an interpreter.";
     public static final String HEARING_CONFIRMATION_HEADER = "# Hearing notice created\n"
-        + "# Your reference number\n" + "#%s";
+        + "# Your reference number\n" + "# %s";
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -145,8 +145,8 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        String confirmationHeader = format(HEARING_CONFIRMATION_HEADER);
-        String body = format(HEARING_CONFIRMATION_BODY, "000HN001");
+        String confirmationHeader = format(HEARING_CONFIRMATION_HEADER, "000HN001");
+        String body = format(HEARING_CONFIRMATION_BODY);
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(confirmationHeader)
             .confirmationBody(body)
