@@ -51,8 +51,7 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-                callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-                callbackKey(MID, "hearing-locations"), this::locationList,
+                callbackKey(ABOUT_TO_START), this::locationList,
                 callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
                 callbackKey(ABOUT_TO_SUBMIT), this::validateHearingScheduledProcess,
                 callbackKey(SUBMITTED), this::buildConfirmation
