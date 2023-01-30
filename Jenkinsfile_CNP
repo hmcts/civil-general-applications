@@ -8,9 +8,9 @@ import uk.gov.hmcts.contino.GithubAPI
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def camundaBranch = "pr-479"
+def camundaBranch = "CIV-6013"
 def generalappCCDBranch = "pr-515"
-def ccddefbranch = "master"
+def ccddefbranch = "hearing-notice-testing"
 
 AppPipelineConfig pipelineConf
 
