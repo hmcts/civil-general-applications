@@ -142,7 +142,6 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
             .data(dataBuilder.build().toMap(objectMapper))
             .build();
     }
-
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         String confirmationHeader = format(HEARING_CONFIRMATION_HEADER, "000HN001");

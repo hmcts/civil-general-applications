@@ -31,7 +31,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 @SpringBootTest(classes = {
     EndHearingScheduledBusinessProcessCallbackHandler.class,
     CoreCaseDataService.class,
-    ObjectMapper.class,
     ApplicationNotificationUtil.class
 })
 public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest {
@@ -42,7 +41,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseC
     private CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
-    @Autowired
+    @MockBean
     private ObjectMapper objectMapper;
     @MockBean
     private ParentCaseUpdateHelper parentCaseUpdateHelper;

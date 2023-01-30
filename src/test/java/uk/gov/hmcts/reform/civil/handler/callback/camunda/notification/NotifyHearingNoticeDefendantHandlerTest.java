@@ -10,32 +10,32 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
+import uk.gov.hmcts.reform.civil.service.HearingScheduledNotificationService;
 import uk.gov.hmcts.reform.civil.service.NotificationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
 
 @SpringBootTest(classes = {
-    HearingScheduledNotificationHandler.class,
+    NotifyHearingNoticeDefendantHandler.class,
     JacksonAutoConfiguration.class,
 })
-public class HearingScheduledNotificationHandlerTest extends BaseCallbackHandlerTest {
+public class NotifyHearingNoticeDefendantHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
-    private HearingScheduledNotificationHandler handler;
+    private NotifyHearingNoticeDefendantHandler handler;
     @MockBean
-    JudicialNotificationService judicialNotificationService;
+    HearingScheduledNotificationService hearingScheduledNotificationService;
     private CallbackParams params;
 
     @Test
-    public void shouldReturnCorrectEvent() {
+    public void shouldReturnCorrectEventWhenCalled() {
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO).build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        assertThat(handler.handledEvents()).contains(NOTIFY_HEARING_NOTICE);
+        assertThat(handler.handledEvents()).contains(NOTIFY_HEARING_NOTICE_DEFENDANT);
     }
 
     @Test
@@ -44,8 +44,8 @@ public class HearingScheduledNotificationHandlerTest extends BaseCallbackHandler
             .build();
 
         doThrow(buildNotificationException())
-            .when(judicialNotificationService)
-            .sendNotification(caseData);
+            .when(hearingScheduledNotificationService)
+            .sendNotificationForDefendant(caseData);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThrows(NotificationException.class, () -> handler.handle(params));
