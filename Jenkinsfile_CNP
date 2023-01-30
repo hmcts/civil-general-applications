@@ -8,8 +8,8 @@ import uk.gov.hmcts.contino.GithubAPI
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def camundaBranch = "master"
-def generalappCCDBranch = "master"
+def camundaBranch = "pr-479"
+def generalappCCDBranch = "pr-515"
 def ccddefbranch = "master"
 
 AppPipelineConfig pipelineConf
