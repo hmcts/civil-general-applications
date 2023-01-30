@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -155,6 +156,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private HearingOrderGenerator hearingOrderGenerator;
+
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     @MockBean
     private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
@@ -2725,6 +2729,20 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null);
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+        }
+
+        @Test
+        void shouldSetUpReadyWhenPreferredTypeNotInPersonAndCaseProgressionFeatureEnabled() {
+            when(featureToggleService.isGaCaseProgressionEnabled()).thenReturn(true);
+            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+            assertThat(responseCaseData.getIsCaseProgressionEnabled()).isEqualTo(YES);
         }
 
         @Test
