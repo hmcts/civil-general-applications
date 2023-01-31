@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
@@ -45,6 +47,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static java.time.LocalDate.now;
 import static java.util.Arrays.asList;
@@ -133,7 +136,6 @@ public class CaseDataBuilder {
     private static final Long CASE_REFERENCE = 111111L;
     protected GAJudicialMakeAnOrder judicialMakeAnOrder;
     protected GAApplicationType generalAppType;
-    private DynamicList getLocationDynamicList;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -702,10 +704,13 @@ public class CaseDataBuilder {
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
-                .channel(GAJudicialHearingType.TELEPHONE)
-                                       .hearingTimeHourMinute("1530")
-                                       .hearingDate(LocalDate.now().plusDays(10))
-                .hearingLocation(getLocationDynamicList).build())
+                .channel(GAJudicialHearingType.IN_PERSON)
+                .hearingDuration(GAHearingDuration.HOUR_1)
+                .hearingLocation(getLocationDynamicList()).build())
+            .gaHearingNoticeApplication(GAHearingNoticeApplication.builder()
+                    .hearingNoticeApplicationDate(LocalDate.now())
+                    .hearingNoticeApplicationDetail(HearingApplicationDetails.CLAIMANT_AND_DEFENDANT)
+                    .hearingNoticeApplicationType("type").build())
             .gaHearingNoticeInformation("testing");
     }
 
@@ -916,5 +921,20 @@ public class CaseDataBuilder {
                                                .builder().hasAgreed(isRespondentAgreed).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public DynamicList getLocationDynamicList() {
+        DynamicListElement location1 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("ABCD - RG0 0AL").build();
+        DynamicListElement location2 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("PQRS - GU0 0EE").build();
+        DynamicListElement location3 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("WXYZ - EW0 0HE").build();
+        DynamicListElement location4 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("LMNO - NE0 0BH").build();
+
+        return DynamicList.builder()
+                .listItems(List.of(location1, location2, location3, location4))
+                .value(location1).build();
     }
 }

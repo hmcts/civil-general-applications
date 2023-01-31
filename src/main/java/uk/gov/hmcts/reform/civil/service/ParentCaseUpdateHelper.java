@@ -9,9 +9,11 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,8 +21,10 @@ import java.util.Optional;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_DATA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +38,7 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
+    private static final String CLAIM_HEARING_DOCUMENTS = "hearingDocuments";
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -241,6 +246,26 @@ public class ParentCaseUpdateHelper {
             coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
         }
 
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateParentHearingDocument(CaseData generalAppCaseData, CaseDocument caseDocument) {
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+
+        StartEventResponse startEventResponse = coreCaseDataService
+                .startUpdate(parentCaseId, UPDATE_CASE_DATA);
+        CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        List<Element<CaseDocument>> hearingDocuments =
+                (List<Element<CaseDocument>>)startEventResponse.getCaseDetails().getData()
+                        .getOrDefault(CLAIM_HEARING_DOCUMENTS, new ArrayList<>());
+        hearingDocuments.addAll(wrapElements(caseDocument));
+        Map<String, Object> output = caseData.toMap(mapper);
+        output.put(CLAIM_HEARING_DOCUMENTS, hearingDocuments);
+
+        CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
+                startEventResponse, output);
+
+        coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,

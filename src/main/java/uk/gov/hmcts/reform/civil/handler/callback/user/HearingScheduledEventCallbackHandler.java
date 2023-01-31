@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -48,11 +49,15 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
 
+    public static final String HEARING_CONFIRMATION_BODY = "%n%n You may need to complete other tasks for the hearing"
+        + ", for example, book an interpreter.";
+    public static final String HEARING_CONFIRMATION_HEADER = "# Hearing notice created\n"
+        + "# Your reference number\n" + "# %s";
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-                callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-                callbackKey(MID, "hearing-locations"), this::locationList,
+                callbackKey(ABOUT_TO_START), this::locationList,
                 callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
                 callbackKey(ABOUT_TO_SUBMIT), this::validateHearingScheduledProcess,
                 callbackKey(SUBMITTED), this::buildConfirmation
@@ -139,8 +144,8 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        String confirmationHeader = "# Your order has been made";
-        String body = "<br/><br/>";
+        String confirmationHeader = format(HEARING_CONFIRMATION_HEADER, "000HN001");
+        String body = format(HEARING_CONFIRMATION_BODY);
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(confirmationHeader)
             .confirmationBody(body)

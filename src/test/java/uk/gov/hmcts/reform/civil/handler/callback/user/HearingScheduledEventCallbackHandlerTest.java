@@ -11,7 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -33,8 +35,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -53,9 +57,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
     private GeneralAppLocationRefDataService locationRefDataService;
 
     @Nested
-    class MidEventCheckLocationListCallback {
-
-        private static final String PAGE_ID = "hearing-locations";
+    class AboutToStartCallbackHandling {
 
         @Test
         void shouldReturnLocationList_whenLocationsAreQueried() {
@@ -66,7 +68,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     .build());
             when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
             CaseData caseData = CaseDataBuilder.builder().build();
-            CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
                     .get("hearingLocation")).get("list_items")).get(0))
@@ -89,7 +91,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     .listItems(List.of(location1))
                     .value(location1).build()).build();
             CaseData caseData = CaseData.builder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-            CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             String label = ((Map)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
                     .get("hearingLocation")).get("value"))
@@ -164,6 +166,30 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
             assertThat(updatedData.getGaHearingNoticeDetail().getHearingLocation().getListItems()).isNull();
+        }
+    }
+
+    @Nested
+    class SubmittedCallback {
+
+        @Test
+        void shouldReturnHearingNoticeCreated_WhenSubmitted() {
+
+            String header = "# Hearing notice created\n"
+                + "# Your reference number\n" + "# 000HN001";
+
+            String body = "%n%n You may need to complete other tasks for the hearing"
+                + ", for example, book an interpreter.";
+
+            CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES).build().toBuilder()
+                .build();
+
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).usingRecursiveComparison().isEqualTo(SubmittedCallbackResponse.builder()
+                                                                          .confirmationHeader(header)
+                                                                          .confirmationBody(String.format(body))
+                                                                          .build());
         }
     }
 }
