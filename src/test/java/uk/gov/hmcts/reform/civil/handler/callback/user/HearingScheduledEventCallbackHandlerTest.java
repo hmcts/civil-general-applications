@@ -194,5 +194,3 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
     }
 }
-
-
