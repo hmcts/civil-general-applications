@@ -10,29 +10,29 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
+import uk.gov.hmcts.reform.civil.service.HearingScheduledNotificationService;
 import uk.gov.hmcts.reform.civil.service.NotificationException;
 
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_CLAIMANT;
 
 @Service
 @RequiredArgsConstructor
-public class HearingScheduledNotificationHandler extends CallbackHandler {
+public class NotifyHearingNoticeClaimantHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
-    private final JudicialNotificationService judicialNotificationService;
+    private final HearingScheduledNotificationService hearingScheduledNotificationService;
     private static final List<CaseEvent> EVENTS = List.of(
-        NOTIFY_HEARING_NOTICE
+        NOTIFY_HEARING_NOTICE_CLAIMANT
     );
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_SUBMIT), this::hearingScheduledNotification
+            callbackKey(ABOUT_TO_SUBMIT), this::notifyHearingNoticeToClaimant
         );
     }
 
@@ -41,10 +41,11 @@ public class HearingScheduledNotificationHandler extends CallbackHandler {
         return EVENTS;
     }
 
-    private CallbackResponse hearingScheduledNotification(CallbackParams callbackParams) {
+    private CallbackResponse notifyHearingNoticeToClaimant(CallbackParams callbackParams) {
+
         CaseData caseData = callbackParams.getCaseData();
         try {
-            caseData = judicialNotificationService.sendNotification(caseData);
+            caseData = hearingScheduledNotificationService.sendNotificationForClaimant(caseData);
         } catch (NotificationException notificationException) {
             throw notificationException;
         }
@@ -53,5 +54,4 @@ public class HearingScheduledNotificationHandler extends CallbackHandler {
             .data(caseData.toMap(objectMapper))
             .build();
     }
-
 }
