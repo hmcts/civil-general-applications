@@ -705,6 +705,8 @@ public class CaseDataBuilder {
                                                         .build()))
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
                 .channel(GAJudicialHearingType.IN_PERSON)
+                                       .hearingTimeHourMinute("1530")
+                                       .hearingDate(LocalDate.now().plusDays(10))
                 .hearingDuration(GAHearingDuration.HOUR_1)
                 .hearingLocation(getLocationDynamicList()).build())
             .gaHearingNoticeApplication(GAHearingNoticeApplication.builder()
