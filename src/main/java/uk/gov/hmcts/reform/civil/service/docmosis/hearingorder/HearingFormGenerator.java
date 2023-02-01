@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -63,7 +64,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
                 .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
                 .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
-                .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
+                .hearingType(getHearingTypeString(caseData.getGaHearingNoticeDetail().getChannel()))
                 .applicationDate(getDateFormatted(caseData
                         .getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
                 .hearingDuration(getHearingDurationString(caseData))
@@ -76,6 +77,18 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .claimant2Reference(getReference(parentCase, "applicantSolicitor1Reference"))
                 .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"))
                 .build();
+    }
+
+    protected static String getHearingTypeString(GAJudicialHearingType channel) {
+        switch (channel) {
+            case VIDEO:
+                return "via video";
+            case TELEPHONE:
+                return "via telephone";
+            case IN_PERSON:
+                return "in person";
+        }
+        return null;
     }
 
     protected String getCaseNumberFormatted(CaseData caseData) {

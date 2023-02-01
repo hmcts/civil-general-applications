@@ -8,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -93,6 +94,21 @@ class HearingFormGeneratorTest {
 
         verify(documentManagementService)
                 .uploadDocument(BEARER_TOKEN, new PDF(fileName_application, bytes, HEARING_FORM));
+    }
+
+    @Test
+    void test_getHearingTypeString() {
+        GAJudicialHearingType video = GAJudicialHearingType.VIDEO;
+        String videoString = HearingFormGenerator.getHearingTypeString(video);
+        assertThat(videoString).isEqualTo("via video");
+
+        GAJudicialHearingType telephone = GAJudicialHearingType.TELEPHONE;
+        String telephoneString = HearingFormGenerator.getHearingTypeString(telephone);
+        assertThat(telephoneString).isEqualTo("via telephone");
+
+        GAJudicialHearingType person = GAJudicialHearingType.IN_PERSON;
+        String personString = HearingFormGenerator.getHearingTypeString(person);
+        assertThat(personString).isEqualTo("in person");
     }
 
     @Test

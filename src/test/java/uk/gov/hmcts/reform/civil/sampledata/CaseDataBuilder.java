@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.sampledata;
 
+import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
@@ -705,9 +706,9 @@ public class CaseDataBuilder {
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
                 .channel(GAJudicialHearingType.IN_PERSON)
                 .hearingDuration(GAHearingDuration.HOUR_1)
-                .hearingLocation(getLocationDynamicList()).build())
                 .hearingTimeHourMinute("1530")
                 .hearingDate(LocalDate.now().plusDays(10))
+                .hearingLocation(getLocationDynamicList()).build())
             .gaHearingNoticeApplication(GAHearingNoticeApplication.builder()
                     .hearingNoticeApplicationDate(LocalDate.now())
                     .hearingNoticeApplicationDetail(HearingApplicationDetails.CLAIMANT_AND_DEFENDANT)
