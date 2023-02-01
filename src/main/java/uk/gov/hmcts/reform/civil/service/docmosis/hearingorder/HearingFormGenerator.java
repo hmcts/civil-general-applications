@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static java.util.Objects.isNull;
@@ -64,7 +66,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
                 .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
                 .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
-                .hearingType(getHearingTypeString(caseData.getGaHearingNoticeDetail().getChannel()))
+                .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
                 .applicationDate(getDateFormatted(caseData
                         .getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
                 .hearingDuration(getHearingDurationString(caseData))
@@ -79,27 +81,15 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 .build();
     }
 
-    protected static String getHearingTypeString(GAJudicialHearingType channel) {
-        switch (channel) {
-            case VIDEO:
-                return "via video";
-            case TELEPHONE:
-                return "via telephone";
-            case IN_PERSON:
-                return "in person";
-            default:
-                return null;
-        }
-    }
-
     protected String getCaseNumberFormatted(CaseData caseData) {
         String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
         return String.join("-", parts);
     }
 
     protected String getFileName(CaseData caseData, DocmosisTemplates template) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
         return String.format(template.getDocumentTitle(),
-                DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy"));
+                LocalDateTime.now().format(formatter));
     }
 
     protected String getDateFormatted(LocalDate date) {

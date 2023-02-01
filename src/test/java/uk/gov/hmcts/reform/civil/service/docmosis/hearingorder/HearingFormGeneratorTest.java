@@ -97,21 +97,6 @@ class HearingFormGeneratorTest {
     }
 
     @Test
-    void test_getHearingTypeString() {
-        GAJudicialHearingType video = GAJudicialHearingType.VIDEO;
-        String videoString = HearingFormGenerator.getHearingTypeString(video);
-        assertThat(videoString).isEqualTo("via video");
-
-        GAJudicialHearingType telephone = GAJudicialHearingType.TELEPHONE;
-        String telephoneString = HearingFormGenerator.getHearingTypeString(telephone);
-        assertThat(telephoneString).isEqualTo("via telephone");
-
-        GAJudicialHearingType person = GAJudicialHearingType.IN_PERSON;
-        String personString = HearingFormGenerator.getHearingTypeString(person);
-        assertThat(personString).isEqualTo("in person");
-    }
-
-    @Test
     void test_getCaseNumberFormatted() {
         CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1644495739087775L).build();
         String formattedCaseNumber = generator.getCaseNumberFormatted(caseData);
