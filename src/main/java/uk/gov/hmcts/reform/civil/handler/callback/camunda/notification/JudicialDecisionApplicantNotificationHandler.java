@@ -10,23 +10,23 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
+import uk.gov.hmcts.reform.civil.service.JudicialApplicantNotificationService;
 import uk.gov.hmcts.reform.civil.service.NotificationException;
 
 import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_APPLICANT_NOTIFICATION_PROCESS_MAKE_DECISION;
 
 @Service
 @RequiredArgsConstructor
-public class JudicialDecisionNotificationHandler extends CallbackHandler {
+public class JudicialDecisionApplicantNotificationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
-    private final JudicialNotificationService judicialNotificationService;
+    private final JudicialApplicantNotificationService judicialApplicantNotificationService;
     private static final List<CaseEvent> EVENTS = List.of(
-        START_NOTIFICATION_PROCESS_MAKE_DECISION
+        START_APPLICANT_NOTIFICATION_PROCESS_MAKE_DECISION
     );
 
     @Override
@@ -45,7 +45,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         try {
-            caseData = judicialNotificationService.sendNotification(caseData);
+            caseData = judicialApplicantNotificationService.sendNotification(caseData);
         } catch (NotificationException notificationException) {
             throw notificationException;
         }

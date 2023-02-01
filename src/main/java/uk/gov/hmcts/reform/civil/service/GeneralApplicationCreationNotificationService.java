@@ -39,7 +39,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        CaseData updatedCaseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
+        CaseData updatedCaseData = solicitorEmailValidation.validateApplicantSolicitorEmail(civilCaseData, caseData);
 
         boolean isNotificationCriteriaSatisfied = isNotificationCriteriaSatisfied(updatedCaseData);
 

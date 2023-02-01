@@ -106,7 +106,7 @@ public class SolicitorEmailValidation {
             && organisationPolicy.getOrganisation().getOrganisationID() != null;
     }
 
-    public CaseData validateSolicitorEmail(CaseData civilCaseData, CaseData gaCaseData) {
+    public CaseData validateApplicantSolicitorEmail(CaseData civilCaseData, CaseData gaCaseData) {
 
         // GA Applicant solicitor
         CaseData.CaseDataBuilder caseDataBuilder = gaCaseData.toBuilder();
@@ -114,7 +114,15 @@ public class SolicitorEmailValidation {
         caseDataBuilder.generalAppApplnSolicitor(checkIfOrgIDMatch(gaCaseData.getGeneralAppApplnSolicitor(),
                                                                    civilCaseData, gaCaseData));
 
+        return caseDataBuilder.build();
+    }
+
+    public CaseData validateRespondentSolicitorEmail(CaseData civilCaseData, CaseData gaCaseData) {
+
         // GA Respondent solicitor
+
+        CaseData.CaseDataBuilder caseDataBuilder = gaCaseData.toBuilder();
+
         List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
 
         gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors

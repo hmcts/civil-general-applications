@@ -86,7 +86,7 @@ public class PbaPaymentFailureNotificationHandlerTest extends BaseCallbackHandle
             CaseData caseData = getCaseData();
 
             when(solicitorEmailValidation
-                     .validateSolicitorEmail(any(), any()))
+                     .validateApplicantSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
             when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(caseData);

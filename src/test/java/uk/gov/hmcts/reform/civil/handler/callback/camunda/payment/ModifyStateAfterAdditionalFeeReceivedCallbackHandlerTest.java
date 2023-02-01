@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
-import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
+import uk.gov.hmcts.reform.civil.service.JudicialApplicantNotificationService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 
@@ -53,7 +53,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     @MockBean
     StateGeneratorService stateGeneratorService;
 
-    @MockBean JudicialNotificationService judicialNotificationService;
+    @MockBean
+    JudicialApplicantNotificationService judicialNotificationService;
 
     @Autowired
     private ModifyStateAfterAdditionalFeeReceivedCallbackHandler handler;

@@ -38,7 +38,7 @@ public class PaymentRequestUpdateCallbackService {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
-    private final JudicialNotificationService judicialNotificationService;
+    private final JudicialApplicantNotificationService judicialNotificationService;
     private final GeneralApplicationCreationNotificationService gaNotificationService;
     private final ObjectMapper objectMapper;
     private final Time time;

@@ -80,7 +80,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             CaseData caseData = getCaseData(true);
 
             when(solicitorEmailValidation
-                     .validateSolicitorEmail(any(), any()))
+                     .validateApplicantSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
             gaNotificationService.sendNotification(caseData);
             verify(notificationService, times(2)).sendMail(
@@ -96,7 +96,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             CaseData caseData = getCaseData(true);
 
             when(solicitorEmailValidation
-                     .validateSolicitorEmail(any(), any()))
+                     .validateApplicantSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
             gaNotificationService.sendNotification(caseData);
@@ -113,7 +113,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             CaseData caseData = getCaseData(false);
 
             when(solicitorEmailValidation
-                     .validateSolicitorEmail(any(), any()))
+                     .validateApplicantSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
             gaNotificationService.sendNotification(caseData);

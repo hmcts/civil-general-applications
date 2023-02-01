@@ -37,7 +37,8 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsNoChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+            .validateApplicantSolicitorEmail(
+                getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
     }
@@ -46,7 +47,8 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+            .validateApplicantSolicitorEmail(
+                getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
             .isEqualTo(DUMMY_EMAIL);
@@ -56,7 +58,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateApplicantSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
@@ -68,7 +70,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGARespondentEmailAndCivilRespondentEmail_1V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateRespondentSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
                                  "civilrespondent1@gmail.com", DUMMY_EMAIL
                 ), getGaCaseData(NO));
@@ -82,7 +84,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_2V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateApplicantSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
@@ -94,7 +96,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGARespondentEmailAndCivilRespondentEmail_2V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateRespondentSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
                                  "civilrespondent1@gmail.com", DUMMY_EMAIL
                 ), getGaCaseData(NO));
@@ -108,7 +110,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V2() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateApplicantSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(YES));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
@@ -120,7 +122,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGARespondent1EmailAndCivilRespondentEmail_1V2() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateRespondentSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
                                  "civilrespondent1@gmail.com", DUMMY_EMAIL
                 ), getGaCaseData(YES));
@@ -135,7 +137,7 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGARespondent2EmailAndCivilRespondentEmail_1V2() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(
+            .validateRespondentSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
                                  DUMMY_EMAIL, "civilrespondent2@gmail.com"
                 ), getGaCaseData(YES));

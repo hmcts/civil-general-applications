@@ -62,7 +62,7 @@ public class HearingScheduledNotificationService implements NotificationData {
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
+        caseData = solicitorEmailValidation.validateApplicantSolicitorEmail(civilCaseData, caseData);
 
         sendNotification(caseData,  caseData.getGeneralAppApplnSolicitor().getEmail());
 
@@ -75,7 +75,7 @@ public class HearingScheduledNotificationService implements NotificationData {
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
+        caseData = solicitorEmailValidation.validateApplicantSolicitorEmail(civilCaseData, caseData);
 
         List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData
             .getGeneralAppRespondentSolicitors();

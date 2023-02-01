@@ -59,7 +59,7 @@ class PaymentRequestUpdateCallbackServiceTest {
     private GeneralApplicationCreationNotificationService gaNotificationService;
 
     @MockBean
-    private JudicialNotificationService judicialNotificationService;
+    private JudicialApplicantNotificationService judicialNotificationService;
     @MockBean
     Time time;
     @Autowired
