@@ -92,6 +92,7 @@ public class CaseData implements MappableObject {
     private final List<Element<SolicitorDetails>> defendantSolicitors;
     private final List<Element<GARespondentResponse>> respondentsResponses;
     private final YesOrNo applicationIsCloaked;
+    private final YesOrNo applicationIsUncloakedOnce;
     private final GAJudicialMakeAnOrder judicialDecisionMakeOrder;
     private final Document judicialMakeOrderDocPreview;
     private final Document judicialListHearingDocPreview;
@@ -109,6 +110,7 @@ public class CaseData implements MappableObject {
     private final String defendant2PartyName;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
+    private final YesOrNo isCaseProgressionEnabled;
     private final GACaseManagementCategory caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
@@ -141,7 +143,7 @@ public class CaseData implements MappableObject {
     private final String locationName;
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeListForHearing;
     private final GAByCourtsInitiativeGAspec judicialByCourtsInitiativeForWrittenRep;
-    //Hearing Scheduled
+    private final YesOrNo showRequestInfoPreviewDoc;
     private GAHearingNoticeApplication gaHearingNoticeApplication;
     private GAHearingNoticeDetail gaHearingNoticeDetail;
     private String gaHearingNoticeInformation;
