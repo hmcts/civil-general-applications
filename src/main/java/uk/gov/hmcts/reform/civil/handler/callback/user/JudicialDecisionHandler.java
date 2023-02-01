@@ -213,7 +213,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle)).build();
 
         caseDataBuilder
-            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
         caseDataBuilder
             .judicialDecisionRequestMoreInformation(buildRequestMoreInformation(caseData, judgeNameTitle).build());
 
@@ -294,6 +294,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                                                            String judgeNameTitle) {
         GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
             = GAJudicialRequestMoreInfo.builder();
+        gaJudicialRequestMoreInfoBuilder = buildRequestMoreInfo(caseData);
 
         gaJudicialRequestMoreInfoBuilder
             .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
@@ -312,8 +313,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return gaJudicialRequestMoreInfoBuilder;
     }
 
-    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData,
-                                                                                           String judgeNameTitle) {
+    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData) {
 
         GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
             = GAJudicialRequestMoreInfo.builder();
@@ -524,7 +524,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
 
         caseDataBuilder
-            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
+            .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData).build());
         caseDataBuilder
             .judicialDecisionRequestMoreInformation(buildRequestMoreInformation(caseData, judgeNameTitle).build());
 
@@ -555,14 +555,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
-        if (judicialRequestMoreInfo != null) {
 
-            GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
-                = judicialRequestMoreInfo.toBuilder();
-            judicialRequestMoreInfo = gaValidateIsWithNotice(caseData, judicialRequestMoreInfo,
-                                                             gaJudicialRequestMoreInfoBuilder);
-            caseDataBuilder.judicialDecisionRequestMoreInfo(judicialRequestMoreInfo.toBuilder().build());
-        }
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = judicialRequestMoreInfo.toBuilder();
+        judicialRequestMoreInfo = gaValidateIsWithNotice(caseData, judicialRequestMoreInfo,
+                                                         gaJudicialRequestMoreInfoBuilder);
+        caseDataBuilder.judicialDecisionRequestMoreInfo(judicialRequestMoreInfo.toBuilder().build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
@@ -632,9 +630,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
             ||
             (judicialRequestMoreInfo.getJudgeRequestMoreInfoByDate() != null
-                && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null
-                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-                .equals(REQUEST_MORE_INFORMATION))) {
+                && judicialRequestMoreInfo.getJudgeRequestMoreInfoText() != null)) {
 
             judgeDecision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
@@ -755,21 +751,20 @@ public class JudicialDecisionHandler extends CallbackHandler {
         String body = "<br/><br/>";
         if (REQUEST_MORE_INFO.equals(judicialDecision.getDecision())) {
             GAJudicialRequestMoreInfo requestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
-            if (requestMoreInfo != null) {
-                if (REQUEST_MORE_INFORMATION.equals(requestMoreInfo.getRequestMoreInfoOption())
-                    || requestMoreInfo.getRequestMoreInfoOption() == null) {
-                    if (requestMoreInfo.getJudgeRequestMoreInfoByDate() != null) {
-                        confirmationHeader = "# You have requested more information";
-                        body = "<br/><p>The applicant will be notified. They will need to provide a response by "
-                            + DATE_FORMATTER_SUBMIT_CALLBACK.format(requestMoreInfo.getJudgeRequestMoreInfoByDate())
-                            + "</p>";
-                    } else {
-                        throw new IllegalArgumentException("Missing data during submission of judicial decision");
-                    }
-                } else if (SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
-                    confirmationHeader = "# You have requested a response";
-                    body = "<br/><p>The parties will be notified.</p>";
+            GAJudicialRequestMoreInfo requestMoreInformation = caseData.getJudicialDecisionRequestMoreInformation();
+            if (requestMoreInformation != null) {
+                if (requestMoreInformation.getJudgeRequestMoreInfoByDate() != null) {
+                    confirmationHeader = "# You have requested more information";
+                    body = "<br/><p>The applicant will be notified. They will need to provide a response by "
+                        + DATE_FORMATTER_SUBMIT_CALLBACK.format(requestMoreInformation
+                                                                    .getJudgeRequestMoreInfoByDate())
+                        + "</p>";
+
                 }
+            } else if (requestMoreInfo != null
+                && SEND_APP_TO_OTHER_PARTY.equals(requestMoreInfo.getRequestMoreInfoOption())) {
+                confirmationHeader = "# You have requested a response";
+                body = "<br/><p>The parties will be notified.</p>";
             } else {
                 throw new IllegalArgumentException("Missing data during submission of judicial decision");
             }

@@ -65,10 +65,10 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
-                .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
-                .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
+                .judgeRecital(caseData.getJudicialDecisionRequestMoreInformation().getJudgeRecitalText())
+                .judgeComments(caseData.getJudicialDecisionRequestMoreInformation().getJudgeRequestMoreInfoText())
                 .submittedOn(getFormattedDate(new Date()))
-                .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate())
+                .dateBy(caseData.getJudicialDecisionRequestMoreInformation().getJudgeRequestMoreInfoByDate())
                 .locationName(caseData.getLocationName());
 
         return judgeDecisionPdfDocumentBuilder.build();

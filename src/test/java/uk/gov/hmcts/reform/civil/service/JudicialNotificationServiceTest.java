@@ -1276,9 +1276,11 @@ class JudicialNotificationServiceTest {
                                   .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                  .requestMoreInfoOption(gaJudgeRequestMoreInfoOption)
-                                                 .judgeRequestMoreInfoText("Test")
-                                                 .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .deadlineForMoreInfoSubmission(deadline).build())
+            .judicialDecisionRequestMoreInformation(GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoText("Test")
+                                                 .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                 .build())
+
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(isRespondentOrderAgreement).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())

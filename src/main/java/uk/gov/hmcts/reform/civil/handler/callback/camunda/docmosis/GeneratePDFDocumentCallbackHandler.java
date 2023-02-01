@@ -145,8 +145,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
 
         } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
-            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
+            && caseData.getJudicialDecisionRequestMoreInformation().getJudgeRequestMoreInfoByDate() != null
+            && caseData.getJudicialDecisionRequestMoreInformation().getJudgeRequestMoreInfoText() != null) {
             judgeDecision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()

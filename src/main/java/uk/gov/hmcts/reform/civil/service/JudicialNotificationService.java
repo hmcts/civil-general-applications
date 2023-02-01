@@ -206,7 +206,7 @@ public class JudicialNotificationService implements NotificationData {
                 customProps.remove(GA_NOTIFICATION_DEADLINE);
 
             } else {
-                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInformation()
                                                      .getJudgeRequestMoreInfoByDate());
 
                 if (areRespondentSolicitorsPresent(caseData)) {
@@ -229,7 +229,7 @@ public class JudicialNotificationService implements NotificationData {
 
     private CaseData applicationRequestForInformationCloak(CaseData caseData) {
 
-        addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+        addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInformation()
                                               .getJudgeRequestMoreInfoByDate());
         sendNotificationForJudicialDecision(
             caseData,

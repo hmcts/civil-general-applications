@@ -2989,8 +2989,29 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             List<GeneralApplicationTypes> types = List.of(
                     (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             CaseData.CaseDataBuilder builder = CaseData.builder();
-            if (decision != null && REQUEST_MORE_INFO.equals(decision.getDecision())) {
-                builder.judicialDecisionRequestMoreInfo(moreInfo);
+
+            if (decision != null && REQUEST_MORE_INFO.equals(decision.getDecision())
+                && moreInfo != null) {
+                if (moreInfo.getRequestMoreInfoOption().equals(SEND_APP_TO_OTHER_PARTY)) {
+                    builder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                                .requestMoreInfoOption(
+                                                                    moreInfo.getRequestMoreInfoOption())
+                                                                .deadlineForMoreInfoSubmission(
+                                                                    moreInfo.getDeadlineForMoreInfoSubmission())
+                                                                .build());
+                } else {
+                    builder.judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                                .requestMoreInfoOption(
+                                                                    moreInfo.getRequestMoreInfoOption())
+                                                                .deadlineForMoreInfoSubmission(
+                                                                    moreInfo.getDeadlineForMoreInfoSubmission())
+                                                                .build());
+                    builder.judicialDecisionRequestMoreInformation(GAJudicialRequestMoreInfo.builder()
+                                                            .judgeRequestMoreInfoText(
+                                                                moreInfo.getJudgeRequestMoreInfoText())
+                                                            .judgeRequestMoreInfoByDate(
+                                                                moreInfo.getJudgeRequestMoreInfoByDate()).build());
+                }
             }
             return builder
                     .parentClaimantIsApplicant(YES)
