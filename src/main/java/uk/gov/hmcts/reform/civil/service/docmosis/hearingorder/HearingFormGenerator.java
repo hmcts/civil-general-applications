@@ -87,8 +87,9 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 return "via telephone";
             case IN_PERSON:
                 return "in person";
+            default:
+                return null;
         }
-        return null;
     }
 
     protected String getCaseNumberFormatted(CaseData caseData) {
