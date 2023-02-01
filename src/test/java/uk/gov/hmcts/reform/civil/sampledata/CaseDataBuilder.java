@@ -792,6 +792,11 @@ public class CaseDataBuilder {
                                                  .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
                                                  .judgeRequestMoreInfoByDate(LocalDate.now())
                                                  .judgeRequestMoreInfoText("test").build())
+            .judicialDecisionRequestMoreInformation(GAJudicialRequestMoreInfo.builder()
+                                                 .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
+                                                 .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                                                 .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                 .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 

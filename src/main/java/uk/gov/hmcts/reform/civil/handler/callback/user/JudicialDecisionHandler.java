@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -98,6 +99,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String EMPTY_STRING = "";
 
     private static final String VALIDATE_REQUEST_MORE_INFO_SCREEN = "validate-request-more-info-screen";
+    private static final String VALIDATE_REQUEST_MORE_INFORMATION_SCREEN = "validate-request-more-information-screen";
     private static final String VALIDATE_HEARING_ORDER_SCREEN = "validate-hearing-order-screen";
     private static final String POPULATE_HEARING_ORDER_DOC = "populate-hearing-order-doc";
     private static final String POPULATE_WRITTEN_REP_PREVIEW_DOC = "populate-written-rep-preview-doc";
@@ -181,19 +183,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return Map.of(
-            callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
-            callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder,
-            callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
-            callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
-            callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
-            callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
-            callbackKey(MID, POPULATE_HEARING_ORDER_DOC), this::gaPopulateHearingOrderDoc,
-            callbackKey(MID, POPULATE_WRITTEN_REP_PREVIEW_DOC), this::gaPopulateWrittenRepPreviewDoc,
-            callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
-            callbackKey(SUBMITTED), this::buildConfirmation
-        );
-
+        return new ImmutableMap.Builder<String, Callback>()
+            .put(callbackKey(ABOUT_TO_START), this::checkInputForNextPage)
+            .put(callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder)
+            .put(callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen)
+            .put(callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen)
+            .put(callbackKey(MID, VALIDATE_REQUEST_MORE_INFORMATION_SCREEN),
+                 this::gaValidateRequestMoreInformationScreen)
+            .put(callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate)
+            .put(callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder)
+            .put(callbackKey(MID, POPULATE_HEARING_ORDER_DOC), this::gaPopulateHearingOrderDoc)
+            .put(callbackKey(MID, POPULATE_WRITTEN_REP_PREVIEW_DOC), this::gaPopulateWrittenRepPreviewDoc)
+            .put(callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess)
+            .put(callbackKey(SUBMITTED), this::buildConfirmation).build();
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -212,6 +214,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
+        caseDataBuilder
+            .judicialDecisionRequestMoreInformation(buildRequestMoreInformation(caseData, judgeNameTitle).build());
 
         caseDataBuilder.judicialGeneralHearingOrderRecital(getJudgeHearingRecitalPrepopulatedText(caseData,
                                                                                                   judgeNameTitle))
@@ -286,6 +290,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
                             .collect(Collectors.toList()));
     }
 
+    public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInformation(CaseData caseData,
+                                                                                           String judgeNameTitle) {
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = GAJudicialRequestMoreInfo.builder();
+
+        gaJudicialRequestMoreInfoBuilder
+            .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
+                                     judgeNameTitle,
+                                     helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES
+                                         ? " without notice " : " ",
+                                     (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant",
+                                     DATE_FORMATTER.format(caseData.getCreatedDate()),
+                                     (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                                         == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
+                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
+                                         ? "Claimant" : "Defendant"))).build();
+
+        return gaJudicialRequestMoreInfoBuilder;
+    }
+
     public GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder buildRequestMoreInfo(CaseData caseData,
                                                                                            String judgeNameTitle) {
 
@@ -312,20 +338,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && caseData.getApplicationIsUncloakedOnce().equals(YES)) {
             gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
         }
-
-        gaJudicialRequestMoreInfoBuilder
-            .judgeRecitalText(format(JUDICIAL_RECITAL_TEXT,
-                                     judgeNameTitle,
-                                     helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == YES
-                                         ? " without notice " : " ",
-                                     (caseData.getParentClaimantIsApplicant() == null
-                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
-                                         ? "Claimant" : "Defendant",
-                                     DATE_FORMATTER.format(caseData.getCreatedDate()),
-                                     (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
-                                         == NO ? "parties" : (caseData.getParentClaimantIsApplicant() == null
-                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
-                                         ? "Claimant" : "Defendant"))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
     }
@@ -513,6 +525,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder
             .judicialDecisionRequestMoreInfo(buildRequestMoreInfo(caseData, judgeNameTitle).build());
+        caseDataBuilder
+            .judicialDecisionRequestMoreInformation(buildRequestMoreInformation(caseData, judgeNameTitle).build());
 
         ArrayList<String> errors = new ArrayList<>();
 
@@ -541,11 +555,25 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInfo();
+        if (judicialRequestMoreInfo != null) {
 
-        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
-            = judicialRequestMoreInfo.toBuilder();
+            GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+                = judicialRequestMoreInfo.toBuilder();
+            judicialRequestMoreInfo = gaValidateIsWithNotice(caseData, judicialRequestMoreInfo,
+                                                             gaJudicialRequestMoreInfoBuilder);
+            caseDataBuilder.judicialDecisionRequestMoreInfo(judicialRequestMoreInfo.toBuilder().build());
+        }
 
-        if (judicialRequestMoreInfo.getIsWithNotice() == null && caseData.getApplicationIsUncloakedOnce() == null) {
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private GAJudicialRequestMoreInfo gaValidateIsWithNotice(CaseData caseData,
+                                                             GAJudicialRequestMoreInfo gaJudicialRequestMoreInfo,
+                                                             GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder
+                                                                 gaJudicialRequestMoreInfoBuilder) {
+        if (gaJudicialRequestMoreInfo.getIsWithNotice() == null && caseData.getApplicationIsUncloakedOnce() == null) {
 
             if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
                 gaJudicialRequestMoreInfoBuilder
@@ -555,14 +583,30 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
 
             }
+            gaJudicialRequestMoreInfo = gaJudicialRequestMoreInfoBuilder.build();
         }
+        return gaJudicialRequestMoreInfo;
+    }
+
+    private CallbackResponse gaValidateRequestMoreInformationScreen(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        GAJudicialRequestMoreInfo judicialRequestMoreInfo = caseData.getJudicialDecisionRequestMoreInformation();
+
+        GAJudicialRequestMoreInfo.GAJudicialRequestMoreInfoBuilder gaJudicialRequestMoreInfoBuilder
+            = judicialRequestMoreInfo.toBuilder();
+
+        judicialRequestMoreInfo = gaValidateIsWithNotice(caseData,
+                                                         judicialRequestMoreInfo,
+                                                         gaJudicialRequestMoreInfoBuilder);
 
         if ((judicialRequestMoreInfo.getIsWithNotice() != null
             && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
             ||
             (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            .equals(REQUEST_MORE_INFORMATION))) {
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+                .equals(REQUEST_MORE_INFORMATION))) {
 
             caseDataBuilder.showRequestInfoPreviewDoc(YES);
 
