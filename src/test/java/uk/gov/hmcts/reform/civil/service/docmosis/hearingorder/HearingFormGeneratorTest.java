@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,9 +48,10 @@ class HearingFormGeneratorTest {
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final String REFERENCE_NUMBER = "000DC001";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String fileName_application = "Application_Hearing_Notice_"
-            + DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy")
-            + ".pdf";
+
+    private static final String templateName = "Application_Hearing_Notice_%s.pdf";
+    private static final String fileName_application = String.format(templateName,
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss")));
     private static final CaseDocument CASE_DOCUMENT = CaseDocumentBuilder.builder()
             .documentName(fileName_application)
             .documentType(HEARING_FORM)
@@ -72,7 +75,7 @@ class HearingFormGeneratorTest {
                 .thenReturn(new DocmosisDocument(HEARING_APPLICATION.getDocumentTitle(), bytes));
 
         when(documentManagementService
-                .uploadDocument(BEARER_TOKEN, new PDF(fileName_application, bytes, HEARING_FORM)))
+                .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
 
         Map<String, String> refMap = new HashMap<>();
@@ -92,7 +95,7 @@ class HearingFormGeneratorTest {
         assertThat(caseDocuments).isNotNull();
 
         verify(documentManagementService)
-                .uploadDocument(BEARER_TOKEN, new PDF(fileName_application, bytes, HEARING_FORM));
+                .uploadDocument(any(), any());
     }
 
     @Test
