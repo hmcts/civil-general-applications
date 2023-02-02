@@ -24,9 +24,6 @@ public class HearingForm implements MappableObject {
     private final String hearingType;
     private final String hearingDuration;
     private final String additionalInfo;
-    //private final String feeAmount;
-    //private final String hearingDueDate;
-    //private final String additionalText;
     private final String applicant;
     private final String applicationDate;
     private final String claimant2;
@@ -38,8 +35,6 @@ public class HearingForm implements MappableObject {
 
     private final String claimReferenceNumber;
     private final String emailAddress;
-    //private final String hearingFee;
-    //private final String deadlineDate;
     private final String claimantReferenceNumber;
     private final String defendantReferenceNumber;
 }

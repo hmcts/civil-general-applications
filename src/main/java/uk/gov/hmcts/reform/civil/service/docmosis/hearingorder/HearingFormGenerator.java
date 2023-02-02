@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import static java.util.Objects.isNull;
@@ -84,8 +86,9 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     }
 
     protected String getFileName(CaseData caseData, DocmosisTemplates template) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
         return String.format(template.getDocumentTitle(),
-                DateFormatHelper.formatLocalDate(LocalDate.now(), "ddMMyyyy"));
+                LocalDateTime.now().format(formatter));
     }
 
     protected String getDateFormatted(LocalDate date) {

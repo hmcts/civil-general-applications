@@ -13,6 +13,8 @@ public interface NotificationData {
     String GA_JUDICIAL_CONCURRENT_DATE_TEXT = "generalAppJudicialConcurrentDate";
     String GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT = "generalAppJudicialSequentialDateRespondent";
     String GA_REQUEST_FOR_INFORMATION_DEADLINE = "requestForInformationDeadline";
+    String GA_HEARING_DATE = "hearingDate";
+    String GA_HEARING_TIME = "hearingTime";
 
     Map<String, String> addProperties(CaseData caseData);
 

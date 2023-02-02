@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.sampledata;
 
+import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
@@ -44,6 +45,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,6 +67,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_VACATE_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 public class CaseDataBuilder {
@@ -90,6 +93,7 @@ public class CaseDataBuilder {
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
     public static final String STRING_CONSTANT = "this is a string";
+    private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
 
     private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
         + "Upon reviewing the application made and upon considering the information "
@@ -637,6 +641,16 @@ public class CaseDataBuilder {
     }
 
     public CaseData.CaseDataBuilder hearingScheduledApplication(YesOrNo isCloak) {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("3").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
@@ -667,11 +681,23 @@ public class CaseDataBuilder {
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
+            .generalAppApplnSolicitor(
+            GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL).build())
+            .applicant1OrganisationPolicy(OrganisationPolicy.builder()
+                                              .organisation(Organisation.builder().organisationID("1").build())
+                                              .build())
+            .respondent1OrganisationPolicy(OrganisationPolicy.builder()
+                                               .organisation(Organisation.builder().organisationID("2").build())
+                                               .build())
+            .respondent2OrganisationPolicy(OrganisationPolicy.builder()
+                                               .organisation(Organisation.builder().organisationID("3").build())
+                                               .build())
             .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(HEARING_SCHEDULED).build())
             .applicationIsCloaked(isCloak)
+            .generalAppRespondentSolicitors(respondentSols)
             .gaDetailsMasterCollection(wrapElements(GeneralApplicationsDetails.builder()
                                                         .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
                                                         .caseLink(CaseLink.builder()
@@ -680,6 +706,8 @@ public class CaseDataBuilder {
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
                 .channel(GAJudicialHearingType.IN_PERSON)
                 .hearingDuration(GAHearingDuration.HOUR_1)
+                .hearingTimeHourMinute("1530")
+                .hearingDate(LocalDate.now().plusDays(10))
                 .hearingLocation(getLocationDynamicList()).build())
             .gaHearingNoticeApplication(GAHearingNoticeApplication.builder()
                     .hearingNoticeApplicationDate(LocalDate.now())
