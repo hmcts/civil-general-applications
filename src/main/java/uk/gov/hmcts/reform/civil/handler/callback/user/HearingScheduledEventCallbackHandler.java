@@ -121,13 +121,13 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
     private List<String> isFutureDate(LocalDateTime hearingDateTime) {
         List<String> errors = new ArrayList<>();
         if (!checkFutureDateValidation(hearingDateTime)) {
-            errors.add("The Date & Time must be 24hs in advance from now");
+            errors.add("Hearing date must be in the future");
         }
         return errors;
     }
 
     private boolean checkFutureDateValidation(LocalDateTime localDateTime) {
-        return localDateTime != null && localDateTime.isAfter(LocalDateTime.now().plusHours(24));
+        return localDateTime != null && localDateTime.isAfter(LocalDateTime.now());
     }
 
     private CallbackResponse validateHearingScheduledProcess(CallbackParams callbackParams) {

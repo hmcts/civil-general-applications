@@ -49,7 +49,7 @@ class HearingFormGeneratorTest {
 
     private static final String templateName = "Application_Hearing_Notice_%s.pdf";
     private static final String fileName_application = String.format(templateName,
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss")));
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     private static final CaseDocument CASE_DOCUMENT = CaseDocumentBuilder.builder()
             .documentName(fileName_application)
             .documentType(HEARING_FORM)

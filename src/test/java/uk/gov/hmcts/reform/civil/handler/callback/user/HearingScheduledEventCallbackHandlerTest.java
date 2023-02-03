@@ -122,7 +122,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(response.getErrors().get(0)).isEqualTo("The Date & Time must be 24hs in advance from now");
+            assertThat(response.getErrors().get(0)).isEqualTo("Hearing date must be in the future");
         }
 
         @Test
