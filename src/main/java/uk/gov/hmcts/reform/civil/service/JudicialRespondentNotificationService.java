@@ -152,41 +152,52 @@ public class JudicialRespondentNotificationService implements NotificationData {
         customProps.remove(GA_JUDICIAL_SEQUENTIAL_DATE_TEXT_RESPONDENT);
     }
 
+    private boolean isSendUncloakAdditionalFeeEmail(CaseData caseData) {
+        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
+            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
+    }
+
     private CaseData applicationRequestForInformation(CaseData caseData) {
 
-        if (isAdditionalFeeForUncloakReceived(caseData)
-            && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
-
-            caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
-            var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
-
-            customProps.put(
-                GA_NOTIFICATION_DEADLINE,
-                Objects.nonNull(requestForInformationDeadline)
-                    ? DateFormatHelper
-                    .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
-
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
-                    caseData,
-                    notificationProperties.getGeneralApplicationRespondentEmailTemplate()
-                );
-            }
-            customProps.remove(GA_NOTIFICATION_DEADLINE);
-
+        if (isSendUncloakAdditionalFeeEmail(caseData)) {
+            return caseData;
         } else {
-            addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
-                                                 .getJudgeRequestMoreInfoByDate());
 
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
-                    caseData,
-                    notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
-                );
+            if (isAdditionalFeeForUncloakReceived(caseData)
+                && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+
+                caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
+                var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
+
+                customProps.put(
+                    GA_NOTIFICATION_DEADLINE,
+                    Objects.nonNull(requestForInformationDeadline)
+                        ? DateFormatHelper
+                        .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
+
+                if (areRespondentSolicitorsPresent(caseData)) {
+                    sendEmailToRespondent(
+                        caseData,
+                        notificationProperties.getGeneralApplicationRespondentEmailTemplate()
+                    );
+                }
+                customProps.remove(GA_NOTIFICATION_DEADLINE);
+
+            } else {
+                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                                                     .getJudgeRequestMoreInfoByDate());
+
+                if (areRespondentSolicitorsPresent(caseData)) {
+                    sendEmailToRespondent(
+                        caseData,
+                        notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
+                    );
+                }
+                customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
             }
-            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
-        }
 
+        }
         return caseData;
     }
 

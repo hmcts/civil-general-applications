@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
@@ -1230,31 +1229,6 @@ class JudicialApplicantNotificationServiceTest {
                 notificationPropertiesToStayTheClaim(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
-        }
-
-        @Test
-        void shouldSendNotification_UncloakedApplication_AfterAdditionalPaymentMade() {
-
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
-                                                                                      SEND_APP_TO_OTHER_PARTY
-            ).toBuilder()
-                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-                .generalAppPBADetails(GAPbaDetails.builder()
-                                          .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
-                                          .build())
-                .build();
-
-            when(solicitorEmailValidation.validateApplicantSolicitorEmail(any(), any()))
-                .thenReturn(caseData);
-
-            when(time.now()).thenReturn(responseDate);
-            when(deadlinesCalculator.calculateApplicantResponseDeadline(
-                any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
-
-            var responseCaseData = judicialNotificationService.sendNotification(caseData);
-
-            assertThat(responseCaseData.getGeneralAppNotificationDeadlineDate())
-                .isEqualTo(deadline.toString());
         }
     }
 

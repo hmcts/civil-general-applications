@@ -48,6 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -1039,7 +1040,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         @Test
-        void shouldSendAdditionalPaymentNotification_UncloakedApplication_BeforeAdditionalPaymentMade() {
+        void shouldNotSendAdditionalPaymentNotification_UncloakedApplication_BeforeAdditionalPaymentMade() {
 
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
                                                                                       SEND_APP_TO_OTHER_PARTY);
@@ -1048,12 +1049,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
             judicialRespondentNotificationService.sendNotification(caseData);
 
-            verify(notificationService, times(2)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-id",
-                notificationPropertiesToStayTheClaim(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
+            verifyNoInteractions(notificationService);
         }
 
         @Test
