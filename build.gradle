@@ -210,7 +210,7 @@ task installDependencies(type: Exec, description: 'Installs Yarn dependencies.')
 }
 
 task checkDependenciesIntegrity(type: Exec, description: 'Checks integrity of Yarn dependencies.') {
-  commandLine '/usr/bin/yarn', '--mutex', 'network', '--frozen-lockfile', '--silent', 'check', '--integrity'
+  commandLine '/usr/bin/yarn', '--mutex', 'network', '--silent', 'check', '--integrity'
 }
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
