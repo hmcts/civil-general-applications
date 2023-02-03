@@ -6,6 +6,7 @@ public enum DocmosisTemplates {
     DISMISSAL_ORDER("CV-UNS-GAP-ENG-01067.docx", "Dismissal_order_for_application_%s.pdf"),
     REQUEST_FOR_INFORMATION("CV-UNS-GAP-ENG-01072.docx", "Request_for_information_for_application_%s.pdf"),
     HEARING_ORDER("CV-UNS-GAP-ENG-01069.docx", "Hearing_order_for_application_%s.pdf"),
+    HEARING_APPLICATION("CV-UNS-GAP-ENG-01074.docx", "Application_Hearing_Notice_%s.pdf"),
     WRITTEN_REPRESENTATION_SEQUENTIAL("CV-UNS-GAP-ENG-01070.docx",
                                       "Order_Written_Representation_Sequential_for_application_%s.pdf"),
     WRITTEN_REPRESENTATION_CONCURRENT("CV-UNS-GAP-ENG-01071.docx",
