@@ -140,7 +140,7 @@ idam-pr:
   enabled: true
   redirect_uris:
     XUI:
-      - https://xui-${SERVICE_NAME}.preview.platform.hmcts.net/oauth2/callback
+      - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
 
 xui-webapp:
   enabled: true
