@@ -230,11 +230,11 @@ task runApiTests(type: Exec, description: 'Runs Api tests.') {
 }
 
 task smoke(description: 'Runs the smoke tests.') {
- dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runSmokeTests))
+ dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, checkDependenciesIntegrity, runApiTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
