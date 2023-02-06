@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
@@ -82,18 +80,6 @@ class ParentCaseUpdateHelperTest {
         parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(caseData, ORDER_MADE.toString());
         verify(coreCaseDataService, times(1)).submitUpdate(any(), any());
 
-    }
-
-    @Test
-    void updateParentHearingDocument() {
-        CaseData caseData = getCaseWithApplicationData(true);
-        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
-        when(coreCaseDataService.caseDataContentFromStartEventResponse(
-                        any(), any())).thenReturn(CaseDataContent.builder().build());
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        CaseDocument caseDocument = CaseDocument.builder().build();
-        parentCaseUpdateHelper.updateParentHearingDocument(caseData, caseDocument);
-        verify(coreCaseDataService, times(1)).submitUpdate(any(), any());
     }
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
