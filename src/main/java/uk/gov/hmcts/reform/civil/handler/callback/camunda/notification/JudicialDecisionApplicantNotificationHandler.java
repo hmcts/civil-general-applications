@@ -45,7 +45,7 @@ public class JudicialDecisionApplicantNotificationHandler extends CallbackHandle
         CaseData caseData = callbackParams.getCaseData();
 
         try {
-            caseData = judicialApplicantNotificationService.sendNotification(caseData);
+            caseData = judicialApplicantNotificationService.sendApplicantNotification(caseData);
         } catch (NotificationException notificationException) {
             throw notificationException;
         }

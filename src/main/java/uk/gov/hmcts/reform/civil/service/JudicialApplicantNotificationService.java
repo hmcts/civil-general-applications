@@ -29,14 +29,12 @@ public class JudicialApplicantNotificationService implements NotificationData {
     private final Map<String, String> customProps;
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
 
-    private final DeadlinesCalculator deadlinesCalculator;
-    private static final int NUMBER_OF_DEADLINE_DAYS = 5;
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
 
-    public CaseData sendNotification(CaseData caseData) throws NotificationException {
+    public CaseData sendApplicantNotification(CaseData caseData) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -287,12 +285,6 @@ public class JudicialApplicantNotificationService implements NotificationData {
         return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
             && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
-    }
-
-    private boolean isAdditionalFeeForUncloakReceived(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null;
     }
 
     private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {

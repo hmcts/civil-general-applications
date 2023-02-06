@@ -45,7 +45,7 @@ class JudicialDecisionApplicantNotificationHandlerTest extends BaseCallbackHandl
 
         doThrow(buildNotificationException())
             .when(judicialNotificationService)
-            .sendNotification(caseData);
+            .sendApplicantNotification(caseData);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThrows(NotificationException.class, () -> handler.handle(params));

@@ -42,7 +42,7 @@ public class JudicialRespondentNotificationService implements NotificationData {
 
     private final SolicitorEmailValidation solicitorEmailValidation;
 
-    public CaseData sendNotification(CaseData caseData) throws NotificationException {
+    public CaseData sendRespondentNotification(CaseData caseData) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -261,12 +261,6 @@ public class JudicialRespondentNotificationService implements NotificationData {
                                                                        respondentSolicitor.getValue().getEmail(),
                                                                        notificationProperties
             ));
-    }
-
-    private boolean isAdditionalFeeForUncloakReceived(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null;
     }
 
     private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {

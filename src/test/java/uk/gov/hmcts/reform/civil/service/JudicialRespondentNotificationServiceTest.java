@@ -44,7 +44,7 @@ public class JudicialRespondentNotificationServiceTest extends BaseCallbackHandl
 
         doThrow(buildNotificationException())
             .when(judicialNotificationService)
-            .sendNotification(caseData);
+            .sendRespondentNotification(caseData);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThrows(NotificationException.class, () -> handler.handle(params));

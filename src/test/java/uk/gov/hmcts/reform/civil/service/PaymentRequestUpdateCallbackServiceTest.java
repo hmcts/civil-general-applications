@@ -175,7 +175,7 @@ class PaymentRequestUpdateCallbackServiceTest {
 
         doThrow(buildNotificationException())
             .when(judicialRespondentNotificationService)
-            .sendNotification(caseData);
+            .sendRespondentNotification(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
 
