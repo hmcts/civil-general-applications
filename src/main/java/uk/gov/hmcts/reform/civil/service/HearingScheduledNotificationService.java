@@ -75,7 +75,7 @@ public class HearingScheduledNotificationService implements NotificationData {
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        caseData = solicitorEmailValidation.validateApplicantSolicitorEmail(civilCaseData, caseData);
+        caseData = solicitorEmailValidation.validateRespondentSolicitorEmail(civilCaseData, caseData);
 
         List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = caseData
             .getGeneralAppRespondentSolicitors();

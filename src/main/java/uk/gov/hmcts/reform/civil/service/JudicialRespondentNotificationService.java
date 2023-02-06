@@ -160,43 +160,44 @@ public class JudicialRespondentNotificationService implements NotificationData {
 
     private CaseData applicationRequestForInformation(CaseData caseData) {
 
+        // send notification for additional payment
+        if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+
+            caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
+            var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
+
+            customProps.put(
+                GA_NOTIFICATION_DEADLINE,
+                Objects.nonNull(requestForInformationDeadline)
+                    ? DateFormatHelper
+                    .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
+
+            if (areRespondentSolicitorsPresent(caseData)) {
+                sendEmailToRespondent(
+                    caseData,
+                    notificationProperties.getGeneralApplicationRespondentEmailTemplate()
+                );
+            }
+            customProps.remove(GA_NOTIFICATION_DEADLINE);
+        }
+
         if (isSendUncloakAdditionalFeeEmail(caseData)) {
+            // without notice
             return caseData;
         } else {
+            //send notification with notice
+            addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                                                 .getJudgeRequestMoreInfoByDate());
 
-            if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
-
-                caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
-                var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
-
-                customProps.put(
-                    GA_NOTIFICATION_DEADLINE,
-                    Objects.nonNull(requestForInformationDeadline)
-                        ? DateFormatHelper
-                        .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
-
-                if (areRespondentSolicitorsPresent(caseData)) {
-                    sendEmailToRespondent(
-                        caseData,
-                        notificationProperties.getGeneralApplicationRespondentEmailTemplate()
-                    );
-                }
-                customProps.remove(GA_NOTIFICATION_DEADLINE);
-
-            } else {
-                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
-                                                     .getJudgeRequestMoreInfoByDate());
-
-                if (areRespondentSolicitorsPresent(caseData)) {
-                    sendEmailToRespondent(
-                        caseData,
-                        notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
-                    );
-                }
-                customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
+            if (areRespondentSolicitorsPresent(caseData)) {
+                sendEmailToRespondent(
+                    caseData,
+                    notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
+                );
             }
-
+            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
         }
+
         return caseData;
     }
 
