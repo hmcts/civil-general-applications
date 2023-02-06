@@ -69,7 +69,7 @@ public class HearingScheduledNotificationServiceTest {
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
             .build();
         when(solicitorEmailValidation
-                 .validateApplicantSolicitorEmail(any(), any()))
+                 .validateRespondentSolicitorEmail(any(), any()))
             .thenReturn(caseData);
 
         hearingScheduledNotificationService.sendNotificationForDefendant(caseData);

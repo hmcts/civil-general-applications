@@ -63,7 +63,7 @@ public class PaymentRequestUpdateCallbackService {
                     log.info("Processing the callback for making Additional Payment"
                                  + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     try {
-                        judicialRespondentNotificationService.sendRespondentNotification(caseData);
+                        judicialRespondentNotificationService.sendRespondentNotification(caseData); //payment is null
 
                         caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
 
