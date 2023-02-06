@@ -59,7 +59,8 @@ class PaymentRequestUpdateCallbackServiceTest {
     private GeneralApplicationCreationNotificationService gaNotificationService;
 
     @MockBean
-    private JudicialApplicantNotificationService judicialNotificationService;
+    private JudicialRespondentNotificationService judicialRespondentNotificationService;
+
     @MockBean
     Time time;
     @Autowired
@@ -173,7 +174,7 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         doThrow(buildNotificationException())
-            .when(judicialNotificationService)
+            .when(judicialRespondentNotificationService)
             .sendNotification(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));

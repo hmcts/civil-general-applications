@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
@@ -167,24 +166,15 @@ public class JudicialApplicantNotificationService implements NotificationData {
                 notificationProperties.getJudgeUncloakApplicationEmailTemplate()
             );
         } else {
+            addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                                                 .getJudgeRequestMoreInfoByDate());
 
-            if (isAdditionalFeeForUncloakReceived(caseData)
-                && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
-
-                return caseData;
-
-            } else {
-                addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
-                                                     .getJudgeRequestMoreInfoByDate());
-
-                sendNotificationForJudicialDecision(
-                    caseData,
-                    caseData.getGeneralAppApplnSolicitor().getEmail(),
-                    notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
-                );
-                customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
-            }
-
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
+            );
+            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
         }
         return caseData;
     }

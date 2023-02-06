@@ -38,7 +38,7 @@ public class PaymentRequestUpdateCallbackService {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
-    private final JudicialApplicantNotificationService judicialNotificationService;
+    private final JudicialRespondentNotificationService judicialRespondentNotificationService;
     private final GeneralApplicationCreationNotificationService gaNotificationService;
     private final ObjectMapper objectMapper;
     private final Time time;
@@ -63,7 +63,7 @@ public class PaymentRequestUpdateCallbackService {
                     log.info("Processing the callback for making Additional Payment"
                                  + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
                     try {
-                        judicialNotificationService.sendNotification(caseData);
+                        judicialRespondentNotificationService.sendNotification(caseData);
 
                         caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
 

@@ -1083,6 +1083,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
 
         return CaseData.builder()
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .generalAppRespondentSolicitors(respondentSolicitors())
             .applicationIsCloaked(isCloaked)
             .judicialDecision(GAJudicialDecision.builder()

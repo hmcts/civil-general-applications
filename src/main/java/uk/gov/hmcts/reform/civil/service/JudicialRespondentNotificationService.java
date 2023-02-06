@@ -164,8 +164,7 @@ public class JudicialRespondentNotificationService implements NotificationData {
             return caseData;
         } else {
 
-            if (isAdditionalFeeForUncloakReceived(caseData)
-                && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+            if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
 
                 caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
                 var requestForInformationDeadline = caseData.getGeneralAppNotificationDeadlineDate();
