@@ -177,9 +177,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnHearingNoticeCreated_WhenSubmitted() {
 
             String header = "# Hearing notice created\n"
-                + "# Your reference number\n" + "# 000HN001";
-
-            String body = "%n%n You may need to complete other tasks for the hearing"
+                + "## You may need to complete other tasks for the hearing"
                 + ", for example, book an interpreter.";
 
             CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES).build().toBuilder()
@@ -189,7 +187,6 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
             assertThat(response).usingRecursiveComparison().isEqualTo(SubmittedCallbackResponse.builder()
                                                                           .confirmationHeader(header)
-                                                                          .confirmationBody(String.format(body))
                                                                           .build());
         }
     }
