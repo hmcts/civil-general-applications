@@ -2124,6 +2124,95 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldReturnYesForJudgeApproveEditOptionDate_UnlessOrder() {
+
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.UNLESS_ORDER),
+                                                          (GeneralApplicationTypes.EXTEND_TIME));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDateForUnlessOrder())
+                .isEqualTo(YES);
+        }
+
+        @Test
+        void shouldReturnNoForJudgeApproveEditOptionDate_IfNoUnlessOrder() {
+
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.EXTEND_TIME));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDateForUnlessOrder())
+                .isEqualTo(NO);
+        }
+
+        @Test
+        void shouldReturnNoForJudgeApproveEditOptionDate_IfNoUnlessOrderWithOtherType() {
+
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.EXTEND_TIME),
+                                                          (GeneralApplicationTypes.STAY_THE_CLAIM));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDateForUnlessOrder())
+                .isEqualTo(NO);
+        }
+
+        @Test
+        void shouldReturnYesForJudgeApproveEditOptionDate_UnlessOrder_StayClaim() {
+
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),
+                                                          (GeneralApplicationTypes.UNLESS_ORDER));
+
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
+
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDate())
+                .isEqualTo(YES);
+            assertThat(makeAnOrder.getDisplayjudgeApproveEditOptionDateForUnlessOrder())
+                .isEqualTo(YES);
+        }
+
+        @Test
         void shouldReturnCorrectDirectionsText() {
 
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM),
