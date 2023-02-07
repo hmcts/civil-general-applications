@@ -77,6 +77,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_ORDER;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
@@ -359,12 +360,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return makeAnOrderBuilder
                 .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
                     .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
+                .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
+                                                                     && APPROVE_OR_EDIT
+                    .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
                 .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) && APPROVE_OR_EDIT
                     .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO);
         }
 
         return makeAnOrderBuilder
             .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
+            .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
+                                                                 ? YES : NO)
             .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) ? YES : NO);
     }
 
@@ -388,6 +394,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return false;
         }
         List<GeneralApplicationTypes> validGATypes = Arrays.asList(STAY_THE_CLAIM);
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
+    }
+
+    /*Return True if General Application types contains Unless Order
+    Else, Return False*/
+    private boolean checkApplicationTypeForUnlessOrderDate(CaseData caseData) {
+
+        if (caseData.getGeneralAppType() == null) {
+            return false;
+        }
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(UNLESS_ORDER);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 

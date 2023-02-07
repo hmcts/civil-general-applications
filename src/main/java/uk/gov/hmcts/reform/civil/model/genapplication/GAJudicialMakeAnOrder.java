@@ -30,6 +30,7 @@ public class GAJudicialMakeAnOrder {
     private GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc;
     private YesOrNo isOrderProcessedByStayScheduler;
     private GAByCourtsInitiativeGAspec judicialByCourtsInitiative;
+    private YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
@@ -48,7 +49,9 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("isOrderProcessedByStayScheduler")
                           YesOrNo isOrderProcessedByStayScheduler,
                           @JsonProperty("judicialByCourtsInitiative") GAByCourtsInitiativeGAspec
-                              judicialByCourtsInitiative) {
+                              judicialByCourtsInitiative,
+                          @JsonProperty("displayjudgeApproveEditOptionDateForUnlessOrder")
+                              YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -62,5 +65,6 @@ public class GAJudicialMakeAnOrder {
         this.judgeApproveEditOptionDoc = judgeApproveEditOptionDoc;
         this.isOrderProcessedByStayScheduler = isOrderProcessedByStayScheduler;
         this.judicialByCourtsInitiative = judicialByCourtsInitiative;
+        this.displayjudgeApproveEditOptionDateForUnlessOrder = displayjudgeApproveEditOptionDateForUnlessOrder;
     }
 }
