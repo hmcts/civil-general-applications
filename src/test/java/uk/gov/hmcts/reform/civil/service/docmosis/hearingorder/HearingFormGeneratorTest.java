@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_FORM;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_NOTICE;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
 
 @ExtendWith(SpringExtension.class)
@@ -44,7 +44,6 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 class HearingFormGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
-    private static final String REFERENCE_NUMBER = "000DC001";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     private static final String templateName = "Application_Hearing_Notice_%s.pdf";
@@ -52,7 +51,7 @@ class HearingFormGeneratorTest {
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     private static final CaseDocument CASE_DOCUMENT = CaseDocumentBuilder.builder()
             .documentName(fileName_application)
-            .documentType(HEARING_FORM)
+            .documentType(HEARING_NOTICE)
             .build();
 
     @MockBean

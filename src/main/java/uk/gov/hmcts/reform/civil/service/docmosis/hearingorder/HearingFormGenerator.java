@@ -46,7 +46,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 new PDF(
                         getFileName(caseData, template),
                         document.getBytes(),
-                        DocumentType.HEARING_FORM
+                        DocumentType.HEARING_NOTICE
                 )
         );
     }
