@@ -49,10 +49,9 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
 
-    public static final String HEARING_CONFIRMATION_BODY = "%n%n You may need to complete other tasks for the hearing"
-        + ", for example, book an interpreter.";
     public static final String HEARING_CONFIRMATION_HEADER = "# Hearing notice created\n"
-        + "# Your reference number\n" + "# %s";
+        + "##### You may need to complete other tasks for the\n "
+        + "##### hearing for example, book an interpreter.<br/>" + "%s";
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -145,11 +144,11 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        String confirmationHeader = format(HEARING_CONFIRMATION_HEADER, "000HN001");
-        String body = format(HEARING_CONFIRMATION_BODY);
+        String confirmationHeader = format(HEARING_CONFIRMATION_HEADER, "<br/>");
+        String confirmationBody = "<br/> <br/>";
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(confirmationHeader)
-            .confirmationBody(body)
+            .confirmationBody(confirmationBody)
             .build();
     }
 
