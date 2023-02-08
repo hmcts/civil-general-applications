@@ -17,16 +17,17 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION;
 
 @Service
 @RequiredArgsConstructor
-public class JudicialDecisionNotificationHandler extends CallbackHandler {
+public class JudicialDecisionRespondentNotificationHandler extends CallbackHandler {
 
+    private static final String SOLICITOR_TYPE = "respondent";
     private final ObjectMapper objectMapper;
     private final JudicialNotificationService judicialNotificationService;
     private static final List<CaseEvent> EVENTS = List.of(
-        START_NOTIFICATION_PROCESS_MAKE_DECISION
+        START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION
     );
 
     @Override
@@ -45,7 +46,7 @@ public class JudicialDecisionNotificationHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         try {
-            caseData = judicialNotificationService.sendNotification(caseData);
+            caseData = judicialNotificationService.sendNotification(caseData, SOLICITOR_TYPE);
         } catch (NotificationException notificationException) {
             throw notificationException;
         }

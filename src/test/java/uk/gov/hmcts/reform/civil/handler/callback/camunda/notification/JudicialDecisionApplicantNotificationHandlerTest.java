@@ -17,16 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_NOTIFICATION_PROCESS_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_APPLICANT_NOTIFICATION_PROCESS_MAKE_DECISION;
 
 @SpringBootTest(classes = {
-    JudicialDecisionNotificationHandler.class,
+    JudicialDecisionApplicantNotificationHandler.class,
     JacksonAutoConfiguration.class,
 })
-class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
+class JudicialDecisionApplicantNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
-    private JudicialDecisionNotificationHandler handler;
+    private JudicialDecisionApplicantNotificationHandler handler;
     @MockBean
     JudicialNotificationService judicialNotificationService;
     private CallbackParams params;
@@ -35,7 +35,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
     public void shouldReturnCorrectEvent() {
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        assertThat(handler.handledEvents()).contains(START_NOTIFICATION_PROCESS_MAKE_DECISION);
+        assertThat(handler.handledEvents()).contains(START_APPLICANT_NOTIFICATION_PROCESS_MAKE_DECISION);
     }
 
     @Test
@@ -45,7 +45,7 @@ class JudicialDecisionNotificationHandlerTest extends BaseCallbackHandlerTest {
 
         doThrow(buildNotificationException())
             .when(judicialNotificationService)
-            .sendNotification(caseData);
+            .sendNotification(caseData, "applicant");
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         assertThrows(NotificationException.class, () -> handler.handle(params));
