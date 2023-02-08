@@ -72,7 +72,8 @@ class PaymentRequestUpdateCallbackServiceTest {
 
     @BeforeEach
     public void setup() {
-        when(time.now()).thenReturn(LocalDateTime.of(2020, 1, 1, 12, 0, 0));
+        when(time.now()).thenReturn(LocalDateTime
+                                        .of(2020, 1, 1, 12, 0, 0));
     }
 
     @Test
@@ -174,7 +175,7 @@ class PaymentRequestUpdateCallbackServiceTest {
 
         doThrow(buildNotificationException())
             .when(judicialNotificationService)
-            .sendNotification(caseData);
+            .sendNotification(caseData, "respondent");
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
 
