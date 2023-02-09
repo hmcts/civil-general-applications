@@ -175,7 +175,6 @@ class ApplicationProcessCaseEventTaskHandlerTest {
         }
 
         @Test
-        @Disabled
         void shouldNotCallHandleFailureMethod_whenExceptionOnCompleteCall() {
             String errorMessage = "there was an error";
 
@@ -183,7 +182,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
                 .build();
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
-            when(coreCaseDataService.startUpdate(any(), any()))
+            when(coreCaseDataService.startGaUpdate(any(), any()))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
 
             doThrow(new NotFoundException(errorMessage)).when(externalTaskService).complete(mockTask);
