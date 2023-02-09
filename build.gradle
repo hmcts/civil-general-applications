@@ -284,7 +284,6 @@ jacocoTestReport.dependsOn {
 def versions = [
   junit              : '5.7.0',
   junitPlatform      : '1.9.2',
-  reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
   springfoxSwagger   : '3.0.0',
@@ -333,8 +332,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core'
 
-  implementation group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
-  implementation group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.10.RELEASE'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '3.1.5'
@@ -420,7 +418,7 @@ dependencies {
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
+  implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.19.0'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.19.0'
 
   testImplementation(platform('org.junit:junit-bom:5.9.2'))
