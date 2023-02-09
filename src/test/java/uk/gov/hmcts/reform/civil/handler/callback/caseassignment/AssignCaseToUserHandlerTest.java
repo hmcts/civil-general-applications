@@ -365,7 +365,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             try {
                 assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
             } catch (Exception e) {
-                assertEquals("java.lang.NullPointerException", e.toString());
+                assertEquals("java.lang.NullPointerException: Cannot invoke \"uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec.getId()\" because \"applicantSolicitor\" is null", e.toString());
             }
         }
     }
