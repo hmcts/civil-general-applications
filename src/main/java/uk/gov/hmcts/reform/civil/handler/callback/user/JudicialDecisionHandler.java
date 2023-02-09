@@ -352,7 +352,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
-                .isOrderProcessedByStayScheduler(NO);
+                .isOrderProcessedByStayScheduler(NO)
+                .isOrderProcessedByUnlessScheduler(NO);
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
