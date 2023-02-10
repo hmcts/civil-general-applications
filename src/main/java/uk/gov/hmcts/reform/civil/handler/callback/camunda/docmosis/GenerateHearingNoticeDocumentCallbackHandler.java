@@ -61,13 +61,12 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     private void buildDocument(CallbackParams callbackParams, CaseData.CaseDataBuilder caseDataBuilder,
                                CaseData caseData) {
-        CaseDocument caseDocument = hearingFormGenerator.generate(
+        List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingNoticeDocument())
+                .orElse(newArrayList());
+        documents.addAll(wrapElements(hearingFormGenerator.generate(
                 callbackParams.getCaseData(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
-        );
-        List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingOrderDocument())
-                .orElse(newArrayList());
-        documents.addAll(wrapElements(caseDocument));
-        caseDataBuilder.hearingOrderDocument(documents);
+        )));
+        caseDataBuilder.hearingNoticeDocument(documents);
     }
 }
