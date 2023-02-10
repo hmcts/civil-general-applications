@@ -46,7 +46,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 new PDF(
                         getFileName(caseData, template),
                         document.getBytes(),
-                        DocumentType.HEARING_FORM
+                        DocumentType.HEARING_NOTICE
                 )
         );
     }
@@ -86,7 +86,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     }
 
     protected String getFileName(CaseData caseData, DocmosisTemplates template) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyyHHmmss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return String.format(template.getDocumentTitle(),
                 LocalDateTime.now().format(formatter));
     }
