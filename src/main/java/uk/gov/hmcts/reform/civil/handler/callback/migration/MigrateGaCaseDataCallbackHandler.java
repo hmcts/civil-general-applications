@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.migration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,10 +10,10 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.utils.CaseMigrationUtil;
 
-import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,7 @@ public class MigrateGaCaseDataCallbackHandler extends CallbackHandler {
         CaseData oldCaseData = callbackParams.getCaseData();
         log.info("Migrating data for case: {}", oldCaseData.getCcdCaseReference());
         CaseData.CaseDataBuilder caseDataBuilder = oldCaseData.toBuilder();
-        if(oldCaseData.getIsCaseProgressionEnabled() == null) {
+        if (oldCaseData.getIsCaseProgressionEnabled() == null) {
             caseDataBuilder.migrationId(MIGRATION_ID_VALUE);
             caseMigrationUtil.migrateGaCaseProgression(
                 caseDataBuilder,
