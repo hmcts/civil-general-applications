@@ -35,6 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -56,9 +57,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
     private GeneralAppLocationRefDataService locationRefDataService;
 
     @Nested
-    class MidEventCheckLocationListCallback {
-
-        private static final String PAGE_ID = "hearing-locations";
+    class AboutToStartCallbackHandling {
 
         @Test
         void shouldReturnLocationList_whenLocationsAreQueried() {
@@ -69,7 +68,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     .build());
             when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
             CaseData caseData = CaseDataBuilder.builder().build();
-            CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
                     .get("hearingLocation")).get("list_items")).get(0))
@@ -92,7 +91,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     .listItems(List.of(location1))
                     .value(location1).build()).build();
             CaseData caseData = CaseData.builder().judicialListForHearing(gaJudgesHearingListGAspec).build();
-            CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             String label = ((Map)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
                     .get("hearingLocation")).get("value"))
@@ -123,7 +122,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             CallbackParams params = callbackParamsOf(caseData, MID, PAGE_ID);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(response.getErrors().get(0)).isEqualTo("The Date & Time must be 24hs in advance from now");
+            assertThat(response.getErrors().get(0)).isEqualTo("Hearing date must be in the future");
         }
 
         @Test
@@ -177,11 +176,9 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnHearingNoticeCreated_WhenSubmitted() {
 
             String header = "# Hearing notice created\n"
-                + "# Your reference number\n" + "# 000HN001";
-
-            String body = "%n%n You may need to complete other tasks for the hearing"
-                + ", for example, book an interpreter.";
-
+                + "##### You may need to complete other tasks for the\n "
+                + "##### hearing for example, book an interpreter.<br/>" + "<br/>";
+            String body = "<br/> <br/>";
             CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES).build().toBuilder()
                 .build();
 
@@ -189,7 +186,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
             assertThat(response).usingRecursiveComparison().isEqualTo(SubmittedCallbackResponse.builder()
                                                                           .confirmationHeader(header)
-                                                                          .confirmationBody(String.format(body))
+                                                                          .confirmationBody(body)
                                                                           .build());
         }
     }

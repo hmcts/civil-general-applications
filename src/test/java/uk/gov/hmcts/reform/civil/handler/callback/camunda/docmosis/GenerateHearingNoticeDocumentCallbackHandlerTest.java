@@ -54,6 +54,6 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-        assertThat(updatedData.getHearingOrderDocument().size()).isEqualTo(1);
+        assertThat(updatedData.getHearingNoticeDocument().size()).isEqualTo(1);
     }
 }

@@ -167,6 +167,8 @@ public class CaseData implements MappableObject {
     @Builder.Default
     private final List<Element<CaseDocument>> hearingOrderDocument = new ArrayList<>();
     @Builder.Default
+    private final List<Element<CaseDocument>> hearingNoticeDocument = new ArrayList<>();
+    @Builder.Default
     private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
