@@ -9,13 +9,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
-import uk.gov.hmcts.reform.civil.enums.CaseCategory;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
-import uk.gov.hmcts.reform.civil.model.genapplication.*;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.utils.CaseMigrationUtil;
@@ -23,9 +29,7 @@ import uk.gov.hmcts.reform.civil.utils.CaseMigrationUtil;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.migrateCase;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -38,7 +42,9 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class
 })
+
 public class MigrateGaCaseDataCallbackHandlerTest extends BaseCallbackHandlerTest {
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -66,7 +72,7 @@ public class MigrateGaCaseDataCallbackHandlerTest extends BaseCallbackHandlerTes
     class AboutToSubmitCallback {
 
         @Test
-        public void shouldMigrateCaseDataSuccessfully_WhenCaseProgressionEnabledIsNull(){
+        public void shouldMigrateCaseDataSuccessfully_WhenCaseProgressionEnabledIsNull() {
             CaseData caseData = CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication())
                 .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
@@ -77,7 +83,6 @@ public class MigrateGaCaseDataCallbackHandlerTest extends BaseCallbackHandlerTes
                 .isEqualTo(YES);
         }
     }
-
 
     private GeneralApplication getGeneralApplication() {
         return GeneralApplication.builder()
