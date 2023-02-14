@@ -30,6 +30,9 @@ public class GAJudicialMakeAnOrder {
     private GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc;
     private YesOrNo isOrderProcessedByStayScheduler;
     private GAByCourtsInitiativeGAspec judicialByCourtsInitiative;
+    private YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder;
+    private LocalDate judgeApproveEditOptionDateForUnlessOrder;
+    private YesOrNo isOrderProcessedByUnlessScheduler;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
@@ -46,9 +49,15 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("judgeApproveEditOptionDoc")
                               GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc,
                           @JsonProperty("isOrderProcessedByStayScheduler")
-                          YesOrNo isOrderProcessedByStayScheduler,
+                              YesOrNo isOrderProcessedByStayScheduler,
                           @JsonProperty("judicialByCourtsInitiative") GAByCourtsInitiativeGAspec
-                              judicialByCourtsInitiative) {
+                              judicialByCourtsInitiative,
+                          @JsonProperty("displayjudgeApproveEditOptionDateForUnlessOrder")
+                              YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder,
+                          @JsonProperty("judgeApproveEditOptionDateForUnlessOrder")
+                              LocalDate judgeApproveEditOptionDateForUnlessOrder,
+                          @JsonProperty("isOrderProcessedByUnlessScheduler")
+                              YesOrNo isOrderProcessedByUnlessScheduler) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -62,5 +71,8 @@ public class GAJudicialMakeAnOrder {
         this.judgeApproveEditOptionDoc = judgeApproveEditOptionDoc;
         this.isOrderProcessedByStayScheduler = isOrderProcessedByStayScheduler;
         this.judicialByCourtsInitiative = judicialByCourtsInitiative;
+        this.displayjudgeApproveEditOptionDateForUnlessOrder = displayjudgeApproveEditOptionDateForUnlessOrder;
+        this.judgeApproveEditOptionDateForUnlessOrder = judgeApproveEditOptionDateForUnlessOrder;
+        this.isOrderProcessedByUnlessScheduler = isOrderProcessedByUnlessScheduler;
     }
 }

@@ -29,11 +29,30 @@ public class CaseStateSearchService extends ElasticSearchService {
     }
 
     @Override
-    Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState) {
+    Query queryForOrderMade_StayTheClaimCase(int startIndex, CaseState caseState) {
         MatchQueryBuilder queryCaseState = QueryBuilders.matchQuery("state", caseState.toString());
-        MatchQueryBuilder queryGaType = QueryBuilders.matchQuery("data.generalAppType.types", "STAY_THE_CLAIM");
+        MatchQueryBuilder queryGaType = QueryBuilders
+            .matchQuery("data.generalAppType.types", "STAY_THE_CLAIM");
         MatchQueryBuilder queryOrderProcessStatus = QueryBuilders
             .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByStayScheduler", "No");
+
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        query.must(queryCaseState).must(queryGaType).must(queryOrderProcessStatus);
+
+        return new Query(
+            query,
+            emptyList(),
+            startIndex
+        );
+    }
+
+    @Override
+    Query queryForOrderMade_UnlessOrderCase(int startIndex, CaseState caseState) {
+        MatchQueryBuilder queryCaseState = QueryBuilders.matchQuery("state", caseState.toString());
+        MatchQueryBuilder queryGaType = QueryBuilders
+            .matchQuery("data.generalAppType.types", "UNLESS_ORDER");
+        MatchQueryBuilder queryOrderProcessStatus = QueryBuilders
+            .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByUnlessScheduler", "No");
 
         BoolQueryBuilder query = QueryBuilders.boolQuery();
         query.must(queryCaseState).must(queryGaType).must(queryOrderProcessStatus);

@@ -39,7 +39,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
     CheckStayOrderDeadlineEndTaskHandler.class})
-class CheckStayOrderDeadlineEndTaskHandlerTest {
+public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
     @MockBean
     private ExternalTask externalTask;
@@ -57,7 +57,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private CheckStayOrderDeadlineEndTaskHandler gaOrderMadeTaskHandler;
+    private CheckStayOrderDeadlineEndTaskHandler gaUnlessOrderMadeTaskHandler;
 
     @Autowired
     private ObjectMapper mapper;
@@ -80,11 +80,11 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     private CaseData caseDataWithNoDeadline;
     private CaseData caseDataWithFutureDeadline;
 
-    private CaseDetails caseDetailsWithProcessedForUnlessOrder;
-    private CaseData caseDataWithProcessedForUnlessOrder;
+    private CaseDetails caseDetailsWithProcessedForStayClaim;
+    private CaseData caseDataWithProcessedForStayClaim;
 
-    private CaseDetails caseDetailsWithNotProcessedForUnlessOrder;
-    private CaseData caseDataWithNotProcessedForUnlessOrder;
+    private CaseDetails caseDetailsWithNotProcessedForStayClaim;
+    private CaseData caseDataWithNotProcessedForStayClaim;
 
     private final LocalDate deadlineCrossed = LocalDate.now().minusDays(2);
     private final LocalDate deadlineInFuture = LocalDate.now().plusDays(2);
@@ -92,57 +92,62 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @BeforeEach
     void init() {
-        caseDetailsWithTodayDeadlineNotProcessed = getCaseDetails(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+        caseDetailsWithTodayDeadlineNotProcessed = getCaseDetails(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                   YesOrNo.NO);
-        caseDataWithTodayDeadlineNotProcessed = getCaseData(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+        caseDataWithTodayDeadlineNotProcessed = getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                             YesOrNo.NO);
 
-        caseDetailsWithTodayDeadlineProcessed = getCaseDetails(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+        caseDetailsWithTodayDeadlineProcessed = getCaseDetails(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                YesOrNo.YES);
-        caseDataWithTodayDeadlineProcessed = getCaseData(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+        caseDataWithTodayDeadlineProcessed = getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                          YesOrNo.YES);
 
         caseDetailsWithTodayDeadlineReliefFromSanctionOrder = getCaseDetails(2L, List.of(RELIEF_FROM_SANCTIONS),
                                                                              deadLineToday, YesOrNo.NO);
         caseDataWithTodayDeadlineReliefFromSanctionOrder = getCaseData(2L, List.of(RELIEF_FROM_SANCTIONS),
-                                                            deadLineToday, YesOrNo.NO);
+                                                                       deadLineToday, YesOrNo.NO);
 
-        caseDetailsWithDeadlineCrossedNotProcessed = getCaseDetails(3L, List.of(STAY_THE_CLAIM),
+        caseDetailsWithDeadlineCrossedNotProcessed = getCaseDetails(3L, List.of(UNLESS_ORDER),
                                                                     deadlineCrossed, YesOrNo.NO);
-        caseDataWithDeadlineCrossedNotProcessed = getCaseData(3L, List.of(STAY_THE_CLAIM), deadlineCrossed,
+        caseDataWithDeadlineCrossedNotProcessed = getCaseData(3L, List.of(UNLESS_ORDER), deadlineCrossed,
                                                               YesOrNo.NO);
 
-        caseDetailsWithDeadlineCrossedProcessed = getCaseDetails(4L, List.of(STAY_THE_CLAIM), deadlineCrossed,
+        caseDetailsWithDeadlineCrossedProcessed = getCaseDetails(4L, List.of(UNLESS_ORDER), deadlineCrossed,
                                                                  YesOrNo.YES);
-        caseDataWithDeadlineCrossedProcessed = getCaseData(4L, List.of(STAY_THE_CLAIM), deadlineCrossed,
+        caseDataWithDeadlineCrossedProcessed = getCaseData(4L, List.of(UNLESS_ORDER), deadlineCrossed,
                                                            YesOrNo.YES);
 
-        caseDetailsWithNoDeadline = getCaseDetails(5L, List.of(STAY_THE_CLAIM),
+        caseDetailsWithNoDeadline = getCaseDetails(5L, List.of(UNLESS_ORDER),
                                                    null, YesOrNo.NO);
-        caseDataWithNoDeadline = getCaseData(5L, List.of(STAY_THE_CLAIM),
-                                                            null, YesOrNo.NO);
+        caseDataWithNoDeadline = getCaseData(5L, List.of(UNLESS_ORDER),
+                                             null, YesOrNo.NO);
 
-        caseDetailsWithFutureDeadline = getCaseDetails(6L, List.of(STAY_THE_CLAIM),
+        caseDetailsWithFutureDeadline = getCaseDetails(6L, List.of(UNLESS_ORDER),
                                                        deadlineInFuture, YesOrNo.NO);
-        caseDataWithFutureDeadline = getCaseData(6L, List.of(STAY_THE_CLAIM),
+        caseDataWithFutureDeadline = getCaseData(6L, List.of(UNLESS_ORDER),
                                                  deadlineInFuture, YesOrNo.NO);
-        caseDetailsWithTodayDeadLineWithOrderProcessedNull = getCaseDetails(7L, List.of(STAY_THE_CLAIM),
-                                                                             deadLineToday, null);
-        caseDataWithTodayDeadLineWithOrderProcessedNull = getCaseData(7L, List.of(STAY_THE_CLAIM),
-                                                                  deadLineToday, null);
+        caseDetailsWithTodayDeadLineWithOrderProcessedNull = getCaseDetails(7L, List.of(UNLESS_ORDER),
+                                                                            deadLineToday, null);
+        caseDataWithTodayDeadLineWithOrderProcessedNull = getCaseData(7L, List.of(UNLESS_ORDER),
+                                                                      deadLineToday, null);
+
+        caseDetailsWithTodayDeadlineNotProcessed = getCaseDetails(1L, List.of(UNLESS_ORDER), deadLineToday,
+                                                                  YesOrNo.NO);
+        caseDataWithTodayDeadlineNotProcessed = getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
+                                                            YesOrNo.NO);
 
         // General application type contains both Stay the Claim and Unless Order
-        caseDetailsWithProcessedForUnlessOrder =
+        caseDetailsWithProcessedForStayClaim =
             getCaseDetailsForUnlessOrderAndStayClaim(11L, List.of(UNLESS_ORDER, STAY_THE_CLAIM), deadLineToday,
                                                      YesOrNo.NO, YesOrNo.YES);
-        caseDataWithProcessedForUnlessOrder
+        caseDataWithProcessedForStayClaim
             = getCaseDataForUnlessOrderAndStayClaim(11L, List.of(UNLESS_ORDER, STAY_THE_CLAIM), deadLineToday,
                                                     YesOrNo.NO, YesOrNo.YES);
 
-        caseDetailsWithNotProcessedForUnlessOrder =
+        caseDetailsWithNotProcessedForStayClaim =
             getCaseDetailsForUnlessOrderAndStayClaim(12L, List.of(UNLESS_ORDER, STAY_THE_CLAIM), deadLineToday,
                                                      YesOrNo.NO, YesOrNo.NO);
-        caseDataWithNotProcessedForUnlessOrder
+        caseDataWithNotProcessedForStayClaim
             = getCaseDataForUnlessOrderAndStayClaim(12L, List.of(UNLESS_ORDER, STAY_THE_CLAIM), deadLineToday,
                                                     YesOrNo.NO, YesOrNo.NO);
     }
@@ -151,7 +156,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     void shouldNotSendMessageAndTriggerGaEvent_whenZeroCasesFound() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE)).thenReturn(List.of());
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
@@ -168,7 +173,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
             .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
         when(caseDetailsConverter.toCaseData(caseDetailsWithDeadlineCrossedProcessed))
             .thenReturn(caseDataWithDeadlineCrossedProcessed);
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
@@ -189,7 +194,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         when(caseDetailsConverter.toCaseData(caseDetailsWithFutureDeadline))
             .thenReturn(caseDataWithFutureDeadline);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
@@ -211,11 +216,11 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadLineWithOrderProcessedNull))
             .thenReturn(caseDataWithTodayDeadLineWithOrderProcessedNull);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
-                                                   getCaseData(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+                                                   getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -225,12 +230,12 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
-                caseDetailsWithDeadlineCrossedNotProcessed,
-                caseDetailsWithTodayDeadlineProcessed,
-                caseDetailsWithFutureDeadline,
-                caseDetailsWithNoDeadline
-        ));
+                    caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
+                    caseDetailsWithDeadlineCrossedNotProcessed,
+                    caseDetailsWithTodayDeadlineProcessed,
+                    caseDetailsWithFutureDeadline,
+                    caseDetailsWithNoDeadline
+            ));
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
@@ -247,14 +252,14 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         when(caseDetailsConverter.toCaseData(caseDetailsWithNoDeadline))
             .thenReturn(caseDataWithNoDeadline);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
-                                                   getCaseData(1L, List.of(STAY_THE_CLAIM), deadLineToday,
+                                                   getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
         verify(coreCaseDataService).triggerGaEvent(3L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
-                                                   getCaseData(3L, List.of(STAY_THE_CLAIM), deadlineCrossed,
+                                                   getCaseData(3L, List.of(UNLESS_ORDER), deadlineCrossed,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -263,12 +268,13 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE)).thenReturn(List.of(caseDetailsWithNoDeadline));
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE))
+            .thenReturn(List.of(caseDetailsWithNoDeadline));
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithNoDeadline))
             .thenReturn(caseDataWithNoDeadline);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
@@ -278,12 +284,12 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotEmitBusinessProcessEvent_whenItsAlreadyProcessedForStayTheClaim() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE))
-            .thenReturn(List.of(caseDetailsWithProcessedForUnlessOrder));
+            .thenReturn(List.of(caseDetailsWithProcessedForStayClaim));
 
-        when(caseDetailsConverter.toCaseData(caseDetailsWithProcessedForUnlessOrder))
-            .thenReturn(caseDataWithProcessedForUnlessOrder);
+        when(caseDetailsConverter.toCaseData(caseDetailsWithProcessedForStayClaim))
+            .thenReturn(caseDataWithProcessedForStayClaim);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
         verifyNoInteractions(coreCaseDataService);
@@ -293,39 +299,39 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_whenItsAlreadyProcessedForStayTheClaim() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE))
-            .thenReturn(List.of(caseDetailsWithNotProcessedForUnlessOrder,
+            .thenReturn(List.of(caseDetailsWithNotProcessedForStayClaim,
                                 caseDetailsWithTodayDeadlineNotProcessed));
 
-        when(caseDetailsConverter.toCaseData(caseDetailsWithNotProcessedForUnlessOrder))
-            .thenReturn(caseDataWithNotProcessedForUnlessOrder);
+        when(caseDetailsConverter.toCaseData(caseDetailsWithNotProcessedForStayClaim))
+            .thenReturn(caseDataWithNotProcessedForStayClaim);
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
 
-        gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
+        gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
-
-        verify(coreCaseDataService)
-            .triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
-                            getCaseData(1L,
-                                                                  List.of(STAY_THE_CLAIM),
-                                                                  deadLineToday,
-                                                                  YesOrNo.YES).toMap(mapper));
 
         verify(coreCaseDataService)
             .triggerGaEvent(12L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
                             getCaseDataForUnlessOrderAndStayClaim(12L,
                                                                   List.of(UNLESS_ORDER, STAY_THE_CLAIM),
                                                                   deadLineToday,
-                                                                  YesOrNo.NO, YesOrNo.YES).toMap(mapper));
+                                                                  YesOrNo.YES, YesOrNo.NO).toMap(mapper));
+
+        verify(coreCaseDataService)
+            .triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+                            getCaseDataForUnlessOrderAndStayClaim(1L,
+                                                                  List.of(UNLESS_ORDER),
+                                                                  deadLineToday,
+                                                                  YesOrNo.YES, null).toMap(mapper));
 
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     private CaseData getCaseData(Long ccdId, List<GeneralApplicationTypes> generalApplicationType,
-                                 LocalDate deadline, YesOrNo esProcessed) {
+                                 LocalDate deadline, YesOrNo isProcessed) {
         return CaseDataBuilder.builder()
             .ccdCaseReference(ccdId)
             .ccdState(ORDER_MADE)
@@ -333,21 +339,21 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .makeAnOrder(APPROVE_OR_EDIT)
                                            .judgeRecitalText("Sample Text")
-                                           .judgeApproveEditOptionDate(deadline)
+                                           .judgeApproveEditOptionDateForUnlessOrder(deadline)
                                            .reasonForDecisionText("Sample Test")
-                                           .isOrderProcessedByStayScheduler(esProcessed)
+                                           .isOrderProcessedByUnlessScheduler(isProcessed)
                                            .build()).build();
     }
 
     private CaseDetails getCaseDetails(Long ccdId, List<GeneralApplicationTypes> generalApplicationType,
-                                 LocalDate deadline, YesOrNo isProcessed) {
+                                       LocalDate deadline, YesOrNo isProcessed) {
         return CaseDetails.builder().id(ccdId).data(
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
-                           .judgeApproveEditOptionDate(deadline)
+                           .judgeApproveEditOptionDateForUnlessOrder(deadline)
                            .reasonForDecisionText("Sample Test")
-                           .isOrderProcessedByStayScheduler(isProcessed)
+                           .isOrderProcessedByUnlessScheduler(isProcessed)
                            .build(),
                        "generalAppType", GAApplicationType.builder().types(generalApplicationType).build()))
             .state(ORDER_MADE.toString()).build();
@@ -364,7 +370,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .makeAnOrder(APPROVE_OR_EDIT)
                                            .judgeRecitalText("Sample Text")
-                                           .judgeApproveEditOptionDate(deadline)
+                                           .judgeApproveEditOptionDateForUnlessOrder(deadline)
                                            .reasonForDecisionText("Sample Test")
                                            .isOrderProcessedByUnlessScheduler(isUnlessProcessed)
                                            .isOrderProcessedByStayScheduler(isStayClaimProcessed)
@@ -379,7 +385,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                 Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
-                           .judgeApproveEditOptionDate(deadline)
+                           .judgeApproveEditOptionDateForUnlessOrder(deadline)
                            .reasonForDecisionText("Sample Test")
                            .isOrderProcessedByStayScheduler(isStayClaimProcessed)
                            .isOrderProcessedByUnlessScheduler(isUnlessProcessed)

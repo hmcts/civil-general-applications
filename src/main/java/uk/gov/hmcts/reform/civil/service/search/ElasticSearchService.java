@@ -37,15 +37,30 @@ public abstract class ElasticSearchService {
 
     public List<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState) {
 
-        SearchResult searchResult = coreCaseDataService
-            .searchGeneralApplication(queryForOrderMade_StayClaim(START_INDEX, caseState));
+        // Search General Application contains Stay the Claim
+        SearchResult searchStayClaimResult = coreCaseDataService
+            .searchGeneralApplication(queryForOrderMade_StayTheClaimCase(START_INDEX, caseState));
 
-        int pages = calculatePages(searchResult);
-        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+        int pages = calculatePages(searchStayClaimResult);
+        List<CaseDetails> caseDetails = new ArrayList<>(searchStayClaimResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
-                .searchGeneralApplication(queryForOrderMade_StayClaim(i * ES_DEFAULT_SEARCH_LIMIT, caseState));
+                .searchGeneralApplication(queryForOrderMade_StayTheClaimCase(i * ES_DEFAULT_SEARCH_LIMIT,
+                                                                             caseState));
+            caseDetails.addAll(result.getCases());
+        }
+
+        // Search General application contains Unless Order
+        SearchResult searchUnlessOrderResult = coreCaseDataService
+            .searchGeneralApplication(queryForOrderMade_UnlessOrderCase(START_INDEX, caseState));
+
+        pages = calculatePages(searchUnlessOrderResult);
+
+        for (int i = 1; i < pages; i++) {
+            SearchResult result = coreCaseDataService
+                .searchGeneralApplication(queryForOrderMade_UnlessOrderCase(i * ES_DEFAULT_SEARCH_LIMIT,
+                                                                             caseState));
             caseDetails.addAll(result.getCases());
         }
 
@@ -54,7 +69,9 @@ public abstract class ElasticSearchService {
 
     abstract Query query(int startIndex, CaseState caseState);
 
-    abstract Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState);
+    abstract Query queryForOrderMade_StayTheClaimCase(int startIndex, CaseState caseState);
+
+    abstract Query queryForOrderMade_UnlessOrderCase(int startIndex, CaseState caseState);
 
     private int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();

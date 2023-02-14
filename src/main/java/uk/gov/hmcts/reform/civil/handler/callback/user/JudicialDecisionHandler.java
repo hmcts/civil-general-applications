@@ -77,6 +77,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_ORDER;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
@@ -351,7 +352,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
-                .isOrderProcessedByStayScheduler(NO);
+                .isOrderProcessedByStayScheduler(NO)
+                .isOrderProcessedByUnlessScheduler(NO);
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
@@ -359,12 +361,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return makeAnOrderBuilder
                 .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
                     .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
+                .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
+                                                                     && APPROVE_OR_EDIT
+                    .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
                 .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) && APPROVE_OR_EDIT
                     .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO);
         }
 
         return makeAnOrderBuilder
             .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
+            .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
+                                                                 ? YES : NO)
             .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) ? YES : NO);
     }
 
@@ -388,6 +395,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
             return false;
         }
         List<GeneralApplicationTypes> validGATypes = Arrays.asList(STAY_THE_CLAIM);
+        return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
+    }
+
+    /*Return True if General Application types contains Unless Order
+    Else, Return False*/
+    private boolean checkApplicationTypeForUnlessOrderDate(CaseData caseData) {
+
+        if (caseData.getGeneralAppType() == null) {
+            return false;
+        }
+        List<GeneralApplicationTypes> validGATypes = Arrays.asList(UNLESS_ORDER);
         return caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains);
     }
 
@@ -526,8 +544,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         /*
-        * Set showRequestInfoPreview to NO as it caches and display Request More Information Document in Hearing screen
-        *  */
+         * Set showRequestInfoPreview to NO as it caches and display Request More Information Document in Hearing screen
+         *  */
         caseDataBuilder.showRequestInfoPreviewDoc(NO);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -561,8 +579,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             && judicialRequestMoreInfo.getIsWithNotice().equals(YES))
             ||
             (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            .equals(REQUEST_MORE_INFORMATION))) {
+                && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+                .equals(REQUEST_MORE_INFORMATION))) {
 
             caseDataBuilder.showRequestInfoPreviewDoc(YES);
 
@@ -660,8 +678,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         /*
-        * Assign case respondent solicitors if judge uncloak the application
-        * */
+         * Assign case respondent solicitors if judge uncloak the application
+         * */
 
         if (isApplicationUncloaked != null
             && isApplicationUncloaked.equals(NO)) {
@@ -693,10 +711,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private DynamicList populateJudicialHearingLocation(CaseData caseData) {
         DynamicList dynamicLocationList;
         String applicationLocationLabel = caseData.getJudicialListForHearing()
-                .getHearingPreferredLocation().getValue().getLabel();
+            .getHearingPreferredLocation().getValue().getLabel();
         dynamicLocationList = fromList(List.of(applicationLocationLabel));
         Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
-                .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
+            .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
         first.ifPresent(dynamicLocationList::setValue);
         return dynamicLocationList;
     }
