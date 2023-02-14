@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_ORDER;
@@ -28,7 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.stayOrder.event.emitter.enabled:true}")
-public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
+public class CheckOrderMadeDeadlineEndTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -114,7 +114,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
                      + "and with Application type Stay claim and its end date is today"
                      + "for caseId: {}", caseId);
 
-        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                            getUpdatedCaseDataMapper(updateCaseData_StayClaim(caseData))
         );
         log.info("Checking state for caseId: {}", caseId);
@@ -160,7 +160,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
                      + "and with Application type Unless Order and its end date is today"
                      + "for caseId: {}", caseId);
 
-        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                            getUpdatedCaseDataMapper(updateCaseDataForUnlessOrderType(caseData))
         );
         log.info("Checking state for caseId: {}", caseId);

@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.CheckOrderMadeDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.handler.tasks.GAJudgeRevisitTaskHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -36,7 +36,7 @@ public class TestingSupportController {
     private final CoreCaseDataService coreCaseDataService;
     private final CamundaRestEngineClient camundaRestEngineClient;
     private final FeatureToggleService featureToggleService;
-    private final CheckStayOrderDeadlineEndTaskHandler checkStayOrderDeadlineEndTaskHandler;
+    private final CheckOrderMadeDeadlineEndTaskHandler checkOrderMadeDeadlineEndTaskHandler;
     private final GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
@@ -135,7 +135,7 @@ public class TestingSupportController {
         ExternalTaskImpl externalTask = new ExternalTaskImpl();
         try {
             if (ccdState.equals("ORDER_MADE")) {
-                checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
+                checkOrderMadeDeadlineEndTaskHandler.handleTask(externalTask);
             } else {
                 gaJudgeRevisitTaskHandler.handleTask(externalTask);
             }

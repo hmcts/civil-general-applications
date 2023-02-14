@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
@@ -38,7 +38,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
-    CheckStayOrderDeadlineEndTaskHandler.class})
+    CheckOrderMadeDeadlineEndTaskHandler.class})
 public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
     @MockBean
@@ -57,7 +57,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private CheckStayOrderDeadlineEndTaskHandler gaUnlessOrderMadeTaskHandler;
+    private CheckOrderMadeDeadlineEndTaskHandler gaUnlessOrderMadeTaskHandler;
 
     @Autowired
     private ObjectMapper mapper;
@@ -219,7 +219,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
         gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
-        verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+        verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                                    getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
@@ -255,10 +255,10 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
         gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
-        verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+        verify(coreCaseDataService).triggerGaEvent(1L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                                    getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
-        verify(coreCaseDataService).triggerGaEvent(3L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+        verify(coreCaseDataService).triggerGaEvent(3L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                                    getCaseData(3L, List.of(UNLESS_ORDER), deadlineCrossed,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
@@ -313,14 +313,14 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE);
 
         verify(coreCaseDataService)
-            .triggerGaEvent(12L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+            .triggerGaEvent(12L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                             getCaseDataForUnlessOrderAndStayClaim(12L,
                                                                   List.of(UNLESS_ORDER, STAY_THE_CLAIM),
                                                                   deadLineToday,
                                                                   YesOrNo.YES, YesOrNo.NO).toMap(mapper));
 
         verify(coreCaseDataService)
-            .triggerGaEvent(1L, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+            .triggerGaEvent(1L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                             getCaseDataForUnlessOrderAndStayClaim(1L,
                                                                   List.of(UNLESS_ORDER),
                                                                   deadLineToday,
