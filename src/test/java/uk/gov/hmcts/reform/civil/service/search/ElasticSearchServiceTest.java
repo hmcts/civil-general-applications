@@ -80,7 +80,7 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).hasSize(3);
+        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).hasSize(2);
         verify(coreCaseDataService, times(4)).searchGeneralApplication(queryCaptor.capture());
 
         List<Query> capturedQueries = queryCaptor.getAllValues();

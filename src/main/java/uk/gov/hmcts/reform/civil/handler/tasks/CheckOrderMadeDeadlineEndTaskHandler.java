@@ -85,33 +85,13 @@ public class CheckOrderMadeDeadlineEndTaskHandler implements BaseExternalTaskHan
     private void fireEventForStateChange_StayClaim(CaseData caseData) {
         Long caseId = caseData.getCcdCaseReference();
 
-        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+        triggerGaEventForStayClaimType(caseId, caseData);
 
-        /*
-         * Trigger state change event if application type without UNLESS_ORDER type
-         * */
-
-        if (!caseData.getGeneralAppType().getTypes().contains(UNLESS_ORDER)) {
-            triggerGaEventForStayClaimType(caseId, caseData);
-        } else {
-            /*
-             * Check if application is been already processed by the scheduler when application type
-             * also includes UNLESS_ORDER.
-             *
-             * if so, don't trigger the event state changes to prevent duplication of creating WA task
-             *
-             * */
-            if (judicialDecisionMakeOrder.getIsOrderProcessedByUnlessScheduler() != null
-                && judicialDecisionMakeOrder.getIsOrderProcessedByUnlessScheduler().equals(YesOrNo.NO)) {
-
-                triggerGaEventForStayClaimType(caseId, caseData);
-            }
-        }
     }
 
     private void triggerGaEventForStayClaimType(Long caseId, CaseData caseData) {
-        log.info("Firing event END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE to check applications with ORDER_MADE"
-                     + "and with Application type Stay claim and its end date is today"
+        log.info("Firing event END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE to check applications with ORDER_MADE "
+                     + "and with Application type Stay claim and its end date is today "
                      + "for caseId: {}", caseId);
 
         coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
@@ -142,13 +122,18 @@ public class CheckOrderMadeDeadlineEndTaskHandler implements BaseExternalTaskHan
         } else {
             /*
              * Check if application is been already processed by the scheduler when application type
-             * also includes STAY_THE_CLAIM.
+             * also includes STAY_THE_CLAIM with same deadline date.
              *
              * if so, don't trigger the event state changes to prevent duplication of creating WA task
              *
              * */
-            if (judicialDecisionMakeOrder.getIsOrderProcessedByStayScheduler() != null
-                && judicialDecisionMakeOrder.getIsOrderProcessedByStayScheduler().equals(YesOrNo.NO)) {
+            if (judicialDecisionMakeOrder.getJudgeApproveEditOptionDate() == null) {
+                triggerGaEventForUnlessOrderType(caseId, caseData);
+            }
+
+            if (judicialDecisionMakeOrder.getJudgeApproveEditOptionDate() != null
+                && !judicialDecisionMakeOrder.getJudgeApproveEditOptionDate()
+                .equals(judicialDecisionMakeOrder.getJudgeApproveEditOptionDateForUnlessOrder())) {
 
                 triggerGaEventForUnlessOrderType(caseId, caseData);
             }
@@ -156,9 +141,9 @@ public class CheckOrderMadeDeadlineEndTaskHandler implements BaseExternalTaskHan
     }
 
     private void triggerGaEventForUnlessOrderType(Long caseId, CaseData caseData) {
-        log.info("Firing event END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE to check applications with ORDER_MADE"
+        log.info("Firing event END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE to check applications with ORDER_MADE "
                      + "and with Application type Unless Order and its end date is today"
-                     + "for caseId: {}", caseId);
+                     + " for caseId: {}", caseId);
 
         coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
                                            getUpdatedCaseDataMapper(updateCaseDataForUnlessOrderType(caseData))
