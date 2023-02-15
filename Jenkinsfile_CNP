@@ -70,6 +70,7 @@ withPipeline(type, product, component) {
 
     onPR {
         env.ENVIRONMENT = "preview"
+        env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         loadVaultSecrets(secrets)
        if (!checkForEnableHelmLabel(env.BRANCH_NAME)) {
         enableCleanupOfHelmReleaseAlways();
@@ -77,9 +78,11 @@ withPipeline(type, product, component) {
     }
     onMaster {
         env.ENVIRONMENT = "aat"
+        env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         loadVaultSecrets(secrets)
     }
     onDemo {
+        env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         env.ENVIRONMENT = "demo"
         loadVaultSecrets(secrets)
     }
