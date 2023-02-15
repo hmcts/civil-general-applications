@@ -272,7 +272,7 @@ jacocoTestReport.dependsOn {
 }
 
 def versions = [
-  junit              : '5.7.0',
+  junit              : '5.9.2',
   junitPlatform      : '1.9.2',
   reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
@@ -403,9 +403,9 @@ dependencies {
   contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-java8_2.12', version: versions.pact
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
 
-  contractTestImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-  contractTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.3.2')
+  contractTestImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+  contractTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.9.2')
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
