@@ -206,8 +206,8 @@ task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
-task installDependencies(type: Exec, description: 'Installs Yarn dependencies.') {
-  commandLine '/usr/bin/yarn', '--mutex', 'network', '--frozen-lockfile', '--silent', 'install'
+task installDependencies(type: Exec, description: 'Installs Yarn dependencies. ') {
+  commandLine '/usr/bin/yarn', '--mutex', 'network','--silent', 'install'
 }
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
