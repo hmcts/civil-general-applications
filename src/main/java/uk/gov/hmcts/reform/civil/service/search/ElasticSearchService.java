@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.math.RoundingMode.UP;
 
@@ -42,27 +44,31 @@ public abstract class ElasticSearchService {
             .searchGeneralApplication(queryForOrderMade_StayTheClaimCase(START_INDEX, caseState));
 
         int pages = calculatePages(searchStayClaimResult);
-        List<CaseDetails> caseDetails = new ArrayList<>(searchStayClaimResult.getCases());
+        List<CaseDetails> caseDetailsStayClaim = new ArrayList<>(searchStayClaimResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
                 .searchGeneralApplication(queryForOrderMade_StayTheClaimCase(i * ES_DEFAULT_SEARCH_LIMIT,
                                                                              caseState));
-            caseDetails.addAll(result.getCases());
+            caseDetailsStayClaim.addAll(result.getCases());
         }
 
         // Search General application contains Unless Order
         SearchResult searchUnlessOrderResult = coreCaseDataService
             .searchGeneralApplication(queryForOrderMade_UnlessOrderCase(START_INDEX, caseState));
 
-        pages = calculatePages(searchUnlessOrderResult);
+        int pagesUnlessOrder = calculatePages(searchUnlessOrderResult);
+        List<CaseDetails> caseDetailsUnlessOrder = new ArrayList<>(searchUnlessOrderResult.getCases());
 
-        for (int i = 1; i < pages; i++) {
-            SearchResult result = coreCaseDataService
+        for (int i = 1; i < pagesUnlessOrder; i++) {
+            SearchResult resultUnlessOrder = coreCaseDataService
                 .searchGeneralApplication(queryForOrderMade_UnlessOrderCase(i * ES_DEFAULT_SEARCH_LIMIT,
                                                                              caseState));
-            caseDetails.addAll(result.getCases());
+            caseDetailsUnlessOrder.addAll(resultUnlessOrder.getCases());
         }
+        caseDetailsUnlessOrder.removeAll(caseDetailsStayClaim);
+        List<CaseDetails> caseDetails = Stream.concat(caseDetailsStayClaim.stream(),
+                                                      caseDetailsUnlessOrder.stream()).collect(Collectors.toList());
 
         return caseDetails;
     }

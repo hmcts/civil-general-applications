@@ -317,14 +317,11 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
                             getCaseDataForUnlessOrderAndStayClaim(12L,
                                                                   List.of(UNLESS_ORDER, STAY_THE_CLAIM),
                                                                   deadLineToday,
-                                                                  YesOrNo.YES, YesOrNo.NO).toMap(mapper));
+                                                                  YesOrNo.NO, YesOrNo.YES).toMap(mapper));
 
         verify(coreCaseDataService)
             .triggerGaEvent(1L, END_SCHEDULER_CHECK_ORDER_MADE_DEADLINE,
-                            getCaseDataForUnlessOrderAndStayClaim(1L,
-                                                                  List.of(UNLESS_ORDER),
-                                                                  deadLineToday,
-                                                                  YesOrNo.YES, null).toMap(mapper));
+                            getCaseData(1L, List.of(UNLESS_ORDER), deadLineToday, YesOrNo.YES).toMap(mapper));
 
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -371,6 +368,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
                                            .makeAnOrder(APPROVE_OR_EDIT)
                                            .judgeRecitalText("Sample Text")
                                            .judgeApproveEditOptionDateForUnlessOrder(deadline)
+                                           .judgeApproveEditOptionDate(deadline)
                                            .reasonForDecisionText("Sample Test")
                                            .isOrderProcessedByUnlessScheduler(isUnlessProcessed)
                                            .isOrderProcessedByStayScheduler(isStayClaimProcessed)
@@ -386,6 +384,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
                            .makeAnOrder(APPROVE_OR_EDIT)
                            .judgeRecitalText("Sample Text")
                            .judgeApproveEditOptionDateForUnlessOrder(deadline)
+                           .judgeApproveEditOptionDate(deadline)
                            .reasonForDecisionText("Sample Test")
                            .isOrderProcessedByStayScheduler(isStayClaimProcessed)
                            .isOrderProcessedByUnlessScheduler(isUnlessProcessed)
