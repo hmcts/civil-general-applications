@@ -28,3 +28,12 @@ resource "azurerm_key_vault_secret" "app_insights_instrumental_key" {
     "source" : "app insights ${azurerm_application_insights.appinsights.name}"
   })
 }
+
+resource "azurerm_key_vault_secret" "app_insights_connection_string" {
+  name         = "genapp-appinsights-connection-string"
+  value        = azurerm_application_insights.appinsights.connection_string
+  key_vault_id = data.azurerm_key_vault.civil.id
+  content_type = "secret"
+  tags = merge(var.common_tags, {
+    "source" : "appinsights ${azurerm_application_insights.appinsights.name}"
+  })
