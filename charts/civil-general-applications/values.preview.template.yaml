@@ -14,8 +14,6 @@ java:
         - cross-access-user-password
         - prd-admin-user-username
         - prd-admin-user-password
-        - name: AppInsightsInstrumentationKeyGeneralApplications
-          alias: azure.application-insights.instrumentation-key
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
@@ -23,8 +21,6 @@ java:
         - robotics-notification-recipient
         - name: launch-darkly-sdk-key-non-prod
           alias: launch-darkly-sdk-key
-        - name: genapp-appinsights-connection-string
-          alias: appinsights-connection-string
         - robotics-notification-multipartyrecipient
   environment:
     CORE_CASE_DATA_API_URL: http://${SERVICE_NAME}-ccd-data-store-api
