@@ -37,3 +37,4 @@ resource "azurerm_key_vault_secret" "app_insights_connection_string" {
   tags = merge(var.common_tags, {
     "source" : "appinsights ${azurerm_application_insights.appinsights.name}"
   })
+}
