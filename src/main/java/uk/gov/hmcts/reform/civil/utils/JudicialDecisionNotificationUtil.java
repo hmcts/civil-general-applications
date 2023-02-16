@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
@@ -115,6 +116,11 @@ public class JudicialDecisionNotificationUtil {
             && isAppSeqWrittenRep
             && isApplicantPresent
             && isRespondentPresent;
+    }
+
+    public static boolean isWithoutNotice(CaseData caseData) {
+        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
     }
 
     public static boolean areRespondentSolicitorsPresent(CaseData caseData) {
