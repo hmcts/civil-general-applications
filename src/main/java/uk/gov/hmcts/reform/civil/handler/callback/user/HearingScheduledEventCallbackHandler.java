@@ -56,8 +56,7 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
-                callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
-                callbackKey(MID, "hearing-locations"), this::locationList,
+                callbackKey(ABOUT_TO_START), this::locationList,
                 callbackKey(MID, "hearing-check-date"), this::checkFutureDate,
                 callbackKey(ABOUT_TO_SUBMIT), this::validateHearingScheduledProcess,
                 callbackKey(SUBMITTED), this::buildConfirmation
@@ -121,13 +120,13 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
     private List<String> isFutureDate(LocalDateTime hearingDateTime) {
         List<String> errors = new ArrayList<>();
         if (!checkFutureDateValidation(hearingDateTime)) {
-            errors.add("The Date & Time must be 24hs in advance from now");
+            errors.add("Hearing date must be in the future");
         }
         return errors;
     }
 
     private boolean checkFutureDateValidation(LocalDateTime localDateTime) {
-        return localDateTime != null && localDateTime.isAfter(LocalDateTime.now().plusHours(24));
+        return localDateTime != null && localDateTime.isAfter(LocalDateTime.now());
     }
 
     private CallbackResponse validateHearingScheduledProcess(CallbackParams callbackParams) {

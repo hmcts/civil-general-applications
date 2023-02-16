@@ -147,6 +147,7 @@ public class CaseData implements MappableObject {
     private GAHearingNoticeApplication gaHearingNoticeApplication;
     private GAHearingNoticeDetail gaHearingNoticeDetail;
     private String gaHearingNoticeInformation;
+    private final String migrationId;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
@@ -165,6 +166,8 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> requestForInformationDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> hearingOrderDocument = new ArrayList<>();
+    @Builder.Default
+    private final List<Element<CaseDocument>> hearingNoticeDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
     @Builder.Default
