@@ -32,7 +32,7 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getGeneralApplicationCaseId();
-        if(caseId == null) {
+        if (caseId == null) {
             caseId = externalTaskInput.getCaseId();
         }
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId, END_BUSINESS_PROCESS_GASPEC);
