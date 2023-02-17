@@ -21,6 +21,8 @@ java:
         - robotics-notification-recipient
         - name: launch-darkly-sdk-key-non-prod
           alias: launch-darkly-sdk-key
+        - name: genapp-appinsights-connection-string
+          alias: appinsights-connection-string
         - robotics-notification-multipartyrecipient
   environment:
     CORE_CASE_DATA_API_URL: http://${SERVICE_NAME}-ccd-data-store-api
