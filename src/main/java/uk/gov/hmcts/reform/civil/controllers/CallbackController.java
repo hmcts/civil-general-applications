@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.controllers;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackVersion;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 
 @Api
 @Slf4j

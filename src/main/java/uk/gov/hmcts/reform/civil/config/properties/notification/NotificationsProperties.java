@@ -1,9 +1,8 @@
 package uk.gov.hmcts.reform.civil.config.properties.notification;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.constraints.NotEmpty;
 
 @Validated
 @Data

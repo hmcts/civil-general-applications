@@ -66,9 +66,7 @@ public class SwaggerConfiguration {
                                                 endpointMediaTypes,
                                                 corsProperties.toCorsConfiguration(),
                                                 new EndpointLinksResolver(allEndpoints, basePath),
-                                                shouldRegisterLinksMapping,
-                                                null
-        );
+                                                shouldRegisterLinksMapping);
     }
 
     private boolean shouldRegisterLinksMapping(WebEndpointProperties webEndpointProperties, Environment environment,
