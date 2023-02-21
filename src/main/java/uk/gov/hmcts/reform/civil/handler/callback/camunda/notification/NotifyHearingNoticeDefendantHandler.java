@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithoutNotice;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +46,9 @@ public class NotifyHearingNoticeDefendantHandler extends CallbackHandler {
 
         CaseData caseData = callbackParams.getCaseData();
         try {
-            caseData = hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
+            if (!isWithoutNotice(caseData)) {
+                caseData = hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
+            }
         } catch (NotificationException notificationException) {
             throw notificationException;
         }
