@@ -1,31 +1,30 @@
-civil-general-applications:
-  java:
-    ingressHost: ${SERVICE_FQDN}
-    keyVaults:
-      civil:
-        resourceGroup: civil
-        secrets:
-          - civil-idam-client-secret
-          - microservicekey-civil-service
-          - system-update-user-username
-          - system-update-user-password
-          - cross-access-user-username
-          - cross-access-user-password
-          - prd-admin-user-username
-          - prd-admin-user-password
-          - name: AppInsightsInstrumentationKeyGeneralApplications
-            alias: azure.application-insights.instrumentation-key
-          - docmosis-api-key
-          - gov-notify-api-key
-          - sendgrid-api-key
-          - robotics-notification-sender
-          - robotics-notification-recipient
-          - name: launch-darkly-sdk-key-non-prod
-            alias: launch-darkly-sdk-key
-    environment:
-      PAY_CALLBACK_URL: http://${SERVICE_NAME}-java/service-request-update
-      LAUNCH_DARKLY_ENV: service-staging
-      RELEASE_REVISION: "{{ .Release.Revision }}"
+java:
+  ingressHost: ${SERVICE_FQDN}
+  keyVaults:
+    civil:
+      resourceGroup: civil
+      secrets:
+        - civil-idam-client-secret
+        - microservicekey-civil-service
+        - system-update-user-username
+        - system-update-user-password
+        - cross-access-user-username
+        - cross-access-user-password
+        - prd-admin-user-username
+        - prd-admin-user-password
+        - name: AppInsightsInstrumentationKeyGeneralApplications
+          alias: azure.application-insights.instrumentation-key
+        - docmosis-api-key
+        - gov-notify-api-key
+        - sendgrid-api-key
+        - robotics-notification-sender
+        - robotics-notification-recipient
+        - name: launch-darkly-sdk-key-non-prod
+          alias: launch-darkly-sdk-key
+  environment:
+    PAY_CALLBACK_URL: http://${SERVICE_NAME}-java/service-request-update
+    LAUNCH_DARKLY_ENV: service-staging
+    RELEASE_REVISION: "{{ .Release.Revision }}"
 civil-service:
   java:
     ingressHost: civil-ga-civil-service-staging-aat.service.core-compute-aat.internal
