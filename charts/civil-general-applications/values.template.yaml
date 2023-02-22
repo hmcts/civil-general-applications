@@ -157,7 +157,6 @@ xui-webapp:
       HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
       SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
-
 ccd:
   enabled: true
   ccd:
