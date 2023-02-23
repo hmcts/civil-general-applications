@@ -8,8 +8,8 @@ maintainers:
   - name: HMCTS Civil team
 
 dependencies:
-  - name: java
-    version: 4.0.13
+  - name: civil-general-applications
+    version: ~0.0.30
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
   - name: civil-service
     version: 0.0.29
