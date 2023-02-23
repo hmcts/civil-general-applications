@@ -15,28 +15,6 @@ java:
   image: 'hmctspublic.azurecr.io/civil/general-applications:latest'
   ingressHost: civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: civil
-  keyVaults:
-    civil:
-      resourceGroup: civil
-      secrets:
-        - civil-idam-client-secret
-        - microservicekey-civil-service
-        - system-update-user-username
-        - system-update-user-password
-        - cross-access-user-username
-        - cross-access-user-password
-        - prd-admin-user-username
-        - prd-admin-user-password
-        - name: AppInsightsInstrumentationKeyGeneralApplications
-          alias: azure.application-insights.instrumentation-key
-        - docmosis-api-key
-        - gov-notify-api-key
-        - sendgrid-api-key
-        - robotics-notification-sender
-        - robotics-notification-recipient
-        - name: launch-darkly-sdk-key-non-prod
-          alias: launch-darkly-sdk-key
-        - robotics-notification-multipartyrecipient
   environment:
     LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
     IDAM_CLIENT_ID: civil-service
