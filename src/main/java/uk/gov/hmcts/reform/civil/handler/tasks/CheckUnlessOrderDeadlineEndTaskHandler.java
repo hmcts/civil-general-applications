@@ -61,8 +61,8 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
 
     private void fireEventForStateChange(CaseData caseData) {
         Long caseId = caseData.getCcdCaseReference();
-        log.info("Firing event END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE to check applications with ORDER_MADE"
-                     + "and with Application type Unless Order and its end date is today"
+        log.info("Firing event END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE to check applications with ORDER_MADE "
+                     + "and with Application type Unless Order and its end date is today "
                      + "for caseId: {}", caseId);
 
         coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE,
