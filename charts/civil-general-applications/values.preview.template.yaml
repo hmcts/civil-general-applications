@@ -1,10 +1,6 @@
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_NAME}.preview.platform.hmcts.net
-    environment:
-      PAY_CALLBACK_URL: https://${SERVICE_NAME}.preview.platform.hmcts.net/service-request-update
-      LAUNCH_DARKLY_ENV: ${SERVICE_FQDN}
-      CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
 civil-service:
   java:
     ingressHost: civil-service-${SERVICE_FQDN}
