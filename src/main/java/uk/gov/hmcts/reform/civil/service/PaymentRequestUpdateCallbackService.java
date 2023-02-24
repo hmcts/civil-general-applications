@@ -86,7 +86,8 @@ public class PaymentRequestUpdateCallbackService {
                     createEvent(caseData, INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT,
                                     serviceRequestUpdateDto.getCcdCaseNumber());
                 } else {
-                    log.error("Not a valid to Case id {} process payment callback ",
+                    log.error("This Case id {} is not in a valid state APPLICATION_ADD_PAYMENT,"
+                                  + "AWAITING_APPLICATION_PAYMENT to process payment callback ",
                               serviceRequestUpdateDto.getCcdCaseNumber());
                 }
             }
