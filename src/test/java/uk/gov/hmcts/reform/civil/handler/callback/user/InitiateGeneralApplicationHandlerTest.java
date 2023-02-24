@@ -9,20 +9,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import static java.lang.String.format;
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +35,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
@@ -48,19 +52,13 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Value("${civil.response-pack-url}")
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
-    private static final String CONF_SINGLE_NOTIFIED = "<br/><p> You have made the following application:"
-        + "<ul> <li>Extend time</li> </ul>"
-        + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
-        + "has been notified that you have submitted this application. ";
-    private static final String CONFIRMATION = "<br/><p> You have made the following applications:"
-        + "<ul> <li>Extend time</li><li>Summary judgment</li> </ul>"
-        + "</p> <p> You have marked this application as urgent. </p> <p> The other party's legal representative "
-        + "has been notified that you have submitted this application. ";
+    private static final String CONFIRMATION_BODY = "<br/> <p> Your application fee of £%s"
+        + " is now due for payment. Your application will not be reviewed by the"
+        + " court until this fee has been paid."
+        + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
-    private static final String CONF_SINGLE_NOT_NOTIFIED = "<br/><p> You have made the following "
-            + "application:<ul> <li>Extend time</li> </ul></p> <p> You have marked this application as urgent. </p> "
-            + "<p> The other party's legal representative has not been notified that you have submitted this "
-            + "application. ";
+    private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
+        BigDecimal.valueOf(27500)).code("FEE0444").version("1").build();
 
     private CaseData getEmptyTestCase(CaseData caseData) {
         return caseData.toBuilder()
@@ -96,12 +94,16 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
 
                 .generalAppInformOtherParty(withOrWithoutNotice)
                 .generalAppRespondentAgreement(hasAgreed)
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .fee(FEE275)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                         .generalAppUrgency(YES)
                         .reasonsForUrgency(STRING_CONSTANT)
                         .urgentAppConsiderationDate(APP_DATE_EPOCH)
                         .build())
-                .isMultiParty(YesOrNo.NO)
+                .isMultiParty(NO)
                 .businessProcess(BusinessProcess.builder()
                         .status(BusinessProcessStatus.READY)
                         .build())
@@ -121,122 +123,26 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldReturnBuildConfirmationForSingleApplicationType() {
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(), false);
+        void shouldReturnExpectedSubmittedCallbackResponse_whenRespondentsDoesNotHaveRepresentation() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().ccdCaseReference(CASE_ID).build(), true);
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
+
+            String body = format(
+                CONFIRMATION_BODY,
+                genapp.getGeneralAppPBADetails().getFee().toPounds(),
+                format("/cases/case-details/%s#Applications", CASE_ID));
 
             var response = (SubmittedCallbackResponse) handler.handle(params);
             assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOTIFIED);
-        }
-
-        @Test
-        void shouldReturnBuildConfirmationForMultipleApplicationType() {
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(), true);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).usingRecursiveComparison().isEqualTo(
+                SubmittedCallbackResponse.builder()
+                    .confirmationHeader(
+                        "# You have made an application")
+                    .confirmationBody(body)
+                    .build());
             assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementIsNull() {
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, null, null);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsNull() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(null).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, null);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsYES() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(YES).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, null);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsNOAndInformPartyIsNull() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(NO).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, null);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsNOAndInformPartyNoticeIsNull() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(NO).build();
-            GAInformOtherParty informOtherParty = GAInformOtherParty.builder().isWithNotice(null).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, informOtherParty);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsNOAndInformPartyNoticeIsNO() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(NO).build();
-            GAInformOtherParty informOtherParty = GAInformOtherParty.builder().isWithNotice(NO).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, informOtherParty);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsYesAndInformPartyIsYes() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(YES).build();
-            GAInformOtherParty informOtherParty = GAInformOtherParty.builder().isWithNotice(YES).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, informOtherParty);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOT_NOTIFIED);
-        }
-
-        @Test
-        void shouldSetIsNotifiedToFalseWhenAgreementHasAgreedIsNOAndInformPartyIsYes() {
-            GARespondentOrderAgreement agreement = GARespondentOrderAgreement.builder().hasAgreed(NO).build();
-            GAInformOtherParty informOtherParty = GAInformOtherParty.builder().isWithNotice(YES).build();
-            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().build(),
-                    false, agreement, informOtherParty);
-            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-
-            var response = (SubmittedCallbackResponse) handler.handle(params);
-            assertThat(response).isNotNull();
-            assertThat(response.getConfirmationBody()).isEqualTo(CONF_SINGLE_NOTIFIED);
+            assertThat(response.getConfirmationBody()).isEqualTo(body);
         }
 
         @Test

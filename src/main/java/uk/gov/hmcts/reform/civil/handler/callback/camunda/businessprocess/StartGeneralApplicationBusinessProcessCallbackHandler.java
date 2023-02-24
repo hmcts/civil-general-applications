@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_BUSINESS_PROCESS_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_GA_BUSINESS_PROCESS;
 
 @Service
 @RequiredArgsConstructor
 public class StartGeneralApplicationBusinessProcessCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(START_BUSINESS_PROCESS_MAKE_DECISION);
+    private static final List<CaseEvent> EVENTS = List.of(START_GA_BUSINESS_PROCESS);
     public static final String BUSINESS_PROCESS = "businessProcess";
 
     @Override
