@@ -2,7 +2,6 @@ civil-service:
   enabled: true
   java:
     ingressHost: civil-service-${SERVICE_FQDN}
-    aadIdentityName: civil
     environment:
       LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
       IDAM_CLIENT_ID: civil-service
