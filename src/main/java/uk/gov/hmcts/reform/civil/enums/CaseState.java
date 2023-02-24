@@ -29,6 +29,7 @@ public enum CaseState {
     LISTING_FOR_A_HEARING("Listed for a Hearing"),
     HEARING_SCHEDULED("Hearing Scheduled"),
     APPLICATION_PAYMENT_FAILED("Application Payment Failed"),
+    AWAITING_APPLICATION_PAYMENT("Awaiting Application Payment"),
     AWAITING_WRITTEN_REPRESENTATIONS("Awaiting Written Representations"),
     AWAITING_ADDITIONAL_INFORMATION("Additional Information Required"),
     APPLICATION_DISMISSED("Application Dismissed"),
