@@ -139,11 +139,9 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(List.of(
-            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithDeadlineCrossedProcessed
         ));
-        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
-            .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
+
         when(caseDetailsConverter.toCaseData(caseDetailsWithDeadlineCrossedProcessed))
             .thenReturn(caseDataWithDeadlineCrossedProcessed);
         gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
@@ -158,12 +156,9 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesHaveFutureDeadLine() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(List.of(
-            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithFutureDeadline
         ));
 
-        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
-            .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
         when(caseDetailsConverter.toCaseData(caseDetailsWithFutureDeadline))
             .thenReturn(caseDataWithFutureDeadline);
 
@@ -180,12 +175,10 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     void shouldNotTriggerBusinessProcessEventWhenIsOrderProcessedIsNull() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                    caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                     caseDetailsWithTodayDeadLineWithOrderProcessedNull));
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
-        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
-            .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
+
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadLineWithOrderProcessedNull))
             .thenReturn(caseDataWithTodayDeadLineWithOrderProcessedNull);
 
@@ -203,7 +196,6 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                    caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                     caseDetailsWithDeadlineCrossedNotProcessed,
                     caseDetailsWithTodayDeadlineProcessed,
                     caseDetailsWithFutureDeadline,
@@ -212,9 +204,6 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
-        when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
-            .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
-
         when(caseDetailsConverter.toCaseData(caseDetailsWithDeadlineCrossedNotProcessed))
             .thenReturn(caseDataWithDeadlineCrossedNotProcessed);
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineProcessed))

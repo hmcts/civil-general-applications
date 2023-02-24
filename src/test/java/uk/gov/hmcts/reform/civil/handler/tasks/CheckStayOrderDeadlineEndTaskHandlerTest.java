@@ -139,7 +139,6 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(List.of(
-            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithDeadlineCrossedProcessed
         ));
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
@@ -158,7 +157,6 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesHaveFutureDeadLine() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(List.of(
-            caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
             caseDetailsWithFutureDeadline
         ));
 
@@ -180,7 +178,6 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     void shouldNotTriggerBusinessProcessEventWhenIsOrderProcessedIsNull() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                    caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                     caseDetailsWithTodayDeadLineWithOrderProcessedNull));
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
@@ -203,7 +200,6 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(
             List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                caseDetailsWithTodayDeadlineReliefFromSanctionOrder,
                 caseDetailsWithDeadlineCrossedNotProcessed,
                 caseDetailsWithTodayDeadlineProcessed,
                 caseDetailsWithFutureDeadline,
