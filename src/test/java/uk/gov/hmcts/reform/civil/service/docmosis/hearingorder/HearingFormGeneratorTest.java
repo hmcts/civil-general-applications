@@ -169,9 +169,12 @@ class HearingFormGeneratorTest {
         CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
         when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(caseData);
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
     }
 
     @Test
@@ -183,9 +186,12 @@ class HearingFormGeneratorTest {
         CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
         when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(caseData);
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
     }
 
     @Test
@@ -197,9 +203,12 @@ class HearingFormGeneratorTest {
         CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
         when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(caseData);
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
     }
 
     @Test
@@ -211,9 +220,12 @@ class HearingFormGeneratorTest {
         CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
         when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(caseData);
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
-        AssertionsForClassTypes.assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
     }
 
     @Test

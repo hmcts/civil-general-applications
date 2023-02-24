@@ -140,19 +140,19 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         return caseData.getGaHearingNoticeDetail().getHearingDuration().getDisplayedValue();
     }
 
-    protected static boolean canViewClaimant(CaseData civilCaseData, CaseData generalAppCaseData){
+    protected static boolean canViewClaimant(CaseData civilCaseData, CaseData generalAppCaseData) {
         List<Element<GeneralApplicationsDetails>> gaAppDetails = civilCaseData.getClaimantGaAppDetails();
         if (Objects.isNull(gaAppDetails)) {
             return false;
         }
         return gaAppDetails.stream()
-                .anyMatch(x->generalAppCaseData.getCcdCaseReference()
+                .anyMatch(x -> generalAppCaseData.getCcdCaseReference()
                         .equals(parseLong(x.getValue().getCaseLink().getCaseReference())));
     }
 
     protected static boolean canViewResp(CaseData civilCaseData, CaseData generalAppCaseData, String respondent) {
         List<Element<GADetailsRespondentSol>> gaAppDetails;
-        if(respondent.equals("2")) {
+        if (respondent.equals("2")) {
             gaAppDetails = civilCaseData.getRespondentSolTwoGaAppDetails();
         } else {
             gaAppDetails = civilCaseData.getRespondentSolGaAppDetails();
@@ -161,7 +161,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
             return false;
         }
         return gaAppDetails.stream()
-                .anyMatch(x->generalAppCaseData.getCcdCaseReference()
+                .anyMatch(x -> generalAppCaseData.getCcdCaseReference()
                         .equals(parseLong(x.getValue().getCaseLink().getCaseReference())));
     }
 

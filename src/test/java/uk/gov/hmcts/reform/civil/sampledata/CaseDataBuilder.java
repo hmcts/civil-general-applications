@@ -47,7 +47,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static java.time.LocalDate.now;
@@ -70,8 +69,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
-
-import io.jsonwebtoken.lang.Collections;
 
 public class CaseDataBuilder {
 
