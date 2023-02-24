@@ -26,7 +26,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@ConditionalOnExpression("${judge.revisit.stayOrder.event.emitter.enabled:true}")
+@ConditionalOnExpression("${judge.revisit.unlessOrder.event.emitter.enabled:true}")
 public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
@@ -51,7 +51,6 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
             .map(caseDetailsConverter::toCaseData)
             .filter(caseData -> caseData.getJudicialDecisionMakeOrder()
                 .getJudgeApproveEditOptionDateForUnlessOrder() != null
-                && caseData.getGeneralAppType().getTypes().contains(UNLESS_ORDER)
                 && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByUnlessScheduler() != null
                 && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByUnlessScheduler().equals(YesOrNo.NO)
                 && (!now().isBefore(caseData.getJudicialDecisionMakeOrder()
