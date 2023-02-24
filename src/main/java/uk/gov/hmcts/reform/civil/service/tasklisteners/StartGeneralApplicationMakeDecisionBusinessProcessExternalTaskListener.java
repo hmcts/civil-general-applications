@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.StartGeneralApplicationBusinessPr
 @Component
 public class StartGeneralApplicationMakeDecisionBusinessProcessExternalTaskListener {
 
-    private static final String TOPIC = "START_BUSINESS_PROCESS_MAKE_DECISION";
+    private static final String TOPIC = "START_GA_BUSINESS_PROCESS";
 
     @Autowired
     private StartGeneralApplicationMakeDecisionBusinessProcessExternalTaskListener(

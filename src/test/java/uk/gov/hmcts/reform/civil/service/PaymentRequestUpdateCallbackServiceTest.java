@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -32,8 +33,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.FAILED;
 
@@ -85,7 +88,9 @@ class PaymentRequestUpdateCallbackServiceTest {
 
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
@@ -108,7 +113,9 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
@@ -139,7 +146,9 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
@@ -170,7 +179,9 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         doThrow(buildNotificationException())
@@ -193,7 +204,9 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(NOT_PAID));
@@ -213,8 +226,6 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
-        when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
 
@@ -243,50 +254,46 @@ class PaymentRequestUpdateCallbackServiceTest {
             .build();
     }
 
-    private StartEventResponse startEventResponse(CaseDetails caseDetails) {
+    private StartEventResponse startEventResponse(CaseDetails caseDetails,
+                                                  CaseEvent caseEvent) {
         return StartEventResponse.builder()
             .token(TOKEN)
-            .eventId(END_JUDGE_BUSINESS_PROCESS_GASPEC.name())
+            .eventId(caseEvent.name())
             .caseDetails(caseDetails)
             .build();
     }
 
     @Test
-    public void shouldProceedAfterInitialPaymentFailureIsSuccess() {
+    public void shouldProceedAfterInitialPaymentIsSuccess() {
 
         CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder().build();
-        caseData = caseData.toBuilder().ccdState(APPLICATION_PAYMENT_FAILED).build();
+        caseData = caseData.toBuilder().ccdState(AWAITING_APPLICATION_PAYMENT).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+
+                               INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
         CaseState c = caseData.getCcdState();
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
-        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
-
     }
 
     @Test
-    public void shouldNotProceedAfterInitialPaymentFailureIsSuccessAndNotificationServiceDown() {
+    public void shouldLogErrorWhenCcdStateIsNotAwaitingPayment() {
 
         CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder().build();
-        caseData = caseData.toBuilder().ccdState(APPLICATION_PAYMENT_FAILED).build();
+        caseData = caseData.toBuilder().ccdState(AWAITING_RESPONDENT_RESPONSE).build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
         when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
         when(caseDetailsConverter.toCaseData(caseDetails))
             .thenReturn(caseData);
-        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(startEventResponse(caseDetails));
-        when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
-
-        doThrow(buildNotificationException())
-            .when(gaNotificationService)
-            .sendNotification(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
 
