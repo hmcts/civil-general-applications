@@ -41,7 +41,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
 
     private CallbackResponse endHearingScheduledBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+        parentCaseUpdateHelper.updateParentWithGAState(
                 data, HEARING_SCHEDULED.getDisplayedValue());
 
         return evaluateReady(callbackParams, HEARING_SCHEDULED);

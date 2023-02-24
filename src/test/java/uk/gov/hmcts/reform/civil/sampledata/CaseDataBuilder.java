@@ -47,6 +47,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static java.time.LocalDate.now;
@@ -69,6 +70,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
+
+import io.jsonwebtoken.lang.Collections;
 
 public class CaseDataBuilder {
 
@@ -648,7 +651,16 @@ public class CaseDataBuilder {
 
         GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
             .email(DUMMY_EMAIL).organisationIdentifier("3").build();
-
+        GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
+                .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
+                .caseLink(CaseLink.builder()
+                        .caseReference(String.valueOf(CASE_ID)).build())
+                .build();
+        GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
+                .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
+                .caseLink(CaseLink.builder()
+                        .caseReference(String.valueOf(CASE_ID)).build())
+                .build();
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
         return CaseData.builder()
@@ -703,6 +715,11 @@ public class CaseDataBuilder {
                                                         .caseLink(CaseLink.builder()
                                                                       .caseReference(String.valueOf(CASE_ID)).build())
                                                         .build()))
+            .claimantGaAppDetails(
+                wrapElements(generalApplicationsDetails
+                ))
+            .respondentSolGaAppDetails(wrapElements(gaDetailsRespondentSol))
+            .respondentSolTwoGaAppDetails(wrapElements(gaDetailsRespondentSol))
             .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
                 .channel(GAJudicialHearingType.IN_PERSON)
                 .hearingDuration(GAHearingDuration.HOUR_1)
@@ -923,6 +940,47 @@ public class CaseDataBuilder {
                                                .builder().hasAgreed(isRespondentAgreed).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData.CaseDataBuilder getMainCaseDataWithDetails(
+                                               boolean withGADetails,
+                                               boolean withGADetailsResp,
+                                               boolean withGADetailsResp2,
+                                               boolean withGADetailsMaster) {
+
+        CaseData.CaseDataBuilder caseDataBuilder = build().toBuilder();
+        caseDataBuilder.ccdCaseReference(1L);
+        GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
+                .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
+                .caseLink(CaseLink.builder()
+                        .caseReference(String.valueOf(CASE_ID)).build())
+                .build();
+
+        if (withGADetails) {
+            caseDataBuilder.claimantGaAppDetails(
+                    wrapElements(generalApplicationsDetails
+                    ));
+        }
+
+        if (withGADetailsMaster) {
+            caseDataBuilder.gaDetailsMasterCollection(
+                    wrapElements(generalApplicationsDetails
+                    ));
+        }
+
+        GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
+                .caseState(LISTING_FOR_A_HEARING.getDisplayedValue())
+                .caseLink(CaseLink.builder()
+                        .caseReference(String.valueOf(CASE_ID)).build())
+                .build();
+        if (withGADetailsResp) {
+            caseDataBuilder.respondentSolGaAppDetails(wrapElements(gaDetailsRespondentSol));
+        }
+
+        if (withGADetailsResp2) {
+            caseDataBuilder.respondentSolTwoGaAppDetails(wrapElements(gaDetailsRespondentSol));
+        }
+        return caseDataBuilder;
     }
 
     public DynamicList getLocationDynamicList() {
