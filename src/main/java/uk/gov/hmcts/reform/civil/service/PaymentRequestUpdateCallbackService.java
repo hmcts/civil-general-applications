@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_PAYMENT_FAILED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
@@ -69,6 +69,8 @@ public class PaymentRequestUpdateCallbackService {
 
                         createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                                     serviceRequestUpdateDto.getCcdCaseNumber());
+                        coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(),
+                                                         MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
 
                     } catch (NotificationException e) {
                         log.info("processing callback failed at Judicial Notification service, "
@@ -76,21 +78,17 @@ public class PaymentRequestUpdateCallbackService {
                                      + "along with the Additional payment details "
                                      + "and trigger MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID event  %s ", e);
                     }
-                } else if (caseData.getCcdState().equals(APPLICATION_PAYMENT_FAILED)) {
-
-                    log.error("Processing the callback for Application Payment Failed "
+                } else if (caseData.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)) {
+                    log.info("Processing the callback for Application Payment "
                                  + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
-                    try {
-                        gaNotificationService.sendNotification(caseData);
-                        caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
+                    caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
 
-                        createEvent(caseData, END_BUSINESS_PROCESS_GASPEC,
+                    createEvent(caseData, INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT,
                                     serviceRequestUpdateDto.getCcdCaseNumber());
-                    } catch (NotificationException e) {
-                        log.error("processing callback failed at GA Notification service, "
-                                    + "please update the caseData with the payment details "
-                                    + "and trigger END_BUSINESS_PROCESS_GASPEC event  %s ", e);
-                    }
+                } else {
+                    log.error("This Case id {} is not in a valid state APPLICATION_ADD_PAYMENT,"
+                                  + "AWAITING_APPLICATION_PAYMENT to process payment callback ",
+                              serviceRequestUpdateDto.getCcdCaseNumber());
                 }
             }
 
@@ -115,10 +113,7 @@ public class PaymentRequestUpdateCallbackService {
             generalApplicationCaseId,
             startEventData.getGeneralAppParentCaseLink()
         );
-
         coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
-        coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(), eventName);
-
     }
 
     private CaseData updateCaseDataWithStateAndPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
