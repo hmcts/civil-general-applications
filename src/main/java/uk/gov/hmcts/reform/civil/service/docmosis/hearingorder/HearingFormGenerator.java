@@ -146,8 +146,8 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
             return false;
         }
         return gaAppDetails.stream()
-                .anyMatch(x -> generalAppCaseData.getCcdCaseReference()
-                        .equals(parseLong(x.getValue().getCaseLink().getCaseReference())));
+                .anyMatch(civilGaData -> generalAppCaseData.getCcdCaseReference()
+                        .equals(parseLong(civilGaData.getValue().getCaseLink().getCaseReference())));
     }
 
     protected static boolean canViewResp(CaseData civilCaseData, CaseData generalAppCaseData, String respondent) {
@@ -161,8 +161,8 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
             return false;
         }
         return gaAppDetails.stream()
-                .anyMatch(x -> generalAppCaseData.getCcdCaseReference()
-                        .equals(parseLong(x.getValue().getCaseLink().getCaseReference())));
+                .anyMatch(civilGaData -> generalAppCaseData.getCcdCaseReference()
+                        .equals(parseLong(civilGaData.getValue().getCaseLink().getCaseReference())));
     }
 
     protected DocmosisTemplates getTemplate(CaseData caseData) {
