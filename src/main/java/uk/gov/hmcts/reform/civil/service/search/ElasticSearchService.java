@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
@@ -35,17 +36,17 @@ public abstract class ElasticSearchService {
         return caseDetails;
     }
 
-    public List<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState) {
+    public List<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState, GeneralApplicationTypes gaType) {
 
         SearchResult searchResult = coreCaseDataService
-            .searchGeneralApplication(queryForOrderMade_StayClaim(START_INDEX, caseState));
+            .searchGeneralApplication(queryForOrderMade(START_INDEX, caseState, gaType));
 
         int pages = calculatePages(searchResult);
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
-                .searchGeneralApplication(queryForOrderMade_StayClaim(i * ES_DEFAULT_SEARCH_LIMIT, caseState));
+                .searchGeneralApplication(queryForOrderMade(i * ES_DEFAULT_SEARCH_LIMIT, caseState, gaType));
             caseDetails.addAll(result.getCases());
         }
 
@@ -54,7 +55,8 @@ public abstract class ElasticSearchService {
 
     abstract Query query(int startIndex, CaseState caseState);
 
-    abstract Query queryForOrderMade_StayClaim(int startIndex, CaseState caseState);
+    abstract Query queryForOrderMade(int startIndex, CaseState caseState,
+                                     GeneralApplicationTypes gaType);
 
     private int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();
