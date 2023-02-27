@@ -156,7 +156,7 @@ public class PaymentRequestUpdateCallbackService {
             .map(PaymentDetails::toBuilder)
             .orElse(PaymentDetails.builder())
             .status(SUCCESS)
-            .customerReference(pbaDetails.getPbaReference())
+            .customerReference(pbaDetails.getServiceReqReference())
             .reference(paymentReference)
             .errorCode(null)
             .errorMessage(null)

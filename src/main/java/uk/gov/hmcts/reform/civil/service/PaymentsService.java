@@ -91,8 +91,6 @@ public class PaymentsService {
             .orElseThrow(RuntimeException::new);
 
         return PBAServiceRequestDTO.builder()
-            .accountNumber(generalAppPBADetails.getApplicantsPbaAccounts()
-                    .getValue().getLabel())
             .amount(claimFee.getCalculatedAmount())
             .customerReference(generalAppPBADetails.getPbaReference())
             .organisationName(organisationName)
