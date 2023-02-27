@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationCloaked;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithoutNotice;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 
@@ -327,7 +327,7 @@ public class JudicialNotificationService implements NotificationData {
             /*
             * Respondent should receive notification only if it's with notice application
             *  */
-            if (!isWithoutNotice(caseData) && areRespondentSolicitorsPresent(caseData)) {
+            if (isWithNotice(caseData) && areRespondentSolicitorsPresent(caseData)) {
                 sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeListsForHearingRespondentEmailTemplate()

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
@@ -217,4 +218,35 @@ public class JudicialDecisionNotificationUtil {
         return false;
     }
 
+    public static boolean isNotificationCriteriaSatisfied(CaseData caseData) {
+
+        if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+
+            var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
+            return isWithNotice(caseData)
+                && isNonConsent(caseData)
+                && isNonUrgent(caseData)
+                && !(StringUtils.isEmpty(recipient));
+        }
+        return false;
+    }
+
+    public static boolean isNonConsent(CaseData caseData) {
+        return caseData
+                .getGeneralAppRespondentAgreement()
+                .getHasAgreed() == NO;
+    }
+
+    public static boolean isWithNotice(CaseData caseData) {
+        return caseData.getGeneralAppRespondentAgreement() != null
+                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+                && caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+    }
+
+    public static boolean isNonUrgent(CaseData caseData) {
+        return caseData
+                .getGeneralAppUrgencyRequirement()
+                .getGeneralAppUrgency() == NO;
+    }
 }
