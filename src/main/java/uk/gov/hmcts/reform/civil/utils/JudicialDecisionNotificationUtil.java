@@ -119,11 +119,6 @@ public class JudicialDecisionNotificationUtil {
             && isRespondentPresent;
     }
 
-    public static boolean isWithoutNotice(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO);
-    }
-
     public static boolean areRespondentSolicitorsPresent(CaseData caseData) {
         var respondents  = Optional
             .ofNullable(
