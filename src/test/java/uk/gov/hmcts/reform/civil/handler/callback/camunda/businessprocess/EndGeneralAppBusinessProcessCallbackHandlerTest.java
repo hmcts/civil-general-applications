@@ -13,12 +13,15 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
@@ -36,6 +39,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,6 +58,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
+import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
@@ -206,6 +211,63 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
+        void shouldChangeTheStateToAwaitingApplicationPaymentBeforePayment() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, YES));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(NO, YES).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataBeforePayment(NO, YES));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, YES).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, YES));
+
+            handler.handle(getCallbackParams(NO, YES));
+
+            verify(coreCaseDataService, times(1))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                                                                    new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSol = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
+            assertThat(gaDetailsMasterCollection.size()).isEqualTo(1);
+
+            GeneralApplicationsDetails generalApp = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) generalApplicationDetails.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(generalApp.getCaseState()).isEqualTo("Awaiting Application Payment");
+
+            GADetailsRespondentSol generalAppResp = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsRespondentSol.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(generalAppResp.getCaseState()).isEqualTo("Awaiting Application Payment");
+
+            GADetailsRespondentSol generalAppRespTwo = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsRespondentSolTwo.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(generalAppRespTwo.getCaseState())
+                .isEqualTo("Awaiting Application Payment");
+            GeneralApplicationsDetails gaDetailsMasterColl = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsMasterCollection.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(gaDetailsMasterColl.getCaseState())
+                .isEqualTo("Awaiting Application Payment");
+        }
+
+        @Test
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(END_BUSINESS_PROCESS_GASPEC);
         }
@@ -215,7 +277,20 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
-                    .generalAppPBADetails(GAPbaDetails.builder().build())
+                .generalAppPBADetails(
+                    GAPbaDetails.builder()
+                        .paymentDetails(PaymentDetails.builder()
+                                            .status(PaymentStatus.SUCCESS)
+                                            .reference("RC-1658-4258-2679-9795")
+                                            .customerReference(CUSTOMER_REFERENCE)
+                                            .build())
+                        .fee(
+                            Fee.builder()
+                                .code("FE203")
+                                .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                                .version("1")
+                                .build())
+                        .serviceReqReference(CUSTOMER_REFERENCE).build())
                     .generalAppDetailsOfOrder(STRING_CONSTANT)
                     .generalAppReasonsOfOrder(STRING_CONSTANT)
                     .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
@@ -230,10 +305,44 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .build();
         }
 
+        private GeneralApplication getGeneralApplicationBeforePayment(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            return GeneralApplication.builder()
+                .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
+                .generalAppPBADetails(
+                    GAPbaDetails.builder()
+                        .fee(
+                            Fee.builder()
+                                .code("FE203")
+                                .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                                .version("1")
+                                .build())
+                        .serviceReqReference(CUSTOMER_REFERENCE).build())
+                .generalAppDetailsOfOrder(STRING_CONSTANT)
+                .generalAppReasonsOfOrder(STRING_CONSTANT)
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+                .generalAppHearingDetails(GAHearingDetails.builder().build())
+                .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
+                                                                 .email("abc@gmail.com").build()))
+                .isMultiParty(NO)
+                .parentClaimantIsApplicant(YES)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(PARENT_CCD_REF.toString()).build())
+                .build();
+        }
+
         private CaseData getSampleGeneralApplicationCaseData(YesOrNo isConsented, YesOrNo isTobeNotified) {
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication(isConsented, isTobeNotified))
                     .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
+        }
+
+        private CaseData getSampleGeneralApplicationCaseDataBeforePayment(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                    getGeneralApplicationBeforePayment(isConsented, isTobeNotified))
+                .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
         }
 
         private CallbackParams getCallbackParams(YesOrNo isConsented, YesOrNo isTobeNotified) {
