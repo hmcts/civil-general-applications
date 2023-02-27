@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.time.LocalDate.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
