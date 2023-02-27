@@ -92,7 +92,7 @@ public class PaymentsService {
 
         return PBAServiceRequestDTO.builder()
             .amount(claimFee.getCalculatedAmount())
-            .customerReference(generalAppPBADetails.getPbaReference())
+            .customerReference(generalAppPBADetails.getServiceReqReference())
             .organisationName(organisationName)
             .idempotencyKey(String.valueOf(UUID.randomUUID()))
             .build();
