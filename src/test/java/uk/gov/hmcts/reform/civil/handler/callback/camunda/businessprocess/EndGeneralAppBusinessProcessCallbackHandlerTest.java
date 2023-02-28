@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
-import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     CoreCaseDataService.class,
     ParentCaseUpdateHelper.class,
     ObjectMapper.class,
-    ApplicationNotificationUtil.class
+    JudicialDecisionNotificationUtil.class
 })
 public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest {
 
