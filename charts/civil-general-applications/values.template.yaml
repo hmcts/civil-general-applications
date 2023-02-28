@@ -1,4 +1,5 @@
 java:
+  image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_NAME}.preview.platform.hmcts.net
   aadIdentityName: civil
   environment:
