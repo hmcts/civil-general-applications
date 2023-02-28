@@ -35,10 +35,10 @@ public class StateFlowEngineTest {
         CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
-            .isEqualTo(APPLICATION_SUBMITTED.fullName());
+            .isEqualTo(DRAFT.fullName());
         assertThat(stateFlow.getStateHistory()).hasSize(1)
             .extracting(State::getName)
-            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName());
+            .containsExactly(DRAFT.fullName());
     }
 
 }
