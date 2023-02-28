@@ -55,6 +55,8 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     private static final String CONFIRMATION_BODY = "<br/> <p> Your application fee of £%s"
         + " is now due for payment. Your application will not be reviewed by the"
         + " court until this fee has been paid."
+        + "%n%n To pay this fee, you will need to open your application from the"
+        + " Applications tab of this case listing."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
