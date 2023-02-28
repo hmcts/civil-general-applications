@@ -30,6 +30,8 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     private static final String CONFIRMATION_BODY = "<br/> <p> Your application fee of £%s"
         + " is now due for payment. Your application will not be reviewed by the"
         + " court until this fee has been paid."
+        + "%n%n To pay this fee, you will need to open your application from the"
+        + " Applications tab of this case listing."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
