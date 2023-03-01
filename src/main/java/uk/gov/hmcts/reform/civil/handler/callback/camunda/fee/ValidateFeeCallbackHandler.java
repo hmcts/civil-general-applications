@@ -84,6 +84,16 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
         if (feeService.isFreeApplication(caseData)) {
             return feesConfiguration.getFreeKeyword();
         }
+
+        if (feeService.isOnlyVaryOrSuspendApplication(caseData)) {
+            return feesConfiguration.getAppnToVaryOrSuspend();
+        }
+
+        if (feeService.hasAppContainVaryOrder(caseData)) {
+            // To be confirmed by Peter
+            return feesConfiguration.getAppnToVaryOrSuspend();
+        }
+
         boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null

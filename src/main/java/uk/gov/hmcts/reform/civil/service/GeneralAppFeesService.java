@@ -88,4 +88,17 @@ public class GeneralAppFeesService {
             .version(feeLookupResponseDto.getVersion().toString())
             .build();
     }
+
+    public boolean isOnlyVaryOrSuspendApplication(CaseData caseData) {
+        if (caseData.getGeneralAppType().getTypes().size() == 1) {
+            return caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+                ? true
+                : caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_ORDER) ? true : false;
+        }
+        return false;
+    }
+
+    public boolean hasAppContainVaryOrder(CaseData caseData) {
+        return caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_ORDER);
+    }
 }

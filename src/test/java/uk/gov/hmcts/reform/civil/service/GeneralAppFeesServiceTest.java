@@ -35,6 +35,9 @@ class GeneralAppFeesServiceTest {
     private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_275 = new BigDecimal("275.00");
     private static final BigDecimal TEST_FEE_AMOUNT_PENCE_275 = new BigDecimal("27500");
 
+    private static final BigDecimal TEST_FEE_AMOUNT_POUNDS_14 = new BigDecimal("14.00");
+    private static final BigDecimal TEST_FEE_AMOUNT_PENCE_14 = new BigDecimal("1400");
+
     @Captor
     private ArgumentCaptor<URI> queryCaptor;
 
@@ -58,8 +61,32 @@ class GeneralAppFeesServiceTest {
         when(feesConfiguration.getJurisdiction2()).thenReturn("civil");
         when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
         when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
+        when(feesConfiguration.getAppnToVaryOrSuspend()).thenReturn("AppnToVaryOrSuspend");
         //TODO set to actual ga free keyword
         when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
+    }
+
+    @Test
+    void shouldReturnFeeData_whenConsentedApplicationIsBeingMadeForVaryAppln() {
+        when(restTemplate.getForObject(queryCaptor.capture(), eq(FeeLookupResponseDto.class)))
+            .thenReturn(FeeLookupResponseDto.builder()
+                            .feeAmount(TEST_FEE_AMOUNT_POUNDS_14)
+                            .code("test_fee_code")
+                            .version(1)
+                            .build());
+
+        Fee expectedFeeDto = Fee.builder()
+            .calculatedAmountInPence(TEST_FEE_AMOUNT_PENCE_14)
+            .code("test_fee_code")
+            .version("1")
+            .build();
+
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend());
+
+        assertThat(feeDto).isEqualTo(expectedFeeDto);
+        assertThat(queryCaptor.getValue().toString())
+            .isEqualTo("dummy_urlgeneral%20application?channel=default&event&jurisdiction1=civil&"
+                           + "jurisdiction2=civil&service=general&keyword=AppnToVaryOrSuspend");
     }
 
     @Test
