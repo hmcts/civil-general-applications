@@ -12,13 +12,16 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,6 +29,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_VACATE_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_ORDER;
 
 @SpringBootTest(classes = {GeneralAppFeesService.class, RestTemplate.class, GeneralAppFeesConfiguration.class})
 class GeneralAppFeesServiceTest {
@@ -179,10 +186,41 @@ class GeneralAppFeesServiceTest {
     }
 
     @Test
+    void shouldReturnTrueForVaryOrder() {
+        CaseData caseData = new CaseDataBuilder()
+            .generalAppType(GAApplicationType.builder().types(singletonList(VARY_ORDER))
+                                .build())
+            .build();
+
+        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isTrue();
+    } //hasAppContainVaryOrder
+
+    @Test
+    void shouldReturnTrueForVaryJudgement() {
+        CaseData caseData = new CaseDataBuilder()
+            .generalAppType(GAApplicationType.builder().types(singletonList(VARY_JUDGEMENT))
+                                .build())
+            .build();
+
+        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isTrue();
+    } //hasAppContainVaryOrder
+
+    @Test
+    void shouldReturnTrueForVaryOrderWithMultipleType() {
+        CaseData caseData = new CaseDataBuilder()
+            .generalAppType(GAApplicationType.builder().types(List.of(VARY_ORDER, STAY_THE_CLAIM))
+                                .build())
+            .build();
+
+        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isFalse();
+        assertThat(feesService.hasAppContainVaryOrder(caseData)).isTrue();
+    }
+
+    @Test
     void shouldBeFree_whenConsentedLateThan14DaysAdjournVacateApplicationIsBeingMade() {
         CaseData caseData = new CaseDataBuilder()
-                .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
-                .build();
+            .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
+            .build();
 
         assertThat(feesService.isFreeApplication(caseData)).isTrue();
     }
