@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.HearingScheduledNotificationService;
 import uk.gov.hmcts.reform.civil.service.NotificationException;
@@ -18,9 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SpringBootTest(classes = {
     NotifyHearingNoticeDefendantHandler.class,
@@ -44,6 +48,7 @@ public class NotifyHearingNoticeDefendantHandlerTest extends BaseCallbackHandler
     @Test
     void shouldThrowException_whenNotificationSendingFails() {
         var caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
             .build();
 
         doThrow(buildNotificationException())
@@ -66,5 +71,17 @@ public class NotifyHearingNoticeDefendantHandlerTest extends BaseCallbackHandler
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
+    }
+
+    @Test
+    void shouldNotSendNotificationToDefendantSuccessfully() {
+        var caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES)
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+            .build();
+        when(hearingScheduledNotificationService.sendNotificationForDefendant(any())).thenReturn(caseData);
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        verifyNoInteractions(hearingScheduledNotificationService);
     }
 }
