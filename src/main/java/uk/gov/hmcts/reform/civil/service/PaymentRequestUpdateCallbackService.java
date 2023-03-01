@@ -117,8 +117,8 @@ public class PaymentRequestUpdateCallbackService {
             .map(PaymentDetails::toBuilder)
             .orElse(PaymentDetails.builder())
             .status(SUCCESS)
-            .customerReference(pbaDetails.getServiceReqReference())
-            .reference(paymentReference)
+            .customerReference(paymentReference)
+            .reference(serviceRequestUpdateDto.getPayment().getPaymentReference())
             .errorCode(null)
             .errorMessage(null)
             .build();
@@ -135,25 +135,26 @@ public class PaymentRequestUpdateCallbackService {
     private CaseData updateCaseDataWithStateAndPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
                                                               CaseData caseData) {
         GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
-        String paymentReference = ofNullable(serviceRequestUpdateDto.getPayment())
+        String customerReference = ofNullable(serviceRequestUpdateDto.getPayment())
             .map(PaymentDto::getCustomerReference)
-            .orElse(pbaDetails.getServiceReqReference());
+            .orElse(pbaDetails.getAdditionalPaymentServiceRef());
 
-        PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+        PaymentDetails paymentDetails = ofNullable(pbaDetails.getAdditionalPaymentDetails())
             .map(PaymentDetails::toBuilder)
             .orElse(PaymentDetails.builder())
             .status(SUCCESS)
-            .customerReference(pbaDetails.getServiceReqReference())
-            .reference(paymentReference)
+            .customerReference(customerReference)
+            .reference(serviceRequestUpdateDto.getPayment().getPaymentReference())
             .errorCode(null)
             .errorMessage(null)
             .build();
 
         caseData = caseData.toBuilder()
+            .ccdState(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData))
             .generalAppPBADetails(pbaDetails.toBuilder()
-                                      .paymentDetails(paymentDetails)
-                                      .paymentSuccessfulDate(time.now()).build())
-            .build();
+                                      .additionalPaymentDetails(paymentDetails)
+                                      .paymentSuccessfulDate(time.now()).build()
+            ).build();
 
         return caseData;
     }
