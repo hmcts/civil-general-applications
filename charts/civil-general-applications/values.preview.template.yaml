@@ -1,7 +1,6 @@
 civil-service:
   enabled: true
   java:
-    image: 'hmctspublic.azurecr.io/civil/service:pr-2361'
     ingressHost: civil-service-${SERVICE_FQDN}
 
 idam-pr:
