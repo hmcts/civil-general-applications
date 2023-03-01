@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -42,8 +41,14 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
-    private static final String[] DOCUMENT_TYPES = {"generalOrder", "dismissalOrder", "directionOrder", "hearingNotice"};
-    private static String[] ROLES = {"Claimant", "RespondentSol", "RespondentSolTwo"};
+    private static final String[] DOCUMENT_TYPES = {
+        "generalOrder",
+        "dismissalOrder",
+        "hearingNotice"
+    };
+    private static String[] ROLES = {
+        "Claimant", "RespondentSol", "RespondentSolTwo"
+    };
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -262,7 +267,7 @@ public class ParentCaseUpdateHelper {
 
     protected void updateCaseDocument(Map<String, Object> updateMap,
                                     CaseData civilCaseData, CaseData generalAppCaseData, String[] roles) {
-        for(String role : roles) {
+        for (String role : roles) {
             if (Objects.nonNull(role)) {
                 updateCaseDocumentByRole(updateMap, role,
                         civilCaseData, generalAppCaseData);
@@ -272,7 +277,7 @@ public class ParentCaseUpdateHelper {
 
     protected void updateCaseDocumentByRole(Map<String, Object> updateMap, String role,
                                           CaseData civilCaseData, CaseData generalAppCaseData) {
-        for(String type : DOCUMENT_TYPES) {
+        for (String type : DOCUMENT_TYPES) {
             try {
                 updateCaseDocumentByType(updateMap, type, role, civilCaseData, generalAppCaseData);
             } catch (Exception e) {
@@ -298,10 +303,12 @@ public class ParentCaseUpdateHelper {
                                     CaseData civilCaseData, CaseData generalAppCaseData) throws Exception {
         String gaCollectionName = type + "Document";
         String civilCollectionName = type + "Doc" + role;
-        Method gaGetter = ReflectionUtils.findMethod(CaseData.class, "get" + StringUtils.capitalize(gaCollectionName));
+        Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
+                "get" + StringUtils.capitalize(gaCollectionName));
         List<Element<CaseDocument>> gaDocs =
                 (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
-        Method civilGetter = ReflectionUtils.findMethod(CaseData.class, "get" + StringUtils.capitalize(civilCollectionName));
+        Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
+                "get" + StringUtils.capitalize(civilCollectionName));
         List<Element<CaseDocument>> civilDocs =
                 (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
