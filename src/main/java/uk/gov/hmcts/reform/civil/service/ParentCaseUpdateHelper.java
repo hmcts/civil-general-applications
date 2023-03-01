@@ -42,9 +42,8 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private static final String[] DOCUMENT_TYPES = {
-        "generalOrder",
-        "dismissalOrder",
-        "hearingNotice"
+        "generalOrder", "dismissalOrder",
+        "directionOrder", "hearingNotice"
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
