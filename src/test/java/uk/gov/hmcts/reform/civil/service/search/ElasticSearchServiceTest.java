@@ -9,6 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
@@ -20,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
 
 @ExtendWith(SpringExtension.class)
 abstract class ElasticSearchServiceTest {
@@ -51,10 +53,10 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).isEmpty();
+        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE, STAY_THE_CLAIM)).isEmpty();
         verify(coreCaseDataService).searchGeneralApplication(queryCaptor.capture());
         assertThat(queryCaptor.getValue()).usingRecursiveComparison()
-            .isEqualTo(queryForOrderMade_StayClaim(0, CaseState.ORDER_MADE));
+            .isEqualTo(queryForOrderMade(0, CaseState.ORDER_MADE, STAY_THE_CLAIM));
     }
 
     @Test
@@ -75,14 +77,15 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE)).hasSize(2);
+        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE,
+                                                                 STAY_THE_CLAIM)).hasSize(2);
         verify(coreCaseDataService, times(2)).searchGeneralApplication(queryCaptor.capture());
 
         List<Query> capturedQueries = queryCaptor.getAllValues();
         assertThat(capturedQueries.get(0)).usingRecursiveComparison()
-            .isEqualTo(queryForOrderMade_StayClaim(0, CaseState.ORDER_MADE));
+            .isEqualTo(queryForOrderMade(0, CaseState.ORDER_MADE, STAY_THE_CLAIM));
         assertThat(capturedQueries.get(1)).usingRecursiveComparison()
-            .isEqualTo(queryForOrderMade_StayClaim(10, CaseState.ORDER_MADE));
+            .isEqualTo(queryForOrderMade(10, CaseState.ORDER_MADE, STAY_THE_CLAIM));
     }
 
     protected SearchResult buildSearchResultWithTotalCases(int i) {
@@ -98,5 +101,5 @@ abstract class ElasticSearchServiceTest {
 
     protected abstract Query buildQuery(int fromValue, CaseState caseState);
 
-    protected abstract Query queryForOrderMade_StayClaim(int fromValue, CaseState caseState);
+    protected abstract Query queryForOrderMade(int fromValue, CaseState caseState, GeneralApplicationTypes gaType);
 }
