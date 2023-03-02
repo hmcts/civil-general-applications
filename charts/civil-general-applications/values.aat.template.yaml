@@ -14,18 +14,17 @@ xui-webapp:
   nodejs:
     ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
 
+ccd:
   ccd-api-gateway-web:
     nodejs:
       ingressHost: civil-ga-gateway-staging-aat.service.core-compute-aat.internal
   ccd-data-store-api:
     java:
       ingressHost: civil-ga-data-store-staging-aat.service.core-compute-aat.internal
-
   ccd-definition-store-api:
     java:
       ingressHost: civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
 
 camunda-bpm:
-  enabled: true
   java:
     ingressHost: civil-ga-camunda-staging-aat.service.core-compute-aat.internal
