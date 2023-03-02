@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
-import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +31,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
     EndJudgeMakesDecisionBusinessProcessCallbackHandler.class,
     CoreCaseDataService.class,
     ObjectMapper.class,
-    ApplicationNotificationUtil.class
+    JudicialDecisionNotificationUtil.class
 })
 class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest {
 
