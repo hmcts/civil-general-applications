@@ -78,21 +78,21 @@ class GeneralAppFeesServiceTest {
             .thenReturn(FeeLookupResponseDto.builder()
                             .feeAmount(TEST_FEE_AMOUNT_POUNDS_14)
                             .code("test_fee_code")
-                            .version(1)
+                            .version(2)
                             .build());
 
         Fee expectedFeeDto = Fee.builder()
             .calculatedAmountInPence(TEST_FEE_AMOUNT_PENCE_14)
             .code("test_fee_code")
-            .version("1")
+            .version("2")
             .build();
 
         Fee feeDto = feesService.getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend());
 
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         assertThat(queryCaptor.getValue().toString())
-            .isEqualTo("dummy_urlgeneral%20application?channel=default&event&jurisdiction1=civil&"
-                           + "jurisdiction2=civil&service=general&keyword=AppnToVaryOrSuspend");
+            .isEqualTo("dummy_urlgeneral%20application?channel=default&event=miscellaneous&jurisdiction1=civil"
+                           + "&jurisdiction2=civil&service=other&version=2&keyword=AppnToVaryOrSuspend");
     }
 
     @Test
