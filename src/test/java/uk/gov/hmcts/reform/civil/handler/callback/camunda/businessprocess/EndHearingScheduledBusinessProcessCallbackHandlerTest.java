@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
-import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
     EndHearingScheduledBusinessProcessCallbackHandler.class,
     CoreCaseDataService.class,
     ObjectMapper.class,
-    ApplicationNotificationUtil.class
+    JudicialDecisionNotificationUtil.class
 })
 public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest {
 
