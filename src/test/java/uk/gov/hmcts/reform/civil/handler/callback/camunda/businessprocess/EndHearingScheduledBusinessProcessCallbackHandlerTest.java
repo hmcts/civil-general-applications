@@ -62,7 +62,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandlerTest extends BaseC
         handler.handle(params);
 
         verify(parentCaseUpdateHelper, times(1))
-            .updateParentApplicationVisibilityWithNewState(any(), any());
+            .updateParentWithGAState(any(), any());
     }
 
     private CallbackParams getCallbackParams(CaseData caseData) {
