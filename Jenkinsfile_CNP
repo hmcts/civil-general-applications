@@ -73,7 +73,7 @@ withPipeline(type, product, component) {
         env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         loadVaultSecrets(secrets)
        if (!checkForEnableHelmLabel(env.BRANCH_NAME)) {
-        enableCleanupOfHelmReleaseAlways();
+        //enableCleanupOfHelmReleaseAlways();
       }
     }
     onMaster {
