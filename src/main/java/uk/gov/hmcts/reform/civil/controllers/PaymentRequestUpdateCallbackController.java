@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestUpdateDto;
+import uk.gov.hmcts.reform.civil.service.PaymentException;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -26,7 +27,8 @@ public class PaymentRequestUpdateCallbackController {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Callback processed.", response = CallbackResponse.class),
         @ApiResponse(code = 400, message = "Bad Request")})
-    public void serviceRequestUpdate(@RequestBody ServiceRequestUpdateDto serviceRequestUpdateDto) {
+    public void serviceRequestUpdate(@RequestBody ServiceRequestUpdateDto serviceRequestUpdateDto)
+        throws PaymentException {
         try {
             requestUpdateCallbackService.processCallback(serviceRequestUpdateDto);
         } catch (Exception ex) {
@@ -34,6 +36,7 @@ public class PaymentRequestUpdateCallbackController {
                 "Payment callback is unsuccessful for the CaseID: {}",
                 serviceRequestUpdateDto.getCcdCaseNumber()
             );
+            throw new PaymentException(ex.getMessage(), ex);
         }
     }
 

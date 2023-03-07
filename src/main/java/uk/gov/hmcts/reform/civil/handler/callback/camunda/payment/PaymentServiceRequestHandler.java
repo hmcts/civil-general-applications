@@ -65,8 +65,6 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
             caseData = caseData.toBuilder()
                 .generalAppPBADetails(pbaDetails.toBuilder()
-                                          .applicantsPbaAccounts(caseData.getGeneralAppPBADetails()
-                                                                     .getApplicantsPbaAccounts())
                                           .fee(caseData.getGeneralAppPBADetails().getFee())
                                           .serviceReqReference(serviceRequestReference).build())
                 .build();
