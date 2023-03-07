@@ -15,14 +15,11 @@ import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PBA_PAYMENT_FAILED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
@@ -31,8 +28,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRE
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_FAILED;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_SUCCESSFUL;
 
 @Service
 @RequiredArgsConstructor
@@ -60,37 +55,6 @@ public class FlowStateAllowedEventService {
                   LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       MAIN_CASE_CLOSED)
-        ),
-        entry(PAYMENT_FAILED.fullName(),
-              List.of(
-                      PBA_PAYMENT_FAILED,
-                      END_BUSINESS_PROCESS_GASPEC,
-                      RESPOND_TO_APPLICATION,
-                      REFER_TO_JUDGE,
-                      REFER_TO_LEGAL_ADVISOR,
-                      MAKE_DECISION,
-                      HEARING_SCHEDULED_GA,
-                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
-                      RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
-                      APPLICATION_PROCEEDS_IN_HERITAGE,
-                      MAIN_CASE_CLOSED
-              )
-        ),
-        entry(PAYMENT_SUCCESSFUL.fullName(),
-              List.of(
-                      NOTIFY_GENERAL_APPLICATION_RESPONDENT,
-                      RESPOND_TO_APPLICATION,
-                      REFER_TO_JUDGE,
-                      REFER_TO_LEGAL_ADVISOR,
-                      MAKE_DECISION,
-                      HEARING_SCHEDULED_GA,
-                      RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
-                      RESPOND_TO_JUDGE_DIRECTIONS,
-                      RESPOND_TO_JUDGE_ADDITIONAL_INFO,
-                      APPLICATION_PROCEEDS_IN_HERITAGE,
-                      MAIN_CASE_CLOSED
-              )
         )
     );
 

@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.handler.tasks.StartGeneralApplicationBusinessProcessTaskHandler;
 
 @Component
-public class StartGeneralApplicationMakeDecisionBusinessProcessExternalTaskListener {
+public class StartGeneralApplicationBusinessProcessExternalTaskListener {
 
     private static final String TOPIC = "START_GA_BUSINESS_PROCESS";
 
     @Autowired
-    private StartGeneralApplicationMakeDecisionBusinessProcessExternalTaskListener(
+    private StartGeneralApplicationBusinessProcessExternalTaskListener(
             StartGeneralApplicationBusinessProcessTaskHandler startGeneralApplicationBusinessProcessTaskHandler,
             ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
