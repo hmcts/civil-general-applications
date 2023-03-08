@@ -1,15 +1,37 @@
 #!groovy
 
 properties([
-  // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-  pipelineTriggers([cron('H 05 * * *')])
+  pipelineTriggers([cron('H 12 * * *')]),
+  parameters([
+    string(name: 'ENVIRONMENT', defaultValue: 'demo', description: 'Environment to test'),
+    string(name: 'FRONTEND_URL', defaultValue: 'https://manage-case.demo.platform.hmcts.net',
+      description: 'The URL you want to run the full functional tests against'),
+    string(name: 'IDAM_API_URL', defaultValue: 'https://idam-api.demo.platform.hmcts.net',
+      description: 'The URL of idam api'),
+    string(name: 'DM_STORE_URL', defaultValue: 'http://dm-store-demo.service.core-compute-demo.internal',
+      description: 'The URL of dm store'),
+    string(name: 'SERVICE_AUTH_PROVIDER_API_BASE_URL', defaultValue: 'http://rpe-service-auth-provider-demo.service.core-compute-demo.internal',
+      description: 'The URL of service auth provider'),
+    string(name: 'CCD_DATA_STORE_URL', defaultValue: 'http://ccd-data-store-api-demo.service.core-compute-demo.internal',
+      description: 'The URL of ccd data store'),
+    string(name: 'CIVIL_SERVICE_URL', defaultValue: 'http://civil-service-demo.service.core-compute-demo.internal',
+      description: 'The URL of civil service'),
+    string(name: 'CIVIL_GENERAL_APPLICATIONS_URL', defaultValue: 'http://civil-general-applications-demo.service.core-compute-demo.internal',
+      description: 'The URL of GA service'),
+    string(name: 'WAIT_FOR_TIMEOUT_MS',
+      defaultValue: '120000',
+      description: 'Functional tests waitForTimeout value'),
+    string(name: 'SECURITY_RULES',
+      defaultValue: 'https://raw.githubusercontent.com/hmcts/security-test-rules/master/conf/security-rules.conf',
+      description: 'The security rules to use')
+  ])
 ])
 
 @Library("Infrastructure")
 
 def type = "java"
 def product = "civil"
-def component = "service"
+def component = "general-applications"
 
 static Map<String, Object> secret(String secretName, String envVariable) {
   [$class     : 'AzureKeyVaultSecret',
@@ -26,9 +48,30 @@ def secrets = [
 ]
 
 withNightlyPipeline(type, product, component) {
-    enableFortifyScan()
+  env.NIGHTLY_BUILD = true
+  env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
+  env.TEST_URL = params.CIVIL_SERVICE_URL
+  env.URL = params.FRONTEND_URL
+  env.DM_STORE_URL=params.DM_STORE_URL
+  env.IDAM_API_URL=params.IDAM_API_URL
+  env.SERVICE_AUTH_PROVIDER_API_BASE_URL = params.SERVICE_AUTH_PROVIDER_API_BASE_URL
+  env.CCD_DATA_STORE_URL = params.CCD_DATA_STORE_URL
+  env.CIVIL_SERVICE_URL = params.CIVIL_SERVICE_URL
+  env.CIVIL_GENERAL_APPLICATIONS_URL = params.CIVIL_GENERAL_APPLICATIONS_URL
+  env.WAIT_FOR_TIMEOUT_MS = params.WAIT_FOR_TIMEOUT_MS
+  env.URL_FOR_SECURITY_SCAN = params.CIVIL_SERVICE_URL
+  env.TESTS_FOR_ACCESSIBILITY = false
+  overrideVaultEnvironments([
+    'aat': params.ENVIRONMENT
+  ])
+  loadVaultSecrets(secrets)
+  enableFullFunctionalTest(200)
+
+  afterAlways('fullFunctionalTest') {
+    archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+  }
 
   afterAlways('fortify-scan') {
-        steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    }
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+  }
 }
