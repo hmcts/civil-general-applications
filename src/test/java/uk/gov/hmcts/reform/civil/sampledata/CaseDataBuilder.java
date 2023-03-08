@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.time.LocalDate.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
@@ -354,22 +353,12 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(
-                                DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(
                         Fee.builder()
                             .code("FE203")
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .pbaReference(CUSTOMER_REFERENCE)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .generalAppSuperClaimType("UNSPEC_CLAIM")
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
@@ -393,22 +382,12 @@ public class CaseDataBuilder {
                                         .reference("RC-1658-4258-2679-9795")
                                         .customerReference(CUSTOMER_REFERENCE)
                                         .build())
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(
-                                DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(
                         Fee.builder()
                             .code("FE203")
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .pbaReference(CUSTOMER_REFERENCE)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
@@ -433,22 +412,12 @@ public class CaseDataBuilder {
                                         .reference("RC-1658-4258-2679-9795")
                                         .customerReference(CUSTOMER_REFERENCE)
                                         .build())
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(
-                                DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(
                         Fee.builder()
                             .code("FE203")
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .pbaReference(CUSTOMER_REFERENCE)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
@@ -466,15 +435,6 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(
-                                DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(
                         Fee.builder()
                             .code("FEE0444")
@@ -528,16 +488,7 @@ public class CaseDataBuilder {
             .generalAppInformOtherParty(gaInformOtherParty)
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(fee)
-                    .pbaReference(CUSTOMER_REFERENCE)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
@@ -676,14 +627,6 @@ public class CaseDataBuilder {
                                  .camundaEvent(HEARING_SCHEDULED).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE108)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
@@ -791,14 +734,6 @@ public class CaseDataBuilder {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE275)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
@@ -830,14 +765,6 @@ public class CaseDataBuilder {
                                  .camundaEvent(JUDGES_DECISION).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE108)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
@@ -873,14 +800,6 @@ public class CaseDataBuilder {
                                  .camundaEvent(JUDGES_DECISION).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE108)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
@@ -918,14 +837,6 @@ public class CaseDataBuilder {
                                  .build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE108)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
