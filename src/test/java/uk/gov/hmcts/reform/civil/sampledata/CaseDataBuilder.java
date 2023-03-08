@@ -862,14 +862,6 @@ public class CaseDataBuilder {
                                  .build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
-                    .applicantsPbaAccounts(
-                        DynamicList.builder()
-                            .listItems(asList(
-                                DynamicListElement.builder().label("PBA0088192").build(),
-                                DynamicListElement.builder().label("PBA0078095").build()
-                            ))
-                            .value(DynamicListElement.dynamicElement("PBA0078095"))
-                            .build())
                     .fee(FEE14)
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .createdDate(LocalDateTime.now())
