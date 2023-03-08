@@ -3,23 +3,30 @@ package uk.gov.hmcts.reform.civil.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @Service
@@ -34,6 +41,13 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
+    private static final String[] DOCUMENT_TYPES = {
+        "generalOrder", "dismissalOrder",
+        "directionOrder", "hearingNotice"
+    };
+    private static String[] ROLES = {
+        "Claimant", "RespondentSol", "RespondentSolTwo"
+    };
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -231,16 +245,86 @@ public class ParentCaseUpdateHelper {
                 newState,
                 applicationId
             );
-
+            Map<String, Object> updateMap = getUpdatedCaseData(caseData, gaDetailsClaimant,
+                                                gaDetailsRespondentSol,
+                                                gaDetailsRespondentSolTwo,
+                                                gaDetailsMasterCollection);
+            /*
+             * update documents
+             * */
+            if (gaDetailsRespondentSolTwo.isEmpty()) {
+                ROLES[2] = null;
+            }
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
-                startEventResponse, getUpdatedCaseData(caseData, gaDetailsClaimant,
-                                                       gaDetailsRespondentSol,
-                                                       gaDetailsRespondentSolTwo,
-                                                       gaDetailsMasterCollection));
+                startEventResponse, updateMap);
 
-            coreCaseDataService.submitUpdate(parentCaseId,  caseDataContent);
+            coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
         }
 
+    }
+
+    protected void updateCaseDocument(Map<String, Object> updateMap,
+                                    CaseData civilCaseData, CaseData generalAppCaseData, String[] roles) {
+        for (String role : roles) {
+            if (Objects.nonNull(role)) {
+                updateCaseDocumentByRole(updateMap, role,
+                        civilCaseData, generalAppCaseData);
+            }
+        }
+    }
+
+    protected void updateCaseDocumentByRole(Map<String, Object> updateMap, String role,
+                                          CaseData civilCaseData, CaseData generalAppCaseData) {
+        for (String type : DOCUMENT_TYPES) {
+            try {
+                updateCaseDocumentByType(updateMap, type, role, civilCaseData, generalAppCaseData);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Update GA document collection at civil case.
+     *
+     * @param updateMap      output map for update civil case.
+     * @param civilCaseData civil case data.
+     * @param generalAppCaseData    GA case data.
+     * @param type document type.
+     *             when get from GA data, add 'get' to the name then call getter to access related GA document field.
+     *             when get from Civil data, add 'get' with role name then call getter
+     * @param role role name. to be added with type to make the ga getter
+     *
+     */
+    @SuppressWarnings("unchecked")
+    protected void updateCaseDocumentByType(Map<String, Object> updateMap, String type, String role,
+                                    CaseData civilCaseData, CaseData generalAppCaseData) throws Exception {
+        String gaCollectionName = type + "Document";
+        String civilCollectionName = type + "Doc" + role;
+        Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
+                "get" + StringUtils.capitalize(gaCollectionName));
+        List<Element<CaseDocument>> gaDocs =
+                (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
+        Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
+                "get" + StringUtils.capitalize(civilCollectionName));
+        List<Element<CaseDocument>> civilDocs =
+                (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
+                        .orElse(newArrayList());
+
+        if (gaDocs != null
+                && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
+            civilDocs.addAll(gaDocs);
+        }
+
+        updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
+    }
+
+    private int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
+                                      List<Element<CaseDocument>> gaCaseDocumentlist) {
+        return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
+                        .parallelStream().anyMatch(gaDocument -> gaDocument.getId().equals(civilDocument.getId())))
+                .collect(Collectors.toList()).size();
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,

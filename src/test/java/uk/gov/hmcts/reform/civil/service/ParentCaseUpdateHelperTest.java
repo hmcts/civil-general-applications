@@ -13,14 +13,22 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import static java.time.LocalDateTime.now;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,6 +38,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -80,6 +89,45 @@ class ParentCaseUpdateHelperTest {
         parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(caseData, ORDER_MADE.toString());
         verify(coreCaseDataService, times(1)).submitUpdate(any(), any());
 
+    }
+
+    @Test
+    void updateCaseDocumentByType() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        Map<String, Object> updateMap = new HashMap<>();
+        try {
+            parentCaseUpdateHelper.updateCaseDocumentByType(updateMap, "directionOrder", "RespondentSol",
+                    civilCase, gaCase);
+            assertThat(updateMap).isNotNull();
+            assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void updateCaseDocumentByRole() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        Map<String, Object> updateMap = new HashMap<>();
+        parentCaseUpdateHelper.updateCaseDocumentByRole(updateMap, "RespondentSol",
+                civilCase, gaCase);
+        assertThat(updateMap).isNotNull();
+        assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
+    }
+
+    @Test
+    void updateCaseDocument() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        Map<String, Object> updateMap = new HashMap<>();
+        String[] roles = {"Claimant", "RespondentSol", null};
+        parentCaseUpdateHelper.updateCaseDocument(updateMap,
+                civilCase, gaCase, roles);
+        assertThat(updateMap).isNotNull();
+        assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
+        assertThat(updateMap.get("directionOrderDocClaimant")).isNotNull();
     }
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
@@ -146,4 +194,23 @@ class ParentCaseUpdateHelperTest {
                 .submittedOn(null).build();
     }
 
+    private CaseData getCaseWithApplicationDataAndGeneralOrder() {
+        String uid = "f000aa01-0451-4000-b000-000000000000";
+        CaseDocument pdfDocument = CaseDocument.builder()
+                .createdBy("John")
+                .documentName("documentName")
+                .documentSize(0L)
+                .documentType(GENERAL_ORDER)
+                .createdDatetime(now())
+                .documentLink(Document.builder()
+                        .documentUrl("fake-url")
+                        .documentFileName("file-name")
+                        .documentBinaryUrl("binary-url")
+                        .build())
+                .build();
+        return getCaseWithApplicationData(false)
+                .toBuilder().directionOrderDocument(singletonList(Element.<CaseDocument>builder()
+                        .id(UUID.fromString(uid))
+                        .value(pdfDocument).build())).build();
+    }
 }
