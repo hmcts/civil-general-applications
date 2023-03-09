@@ -26,6 +26,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATIO
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
 
@@ -44,6 +45,7 @@ public class FlowStateAllowedEventService {
                                         REFER_TO_LEGAL_ADVISOR,
                                         MAKE_DECISION,
                                         HEARING_SCHEDULED_GA,
+                                        GENERATE_DIRECTIONS_ORDER,
                                         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                         RESPOND_TO_JUDGE_DIRECTIONS,
                                         RESPOND_TO_JUDGE_ADDITIONAL_INFO,
