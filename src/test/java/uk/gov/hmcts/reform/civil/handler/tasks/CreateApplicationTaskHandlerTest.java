@@ -852,13 +852,6 @@ public class CreateApplicationTaskHandlerTest {
             .businessProcess(BusinessProcess.builder().status(STARTED)
                                  .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
 
-        VariableMap variables = Variables.createVariables();
-        variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
-        variables.putValue(FLOW_FLAGS, Map.of());
-        variables.putValue("generalApplicationCaseId", GA_ID);
-
-
-
         return caseData;
     }
 
