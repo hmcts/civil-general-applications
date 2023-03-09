@@ -121,32 +121,19 @@ public class TestingSupportController {
         }
     }
 
-    @GetMapping("/testing-support/trigger-judge-revisit-process-event/{state}")
-    public ResponseEntity<String> getJudgeRevisitProcessEvent(@PathVariable("state") String ccdState) {
+    @GetMapping("/testing-support/trigger-judge-revisit-process-event/{state}/{genAppType}")
+    public ResponseEntity<String> getJudgeRevisitProcessEvent(@PathVariable("state") String ccdState,
+                                                              @PathVariable("genAppType") String genAppType) {
 
         String responseMsg = "success";
         ExternalTaskImpl externalTask = new ExternalTaskImpl();
         try {
             if (ccdState.equals("ORDER_MADE")) {
-                checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
-            } else {
-                gaJudgeRevisitTaskHandler.handleTask(externalTask);
-            }
-        } catch (Exception e) {
-            responseMsg = "failed";
-        }
-
-        return new ResponseEntity<>(responseMsg, HttpStatus.OK);
-    }
-
-    @GetMapping("/testing-support/unless-order/trigger-judge-revisit-process-event/{state}")
-    public ResponseEntity<String> getJudgeRevisitProcessEventUnlessOrder(@PathVariable("state") String ccdState) {
-
-        String responseMsg = "success";
-        ExternalTaskImpl externalTask = new ExternalTaskImpl();
-        try {
-            if (ccdState.equals("ORDER_MADE")) {
-                checkUnlessOrderDeadlineEndTaskHandler.handleTask(externalTask);
+                if (genAppType.equals("STAY_THE_CLAIM")) {
+                    checkStayOrderDeadlineEndTaskHandler.handleTask(externalTask);
+                } else {
+                    checkUnlessOrderDeadlineEndTaskHandler.handleTask(externalTask);
+                }
             } else {
                 gaJudgeRevisitTaskHandler.handleTask(externalTask);
             }
