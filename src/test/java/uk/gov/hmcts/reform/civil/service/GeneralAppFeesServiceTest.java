@@ -92,7 +92,7 @@ class GeneralAppFeesServiceTest {
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         assertThat(queryCaptor.getValue().toString())
             .isEqualTo("dummy_urlgeneral%20application?channel=default&event=miscellaneous&jurisdiction1=civil"
-                           + "&jurisdiction2=civil&service=other&version=2&keyword=AppnToVaryOrSuspend");
+                           + "&jurisdiction2=civil&service=other&keyword=AppnToVaryOrSuspend");
     }
 
     @Test
@@ -192,7 +192,7 @@ class GeneralAppFeesServiceTest {
             .build();
 
         assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isTrue();
-    } //hasAppContainVaryOrder
+    }
 
     @Test
     void shouldReturnTrueForVaryJudgement() {
