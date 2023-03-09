@@ -119,7 +119,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                      * */
                     String respondent1OrganisationId = caseData.getRespondent1OrganisationPolicy().getOrganisation()
                         != null ? caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        .getOrganisationID(): caseData.getRespondent1OrganisationIDCopy();
+                        .getOrganisationID() : caseData.getRespondent1OrganisationIDCopy();
 
                     if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                         .equals(respondent1OrganisationId)) {
