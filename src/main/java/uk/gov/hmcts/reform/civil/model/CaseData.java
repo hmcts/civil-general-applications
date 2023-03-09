@@ -188,9 +188,8 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
-
     private final BusinessProcess businessProcess;
-
+    private final String respondent1OrganisationIDCopy;
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
             || businessProcess.getStatus() == null
