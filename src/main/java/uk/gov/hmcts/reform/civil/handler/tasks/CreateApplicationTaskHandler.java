@@ -117,8 +117,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     /*
                      * Add the GA in respondent one collection if he/she initiate without notice application.
                      * */
+                    String respondent1OrganisationId = caseData.getRespondent1OrganisationPolicy().getOrganisation()
+                        != null ? caseData.getRespondent1OrganisationPolicy().getOrganisation()
+                        .getOrganisationID() : caseData.getRespondent1OrganisationIDCopy();
+
                     if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent1OrganisationPolicy().getOrganisation().getOrganisationID())) {
+                        .equals(respondent1OrganisationId)) {
 
                         GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
                                                                                              caseData);
