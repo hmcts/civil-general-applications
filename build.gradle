@@ -212,7 +212,6 @@ task installDependencies(type: Exec, description: 'Installs Yarn dependencies. '
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
   commandLine './bin/wait-for.sh'
-  commandLine './bin/wait-for.sh', 'manage-case'
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
