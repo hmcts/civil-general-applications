@@ -1,13 +1,12 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,11 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
         JacksonAutoConfiguration.class,
 })
 class JudicialFinalDecisionHandlerTest {
-
-//    @Autowired
-//    private JudicialFinalDecisionHandler handler;
-//    @Autowired
-//    private ObjectMapper objMapper;
 
     @Nested
     class GetAllPartyNames {
