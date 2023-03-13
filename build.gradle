@@ -212,7 +212,6 @@ task installDependencies(type: Exec, description: 'Installs Yarn dependencies. '
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
   commandLine './bin/wait-for.sh'
-  commandLine './bin/wait-for.sh', 'manage-case'
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
@@ -230,12 +229,19 @@ task runApiTests(type: Exec, description: 'Runs Api tests.') {
   commandLine '/usr/bin/yarn', '--silent', 'test:api'
 }
 
+task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
+  onlyIf {
+    return System.env.NIGHTLY_BUILD == 'true'
+  }
+  commandLine '/usr/bin/yarn', '--silent', 'test:nightly-api-tests'
+}
+
 task smoke(description: 'Runs the smoke tests.') {
  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests, runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {

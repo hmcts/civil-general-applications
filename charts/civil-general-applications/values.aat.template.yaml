@@ -263,7 +263,7 @@ ccd:
     persistence:
       enabled: false
 camunda-bpm:
-  enabled: false
+  enabled: true
   java:
     disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
