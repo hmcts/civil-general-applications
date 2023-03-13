@@ -111,9 +111,7 @@ withPipeline(type, product, component) {
         sh """
           eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
           ./bin/add-roles.sh
-          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
-          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-prod.json,*HNL-nonprod.json,*CUI-nonprod.json" ${ccddefbranch}
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json"
           ./bin/pull-latest-camunda-files.sh ${camundaBranch}
@@ -155,9 +153,7 @@ withPipeline(type, product, component) {
         sh """
           eval \$(./bin/variables/load-staging-environment-variables.sh)
           ./bin/add-roles.sh
-          ./bin/pull-latest-release-asset.sh civil-ccd-definition civil-ccd-definition.zip
           ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
-          ./bin/pull-latest-release-asset.sh civil-camunda-bpmn-definition civil-camunda-bpmn-definition.zip
           ./bin/import-ccd-definition.sh "-e *-prod.json,*HNL-nonprod.json,*CUI-nonprod.json" ${ccddefbranch}
           ./bin/import-general-apps-ccd-definition.sh "-e *-prod.json"
           ./bin/pull-latest-camunda-files.sh ${camundaBranch}
