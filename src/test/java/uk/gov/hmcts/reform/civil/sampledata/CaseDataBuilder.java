@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -89,6 +90,8 @@ public class CaseDataBuilder {
     private static final String HEARING_SCHEDULED = "HEARING_SCHEDULED_GA";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version("1").build();
+    private static final Fee FEE14 = Fee.builder().calculatedAmountInPence(
+        BigDecimal.valueOf(1400)).code("FEE0458").version("2").build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0442").version("1").build();
     public static final String STRING_CONSTANT = "this is a string";
@@ -846,6 +849,27 @@ public class CaseDataBuilder {
             .generalAppHearingDate(generalAppHearingDate)
             .generalAppRespondentAgreement(GARespondentOrderAgreement
                                                .builder().hasAgreed(isRespondentAgreed).build())
+            .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData.CaseDataBuilder varyApplication(List<GeneralApplicationTypes> types) {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
+                                 .build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .fee(FEE14)
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .createdDate(LocalDateTime.now())
+            .generalAppType(GAApplicationType.builder()
+                                .types(types)
+                                .build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement
+                                               .builder().hasAgreed(NO).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
