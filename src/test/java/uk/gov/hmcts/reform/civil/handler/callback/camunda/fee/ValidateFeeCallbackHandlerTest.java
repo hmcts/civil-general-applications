@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +32,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VALIDATE_FEE_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_ORDER;
 
 @SpringBootTest(classes = {
     ValidateFeeCallbackHandler.class,
@@ -50,6 +55,8 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         BigDecimal.valueOf(10800)).code("FEE0443").version(VERSION).build();
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0442").version(VERSION).build();
+    private static final Fee FEE14 = Fee.builder().calculatedAmountInPence(
+        BigDecimal.valueOf(1400)).code("FEE0458").version("2").build();
 
     private static final String ERROR_MESSAGE_NO_FEE_IN_CASEDATA = "Application case data does not have fee details";
     private static final String ERROR_MESSAGE_FEE_CHANGED = "Fee has changed since application was submitted. "
@@ -181,5 +188,49 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             verify(feesConfiguration, never()).getFreeKeyword();
         }
 
+        @Test
+        void shouldSet14Fees_whenApplicationIsVaryJudgement() {
+            List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+
+            CaseData caseData =  CaseDataBuilder.builder()
+                .varyApplication(types).build();
+            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
+                .thenReturn(true);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            handler.handle(params);
+
+            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
+        }
+
+        @Test
+        void shouldSet14Fees_whenApplicationIsVaryOrderWithMultipleTypes() {
+            List<GeneralApplicationTypes> types = List.of(VARY_ORDER, STAY_THE_CLAIM);
+
+            CaseData caseData =  CaseDataBuilder.builder()
+                .varyApplication(types).build();
+            when(feesService.hasAppContainVaryOrder(caseData))
+                .thenReturn(true);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            handler.handle(params);
+
+            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
+        }
+
+        @Test
+        void shouldSet14Fees_whenApplicationIsVaryOrder() {
+            List<GeneralApplicationTypes> types = List.of(VARY_ORDER);
+
+            CaseData caseData =  CaseDataBuilder.builder()
+                .varyApplication(types).build();
+            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
+                .thenReturn(true);
+
+            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            handler.handle(params);
+
+            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
+        }
     }
 }
