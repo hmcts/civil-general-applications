@@ -69,8 +69,5 @@ public class NotificationsProperties {
     private String judgeApproveOrderToStrikeOutOCMC;
 
     @NotEmpty
-    private String generalApplicationPaymentFailure;
-
-    @NotEmpty
     private String hearingNoticeTemplate;
 }

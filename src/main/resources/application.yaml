@@ -70,6 +70,7 @@ genApp:
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
       free: CopyPagesUpTo10
+      appnToVaryOrSuspend: AppnToVaryOrSuspend
   lrd:
     endpoint: /refdata/location/court-venues
 
@@ -139,7 +140,6 @@ notifications:
   judgeUncloakApplicationEmailTemplate: "251414bb-3f26-47c6-ba1d-d7254349c028"
   judgeApproveOrderToStrikeOutDamages: "073b4650-c4c5-478a-8824-3c495a8e29e5"
   judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
-  generalApplicationPaymentFailure: "74b0a9db-6de9-4891-a984-618b34e8b4fc"
   hearingNoticeTemplate: "03763ce1-de17-4a9a-b1c6-d2e9ccffe9d7"
 
 os-postcode-lookup:

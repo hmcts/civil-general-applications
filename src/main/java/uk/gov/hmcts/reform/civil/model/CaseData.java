@@ -158,22 +158,38 @@ public class CaseData implements MappableObject {
     //PDF Documents
     @Builder.Default
     private final List<Element<CaseDocument>> generalOrderDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> generalOrderDocStaff;
+    private final List<Element<CaseDocument>> generalOrderDocClaimant;
+    private final List<Element<CaseDocument>> generalOrderDocRespondentSol;
+    private final List<Element<CaseDocument>> generalOrderDocRespondentSolTwo;
     @Builder.Default
     private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> dismissalOrderDocStaff;
+    private final List<Element<CaseDocument>> dismissalOrderDocClaimant;
+    private final List<Element<CaseDocument>> dismissalOrderDocRespondentSol;
+    private final List<Element<CaseDocument>> dismissalOrderDocRespondentSolTwo;
     @Builder.Default
     private final List<Element<CaseDocument>> directionOrderDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> directionOrderDocStaff;
+    private final List<Element<CaseDocument>> directionOrderDocClaimant;
+    private final List<Element<CaseDocument>> directionOrderDocRespondentSol;
+    private final List<Element<CaseDocument>> directionOrderDocRespondentSolTwo;
     @Builder.Default
     private final List<Element<CaseDocument>> requestForInformationDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> hearingOrderDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> hearingNoticeDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> hearingNoticeDocStaff;
+    private final List<Element<CaseDocument>> hearingNoticeDocClaimant;
+    private final List<Element<CaseDocument>> hearingNoticeDocRespondentSol;
+    private final List<Element<CaseDocument>> hearingNoticeDocRespondentSolTwo;
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepSequentialDocument = new ArrayList<>();
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
-
     private final BusinessProcess businessProcess;
+    private final String respondent1OrganisationIDCopy;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null

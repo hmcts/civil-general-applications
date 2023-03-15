@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_FAILED;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PAYMENT_SUCCESSFUL;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
@@ -36,23 +34,10 @@ public class StateFlowEngineTest {
         CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
-            .isEqualTo(PAYMENT_SUCCESSFUL.fullName());
-        assertThat(stateFlow.getStateHistory()).hasSize(2)
+            .isEqualTo(DRAFT.fullName());
+        assertThat(stateFlow.getStateHistory()).hasSize(1)
             .extracting(State::getName)
-            .containsExactly(DRAFT.fullName(), PAYMENT_SUCCESSFUL.fullName());
-    }
-
-    @Test
-    void shouldReturnPaymentFailedWhenPBAPaymentIsFailed() {
-        CaseData caseData = CaseDataBuilder.builder().buildPaymentFailureCaseData();
-
-        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
-        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
-            .isEqualTo(PAYMENT_FAILED.fullName());
-        assertThat(stateFlow.getStateHistory()).hasSize(2)
-            .extracting(State::getName)
-            .containsExactly(DRAFT.fullName(), PAYMENT_FAILED.fullName());
-
+            .containsExactly(DRAFT.fullName());
     }
 
 }

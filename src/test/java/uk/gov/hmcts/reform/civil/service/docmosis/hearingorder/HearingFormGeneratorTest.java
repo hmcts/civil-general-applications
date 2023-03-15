@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -62,6 +64,8 @@ class HearingFormGeneratorTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
 
     @Autowired
     private HearingFormGenerator generator;
@@ -81,6 +85,11 @@ class HearingFormGeneratorTest {
         refMap.put("respondentSolicitor2Reference", "resp2ref");
         Map<String, Object> caseDataContent = new HashMap<>();
         caseDataContent.put("solicitorReferences", refMap);
+        CaseData mainCaseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                true,
+                true,
+                true, true).build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(mainCaseData);
         CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
         when(coreCaseDataService.getCase(
                 anyLong()
@@ -149,6 +158,74 @@ class HearingFormGeneratorTest {
                 .hearingDurationOther("One year").build()).build();
         String durationString = HearingFormGenerator.getHearingDurationString(caseData);
         assertThat(durationString).isEqualTo("One year");
+    }
+
+    @Test
+    void testCanViewWithoutNoticeGaCreatedByResp2() {
+        CaseData caseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                        false,
+                        false,
+                        true, true).build();
+        CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
+        when(caseDetailsConverter.toCaseData(any()))
+                .thenReturn(caseData);
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
+    }
+
+    @Test
+    void testCanViewWithoutNoticeGaCreatedByResp1() {
+        CaseData caseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                        false,
+                        true,
+                        false, true).build();
+        CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
+        when(caseDetailsConverter.toCaseData(any()))
+                .thenReturn(caseData);
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isFalse();
+    }
+
+    @Test
+    void testCanViewWithoutNoticeGaCreatedByClaimant() {
+        CaseData caseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                        true,
+                        false,
+                        false, true).build();
+        CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
+        when(caseDetailsConverter.toCaseData(any()))
+                .thenReturn(caseData);
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isFalse();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
+    }
+
+    @Test
+    void testCanViewWithNoticeGaCreatedByResp2() {
+        CaseData caseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                        true,
+                        true,
+                        true, true).build();
+        CaseData generalAppCaseData = CaseData.builder().ccdCaseReference(CaseDataBuilder.CASE_ID).build();
+        when(caseDetailsConverter.toCaseData(any()))
+                .thenReturn(caseData);
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "2")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewResp(caseData, generalAppCaseData, "1")).isTrue();
+        AssertionsForClassTypes
+                .assertThat(HearingFormGenerator.canViewClaimant(caseData, generalAppCaseData)).isTrue();
     }
 
     @Test
