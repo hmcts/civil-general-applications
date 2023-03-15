@@ -15,7 +15,10 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
+
+import java.time.LocalDate;
 
 @SpringBootTest(classes = {
         JudicialFinalDecisionHandler.class,
@@ -27,6 +30,13 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private JudicialFinalDecisionHandler handler;
     @Autowired
     private ObjectMapper objMapper;
+
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
+            + "any party affected by the order may apply to set aside, vary or stay the order. Any such application must "
+            + "be made by 4pm on";
+    private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
+            + "this order was made, you may apply to set aside, vary or stay the order. Any such application must be made "
+            + "by 4pm on";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -45,6 +55,26 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getData().get("caseNameHmctsInternal")
                 .toString()).isEqualTo("Mr. John Rambo V Mr. Sole Trader");
+    }
+
+    @Test
+    void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
+        // Given
+        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
+                .build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-freeForm-values");
+        // When
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        // Then
+        assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionTextArea")
+                .isEqualTo(ON_INITIATIVE_SELECTION_TEST);
+        assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionDate")
+                .isEqualTo(LocalDate.now().toString());
+        assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
+                .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
+        assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
+                .isEqualTo(LocalDate.now().toString());
+
     }
 
     @Nested
