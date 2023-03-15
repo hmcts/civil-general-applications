@@ -84,6 +84,16 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
         if (feeService.isFreeApplication(caseData)) {
             return feesConfiguration.getFreeKeyword();
         }
+
+        if (feeService.isOnlyVaryOrSuspendApplication(caseData)) {
+            return feesConfiguration.getAppnToVaryOrSuspend();
+        }
+
+        if (feeService.hasAppContainVaryOrder(caseData)) {
+            //TODO:- CIV-7575 is been created to handle application to Vary Order fee when multiple application types
+            return feesConfiguration.getAppnToVaryOrSuspend();
+        }
+
         boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
             && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
             && caseData.getGeneralAppInformOtherParty() != null
