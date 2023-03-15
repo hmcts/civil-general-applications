@@ -96,6 +96,7 @@ allprojects {
 
       // CVE-2021-29425
       dependency group: 'commons-io', name: 'commons-io', version: '2.11.0'
+      dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
       // CVE-2022-25647
       dependencySet(
               group: 'org.camunda.bpm',
@@ -217,7 +218,6 @@ task installDependencies(type: Exec, description: 'Installs Yarn dependencies. '
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
   commandLine './bin/wait-for.sh'
-  commandLine './bin/wait-for.sh', 'manage-case'
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
@@ -235,12 +235,23 @@ task runApiTests(type: Exec, description: 'Runs Api tests.') {
   commandLine '/usr/bin/yarn', '--silent', 'test:api'
 }
 
+task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
+  onlyIf {
+    return System.env.NIGHTLY_BUILD == 'true'
+  }
+  commandLine '/usr/bin/yarn', '--silent', 'test:nightly-api-tests'
+}
+
+task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
+  commandLine './bin/pull-latest-general-app-ccd-files.sh', 'master'
+}
+
 task smoke(description: 'Runs the smoke tests.') {
  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, installDependencies, runApiTests, runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {

@@ -8,10 +8,6 @@
     <cve>CVE-2022-45688</cve>
   </suppress>
   <suppress>
-    <notes>latest camunda 7.17.0 has got the vulnerable file upload</notes>
-    <cve>CVE-2023-24998</cve>
-  </suppress>
-  <suppress>
     <notes>latest camunda jars and jakarta activation 2.1.1 is the latest</notes>
     <cve>CVE-2008-7271</cve>
     <cve>CVE-2010-4647</cve>

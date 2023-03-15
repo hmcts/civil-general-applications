@@ -28,25 +28,40 @@ public class GeneralAppFeesService {
     private static final int FREE_GA_DAYS = 14;
     private final RestTemplate restTemplate;
     private final GeneralAppFeesConfiguration feesConfiguration;
+    private static final String CHANNEL = "channel";
+    private static final String EVENT = "event";
+    private static final String JURISDICTION1 = "jurisdiction1";
+    private static final String JURISDICTION2 = "jurisdiction2";
+    private static final String SERVICE = "service";
+    private static final String KEYWORD = "keyword";
 
     public Fee getFeeForGA(String feeRegisterKeyword) {
         String queryURL = feesConfiguration.getUrl() + feesConfiguration.getEndpoint();
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL)
-            .queryParam("channel", feesConfiguration.getChannel())
-            .queryParam("event", feesConfiguration.getEvent())
-            .queryParam("jurisdiction1", feesConfiguration.getJurisdiction1())
-            .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
-            .queryParam("service", feesConfiguration.getService())
-            .queryParam("keyword", feeRegisterKeyword);
+            .queryParam(CHANNEL, feesConfiguration.getChannel())
+            .queryParam(EVENT, feesConfiguration.getEvent())
+            .queryParam(JURISDICTION1, feesConfiguration.getJurisdiction1())
+            .queryParam(JURISDICTION2, feesConfiguration.getJurisdiction2())
+            .queryParam(SERVICE, feesConfiguration.getService())
+            .queryParam(KEYWORD, feeRegisterKeyword);
         //TODO remove this if block after we have real free fee for GA
         if (feesConfiguration.getFreeKeyword().equals(feeRegisterKeyword)) {
             builder = UriComponentsBuilder.fromUriString(queryURL)
-                    .queryParam("channel", feesConfiguration.getChannel())
-                    .queryParam("event", "copies")
-                    .queryParam("jurisdiction1", feesConfiguration.getJurisdiction1())
-                    .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
-                    .queryParam("service", "insolvency")
-                    .queryParam("keyword", feeRegisterKeyword);
+                    .queryParam(CHANNEL, feesConfiguration.getChannel())
+                    .queryParam(EVENT, "copies")
+                    .queryParam(JURISDICTION1, feesConfiguration.getJurisdiction1())
+                    .queryParam(JURISDICTION2, feesConfiguration.getJurisdiction2())
+                    .queryParam(SERVICE, "insolvency")
+                    .queryParam(KEYWORD, feeRegisterKeyword);
+        }
+        if (feesConfiguration.getAppnToVaryOrSuspend().equals(feeRegisterKeyword)) {
+            builder = UriComponentsBuilder.fromUriString(queryURL)
+                .queryParam(CHANNEL, feesConfiguration.getChannel())
+                .queryParam(EVENT, "miscellaneous")
+                .queryParam(JURISDICTION1, feesConfiguration.getJurisdiction1())
+                .queryParam(JURISDICTION2, feesConfiguration.getJurisdiction2())
+                .queryParam(SERVICE, "other")
+                .queryParam(KEYWORD, feeRegisterKeyword);
         }
         URI uri;
         FeeLookupResponseDto feeLookupResponseDto;
@@ -87,5 +102,18 @@ public class GeneralAppFeesService {
             .code(feeLookupResponseDto.getCode())
             .version(feeLookupResponseDto.getVersion().toString())
             .build();
+    }
+
+    public boolean isOnlyVaryOrSuspendApplication(CaseData caseData) {
+        if (caseData.getGeneralAppType().getTypes().size() == 1) {
+            return caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+                ? true
+                : caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_ORDER) ? true : false;
+        }
+        return false;
+    }
+
+    public boolean hasAppContainVaryOrder(CaseData caseData) {
+        return caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_ORDER);
     }
 }
