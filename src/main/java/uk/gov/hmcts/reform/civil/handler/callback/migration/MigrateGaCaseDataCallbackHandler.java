@@ -10,9 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.utils.CaseMigrationUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +26,8 @@ public class MigrateGaCaseDataCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(migrateCase);
 
-    private static final String MIGRATION_ID_VALUE = "GACaseProgressionMigration";
+    private static final String MIGRATION_ID_VALUE = "GAMigration";
     private final ObjectMapper objectMapper;
-
-    private final CaseMigrationUtil caseMigrationUtil;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -45,13 +41,7 @@ public class MigrateGaCaseDataCallbackHandler extends CallbackHandler {
         CaseData oldCaseData = callbackParams.getCaseData();
         log.info("Migrating data for case: {}", oldCaseData.getCcdCaseReference());
         CaseData.CaseDataBuilder caseDataBuilder = oldCaseData.toBuilder();
-        if (oldCaseData.getIsCaseProgressionEnabled() == null) {
-            caseDataBuilder.migrationId(MIGRATION_ID_VALUE);
-            caseMigrationUtil.migrateGaCaseProgression(
-                caseDataBuilder,
-                YesOrNo.YES
-            );
-        }
+        caseDataBuilder.migrationId(MIGRATION_ID_VALUE);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
