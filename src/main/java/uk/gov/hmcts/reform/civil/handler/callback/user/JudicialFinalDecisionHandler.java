@@ -58,7 +58,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 caseData.getClaimant1PartyName(),
                 caseData.getDefendant1PartyName(),
                 Objects.nonNull(caseData.getDefendant2PartyName())
-                        && NO.equals(caseData.getRespondent2SameLegalRepresentative())
+                        && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
+                            || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                         ? ", " + caseData.getDefendant2PartyName() : "");
     }
 }
