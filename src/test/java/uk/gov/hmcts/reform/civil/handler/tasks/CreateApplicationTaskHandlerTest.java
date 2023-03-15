@@ -422,7 +422,45 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddApplicantSolListForWithoutNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+            CaseData caseData = buildOnlyData(generalApplication, NO, NO).toBuilder()
+                .respondent1OrganisationPolicy(OrganisationPolicy.builder().organisation(null).build())
+                .respondent1OrganisationIDCopy("respondent1").build();
+
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            caseDataContent = CaseDataContent.builder().build();
+
+            when(coreCaseDataService.startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE))
+                .thenReturn(startEventResponse);
+
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenReturn(caseData);
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(
+                any(StartEventResponse.class),
+                anyMap()
+            )).thenReturn(caseDataContent);
+
+            when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
+
+            Map<String, Object> map = generalApplication.toMap(objectMapper);
+            map.put(
+                "generalAppNotificationDeadlineDate",
+                generalApplication
+                    .getGeneralAppDateDeadline()
+            );
+
+            when(coreCaseDataService.createGeneralAppCase(map)).thenReturn(caseData);
+
+            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
+
+            verify(coreCaseDataService).createGeneralAppCase(map);
+
+            verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
+
+            CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
@@ -781,6 +819,40 @@ public class CreateApplicationTaskHandlerTest {
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 
         return data;
+    }
+
+    public CaseData buildOnlyData(GeneralApplication generalApplication, YesOrNo addApplicant2,
+                              YesOrNo respondent2SameLegalRepresentative) {
+        generalApplications = getGeneralApplications(generalApplication);
+        generalApplicationsDetailsList = Lists.newArrayList();
+        gaDetailsMasterCollection = Lists.newArrayList();
+        gaDetailsRespondentSolList = Lists.newArrayList();
+        gaDetailsRespondentSolTwoList = Lists.newArrayList();
+
+        CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .respondent1OrganisationPolicy(OrganisationPolicy
+                                               .builder().organisation(Organisation
+                                                                           .builder()
+                                                                           .organisationID("respondent1").build())
+                                               .build())
+            .respondent2OrganisationPolicy(OrganisationPolicy
+                                               .builder().organisation(Organisation
+                                                                           .builder()
+                                                                           .organisationID("respondent2").build())
+                                               .build())
+            .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
+            .generalApplications(generalApplications)
+            .isMultiParty(YES)
+            .addApplicant2(addApplicant2)
+            .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
+            .gaDetailsMasterCollection(gaDetailsMasterCollection)
+            .generalApplicationsDetails(generalApplicationsDetailsList)
+            .gaDetailsRespondentSol(gaDetailsRespondentSolList)
+            .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
+            .businessProcess(BusinessProcess.builder().status(STARTED)
+                                 .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
+        return caseData;
     }
 
 }
