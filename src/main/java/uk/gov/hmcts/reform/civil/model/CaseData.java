@@ -151,6 +151,7 @@ public class CaseData implements MappableObject {
     private final String caseNameHmctsInternal;
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
+    private final Document gaFreeFormOrderDocPreview;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
