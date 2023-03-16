@@ -13,12 +13,12 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
-
-import java.time.LocalDate;
 
 @SpringBootTest(classes = {
         JudicialFinalDecisionHandler.class,
@@ -32,11 +32,11 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objMapper;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
-            + "any party affected by the order may apply to set aside, vary or stay the order. Any such application must "
-            + "be made by 4pm on";
+            + "any party affected by the order may apply to set aside, vary or stay the order."
+            + " Any such application must be made by 4pm on";
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
-            + "this order was made, you may apply to set aside, vary or stay the order. Any such application must be made "
-            + "by 4pm on";
+            + "this order was made, you may apply to set aside, vary or stay the order."
+            + " Any such application must be made by 4pm on";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
