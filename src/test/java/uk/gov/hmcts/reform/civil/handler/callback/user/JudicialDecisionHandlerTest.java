@@ -2821,20 +2821,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldSetUpReadyWhenPreferredTypeNotInPersonAndCaseProgressionFeatureEnabled() {
-            when(featureToggleService.isGaCaseProgressionEnabled()).thenReturn(true);
-            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
-
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
-            assertThat(responseCaseData.getIsCaseProgressionEnabled()).isEqualTo(YES);
-        }
-
-        @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)

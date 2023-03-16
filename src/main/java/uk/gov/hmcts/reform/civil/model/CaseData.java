@@ -111,7 +111,6 @@ public class CaseData implements MappableObject {
     private final String defendant2PartyName;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
-    private final YesOrNo isCaseProgressionEnabled;
     private final GACaseManagementCategory caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;

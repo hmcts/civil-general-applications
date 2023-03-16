@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import feign.FeignException;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,14 +108,6 @@ public class TestingSupportController {
         private FeatureToggleInfo(boolean isToggleEnabled) {
             this.isToggleEnabled = isToggleEnabled;
         }
-    }
-
-    @GetMapping("/testing-support/feature-toggle/gaCaseProgression")
-    @ApiOperation("Check if ga-case-progression feature toggle is enabled")
-    public ResponseEntity<FeatureToggleInfo> checkGaCaseProgressionToggleEnabled() {
-        boolean featureEnabled = featureToggleService.isGaCaseProgressionEnabled();
-        FeatureToggleInfo featureToggleInfo = new FeatureToggleInfo(featureEnabled);
-        return new ResponseEntity<>(featureToggleInfo, HttpStatus.OK);
     }
 
     @Data
