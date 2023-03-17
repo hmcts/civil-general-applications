@@ -149,6 +149,7 @@ public class CaseData implements MappableObject {
     private GAHearingNoticeDetail gaHearingNoticeDetail;
     private String gaHearingNoticeInformation;
     private final String migrationId;
+    private final String caseNameHmctsInternal;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
