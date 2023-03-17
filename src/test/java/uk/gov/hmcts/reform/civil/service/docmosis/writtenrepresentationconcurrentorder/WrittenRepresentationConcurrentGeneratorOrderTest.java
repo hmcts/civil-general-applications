@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +32,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -106,7 +106,10 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                                    caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                        .getWrittenConcurrentRepresentationsBy()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), StringUtils.EMPTY),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
+                    .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
+                    caseData.getOrderCourtOwnInitiativeForWrittenRep()
+                        .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
             );

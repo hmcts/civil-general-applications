@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -105,7 +106,9 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
-                    .getJudicialByCourtsInitiativeListForHearing().getDisplayedValue()),
+                    .getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiative()
+                    + " ".concat(caseData.getOrderCourtOwnInitiativeListForHearing()
+                                     .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
                                    caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),

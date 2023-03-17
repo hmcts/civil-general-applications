@@ -27,6 +27,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -167,6 +169,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
+
+    private static final String ORDER_COURT_OWN_INITIATIVE = "As this order was made on the court's own initiative any "
+        + "party affected by the order may apply to set aside, vary or stay the order. "
+        + "Any such application must be made by 4pm on \n\n";
+
+    private static final String ORDER_WITHOUT_NOTICE = "If you were not notified of the application before this "
+        + "order was made, you may apply to set aside, vary or stay the order"
+        + "Any such application must be made by 4pm on \n\n";
 
     private final ObjectMapper objectMapper;
 
@@ -346,14 +356,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
                                         ? DISMISSAL_ORDER_TEXT
                                         : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText());
+                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
+                .orderWithoutNotice(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice())
+                .orderCourtOwnInitiative(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
                 .isOrderProcessedByStayScheduler(NO)
-                .isOrderProcessedByUnlessScheduler(NO);
+                .isOrderProcessedByUnlessScheduler(NO).orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                .orderWithoutNotice(ORDER_WITHOUT_NOTICE);
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
@@ -771,6 +784,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseDataBuilder.judicialConcurrentDateText(getJudicalConcurrentDatePupulatedText(caseData)).build();
         }
 
+        caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
+                                                                   .builder()
+                                                                   .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                                                                 .build())
+            .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
+                                                  .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+            .build();
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .errors(errors)
@@ -827,7 +848,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
-            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData))
+            .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
+                                                       .builder()
+                                                       .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE).build())
+            .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
+                                                  .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+            .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
