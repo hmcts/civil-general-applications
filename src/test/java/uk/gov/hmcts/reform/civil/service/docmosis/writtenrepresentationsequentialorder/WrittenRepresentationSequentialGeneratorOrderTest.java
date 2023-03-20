@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -17,11 +19,14 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -113,6 +118,98 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                     .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
                         caseData.getOrderCourtOwnInitiativeForWrittenRep()
                             .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData_Option2() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_2)
+                .orderWithoutNoticeForWrittenRep(
+                    GAOrderWithoutNoticeGAspec.builder().orderWithoutNotice("abcde")
+                        .orderWithoutNoticeDate(LocalDate.now()).build())
+                .orderCourtOwnInitiativeForWrittenRep(
+                    GAOrderCourtOwnInitiativeGAspec.builder().build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = writtenRepresentationSequentailOrderGenerator
+                .getTemplateData(updateData);
+
+            assertThatFieldsAreCorrect_WrittenRepSequential_Option2(templateData, updateData);
+        }
+
+        private void assertThatFieldsAreCorrect_WrittenRepSequential_Option2(JudgeDecisionPdfDocument templateData,
+                                                                                CaseData caseData) {
+            Assertions.assertAll(
+                "Written Representation Sequential Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
+                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
+                () -> assertEquals(templateData.getUploadDeadlineDate(),
+                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                       .getWrittenSequentailRepresentationsBy()),
+                () -> assertEquals(templateData.getResponseDeadlineDate(),
+                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                       .getSequentialApplicantMustRespondWithin()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
+                    .getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " ".concat(
+                    caseData.getOrderWithoutNoticeForWrittenRep()
+                        .getOrderWithoutNoticeDate().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData_Option3() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3)
+                .orderCourtOwnInitiativeForWrittenRep(
+                    GAOrderCourtOwnInitiativeGAspec.builder().build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = writtenRepresentationSequentailOrderGenerator
+                .getTemplateData(updateData);
+
+            assertThatFieldsAreCorrect_WrittenRepSequential_Option3(templateData, updateData);
+        }
+
+        private void assertThatFieldsAreCorrect_WrittenRepSequential_Option3(JudgeDecisionPdfDocument templateData,
+                                                                             CaseData caseData) {
+            Assertions.assertAll(
+                "Written Representation Sequential Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
+                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
+                () -> assertEquals(templateData.getUploadDeadlineDate(),
+                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                       .getWrittenSequentailRepresentationsBy()),
+                () -> assertEquals(templateData.getResponseDeadlineDate(),
+                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                       .getSequentialApplicantMustRespondWithin()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), StringUtils.EMPTY),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
             );

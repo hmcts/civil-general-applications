@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
@@ -32,6 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
@@ -108,6 +112,92 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getDismissalOrder(),
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetDissmisalOrderData_Option2() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
+                .build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                                           .dismissalOrderText("Test Dismissal")
+                                                           .reasonForDecisionText("Test Reason")
+                                                           .orderWithoutNotice("abcdef")
+                                                           .orderWithoutNoticeDate(LocalDate.now())
+                                                           .judicialByCourtsInitiative(
+                                                               GAByCourtsInitiativeGAspec.OPTION_2)
+                                                           .makeAnOrder(DISMISS_THE_APPLICATION)
+                                                           .build()).build();
+            CaseData updateData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = dismissalOrderGenerator.getTemplateData(updateData);
+
+            assertThatFieldsAreCorrect_DismissalOrder_Option2(templateData, updateData);
+        }
+
+        private void assertThatFieldsAreCorrect_DismissalOrder_Option2(JudgeDecisionPdfDocument templateData,
+                                                               CaseData caseData) {
+            Assertions.assertAll(
+                "Dismissal Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
+                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
+                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
+                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
+                    .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
+                    + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getDismissalOrder(),
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetDissmisalOrderData_Option3() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
+                .build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                                          .dismissalOrderText("Test Dismissal")
+                                                          .reasonForDecisionText("Test Reason")
+                                                          .judicialByCourtsInitiative(
+                                                              GAByCourtsInitiativeGAspec.OPTION_3)
+                                                          .makeAnOrder(DISMISS_THE_APPLICATION)
+                                                          .build()).build();
+            CaseData updateData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateData))
+                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = dismissalOrderGenerator.getTemplateData(updateData);
+
+            assertThatFieldsAreCorrect_DismissalOrder_Option3(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DismissalOrder_Option3(JudgeDecisionPdfDocument templateData,
+                                                               CaseData caseData) {
+            Assertions.assertAll(
+                "Dismissal Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
+                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
+                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
+                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), StringUtils.EMPTY),
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
         }
