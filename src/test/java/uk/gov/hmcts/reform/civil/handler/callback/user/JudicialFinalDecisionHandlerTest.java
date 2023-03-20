@@ -55,7 +55,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getData().get("caseNameHmctsInternal")
-                .toString()).isEqualTo("Mr. John Rambo V Mr. Sole Trader");
+                .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
     }
 
     @Test
