@@ -149,6 +149,9 @@ public class CaseData implements MappableObject {
     private String gaHearingNoticeInformation;
     private final String migrationId;
     private final String caseNameHmctsInternal;
+    private final String freeFormRecitalText;
+    private final String freeFormRecordedText;
+    private final String freeFormOrderedText;
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
     private final Document gaFreeFormOrderDocPreview;
