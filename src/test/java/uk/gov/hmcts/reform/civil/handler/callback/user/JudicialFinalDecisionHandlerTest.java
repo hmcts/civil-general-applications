@@ -37,6 +37,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
             + "this order was made, you may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
+    private static final String ORDERED_TEXT = "order test";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -61,7 +62,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
         // Given
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-                .build();
+                .build().toBuilder().generalAppDetailsOfOrder("order test").build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-freeForm-values");
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -72,6 +73,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(LocalDate.now().toString());
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
                 .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
+        assertThat(response.getData()).extracting("freeFormOrderedText")
+                .isEqualTo(ORDERED_TEXT);
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
                 .isEqualTo(LocalDate.now().toString());
 
@@ -88,7 +91,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .defendant1PartyName("Mr. Sole Trader")
                     .build();
             String title = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
-            assertThat(title).isEqualTo("Mr. John Rambo V Mr. Sole Trader");
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
         }
 
         @Test
@@ -103,7 +106,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .build();
 
             String title = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
-            assertThat(title).isEqualTo("Mr. John Rambo V Mr. Sole Trader");
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
         }
 
         @Test
@@ -118,7 +121,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .build();
 
             String title = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
-            assertThat(title).isEqualTo("Mr. John Rambo V Mr. Sole Trader, Mr. John Rambo");
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader, Mr. John Rambo");
         }
     }
 }

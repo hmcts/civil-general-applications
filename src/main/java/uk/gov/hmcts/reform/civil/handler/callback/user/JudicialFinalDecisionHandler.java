@@ -70,6 +70,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
                 .withoutNoticeSelectionDate(LocalDate.now())
                 .build());
+        caseDataBuilder.freeFormOrderedText(caseData.getGeneralAppDetailsOfOrder());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
@@ -82,7 +83,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     }
 
     public static String getAllPartyNames(CaseData caseData) {
-        return format("%s V %s%s",
+        return format("%s v %s%s",
                 caseData.getClaimant1PartyName(),
                 caseData.getDefendant1PartyName(),
                 Objects.nonNull(caseData.getDefendant2PartyName())
