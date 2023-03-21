@@ -94,15 +94,6 @@ class FeatureToggleServiceTest {
         verifyBoolVariationCalled(organisationOnboardedFeatureKey, List.of("timestamp", "environment", "orgId"));
     }
 
-    @Test
-    void shouldCallBoolVariation_whenIsGaCaseProgesionEnabledInvoked() {
-        var gaCaseProgressionFeatureKey = "ga-case-progression";
-        givenToggle(gaCaseProgressionFeatureKey, true);
-
-        assertThat(featureToggleService.isGaCaseProgressionEnabled()).isTrue();
-        verifyBoolVariationCalled(gaCaseProgressionFeatureKey, List.of("timestamp", "environment"));
-    }
-
     private void givenToggle(String feature, boolean state) {
         when(ldClient.boolVariation(eq(feature), any(LDUser.class), anyBoolean()))
             .thenReturn(state);
