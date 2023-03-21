@@ -10,8 +10,10 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -39,21 +41,25 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
 
     protected Map<String, Callback> callbacks() {
         return Map.of(
-            callbackKey(ABOUT_TO_SUBMIT), this::updateLocation
+            callbackKey(ABOUT_TO_SUBMIT), this::updateCaseManagementLocation
         );
     }
 
-    private CallbackResponse updateLocation(CallbackParams callbackParams) {
+    private CallbackResponse updateCaseManagementLocation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        caseDataBuilder.caseManagementLocation(
-            GACaseLocation.builder().baseLocation(civilCaseData.getCaseManagementLocation().getBaseLocation())
-                    .region(civilCaseData.getCaseManagementLocation().getRegion()).build());
-        caseDataBuilder.isCcmccLocation(YesOrNo.NO);
-
+        caseDataBuilder
+            .businessProcess(
+                BusinessProcess.builder()
+                    .camundaEvent(TRIGGER_LOCATION_UPDATE.name())
+                    .status(BusinessProcessStatus.FINISHED)
+                    .build())
+            .isCcmccLocation(YesOrNo.NO)
+            .caseManagementLocation(GACaseLocation.builder().baseLocation(civilCaseData.getCaseManagementLocation().getBaseLocation())
+                                        .region(civilCaseData.getCaseManagementLocation().getRegion()).build());
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
