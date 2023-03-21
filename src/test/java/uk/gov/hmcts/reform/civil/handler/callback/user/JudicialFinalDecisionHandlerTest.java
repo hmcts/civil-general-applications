@@ -6,16 +6,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
@@ -28,6 +35,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private JudicialFinalDecisionHandler handler;
+    @MockBean
+    private FreeFormOrderGenerator freeFormOrderGenerator;
     @Autowired
     private ObjectMapper objMapper;
 
@@ -78,6 +87,19 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
                 .isEqualTo(LocalDate.now().toString());
 
+    }
+
+    @Test
+    void shouldGenerateHearingNoticeDocumentWhenPopulateFreeFormPreviewDocIsCalled() {
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(CaseDocument
+                .builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                .build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-free-form-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData updatedData = objMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getGaFreeFormOrderDocPreview()).isNotNull();
     }
 
     @Nested

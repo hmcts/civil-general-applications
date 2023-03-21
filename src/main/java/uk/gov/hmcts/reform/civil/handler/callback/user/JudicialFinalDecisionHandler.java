@@ -58,11 +58,11 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaPopulateFreeFormPreviewDoc(final CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument freeform = gaFreeFormOrderGenerator.generate(
-                caseDataBuilder.build(),
+                caseData,
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
         );
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.gaFreeFormOrderDocPreview(freeform.getDocumentLink());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
