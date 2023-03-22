@@ -104,12 +104,11 @@ public class UpdateGaLocationCallbackHandlerTest extends BaseCallbackHandlerTest
                     "isCcmccLocation",
                     "No");
 
-            assertThat(response.getData()).containsValues(
+            assertThat(response.getData()).containsEntry(
                     "caseManagementLocation",
                     Map.of(
                         "region", "2",
-                        "baseLocation", "00000",
-                        "siteName", "county court claims"
+                        "baseLocation", "00000"
                     ));
         }
 
