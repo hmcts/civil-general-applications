@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.utils.CaseMigrationUtil;
 
 import java.util.List;
 
@@ -38,7 +37,6 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
     MigrateGaCaseDataCallbackHandler.class,
-    CaseMigrationUtil.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class
 })
@@ -72,15 +70,13 @@ public class MigrateGaCaseDataCallbackHandlerTest extends BaseCallbackHandlerTes
     class AboutToSubmitCallback {
 
         @Test
-        public void shouldMigrateCaseDataSuccessfully_WhenCaseProgressionEnabledIsNull() {
+        public void shouldNotThrowError_WhenMigrateCaseDataSuccessfully() {
             CaseData caseData = CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication())
                 .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getIsCaseProgressionEnabled())
-                .isEqualTo(YES);
+            assertThat(response.getErrors()).isNull();
         }
     }
 

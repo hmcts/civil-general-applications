@@ -650,9 +650,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
         String caseId = caseData.getCcdCaseReference().toString();
-        if (featureToggleService.isGaCaseProgressionEnabled() == true) {
-            dataBuilder.isCaseProgressionEnabled(YES);
-        }
 
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {

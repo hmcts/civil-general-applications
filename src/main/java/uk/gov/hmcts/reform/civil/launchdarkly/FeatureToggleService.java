@@ -44,10 +44,6 @@ public class FeatureToggleService {
         return internalClient.boolVariation("rpaContinuousFeed", createLDUser().build(), false);
     }
 
-    public boolean isGaCaseProgressionEnabled() {
-        return internalClient.boolVariation("ga-case-progression", createLDUser().build(), false);
-    }
-
     public LDUser.Builder createLDUser() {
         return new LDUser.Builder("civil-service")
             .custom("timestamp", String.valueOf(System.currentTimeMillis()))
