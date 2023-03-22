@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
 
 @Slf4j
 @Service
@@ -38,7 +39,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
     private static final String POPULATE_FREE_FORM_ORDER_PREVIEW_DOC = "populate-freeForm-values";
-    private static final String POPULATE_FREE_FORM_PREVIEW_DOC = "populate-free-form-preview-doc";
+    private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
@@ -53,20 +54,21 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::setCaseName,
                 callbackKey(MID, POPULATE_FREE_FORM_ORDER_PREVIEW_DOC), this::populateFreeFormValues,
-                callbackKey(MID, POPULATE_FREE_FORM_PREVIEW_DOC), this::gaPopulateFreeFormPreviewDoc,
+                callbackKey(MID, POPULATE_FINAL_ORDER_PREVIEW_DOC), this::gaPopulateFinalOrderPreviewDoc,
                 callbackKey(ABOUT_TO_SUBMIT), this::setFinalDecisionBusinessProcess
         );
     }
 
-    private CallbackResponse gaPopulateFreeFormPreviewDoc(final CallbackParams callbackParams) {
+    private CallbackResponse gaPopulateFinalOrderPreviewDoc(final CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseDocument freeform = gaFreeFormOrderGenerator.generate(
-                caseData,
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-        );
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        caseDataBuilder.gaFreeFormOrderDocPreview(freeform.getDocumentLink());
-
+        if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
+            CaseDocument freeform = gaFreeFormOrderGenerator.generate(
+                    caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.gaFinalOrderDocPreview(freeform.getDocumentLink());
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
@@ -103,9 +105,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private CallbackResponse setFinalDecisionBusinessProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        caseDataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
-        if (Objects.nonNull(caseData.getGaFreeFormOrderDocPreview())) {
-            caseDataBuilder.gaFreeFormOrderDocPreview(null);
+        //caseDataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
+        if (Objects.nonNull(caseData.getGaFinalOrderDocPreview())) {
+            caseDataBuilder.gaFinalOrderDocPreview(null);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))

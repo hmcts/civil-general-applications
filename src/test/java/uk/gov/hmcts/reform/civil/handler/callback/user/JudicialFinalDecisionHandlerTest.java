@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -90,16 +91,17 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
-    void shouldGenerateHearingNoticeDocumentWhenPopulateFreeFormPreviewDocIsCalled() {
+    void shouldGenerateFinalOrderPreviewDocumentWhenPopulateFinalOrderPreviewDocIsCalled() {
         when(freeFormOrderGenerator.generate(any(), any())).thenReturn(CaseDocument
                 .builder().documentLink(Document.builder().build()).build());
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
-                .build();
-        CallbackParams params = callbackParamsOf(caseData, MID, "populate-free-form-preview-doc");
+                .build()
+                .toBuilder().finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData updatedData = objMapper.convertValue(response.getData(), CaseData.class);
-        assertThat(updatedData.getGaFreeFormOrderDocPreview()).isNotNull();
+        assertThat(updatedData.getGaFinalOrderDocPreview()).isNotNull();
     }
 
     @Nested
