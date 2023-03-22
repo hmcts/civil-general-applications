@@ -13,6 +13,13 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderAppealDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderFurtherHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderGiveReasonsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderHeardRepresentation;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderMadeOnDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.AssistedOrderRecitalRecord;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
@@ -196,6 +203,19 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
     private final String respondent1OrganisationIDCopy;
+
+    private final YesOrNo assistedOrderMadeSelection;
+    private final AssistedOrderDateHeardDetails assistedOrderDateHeardDetails;
+    private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
+    private final AssistedOrderRecitalRecord assistedOrderRecitalRecord;
+    private final String assistedOrderOrderedThatText;
+    private final YesOrNo assistedOrderFurtherHearingToggle;
+    private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
+    private final YesOrNo assistedOrderAppealToggle;
+    private final AssistedOrderAppealDetails assistedOrderAppealDetails;
+    private final AssistedOrderMadeOnDetails assistedOrderMadeOnDetails;
+    private final  YesOrNo assistedOrderGiveReasonsYesNo;
+    private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
