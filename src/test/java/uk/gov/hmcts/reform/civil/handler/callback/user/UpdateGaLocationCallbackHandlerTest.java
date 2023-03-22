@@ -56,7 +56,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 @SpringBootTest(classes = {
     UpdateGaLocationCallbackHandler.class, JacksonAutoConfiguration.class, Time.class
 })
-public class UpdateGaLocationCallbackHandlerTest extends BaseCallbackHandlerTest {
+ class UpdateGaLocationCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private UpdateGaLocationCallbackHandler handler;
