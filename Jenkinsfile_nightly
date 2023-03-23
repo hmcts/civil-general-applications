@@ -1,7 +1,7 @@
 #!groovy
 
 properties([
-  pipelineTriggers([cron('H 12 * * *')]),
+  pipelineTriggers([cron('H 10 * * 1-5')]),
   parameters([
     string(name: 'ENVIRONMENT', defaultValue: 'demo', description: 'Environment to test'),
     string(name: 'FRONTEND_URL', defaultValue: 'https://manage-case.demo.platform.hmcts.net',
