@@ -130,11 +130,11 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getFreeFormOrderValueWithoutNotice() {
         FreeFormOrderValues values = FreeFormOrderValues.builder()
-                .onInitiativeSelectionTextArea("test")
-                .onInitiativeSelectionDate(LocalDate.now())
+                .withoutNoticeSelectionTextArea("test")
+                .withoutNoticeSelectionDate(LocalDate.now())
                 .build();
         CaseData caseData = CaseData.builder().orderOnCourtsList(ORDER_WITHOUT_NOTICE)
-                .orderOnCourtInitiative(values).build();
+                .orderWithoutNotice(values).build();
         String orderString = generator.getFreeFormOrderValue(caseData);
         assertThat(orderString).contains(WITHOUT_NOTICE);
     }
