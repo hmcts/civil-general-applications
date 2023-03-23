@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.FREE_
 @Service
 @RequiredArgsConstructor
 public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrder> {
+
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final CoreCaseDataService coreCaseDataService;
