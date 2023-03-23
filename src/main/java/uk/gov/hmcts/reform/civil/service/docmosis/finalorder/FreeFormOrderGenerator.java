@@ -74,7 +74,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
                 .build();
     }
 
-    private String getFreeFormOrderValue(CaseData caseData) {
+    protected String getFreeFormOrderValue(CaseData caseData) {
         StringBuilder orderValueBuilder = new StringBuilder();
         if (caseData.getOrderOnCourtsList().equals(ORDER_ON_COURT_INITIATIVE)) {
             orderValueBuilder.append(ON_COURTS_OWN);

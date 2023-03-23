@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -34,6 +35,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
+import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.FREE_FORM_ORDER;
 
 @ExtendWith(SpringExtension.class)
@@ -45,6 +48,8 @@ class FreeFormOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    private static final String ON_COURTS_OWN = "This order is made on court’s own initiative.\n\n";
+    private static final String WITHOUT_NOTICE = "This order is made without notice.\n\n";
 
     private static final String templateName = "Free_form_order_%s.pdf";
     private static final String fileName_application = String.format(templateName,
@@ -108,6 +113,30 @@ class FreeFormOrderGeneratorTest {
 
         verify(documentManagementService)
                 .uploadDocument(any(), any());
+    }
+
+    @Test
+    void test_getFreeFormOrderValueOnCourt() {
+        FreeFormOrderValues values = FreeFormOrderValues.builder()
+                .onInitiativeSelectionTextArea("test")
+                .onInitiativeSelectionDate(LocalDate.now())
+                .build();
+        CaseData caseData = CaseData.builder().orderOnCourtsList(ORDER_ON_COURT_INITIATIVE)
+                .orderOnCourtInitiative(values).build();
+        String orderString = generator.getFreeFormOrderValue(caseData);
+        assertThat(orderString).contains(ON_COURTS_OWN);
+    }
+
+    @Test
+    void test_getFreeFormOrderValueWithoutNotice() {
+        FreeFormOrderValues values = FreeFormOrderValues.builder()
+                .onInitiativeSelectionTextArea("test")
+                .onInitiativeSelectionDate(LocalDate.now())
+                .build();
+        CaseData caseData = CaseData.builder().orderOnCourtsList(ORDER_WITHOUT_NOTICE)
+                .orderOnCourtInitiative(values).build();
+        String orderString = generator.getFreeFormOrderValue(caseData);
+        assertThat(orderString).contains(WITHOUT_NOTICE);
     }
 
     @Test
