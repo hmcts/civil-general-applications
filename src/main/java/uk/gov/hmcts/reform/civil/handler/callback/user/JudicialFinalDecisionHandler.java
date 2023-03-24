@@ -10,21 +10,30 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.genapplication.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.*;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @Slf4j
 @Service
@@ -32,6 +41,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
+    private final GeneralAppLocationRefDataService locationRefDataService;
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
@@ -44,10 +54,11 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     protected Map<String, Callback> callbacks() {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::setCaseName,
-                callbackKey(MID, "populate-freeForm-values"), this::populateFreeFormValues,
+                callbackKey(MID, "populate-finalOrder-values"), this::populateFreeFormValues,
                 callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse
         );
     }
+
 
     private CallbackResponse setCaseName(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
@@ -72,9 +83,66 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .build());
         caseDataBuilder.freeFormOrderedText(caseData.getGeneralAppDetailsOfOrder());
 
+        caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
+                                                     .date(LocalDate.now()).build());
+        caseDataBuilder.orderMadeOnWithOutNotice(DetailTextWithDate.builder().detailText(WITHOUT_NOTICE_SELECTION_TEXT)
+                                                     .date(LocalDate.now()).build());
+
+        caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+                                                              .date(LocalDate.now()).build()).build();
+
+        caseDataBuilder.assistedOrderCostDetails(AssistedOrderCostDetails.builder()
+                                                     .claimantCostStandardBase(AssistedOrderCost
+                                                                                   .builder()
+                                                                                   .costPaymentDeadLine(
+                                                                                       LocalDate.now()
+                                                                                           .plusDays(14))
+                                                                                   .build())
+                                                     .claimantCostSummarilyBase(AssistedOrderCost
+                                                                                    .builder()
+                                                                                    .costPaymentDeadLine(
+                                                                                        LocalDate.now()
+                                                                                            .plusDays(14))
+                                                                                    .build())
+                                                     .defendantCostStandardBase(AssistedOrderCost
+                                                                                    .builder()
+                                                                                    .costPaymentDeadLine(
+                                                                                        LocalDate.now()
+                                                                                            .plusDays(14))
+                                                                                    .build())
+                                                     .defendantCostSummarilyBase(AssistedOrderCost
+                                                                                     .builder()
+                                                                                     .costPaymentDeadLine(
+                                                                                         LocalDate.now()
+                                                                                             .plusDays(14))
+                                                                                     .build()).build());
+
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
+        caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails
+                                                               .builder()
+                                                               .alternativeHearingLocation(dynamicLocationList)
+                                                               .build());
+        caseDataBuilder.assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+
+    private CallbackResponse validAssistedOrderForm(CallbackParams callbackParams) {
+        List<String> errors = Collections.emptyList();
+        CaseData caseData = callbackParams.getCaseData();
+
+        if(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) &&
+            caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
+            errors.add("Date Heard cannot be future date");
+        }
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
+            .build();
     }
 
     @Override
@@ -90,5 +158,12 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                         && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                             || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                         ? ", " + caseData.getDefendant2PartyName() : "");
+    }
+
+    private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
+        return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
+                .append(" - ").append(location.getCourtAddress())
+                .append(" - ").append(location.getPostcode()).toString())
+                            .collect(Collectors.toList()));
     }
 }

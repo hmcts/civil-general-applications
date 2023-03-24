@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.model.genapplication;
+package uk.gov.hmcts.reform.civil.model.genapplication.finalorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,12 +11,12 @@ import java.time.LocalDate;
 @Setter
 @Data
 @Builder(toBuilder = true)
-public class AssistedOrderDateHeardDetails {
+public class AssistedOrderMadeDateHeardDetails {
 
     private final LocalDate date;
 
     @JsonCreator
-    AssistedOrderDateHeardDetails(@JsonProperty("date") LocalDate date) {
+    AssistedOrderMadeDateHeardDetails(@JsonProperty("date") LocalDate date) {
         this.date = date;
     }
 }
