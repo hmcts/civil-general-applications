@@ -179,7 +179,7 @@ public class CaseData implements MappableObject {
     private final AssistedOrderMadeDateHeardDetails assistedOrderMadeDateHeardDetails;
     private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
     private final AssistedOrderRecitalRecord assistedOrderRecitalRecord;
-    private final List<AssistedCostTypesList> assistedCostTypes;
+    private final AssistedCostTypesList assistedCostTypes;
     private final AssistedOrderCost claimantCostStandardBase;
     private final AssistedOrderCost defendantCostStandardBase;
     private final AssistedOrderCost claimantCostSummarilyBase;
@@ -191,7 +191,7 @@ public class CaseData implements MappableObject {
     private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
     private final YesOrNo assistedOrderAppealToggle;
     private final AssistedOrderAppealDetails assistedOrderAppealDetails;
-    private final List<OrderMadeOnTypes> orderMadeOnOption;
+    private final OrderMadeOnTypes orderMadeOnOption;
     private final DetailTextWithDate orderMadeOnOwnInitiative;
     private final DetailTextWithDate orderMadeOnWithOutNotice;
     private final YesOrNo assistedOrderGiveReasonsYesNo;

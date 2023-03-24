@@ -11,14 +11,14 @@ import lombok.Setter;
 @Builder(toBuilder = true)
 public class HearingLength {
 
-    private final String days;
-    private final String hours;
-    private final String minutes;
+    private final int days;
+    private final int hours;
+    private final int minutes;
 
     @JsonCreator
-    HearingLength(@JsonProperty("days") String days,
-                  @JsonProperty("hours") String hours,
-                  @JsonProperty("minutes") String minutes
+    HearingLength(@JsonProperty("days") int days,
+                  @JsonProperty("hours") int hours,
+                  @JsonProperty("minutes") int minutes
     ) {
 
         this.days = days;

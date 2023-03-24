@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.bytebuddy.asm.Advice;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -20,10 +21,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.*;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -48,17 +46,19 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
             + "this order was made, you may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
+    private static final String POPULATE_FINAL_ORDER_FORM_VALUES = "populate-finalOrder-form-values";
+    private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
     private final ObjectMapper objectMapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::setCaseName,
-                callbackKey(MID, "populate-finalOrder-values"), this::populateFreeFormValues,
+                callbackKey(MID, POPULATE_FINAL_ORDER_FORM_VALUES), this::populateFreeFormValues,
+                callbackKey(MID, POPULATE_FINAL_ORDER_PREVIEW_DOC), this::populateFinalOrderPreviewDoc,
                 callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse
         );
     }
-
 
     private CallbackResponse setCaseName(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
@@ -91,17 +91,18 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .date(LocalDate.now()).build()).build();
 
+        LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
         caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
-                                                     .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                     .costPaymentDeadLine(localDatePlus14days)
                                                      .build());
         caseDataBuilder.claimantCostSummarilyBase(AssistedOrderCost.builder()
-                                                      .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                      .costPaymentDeadLine(localDatePlus14days)
                                                       .build());
         caseDataBuilder.defendantCostStandardBase(AssistedOrderCost.builder()
-                                                      .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                      .costPaymentDeadLine(localDatePlus14days)
                                                       .build());
         caseDataBuilder.defendantCostSummarilyBase(AssistedOrderCost.builder()
-                                                       .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                       .costPaymentDeadLine(localDatePlus14days)
                                                        .build());
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
@@ -116,20 +117,22 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
     }
-
-
-    private CallbackResponse validAssistedOrderForm(CallbackParams callbackParams) {
-        List<String> errors = Collections.emptyList();
+    private CallbackResponse populateFinalOrderPreviewDoc(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        List<String> errors = validAssistedOrderForm(caseData);
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
+            .build();
+    }
 
+    private List<String> validAssistedOrderForm(CaseData caseData) {
+        List<String> errors = new ArrayList<>();
         if(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) &&
             caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
             errors.add("Date Heard cannot be future date");
         }
 
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .errors(errors)
-            .build();
+        return errors;
     }
 
     @Override

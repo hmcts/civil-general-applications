@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import uk.gov.hmcts.reform.civil.enums.dq.ClaimantDefendantNotAttendingType;
 import uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 
@@ -15,14 +16,28 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class ClaimantDefendantRepresentation {
 
-    private List<ClaimantRepresentationType> claimantRepresentation;
-    private List<DefendantRepresentationType> defendantRepresentation;
+    private ClaimantRepresentationType claimantRepresentation;
+    private DefendantRepresentationType defendantRepresentation;
+    private ClaimantDefendantNotAttendingType heardFromClaimantNotAttending;
+    private ClaimantDefendantNotAttendingType heardFromDefendantNotAttending;
+    private String detailsRepresentationText;
 
     @JsonCreator
     ClaimantDefendantRepresentation(@JsonProperty("ClaimantRepresentation")
-                                    List<ClaimantRepresentationType> claimantRepresentation,
-                                    @JsonProperty("date") List<DefendantRepresentationType> defendantRepresentation) {
+                                    ClaimantRepresentationType claimantRepresentation,
+                                    @JsonProperty("defendantRepresentation")
+                                    DefendantRepresentationType defendantRepresentation,
+                                    @JsonProperty("heardFromClaimantNotAttending")
+                                    ClaimantDefendantNotAttendingType heardFromClaimantNotAttending,
+                                    @JsonProperty("heardFromDefendantNotAttending")
+                                    ClaimantDefendantNotAttendingType heardFromDefendantNotAttending,
+                                    @JsonProperty("detailsRepresentationText")
+                                    String detailsRepresentationText) {
+
         this.claimantRepresentation = claimantRepresentation;
         this.defendantRepresentation = defendantRepresentation;
+        this.heardFromClaimantNotAttending = heardFromClaimantNotAttending;
+        this.heardFromDefendantNotAttending = heardFromDefendantNotAttending;
+        this.detailsRepresentationText = detailsRepresentationText;
     }
 }
