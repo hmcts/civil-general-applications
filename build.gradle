@@ -107,7 +107,7 @@ allprojects {
       // Solves CVE-2022-31159, happens only on local builds when running dependencyCheck gradle task
       dependencySet(
         group: 'com.amazonaws',
-        version: '1.12.420'
+        version: '1.12.430'
       ) {
         entry 'aws-java-sdk-core'
         entry 'aws-java-sdk-kms'
@@ -392,7 +392,7 @@ dependencies {
   implementation group: 'jakarta.xml.bind', name: 'jakarta.xml.bind-api', version: '4.0.0'
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.2'
 
-  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.0.5'
+  implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.0.6'
 
 
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'

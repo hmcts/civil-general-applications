@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
@@ -110,7 +111,6 @@ public class CaseData implements MappableObject {
     private final String defendant2PartyName;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
-    private final YesOrNo isCaseProgressionEnabled;
     private final GACaseManagementCategory caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
@@ -148,6 +148,12 @@ public class CaseData implements MappableObject {
     private GAHearingNoticeDetail gaHearingNoticeDetail;
     private String gaHearingNoticeInformation;
     private final String migrationId;
+    private final String caseNameHmctsInternal;
+    private final String freeFormRecitalText;
+    private final String freeFormRecordedText;
+    private final String freeFormOrderedText;
+    private final FreeFormOrderValues orderOnCourtInitiative;
+    private final FreeFormOrderValues orderWithoutNotice;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
