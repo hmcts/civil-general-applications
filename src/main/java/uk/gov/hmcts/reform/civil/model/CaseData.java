@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -178,7 +179,13 @@ public class CaseData implements MappableObject {
     private final AssistedOrderMadeDateHeardDetails assistedOrderMadeDateHeardDetails;
     private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
     private final AssistedOrderRecitalRecord assistedOrderRecitalRecord;
-    private final AssistedOrderCostDetails assistedOrderCostDetails;
+    private final List<AssistedCostTypesList> assistedCostTypes;
+    private final AssistedOrderCost claimantCostStandardBase;
+    private final AssistedOrderCost defendantCostStandardBase;
+    private final AssistedOrderCost claimantCostSummarilyBase;
+    private final AssistedOrderCost defendantCostSummarilyBase;
+    private final DetailText costReservedDetails;
+    private final DetailText besPokeCostDetails;
     private final String assistedOrderOrderedThatText;
     private final YesOrNo assistedOrderFurtherHearingToggle;
     private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
@@ -187,7 +194,7 @@ public class CaseData implements MappableObject {
     private final List<OrderMadeOnTypes> orderMadeOnOption;
     private final DetailTextWithDate orderMadeOnOwnInitiative;
     private final DetailTextWithDate orderMadeOnWithOutNotice;
-    private final  YesOrNo assistedOrderGiveReasonsYesNo;
+    private final YesOrNo assistedOrderGiveReasonsYesNo;
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
 
     public boolean hasNoOngoingBusinessProcess() {

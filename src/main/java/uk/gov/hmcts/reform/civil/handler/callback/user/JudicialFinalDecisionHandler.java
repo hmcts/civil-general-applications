@@ -91,31 +91,18 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .date(LocalDate.now()).build()).build();
 
-        caseDataBuilder.assistedOrderCostDetails(AssistedOrderCostDetails.builder()
-                                                     .claimantCostStandardBase(AssistedOrderCost
-                                                                                   .builder()
-                                                                                   .costPaymentDeadLine(
-                                                                                       LocalDate.now()
-                                                                                           .plusDays(14))
-                                                                                   .build())
-                                                     .claimantCostSummarilyBase(AssistedOrderCost
-                                                                                    .builder()
-                                                                                    .costPaymentDeadLine(
-                                                                                        LocalDate.now()
-                                                                                            .plusDays(14))
-                                                                                    .build())
-                                                     .defendantCostStandardBase(AssistedOrderCost
-                                                                                    .builder()
-                                                                                    .costPaymentDeadLine(
-                                                                                        LocalDate.now()
-                                                                                            .plusDays(14))
-                                                                                    .build())
-                                                     .defendantCostSummarilyBase(AssistedOrderCost
-                                                                                     .builder()
-                                                                                     .costPaymentDeadLine(
-                                                                                         LocalDate.now()
-                                                                                             .plusDays(14))
-                                                                                     .build()).build());
+        caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
+                                                     .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                     .build());
+        caseDataBuilder.claimantCostSummarilyBase(AssistedOrderCost.builder()
+                                                      .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                      .build());
+        caseDataBuilder.defendantCostStandardBase(AssistedOrderCost.builder()
+                                                      .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                      .build());
+        caseDataBuilder.defendantCostSummarilyBase(AssistedOrderCost.builder()
+                                                       .costPaymentDeadLine(LocalDate.now().plusDays(14))
+                                                       .build());
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
