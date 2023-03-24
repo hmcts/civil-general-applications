@@ -84,7 +84,7 @@ payments:
 
 idam:
   s2s-auth:
-    microservice: civil_service
+    microservice: civil_general_applications
 
 document_management:
   userRoles: "caseworker-civil,caseworker-civil-solicitor"
