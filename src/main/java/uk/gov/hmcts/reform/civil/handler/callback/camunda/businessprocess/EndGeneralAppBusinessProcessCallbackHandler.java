@@ -15,12 +15,14 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
@@ -47,6 +49,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;
+        } else if (Objects.nonNull(data.getFinalOrderSelection())) {
+            newState = ORDER_MADE;
         } else {
             newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE

@@ -11,7 +11,7 @@ public enum DocmosisTemplates {
                                       "Order_Written_Representation_Sequential_for_application_%s.pdf"),
     WRITTEN_REPRESENTATION_CONCURRENT("CV-UNS-GAP-ENG-01071.docx",
                                       "Order_Written_Representation_Concurrent_for_application_%s.pdf"),
-    FREE_FORM_ORDER("CV-UNS-GAP-ENG-01075.docx", "Free_form_order_%s.pdf");
+    FREE_FORM_ORDER("CV-UNS-GAP-ENG-01075.docx", "General_order_for_application_%s.pdf");
 
     private final String template;
     private final String documentTitle;
