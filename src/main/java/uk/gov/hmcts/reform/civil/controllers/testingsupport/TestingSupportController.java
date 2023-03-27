@@ -70,8 +70,14 @@ public class TestingSupportController {
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
 
-        var generalApplication = caseData.getGeneralApplications().stream().findFirst()
-            .orElse(null);
+        int size = caseData.getGeneralApplications().size();
+
+        /**
+         * Check the business process status of latest GA case
+         * if caseData.getGeneralApplications() collection size is more than 1
+         */
+
+        var generalApplication = caseData.getGeneralApplications().get(size - 1);
 
         var businessProcess = Objects.requireNonNull(generalApplication).getValue().getBusinessProcess();
         var businessProcessInfo = new BusinessProcessInfo(businessProcess);
