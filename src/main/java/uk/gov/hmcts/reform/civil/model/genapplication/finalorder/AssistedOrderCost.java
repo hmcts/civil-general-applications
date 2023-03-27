@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
-import org.elasticsearch.search.DocValueFormat;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 
 import java.math.BigDecimal;

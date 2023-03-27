@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.ClaimantDefendantNotAttendingType;
 import uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 
-import java.util.List;
-
 @Setter
 @Data
 @Builder(toBuilder = true)

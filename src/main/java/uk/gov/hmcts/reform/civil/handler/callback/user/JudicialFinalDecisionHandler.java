@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.asm.Advice;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -15,13 +14,19 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
-import uk.gov.hmcts.reform.civil.model.genapplication.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.*;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -39,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
+    public static final String DATE_HEARD_VALIDATION = "The date entered cannot be in the future";
     private final GeneralAppLocationRefDataService locationRefDataService;
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
@@ -117,6 +123,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
     }
+
     private CallbackResponse populateFinalOrderPreviewDoc(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         List<String> errors = validAssistedOrderForm(caseData);
@@ -127,9 +134,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private List<String> validAssistedOrderForm(CaseData caseData) {
         List<String> errors = new ArrayList<>();
-        if(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) &&
-            caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
-            errors.add("Date Heard cannot be future date");
+        if (caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
+            errors.add(DATE_HEARD_VALIDATION);
         }
 
         return errors;
@@ -142,9 +149,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     public static String getAllPartyNames(CaseData caseData) {
         return format("%s v %s%s",
-                caseData.getClaimant1PartyName(),
-                caseData.getDefendant1PartyName(),
-                Objects.nonNull(caseData.getDefendant2PartyName())
+                      caseData.getClaimant1PartyName(),
+                      caseData.getDefendant1PartyName(),
+                      Objects.nonNull(caseData.getDefendant2PartyName())
                         && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                             || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                         ? ", " + caseData.getDefendant2PartyName() : "");
