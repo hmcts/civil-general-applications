@@ -16,8 +16,8 @@ public class ClaimantDefendantRepresentation {
 
     private ClaimantRepresentationType claimantRepresentation;
     private DefendantRepresentationType defendantRepresentation;
-    private ClaimantDefendantNotAttendingType heardFromClaimantNotAttending;
-    private ClaimantDefendantNotAttendingType heardFromDefendantNotAttending;
+    private ClaimantDefendantNotAttendingType heardFromClaimantNotAttend;
+    private ClaimantDefendantNotAttendingType heardFromDefendantNotAttend;
     private String detailsRepresentationText;
 
     @JsonCreator
@@ -25,17 +25,17 @@ public class ClaimantDefendantRepresentation {
                                     ClaimantRepresentationType claimantRepresentation,
                                     @JsonProperty("defendantRepresentation")
                                     DefendantRepresentationType defendantRepresentation,
-                                    @JsonProperty("heardFromClaimantNotAttending")
-                                    ClaimantDefendantNotAttendingType heardFromClaimantNotAttending,
-                                    @JsonProperty("heardFromDefendantNotAttending")
-                                    ClaimantDefendantNotAttendingType heardFromDefendantNotAttending,
+                                    @JsonProperty("heardFromClaimantNotAttend")
+                                    ClaimantDefendantNotAttendingType heardFromClaimantNotAttend,
+                                    @JsonProperty("heardFromDefendantNotAttend")
+                                    ClaimantDefendantNotAttendingType heardFromDefendantNotAttend,
                                     @JsonProperty("detailsRepresentationText")
                                     String detailsRepresentationText) {
 
         this.claimantRepresentation = claimantRepresentation;
         this.defendantRepresentation = defendantRepresentation;
-        this.heardFromClaimantNotAttending = heardFromClaimantNotAttending;
-        this.heardFromDefendantNotAttending = heardFromDefendantNotAttending;
+        this.heardFromClaimantNotAttend = heardFromClaimantNotAttend;
+        this.heardFromDefendantNotAttend = heardFromDefendantNotAttend;
         this.detailsRepresentationText = detailsRepresentationText;
     }
 }
