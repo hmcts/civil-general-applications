@@ -208,7 +208,8 @@ task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
 }
 
 task installDependencies(type: Exec, description: 'Installs Yarn dependencies.  ') {
-  commandLine '/usr/bin/yarn','install', '--unsafe-perm=true', 'puppeteer'
+  commandLine '/usr/bin/yarn','install', '--unsafe-perm=true'
+  commandLine '/usr/bin/yarn','add', '--unsafe-perm=true', 'puppeteer'
 }
 
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
