@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
@@ -19,13 +20,16 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 
 @SpringBootTest(classes = {
@@ -163,6 +167,31 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getGaFinalOrderDocPreview()).isNull();
             //assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             //assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+        }
+    }
+
+    @Nested
+    class SubmittedCallback {
+        @Test
+        void shouldReturnExpectedSubmittedCallbackResponse_whenInvoked1v1() {
+            String body = "The order has been sent to: %n%n ## Claimant 1 %n%n Mr. John Rambo%n%n "
+                    + "## Defendant 1 %n%n Mr. Sole Trader";
+            String header = "# Your order has been issued %n%n ## Case number %n%n # 1678-3567-4955-5475";
+            CaseData caseData = CaseDataBuilder.builder()
+                    .atStateClaimDraft()
+                    .ccdCaseReference(1678356749555475L)
+                    .build().toBuilder()
+                    .respondent2SameLegalRepresentative(YesOrNo.NO)
+                    .claimant1PartyName("Mr. John Rambo")
+                    .defendant1PartyName("Mr. Sole Trader")
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).usingRecursiveComparison().isEqualTo(
+                    SubmittedCallbackResponse.builder()
+                            .confirmationHeader(format(header))
+                            .confirmationBody(format(body))
+                            .build());
         }
     }
 }
