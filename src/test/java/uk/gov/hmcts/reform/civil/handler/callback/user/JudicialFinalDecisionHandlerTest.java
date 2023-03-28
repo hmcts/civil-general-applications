@@ -173,7 +173,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     class SubmittedCallback {
         @Test
         void shouldReturnExpectedSubmittedCallbackResponse_whenInvoked1v1() {
-            String body = "The order has been sent to: %n%n ## Claimant 1 %n%n Mr. John Rambo%n%n "
+            String body = "<br/><p>The order has been sent to: </p>%n%n ## Claimant 1 %n%n Mr. John Rambo%n%n "
                     + "## Defendant 1 %n%n Mr. Sole Trader";
             String header = "# Your order has been issued %n%n ## Case number %n%n # 1678-3567-4955-5475";
             CaseData caseData = CaseDataBuilder.builder()

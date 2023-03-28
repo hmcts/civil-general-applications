@@ -47,7 +47,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             + "this order was made, you may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String ORDER_ISSUED = "# Your order has been issued %n%n ## Case number %n%n # %s";
-    private static final String ORDER_1_CLAI = "The order has been sent to: "
+    private static final String ORDER_1_CLAI = "<br/><p>The order has been sent to: </p>"
             + "%n%n ## Claimant 1 %n%n %s";
     private static final String ORDER_1_DEF = "%n%n ## Defendant 1 %n%n %s";
     private static final String ORDER_2_DEF = "%n%n ## Defendant 2 %n%n %s";
