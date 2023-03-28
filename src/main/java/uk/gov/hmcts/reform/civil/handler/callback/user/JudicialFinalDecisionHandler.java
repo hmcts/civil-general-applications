@@ -191,14 +191,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .build();
     }
 
-    private CallbackResponse populateFinalOrderPreviewDoc(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        List<String> errors = validAssistedOrderForm(caseData);
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .errors(errors)
-            .build();
-    }
-
     private List<String> validAssistedOrderForm(CaseData caseData) {
         List<String> errors = new ArrayList<>();
         if (caseData.getAssistedOrderMadeSelection() != null
