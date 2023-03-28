@@ -13,16 +13,16 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
-import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -40,8 +40,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @Slf4j
 @Service
@@ -51,8 +51,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
     public static final String DATE_HEARD_VALIDATION = "The date entered cannot be in the future";
     private final GeneralAppLocationRefDataService locationRefDataService;
-    private static final String POPULATE_FREE_FORM_ORDER_PREVIEW_DOC = "populate-freeForm-values";
-    private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
+
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
@@ -74,9 +73,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return Map.of(
                 callbackKey(ABOUT_TO_START), this::setCaseName,
                 callbackKey(MID, POPULATE_FINAL_ORDER_FORM_VALUES), this::populateFreeFormValues,
-                callbackKey(MID, POPULATE_FINAL_ORDER_PREVIEW_DOC), this::populateFinalOrderPreviewDoc,
-                callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse
-                callbackKey(MID, POPULATE_FREE_FORM_ORDER_PREVIEW_DOC), this::populateFreeFormValues,
                 callbackKey(MID, POPULATE_FINAL_ORDER_PREVIEW_DOC), this::gaPopulateFinalOrderPreviewDoc,
                 callbackKey(ABOUT_TO_SUBMIT), this::setFinalDecisionBusinessProcess,
                 callbackKey(SUBMITTED), this::buildConfirmation
@@ -111,6 +107,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaPopulateFinalOrderPreviewDoc(final CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        List<String> errors = validAssistedOrderForm(caseData);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
             CaseDocument freeform = gaFreeFormOrderGenerator.generate(
@@ -121,6 +118,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
+                .errors(errors)
                 .build();
     }
 
@@ -192,14 +190,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
-    }
-
-    private CallbackResponse populateFinalOrderPreviewDoc(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        List<String> errors = validAssistedOrderForm(caseData);
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .errors(errors)
-            .build();
     }
 
     private List<String> validAssistedOrderForm(CaseData caseData) {
