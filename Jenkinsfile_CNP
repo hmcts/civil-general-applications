@@ -9,7 +9,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "CIV-6678"
+def generalappCCDBranch = "CIV-6678_1"
 def ccddefbranch = "master"
 
 AppPipelineConfig pipelineConf
