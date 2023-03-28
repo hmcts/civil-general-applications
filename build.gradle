@@ -371,7 +371,9 @@ dependencies {
   implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.30.1'
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
-  
+
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.70'
+
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
   implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.75'
