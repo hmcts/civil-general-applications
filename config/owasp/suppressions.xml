@@ -8,6 +8,10 @@
     <cve>CVE-2022-45688</cve>
   </suppress>
   <suppress>
+    <notes></notes>
+    <cve>CVE-2023-28708</cve>
+  </suppress>
+  <suppress>
     <notes>1.33 snake yaml is the supported version for the current spring boot. can be revisited once spring boot is upgraded</notes>
     <cve>CVE-2022-1471</cve>
   </suppress>
