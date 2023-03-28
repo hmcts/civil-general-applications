@@ -31,6 +31,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
@@ -201,6 +203,10 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
     private final String respondent1OrganisationIDCopy;
+    private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
+    private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
+    private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
+    private final GAOrderWithoutNoticeGAspec orderWithoutNoticeForWrittenRep;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null

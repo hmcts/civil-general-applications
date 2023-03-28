@@ -33,6 +33,10 @@ public class GAJudicialMakeAnOrder {
     private YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder;
     private LocalDate judgeApproveEditOptionDateForUnlessOrder;
     private YesOrNo isOrderProcessedByUnlessScheduler;
+    private String orderCourtOwnInitiative;
+    private LocalDate orderCourtOwnInitiativeDate;
+    private String orderWithoutNotice;
+    private LocalDate orderWithoutNoticeDate;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
@@ -57,7 +61,11 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("judgeApproveEditOptionDateForUnlessOrder")
                               LocalDate judgeApproveEditOptionDateForUnlessOrder,
                           @JsonProperty("isOrderProcessedByUnlessScheduler")
-                              YesOrNo isOrderProcessedByUnlessScheduler) {
+                              YesOrNo isOrderProcessedByUnlessScheduler,
+                          @JsonProperty("orderCourtOwnInitiative") String orderCourtOwnInitiative,
+                          @JsonProperty("orderCourtOwnInitiativeDate") LocalDate orderCourtOwnInitiativeDate,
+                          @JsonProperty("orderWithoutNotice") String orderWithoutNotice,
+                          @JsonProperty("orderWithoutNoticeDate") LocalDate orderWithoutNoticeDate) {
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -74,5 +82,9 @@ public class GAJudicialMakeAnOrder {
         this.displayjudgeApproveEditOptionDateForUnlessOrder = displayjudgeApproveEditOptionDateForUnlessOrder;
         this.judgeApproveEditOptionDateForUnlessOrder = judgeApproveEditOptionDateForUnlessOrder;
         this.isOrderProcessedByUnlessScheduler = isOrderProcessedByUnlessScheduler;
+        this.orderCourtOwnInitiative = orderCourtOwnInitiative;
+        this.orderCourtOwnInitiativeDate = orderCourtOwnInitiativeDate;
+        this.orderWithoutNotice = orderWithoutNotice;
+        this.orderWithoutNoticeDate = orderWithoutNoticeDate;
     }
 }
