@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -85,14 +86,23 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
             : "";
     }
 
-    private String populateJudicialByCourtsInitiative(CaseData caseData) {
+    public String populateJudicialByCourtsInitiative(CaseData caseData) {
 
         if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative().equals(GAByCourtsInitiativeGAspec
                                                                                                .OPTION_3)) {
             return StringUtils.EMPTY;
         }
-        return caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative()
-            .getDisplayedValue();
+
+        if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative()
+            .equals(GAByCourtsInitiativeGAspec.OPTION_1)) {
+            return caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative() + " "
+                .concat(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiativeDate()
+                            .format(DATE_FORMATTER));
+        } else {
+            return caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice() + " "
+                .concat(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNoticeDate()
+                            .format(DATE_FORMATTER));
+        }
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

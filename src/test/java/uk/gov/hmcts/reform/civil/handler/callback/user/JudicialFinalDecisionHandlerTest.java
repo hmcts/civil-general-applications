@@ -8,25 +8,33 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 
 @SpringBootTest(classes = {
@@ -37,6 +45,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private JudicialFinalDecisionHandler handler;
+    @MockBean
+    private FreeFormOrderGenerator freeFormOrderGenerator;
     @Autowired
     private ObjectMapper objMapper;
     @MockBean
@@ -191,6 +201,20 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     }
 
+    @Test
+    void shouldGenerateFinalOrderPreviewDocumentWhenPopulateFinalOrderPreviewDocIsCalled() {
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(CaseDocument
+                .builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                .build()
+                .toBuilder().finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData updatedData = objMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getGaFinalOrderDocPreview()).isNotNull();
+    }
+
     @Nested
     class GetAllPartyNames {
         @Test
@@ -233,6 +257,48 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String title = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
             assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader, Mr. John Rambo");
+        }
+    }
+
+    @Nested
+    class AboutToSubmitHandling {
+
+        @Test
+        void shouldSetUpReadyBusinessProcess() {
+            CaseData caseData = CaseData.builder().gaFinalOrderDocPreview(Document.builder().build()).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getGaFinalOrderDocPreview()).isNull();
+            //assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            //assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
+        }
+    }
+
+    @Nested
+    class SubmittedCallback {
+        @Test
+        void shouldReturnExpectedSubmittedCallbackResponse_whenInvoked1v1() {
+            String body = "<br/><p>The order has been sent to: </p>%n%n ## Claimant 1 %n%n Mr. John Rambo%n%n "
+                    + "## Defendant 1 %n%n Mr. Sole Trader";
+            String header = "# Your order has been issued %n%n ## Case number %n%n # 1678-3567-4955-5475";
+            CaseData caseData = CaseDataBuilder.builder()
+                    .atStateClaimDraft()
+                    .ccdCaseReference(1678356749555475L)
+                    .build().toBuilder()
+                    .respondent2SameLegalRepresentative(YesOrNo.NO)
+                    .claimant1PartyName("Mr. John Rambo")
+                    .defendant1PartyName("Mr. Sole Trader")
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).usingRecursiveComparison().isEqualTo(
+                    SubmittedCallbackResponse.builder()
+                            .confirmationHeader(format(header))
+                            .confirmationBody(format(body))
+                            .build());
         }
     }
 }
