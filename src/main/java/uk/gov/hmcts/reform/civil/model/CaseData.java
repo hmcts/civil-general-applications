@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -151,11 +153,14 @@ public class CaseData implements MappableObject {
     private String gaHearingNoticeInformation;
     private final String migrationId;
     private final String caseNameHmctsInternal;
+    private final FinalOrderSelection finalOrderSelection;
     private final String freeFormRecitalText;
     private final String freeFormRecordedText;
     private final String freeFormOrderedText;
+    private final OrderOnCourts orderOnCourtsList;
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
+    private final Document gaFinalOrderDocPreview;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
