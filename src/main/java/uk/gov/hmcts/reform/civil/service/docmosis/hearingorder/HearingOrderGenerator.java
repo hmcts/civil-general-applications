@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -87,7 +88,17 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                                                                                .OPTION_3)) {
             return StringUtils.EMPTY;
         }
-        return caseData.getJudicialByCourtsInitiativeListForHearing().getDisplayedValue();
+
+        if (caseData.getJudicialByCourtsInitiativeListForHearing()
+            .equals(GAByCourtsInitiativeGAspec.OPTION_1)) {
+            return caseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiative() + " "
+                .concat(caseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate()
+                            .format(DATE_FORMATTER));
+        } else {
+            return caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNotice() + " "
+                .concat(caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate()
+                            .format(DATE_FORMATTER));
+        }
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
