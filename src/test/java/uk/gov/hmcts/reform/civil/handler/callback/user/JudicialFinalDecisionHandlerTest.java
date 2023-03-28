@@ -15,9 +15,9 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -148,13 +148,17 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldShowError_When_OrderDateIsFutureDate_FinalOrderPreviewDoc_onMidEventCallback() {
 
         // Given
-        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-            .build().toBuilder()
-            .generalAppDetailsOfOrder("order test")
-            .assistedOrderMadeSelection(YesOrNo.YES)
-            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+                .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                .generalAppDetailsOfOrder("order test")
+                .assistedOrderMadeSelection(YesOrNo.YES)
+                .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                    .date(LocalDate.now().plusDays(1)).build())
-            .build();
+                .build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -167,11 +171,15 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldNotShowError_When_OrderDateIsTodayDate_FinalOrderPreviewDoc_onMidEventCallback() {
 
         // Given
-        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-            .build().toBuilder()
-            .generalAppDetailsOfOrder("order test")
-            .assistedOrderMadeSelection(YesOrNo.YES)
-            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+                .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                .generalAppDetailsOfOrder("order test")
+                .assistedOrderMadeSelection(YesOrNo.YES)
+                .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                    .date(LocalDate.now()).build())
             .build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
@@ -186,11 +194,15 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldNotShowError_When_AssistedOrderNotMade_FinalOrderPreviewDoc_onMidEventCallback() {
 
         // Given
-        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-            .build().toBuilder()
-            .generalAppDetailsOfOrder("order test")
-            .assistedOrderMadeSelection(YesOrNo.NO)
-            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+                .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                .generalAppDetailsOfOrder("order test")
+                .assistedOrderMadeSelection(YesOrNo.NO)
+                .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                    .date(LocalDate.now()).build())
             .build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
@@ -207,7 +219,12 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .builder().documentLink(Document.builder().build()).build());
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
                 .build()
-                .toBuilder().finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER).build();
+                .toBuilder()
+                    .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                    .generalAppDetailsOfOrder("order test")
+                    .assistedOrderMadeSelection(YesOrNo.NO)
+                    .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+                                                           .date(LocalDate.now()).build()).build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
