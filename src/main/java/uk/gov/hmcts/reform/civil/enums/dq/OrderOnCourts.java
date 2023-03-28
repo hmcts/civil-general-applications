@@ -5,11 +5,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum GAByCourtsInitiativeGAspec {
-
-    OPTION_1("Order on court's own initiative"),
-    OPTION_2("Order without notice"),
-    OPTION_3("None");
+public enum OrderOnCourts {
+    ORDER_ON_COURT_INITIATIVE("Order on court's own initiative"),
+    ORDER_WITHOUT_NOTICE("Order without notice"),
+    NONE("None");
 
     private final String displayedValue;
 }
