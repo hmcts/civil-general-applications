@@ -804,7 +804,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse gaPopulateWrittenRepPreviewDoc(CallbackParams callbackParams) {
-        // Karthick
+
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate =
             caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
@@ -892,7 +892,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse gaPopulateHearingOrderDoc(CallbackParams callbackParams) {
-        // karthick
+
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
