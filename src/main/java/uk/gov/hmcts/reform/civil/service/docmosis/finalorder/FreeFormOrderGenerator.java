@@ -51,7 +51,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
                 new PDF(
                         getFileName(caseData, template),
                         document.getBytes(),
-                        DocumentType.FREE_FORM_ORDER
+                        DocumentType.GENERAL_ORDER
                 )
         );
     }

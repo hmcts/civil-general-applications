@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
-import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.FREE_FORM_ORDER;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -56,7 +56,7 @@ class FreeFormOrderGeneratorTest {
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     private static final CaseDocument CASE_DOCUMENT = CaseDocumentBuilder.builder()
             .documentName(fileName_application)
-            .documentType(FREE_FORM_ORDER)
+            .documentType(GENERAL_ORDER)
             .build();
 
     @MockBean
