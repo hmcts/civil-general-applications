@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -513,6 +514,8 @@ public class CaseDataBuilder {
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .orderText("Test Order")
+                                           .orderCourtOwnInitiative("abcd")
+                                           .orderCourtOwnInitiativeDate(LocalDate.now())
                                            .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
@@ -537,6 +540,8 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .directionsText("Test Direction")
                                            .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
+                                           .orderCourtOwnInitiative("abcd")
+                                           .orderCourtOwnInitiativeDate(LocalDate.now())
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
@@ -561,6 +566,8 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .dismissalOrderText("Test Dismissal")
                                            .reasonForDecisionText("Test Reason")
+                                           .orderCourtOwnInitiative("abcd")
+                                           .orderCourtOwnInitiativeDate(LocalDate.now())
                                            .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .makeAnOrder(DISMISS_THE_APPLICATION)
                                            .build())
@@ -573,6 +580,10 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_1)
+            .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
+                                                       .builder()
+                                                       .orderCourtOwnInitiative("abcd")
+                                                       .orderCourtOwnInitiativeDate(LocalDate.now()).build())
             .defendant1PartyName("Test Defendant1 Name")
             .locationName("location name")
             .defendant2PartyName("Test Defendant2 Name")
@@ -685,6 +696,10 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
+            .orderCourtOwnInitiativeForWrittenRep(
+                GAOrderCourtOwnInitiativeGAspec.builder()
+                    .orderCourtOwnInitiative("abcd")
+                    .orderCourtOwnInitiativeDate(LocalDate.now()).build())
             .judgeRecitalText("Test Judge's recital")
             .directionInRelationToHearingText("Test written order")
             .createdDate(LocalDateTime.now())
@@ -695,8 +710,8 @@ public class CaseDataBuilder {
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
                     .writtenOption(SEQUENTIAL_REPRESENTATIONS)
-                    .writtenSequentailRepresentationsBy(LocalDate.now())
-                    .sequentialApplicantMustRespondWithin(LocalDate.now()
+                    .writtenSequentailRepresentationsBy(now())
+                    .sequentialApplicantMustRespondWithin(now()
                                                               .plusDays(5)).build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
@@ -707,7 +722,11 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
-            .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3)
+            .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
+            .orderCourtOwnInitiativeForWrittenRep(
+                GAOrderCourtOwnInitiativeGAspec.builder()
+                    .orderCourtOwnInitiative("abcd")
+                    .orderCourtOwnInitiativeDate(LocalDate.now()).build())
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
