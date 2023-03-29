@@ -18,8 +18,11 @@ group = 'uk.gov.hmcts.reform'
 version = '0.0.1'
 
 allprojects {
-  sourceCompatibility = '11'
-  targetCompatibility = '11'
+  java {
+    toolchain {
+      languageVersion = JavaLanguageVersion.of(17)
+    }
+  }
 
   apply plugin: 'java'
   apply plugin: 'jacoco'
@@ -36,8 +39,8 @@ allprojects {
   }
 
   jacoco {
-    toolVersion = '0.8.5' // jacocoMavenPluginVersion
-    reportsDir = file("$buildDir/reports/jacoco")
+    toolVersion = '0.8.8' // jacocoMavenPluginVersion
+    reportsDirectory = file("$buildDir/reports/jacoco")
   }
 
 
@@ -89,6 +92,8 @@ allprojects {
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.8.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.8.10'
       dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
+
+
       // CVE-2021-29425
       dependency group: 'commons-io', name: 'commons-io', version: '2.11.0'
       dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
@@ -202,7 +207,7 @@ task contract(type: Test) {
 }
 
 task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
-  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  getMainClass().set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
   classpath += sourceSets.test.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
@@ -281,7 +286,6 @@ jacocoTestReport.dependsOn {
 def versions = [
   junit              : '5.7.0',
   junitPlatform      : '1.9.2',
-  reformLogging      : '5.1.5',
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
   springfoxSwagger   : '3.0.0',
@@ -330,8 +334,7 @@ dependencies {
 
   implementation group: 'org.flywaydb', name: 'flyway-core'
 
-  implementation group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
-  implementation group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.10.RELEASE'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '3.1.5'
@@ -368,8 +371,6 @@ dependencies {
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: '2.0.0'
 
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.70'
-
   implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
 
   implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.75'
@@ -403,7 +404,7 @@ dependencies {
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
-  testCompile  group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
+  testImplementation   group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
   testImplementation 'com.github.hmcts:fortify-client:1.2.2:all'
   //pact contract testing
   contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-junit5_2.12', version: versions.pact
@@ -411,14 +412,11 @@ dependencies {
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
 
   contractTestImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-  contractTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+  contractTestImplementation("org.junit.jupiter:junit-jupiter-engine:5.7.0")
   contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.3.2')
 
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
-
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.19.0'
 
   testImplementation(platform('org.junit:junit-bom:5.9.2'))
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
