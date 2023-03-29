@@ -8,22 +8,20 @@ import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 
-import java.util.List;
-
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class AssistedOrderAppealDetails {
 
-    private final List<AppealOriginTypes> appealOrigin;
+    private final AppealOriginTypes appealOrigin;
     private final String otherOriginText;
-    private final List<PermissionToAppealTypes> permissionToAppeal;
+    private final PermissionToAppealTypes permissionToAppeal;
     private final String reasonsText;
 
     @JsonCreator
-    AssistedOrderAppealDetails(@JsonProperty("appealOrigin") List<AppealOriginTypes> appealOrigin,
+    AssistedOrderAppealDetails(@JsonProperty("appealOrigin") AppealOriginTypes appealOrigin,
                                @JsonProperty("otherOriginText") String otherOriginText,
-                               @JsonProperty("permissionToAppeal") List<PermissionToAppealTypes> permissionToAppeal,
+                               @JsonProperty("permissionToAppeal") PermissionToAppealTypes permissionToAppeal,
                                @JsonProperty("reasonsText") String reasonsText
                                ) {
 

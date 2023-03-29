@@ -7,20 +7,18 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes;
 
-import java.util.List;
-
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class AssistedOrderHeardRepresentation {
 
-    private final List<HeardFromRepresentationTypes> representationType;
+    private final HeardFromRepresentationTypes representationType;
     private final ClaimantDefendantRepresentation claimantDefendantRepresentation;
     private final DetailText otherRepresentation;
 
     @JsonCreator
     AssistedOrderHeardRepresentation(@JsonProperty("representationType")
-                                     List<HeardFromRepresentationTypes> representationType,
+                                     HeardFromRepresentationTypes representationType,
                                      @JsonProperty("claimantDefendantRepresentation")
                                      ClaimantDefendantRepresentation claimantDefendantRepresentation,
                                      @JsonProperty("otherRepresentation") DetailText otherRepresentation) {

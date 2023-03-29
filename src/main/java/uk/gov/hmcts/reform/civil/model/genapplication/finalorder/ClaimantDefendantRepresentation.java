@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
-import uk.gov.hmcts.reform.civil.enums.dq.ClaimantDefendantNotAttendingType;
 import uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 
@@ -16,8 +15,8 @@ public class ClaimantDefendantRepresentation {
 
     private ClaimantRepresentationType claimantRepresentation;
     private DefendantRepresentationType defendantRepresentation;
-    private ClaimantDefendantNotAttendingType heardFromClaimantNotAttend;
-    private ClaimantDefendantNotAttendingType heardFromDefendantNotAttend;
+    private HeardClaimantNotAttend heardFromClaimantNotAttend;
+    private HeardDefendantNotAttend heardFromDefendantNotAttend;
     private String detailsRepresentationText;
 
     @JsonCreator
@@ -26,9 +25,9 @@ public class ClaimantDefendantRepresentation {
                                     @JsonProperty("defendantRepresentation")
                                     DefendantRepresentationType defendantRepresentation,
                                     @JsonProperty("heardFromClaimantNotAttend")
-                                    ClaimantDefendantNotAttendingType heardFromClaimantNotAttend,
+                                    HeardClaimantNotAttend heardFromClaimantNotAttend,
                                     @JsonProperty("heardFromDefendantNotAttend")
-                                    ClaimantDefendantNotAttendingType heardFromDefendantNotAttend,
+                                    HeardDefendantNotAttend heardFromDefendantNotAttend,
                                     @JsonProperty("detailsRepresentationText")
                                     String detailsRepresentationText) {
 

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
-import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
+import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 
@@ -19,7 +19,7 @@ public class AssistedOrderFurtherHearingDetails {
 
     private LocalDate listFromDate;
     private LocalDate listToDate;
-    private GAHearingDuration lengthOfNewHearing;
+    private LengthOfHearing lengthOfNewHearing;
     private final HearingLength caseHearingLengthElement;
     private DynamicList alternativeHearingLocation;
     private GAJudicialHearingType hearingMethods;
@@ -28,7 +28,7 @@ public class AssistedOrderFurtherHearingDetails {
     @JsonCreator
     AssistedOrderFurtherHearingDetails(@JsonProperty("listFromDate") LocalDate listFromDate,
                                        @JsonProperty("listToDate") LocalDate listToDate,
-                                       @JsonProperty("lengthOfNewHearing") GAHearingDuration lengthOfNewHearing,
+                                       @JsonProperty("lengthOfNewHearing") LengthOfHearing lengthOfNewHearing,
                                        @JsonProperty("caseHearingLengthElement") HearingLength caseHearingLengthElement,
                                        @JsonProperty("alternativeHearingLocation")
                                        DynamicList alternativeHearingLocation,
