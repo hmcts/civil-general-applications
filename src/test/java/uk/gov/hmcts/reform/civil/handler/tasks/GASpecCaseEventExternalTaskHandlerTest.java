@@ -172,6 +172,12 @@ class GASpecCaseEventExternalTaskHandlerTest {
         @Test
         void shouldNotCallHandleFailureMethod_whenExceptionOnCompleteCall() {
             String errorMessage = "there was an error";
+            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            when(coreCaseDataService.startGaUpdate(any(), any()))
+                .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
 
             doThrow(new NotFoundException(errorMessage)).when(externalTaskService).complete(mockTask);
 
