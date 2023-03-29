@@ -15,12 +15,15 @@ import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisRequest;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DocumentGeneratorService {
+
+    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy");
 
     public static final String API_RENDER = "/rs/render";
     private final RestTemplate restTemplate;

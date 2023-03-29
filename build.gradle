@@ -242,16 +242,12 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   commandLine '/usr/bin/yarn', '--silent', 'test:nightly-api-tests'
 }
 
-task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
-  commandLine './bin/pull-latest-general-app-ccd-files.sh', 'master'
-}
-
 task smoke(description: 'Runs the smoke tests.') {
  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, installDependencies, runApiTests, runNightlyAPITests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests, runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
