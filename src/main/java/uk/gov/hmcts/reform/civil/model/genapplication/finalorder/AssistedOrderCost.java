@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Setter
