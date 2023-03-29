@@ -15,12 +15,12 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class AssistedOrderCost {
 
-    private final BigDecimal costAmount;
+    private final String costAmount;
     private final LocalDate costPaymentDeadLine;
     private YesOrNo isPartyCostProtection;
 
     @JsonCreator
-    AssistedOrderCost(@JsonProperty("costAmount") BigDecimal costAmount,
+    AssistedOrderCost(@JsonProperty("costAmount") String costAmount,
                                @JsonProperty("costPaymentDeadLine") LocalDate costPaymentDeadLine,
                                @JsonProperty("isPartyCostProtection") YesOrNo isPartyCostProtection
     ) {
