@@ -85,7 +85,11 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.generalOrderDocument(wrapElements(judgeDecision));
+                List<Element<CaseDocument>> newGeneralOrderDocumentList =
+                        ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+
+                newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
+                caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
             }
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getOrderText() != null

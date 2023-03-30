@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
@@ -74,6 +76,9 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
+    @MockBean
+    private FreeFormOrderGenerator freeFormOrderGenerator;
+
     @Autowired
     private GeneratePDFDocumentCallbackHandler handler;
 
@@ -98,6 +103,8 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
         when(requestForInformationGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+        when(freeFormOrderGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
     }
 
@@ -315,6 +322,53 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(updatedData.getRequestForInformationDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalled_withFinalOrder() {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+                    .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder() {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                    .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                            .documentBinaryUrl("binaryUrl").build())
+                    .documentType(DocumentType.GENERAL_ORDER).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                    .generalOrderDocument(wrapElements(caseDocument))
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(freeFormOrderGenerator)
+                    .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().size()).isEqualTo(2);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 

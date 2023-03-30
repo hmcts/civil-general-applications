@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -268,6 +269,63 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
+        void shouldChangeTheStateToOrderMadeAfterFinalOrder() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, YES));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(NO, YES).getRequest().getCaseDetails()))
+                    .thenReturn(getSampleGeneralApplicationCaseDataAfterOrderMade(NO, YES));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, YES).getCaseDetails()))
+                    .thenReturn(getParentCaseDataBeforeUpdate(NO, YES));
+
+            handler.handle(getCallbackParams(NO, YES));
+
+            verify(coreCaseDataService, times(1))
+                    .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                    new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                    updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSol = objectMapper.convertValue(
+                    updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
+                    updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
+                            .get("gaDetailsMasterCollection"),
+                    new TypeReference<>(){});
+
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
+            assertThat(gaDetailsMasterCollection.size()).isEqualTo(1);
+
+            GeneralApplicationsDetails generalApp = objectMapper.convertValue(
+                    ((LinkedHashMap<?, ?>) generalApplicationDetails.get(0)).get("value"),
+                    new TypeReference<>() {});
+            assertThat(generalApp.getCaseState()).isEqualTo("Order Made");
+
+            GADetailsRespondentSol generalAppResp = objectMapper.convertValue(
+                    ((LinkedHashMap<?, ?>) gaDetailsRespondentSol.get(0)).get("value"),
+                    new TypeReference<>() {});
+            assertThat(generalAppResp.getCaseState()).isEqualTo("Order Made");
+
+            GADetailsRespondentSol generalAppRespTwo = objectMapper.convertValue(
+                    ((LinkedHashMap<?, ?>) gaDetailsRespondentSolTwo.get(0)).get("value"),
+                    new TypeReference<>() {});
+            assertThat(generalAppRespTwo.getCaseState())
+                    .isEqualTo("Order Made");
+            GeneralApplicationsDetails gaDetailsMasterColl = objectMapper.convertValue(
+                    ((LinkedHashMap<?, ?>) gaDetailsMasterCollection.get(0)).get("value"),
+                    new TypeReference<>() {});
+            assertThat(gaDetailsMasterColl.getCaseState())
+                    .isEqualTo("Order Made");
+        }
+
+        @Test
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(END_BUSINESS_PROCESS_GASPEC);
         }
@@ -343,6 +401,13 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplicationBeforePayment(isConsented, isTobeNotified))
                 .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
+        }
+
+        private CaseData getSampleGeneralApplicationCaseDataAfterOrderMade(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                            getGeneralApplication(isConsented, isTobeNotified))
+                    .toBuilder().ccdCaseReference(CHILD_CCD_REF)
+                    .finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER).build();
         }
 
         private CallbackParams getCallbackParams(YesOrNo isConsented, YesOrNo isTobeNotified) {
