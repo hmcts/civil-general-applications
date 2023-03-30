@@ -230,7 +230,7 @@ public class CaseData implements MappableObject {
     private final AssistedOrderCost claimantCostSummarilyBase;
     private final AssistedOrderCost defendantCostSummarilyBase;
     private final DetailText costReservedDetails;
-    private final DetailText besPokeCostDetails;
+    private final DetailText bespokeCostDetails;
     private final String assistedOrderOrderedThatText;
     private final List<FinalOrderToggle> assistedOrderFurtherHearingToggle;
     private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
