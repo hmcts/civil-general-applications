@@ -14,12 +14,18 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +49,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private FreeFormOrderGenerator freeFormOrderGenerator;
     @Autowired
     private ObjectMapper objMapper;
+    @MockBean
+    private GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
@@ -76,7 +84,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         // Given
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
                 .build().toBuilder().generalAppDetailsOfOrder("order test").build();
-        CallbackParams params = callbackParamsOf(caseData, MID, "populate-freeForm-values");
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-finalOrder-form-values");
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         // Then
@@ -90,6 +98,118 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(ORDERED_TEXT);
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
                 .isEqualTo(LocalDate.now().toString());
+
+    }
+
+    @Test
+    void shouldPopulate_AssistedOrderFormOrderValues_onMidEventCallback() {
+
+        // Given
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("Site Name 1").courtAddress("Address1").postcode("18000")
+                          .build());
+        locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
+                          .build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
+            .build().toBuilder().generalAppDetailsOfOrder("order test").build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-finalOrder-form-values");
+        // When
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        // Then
+        assertThat(response.getData()).extracting("orderMadeOnOwnInitiative").extracting("detailText")
+            .isEqualTo(ON_INITIATIVE_SELECTION_TEST);
+        assertThat(response.getData()).extracting("orderMadeOnWithOutNotice").extracting("detailText")
+            .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
+        assertThat(response.getData()).extracting("assistedOrderMadeDateHeardDetails").extracting("date")
+            .isEqualTo(LocalDate.now().toString());
+
+        LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
+        assertThat(response.getData()).extracting("claimantCostStandardBase").extracting("costPaymentDeadLine")
+            .isEqualTo(localDatePlus14days.toString());
+        assertThat(response.getData()).extracting("claimantCostSummarilyBase").extracting("costPaymentDeadLine")
+            .isEqualTo(localDatePlus14days.toString());
+        assertThat(response.getData()).extracting("defendantCostStandardBase").extracting("costPaymentDeadLine")
+            .isEqualTo(localDatePlus14days.toString());
+        assertThat(response.getData()).extracting("defendantCostSummarilyBase").extracting("costPaymentDeadLine")
+            .isEqualTo(localDatePlus14days.toString());
+
+        assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
+            .get("alternativeHearingLocation")).get("list_items")).get(0))
+                       .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
+
+        assertThat(response.getData()).extracting("assistedOrderOrderedThatText")
+            .isEqualTo(ORDERED_TEXT);
+
+    }
+
+    @Test
+    void shouldShowError_When_OrderDateIsFutureDate_FinalOrderPreviewDoc_onMidEventCallback() {
+
+        // Given
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+            .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+                                                   .date(LocalDate.now().plusDays(1)).build())
+            .build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+        // When
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        // Then
+        assertThat(response.getErrors().size() > 0);
+
+    }
+
+    @Test
+    void shouldNotShowError_When_OrderDateIsTodayDate_FinalOrderPreviewDoc_onMidEventCallback() {
+
+        // Given
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+            .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+                                                   .date(LocalDate.now()).build())
+            .build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+        // When
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        // Then
+        assertThat(response.getErrors().size() > 0);
+
+    }
+
+    @Test
+    void shouldNotShowError_When_AssistedOrderNotMade_FinalOrderPreviewDoc_onMidEventCallback() {
+
+        // Given
+        when(freeFormOrderGenerator.generate(any(), any())).thenReturn(
+            CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder()
+            .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.NO)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
+                                                   .date(LocalDate.now()).build())
+            .build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+        // When
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        // Then
+        assertThat(response.getErrors().size() > 0);
 
     }
 
