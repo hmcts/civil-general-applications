@@ -245,13 +245,15 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing())) {
                 if(caseData.getAssistedOrderFurtherHearingDetails()
                     .getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
-                    furtherHearingBuilder.append(String.format(furtherHearingLengthOther,
+                    furtherHearingBuilder.append(String.format(furtherHearingLengthText,
+                                                               String.format(furtherHearingLengthOther,
                                                                caseData.getAssistedOrderFurtherHearingDetails()
                                                                    .getLengthOfHearingOther().getLengthListOtherDays(),
                                                                caseData.getAssistedOrderFurtherHearingDetails()
                                                                    .getLengthOfHearingOther().getLengthListOtherHours(),
                                                                caseData.getAssistedOrderFurtherHearingDetails()
-                                                                   .getLengthOfHearingOther().getLengthListOtherMinutes()));
+                                                                   .getLengthOfHearingOther()
+                                                                                 .getLengthListOtherMinutes())));
                 }else {
                     furtherHearingBuilder.append(String.format(furtherHearingLengthText,
                                                  caseData.getAssistedOrderFurtherHearingDetails()
