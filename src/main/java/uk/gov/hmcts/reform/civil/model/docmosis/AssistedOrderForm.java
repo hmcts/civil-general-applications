@@ -30,6 +30,7 @@ public class AssistedOrderForm implements MappableObject {
     private final String recitalRecordedText;
     private final String orderedText;
     private final String costsText;
+    private final String furtherHearingText;
 
 
     private final String freeFormRecitalText;

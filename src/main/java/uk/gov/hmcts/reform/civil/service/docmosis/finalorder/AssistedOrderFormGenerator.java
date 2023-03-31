@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
@@ -61,6 +62,13 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     private static final String costPartyHasNoBenefit =  "The paying party does not have cost protection.\n\n";
     private static final String costBespokeText = "Bespoke costs orders: %s \n\n";
 
+    private static final String furtherHearingTakePlaceAfterText = "A further hearing will take place after: %s \n\n";
+    private static final String furtherHearingTakePlaceBeforeText = "It will take place before: %s\n\n";
+    private static final String furtherHearingLengthText = "The length of new hearing will be: %s\n\n";
+    private static final String furtherHearingLengthOther = " %s/ %s/ %s";
+    private static final String furtherHearingAlternativeHearingText = "Alternative hearing location: %s\n\n";
+    private static final String furtherHearingMethodHearingText = "Method of hearing: %s\n\n";
+
     private static final String defendantCostStandardBase = "It is recorded that %s.\n\n";
     private static final String claimantCostStandardBase = "It is recorded that %s.\n\n";
     private static final String defendantCostSummarilyBase = "It is recorded that %s.\n\n";
@@ -99,6 +107,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .recitalRecordedText(getRecitalRecordedText(caseData))
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .costsText(getCostsTextValue(caseData))
+                .furtherHearingText(getFurtherHearingText(caseData))
                 .freeFormRecitalText(caseData.getFreeFormRecitalText())
                 .freeFormRecordedText(caseData.getFreeFormRecordedText())
                 .freeFormOrderedText(caseData.getFreeFormOrderedText())
@@ -204,8 +213,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 }
                 break;
                 case BESPOKE_COSTS_ORDER: {
-                    if (nonNull(caseData.getBesPokeCostDetails())) {
-                        costsTextBuilder.append(String.format(costBespokeText, caseData.getBesPokeCostDetails()
+                    if (nonNull(caseData.getBespokeCostDetails())) {
+                        costsTextBuilder.append(String.format(costBespokeText, caseData.getBespokeCostDetails()
                             .getDetailText()));
                     }
                 }
@@ -217,6 +226,56 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return costsTextBuilder.toString();
     }
 
+    protected String getFurtherHearingText(CaseData caseData){
+
+        StringBuilder furtherHearingBuilder = new StringBuilder();
+        if (nonNull(caseData.getAssistedOrderFurtherHearingToggle())
+            && nonNull(caseData.getAssistedOrderFurtherHearingToggle().get(0))
+            && caseData.getAssistedOrderFurtherHearingToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
+
+            furtherHearingBuilder.append(String.format(furtherHearingTakePlaceAfterText,
+                                                       getDateFormatted(
+                                                           caseData.getAssistedOrderFurtherHearingDetails()
+                                                               .getListFromDate())));
+            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate())) {
+                furtherHearingBuilder.append(String.format(furtherHearingTakePlaceBeforeText, getDateFormatted(
+                    caseData.getAssistedOrderFurtherHearingDetails().getListToDate())));
+            }
+
+            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing())) {
+                if(caseData.getAssistedOrderFurtherHearingDetails()
+                    .getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
+                    furtherHearingBuilder.append(String.format(furtherHearingLengthOther,
+                                                               caseData.getAssistedOrderFurtherHearingDetails()
+                                                                   .getLengthOfHearingOther().getLengthListOtherDays(),
+                                                               caseData.getAssistedOrderFurtherHearingDetails()
+                                                                   .getLengthOfHearingOther().getLengthListOtherHours(),
+                                                               caseData.getAssistedOrderFurtherHearingDetails()
+                                                                   .getLengthOfHearingOther().getLengthListOtherMinutes()));
+                }else {
+                    furtherHearingBuilder.append(String.format(furtherHearingLengthText,
+                                                 caseData.getAssistedOrderFurtherHearingDetails()
+                                                     .getLengthOfNewHearing().getDisplayedValue()));
+                }
+            }
+
+            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation())){
+                furtherHearingBuilder.append(String.format(furtherHearingAlternativeHearingText,
+                                                           caseData.getAssistedOrderFurtherHearingDetails()
+                                                               .getAlternativeHearingLocation().getListItems()
+                                                               .get(0).getLabel()));
+
+            }
+
+            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods())){
+                furtherHearingBuilder.append(String.format(furtherHearingMethodHearingText,
+                                                           caseData.getAssistedOrderFurtherHearingDetails()
+                                                               .getHearingMethods().getDisplayedValue()));
+            }
+            return furtherHearingBuilder.toString();
+        }
+        return null;
+    }
     protected String getRecitalRecordedText(CaseData caseData) {
         StringBuilder recordedText = new StringBuilder();
 
