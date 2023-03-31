@@ -9,7 +9,7 @@ public enum LengthOfHearing {
     MINUTES_15("15 minutes"),
     MINUTES_30("30 minutes"),
     HOUR_1("1 hour"),
-    HOUR_1_5("1 hour"),
+    HOUR_1_5("1.5 hours"),
     HOURS_2("2 hours"),
     OTHER("Other");
 

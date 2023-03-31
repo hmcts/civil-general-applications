@@ -468,6 +468,8 @@ public class CaseDataBuilder {
             .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
             .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
             .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
+            .isCcmccLocation(application.getIsCcmccLocation())
+            .caseManagementLocation(application.getCaseManagementLocation())
             .build();
     }
 
