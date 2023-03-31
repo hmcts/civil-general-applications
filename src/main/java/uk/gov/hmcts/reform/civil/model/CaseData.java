@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
-import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderToggle;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
@@ -222,8 +222,10 @@ public class CaseData implements MappableObject {
 
     private final YesOrNo assistedOrderMadeSelection;
     private final AssistedOrderMadeDateHeardDetails assistedOrderMadeDateHeardDetails;
+    private final List<FinalOrderShowToggle> assistedOrderJudgeHeardFrom;
     private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
-    private final AssistedOrderRecitalRecord assistedOrderRecitalRecord;
+    private final List<FinalOrderShowToggle> assistedOrderRecitals;
+    private final AssistedOrderRecitalRecord assistedOrderRecitalsRecorded;
     private final AssistedCostTypesList assistedCostTypes;
     private final AssistedOrderCost claimantCostStandardBase;
     private final AssistedOrderCost defendantCostStandardBase;
@@ -232,9 +234,9 @@ public class CaseData implements MappableObject {
     private final DetailText costReservedDetails;
     private final DetailText besPokeCostDetails;
     private final String assistedOrderOrderedThatText;
-    private final List<FinalOrderToggle> assistedOrderFurtherHearingToggle;
+    private final List<FinalOrderShowToggle> assistedOrderFurtherHearingToggle;
     private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
-    private final List<FinalOrderToggle> assistedOrderAppealToggle;
+    private final List<FinalOrderShowToggle> assistedOrderAppealToggle;
     private final AssistedOrderAppealDetails assistedOrderAppealDetails;
     private final OrderMadeOnTypes orderMadeOnOption;
     private final DetailTextWithDate orderMadeOnOwnInitiative;
