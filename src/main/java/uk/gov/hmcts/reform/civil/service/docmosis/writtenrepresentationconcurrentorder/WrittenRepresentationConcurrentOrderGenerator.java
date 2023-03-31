@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -84,7 +85,17 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                                                                               .OPTION_3)) {
             return StringUtils.EMPTY;
         }
-        return caseData.getJudicialByCourtsInitiativeForWrittenRep().getDisplayedValue();
+
+        if (caseData.getJudicialByCourtsInitiativeForWrittenRep()
+            .equals(GAByCourtsInitiativeGAspec.OPTION_1)) {
+            return caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " "
+                .concat(caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate()
+                            .format(DATE_FORMATTER));
+        } else {
+            return caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " "
+                .concat(caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate()
+                            .format(DATE_FORMATTER));
+        }
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {

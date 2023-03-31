@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import feign.FeignException;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,8 +70,14 @@ public class TestingSupportController {
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
 
-        var generalApplication = caseData.getGeneralApplications().stream().findFirst()
-            .orElse(null);
+        int size = caseData.getGeneralApplications().size();
+
+        /**
+         * Check the business process status of latest GA case
+         * if caseData.getGeneralApplications() collection size is more than 1
+         */
+
+        var generalApplication = caseData.getGeneralApplications().get(size - 1);
 
         var businessProcess = Objects.requireNonNull(generalApplication).getValue().getBusinessProcess();
         var businessProcessInfo = new BusinessProcessInfo(businessProcess);
@@ -109,14 +114,6 @@ public class TestingSupportController {
         private FeatureToggleInfo(boolean isToggleEnabled) {
             this.isToggleEnabled = isToggleEnabled;
         }
-    }
-
-    @GetMapping("/testing-support/feature-toggle/gaCaseProgression")
-    @ApiOperation("Check if ga-case-progression feature toggle is enabled")
-    public ResponseEntity<FeatureToggleInfo> checkGaCaseProgressionToggleEnabled() {
-        boolean featureEnabled = featureToggleService.isGaCaseProgressionEnabled();
-        FeatureToggleInfo featureToggleInfo = new FeatureToggleInfo(featureEnabled);
-        return new ResponseEntity<>(featureToggleInfo, HttpStatus.OK);
     }
 
     @Data

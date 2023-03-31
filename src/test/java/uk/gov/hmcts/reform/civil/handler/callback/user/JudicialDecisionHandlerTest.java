@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
@@ -44,6 +45,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -91,6 +94,9 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_1;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_2;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_3;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -177,6 +183,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private static final String JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT = "<Title> <Name> \n"
         + "Upon reviewing the application made and upon considering the information "
         + "provided by the parties, the court requests more information from the applicant.";
+
+    public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -1630,10 +1638,58 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldGenerateConcurrentApplicationDocument() {
-            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
+        void shouldThrowErrorForListingForHearingCourtOwnInitiative() {
+
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
                 .build();
-            CallbackParams params = callbackParamsOf(caseData, MID, "populate-written-rep-preview-doc");
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_2)
+                .orderWithoutNoticeListForHearing(
+                    GAOrderWithoutNoticeGAspec.builder().orderWithoutNotice("abcde")
+                        .orderWithoutNoticeDate(LocalDate.now().minusDays(4)).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-hearing-order-doc");
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+        }
+
+        @Test
+        void shouldThrowErrorForListingForHearingCourtOrderWithOutNotice() {
+
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+                .build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_1)
+                .orderCourtOwnInitiativeListForHearing(
+                    GAOrderCourtOwnInitiativeGAspec.builder().orderCourtOwnInitiative("abcde")
+                        .orderCourtOwnInitiativeDate(LocalDate.now().minusDays(3)).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-hearing-order-doc");
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+        }
+
+        @Test
+        void shouldGenerateConcurrentApplicationDocument() {
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_2)
+                .orderWithoutNoticeForWrittenRep(
+                    GAOrderWithoutNoticeGAspec.builder().orderWithoutNotice("abcde")
+                        .orderWithoutNoticeDate(LocalDate.now()).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-written-rep-preview-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1648,9 +1704,18 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldGenerateSequentialApplicationDocument() {
-            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
-                .build();
-            CallbackParams params = callbackParamsOf(caseData, MID, "populate-written-rep-preview-doc");
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_2)
+                .orderWithoutNoticeForWrittenRep(
+                    GAOrderWithoutNoticeGAspec.builder().orderWithoutNotice("abcde")
+                        .orderWithoutNoticeDate(LocalDate.now()).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-written-rep-preview-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -1661,6 +1726,50 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getJudicialWrittenRepDocPreview())
                 .isEqualTo(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT.getDocumentLink());
+        }
+
+        @Test
+        void shouldThrowErrorCourtOwnInitiativeForWrittenRepIsPastDate() {
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
+                .orderCourtOwnInitiativeForWrittenRep(
+                    GAOrderCourtOwnInitiativeGAspec.builder().orderCourtOwnInitiative("abcde")
+                        .orderCourtOwnInitiativeDate(LocalDate.now().minusDays(2)).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-written-rep-preview-doc");
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+
+        }
+
+        @Test
+        void shouldThrowErrorOrderWithoutNoticeForWrittenRepIsPastDate() {
+
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_2)
+                .orderWithoutNoticeForWrittenRep(
+                    GAOrderWithoutNoticeGAspec.builder().orderWithoutNotice("abcde")
+                        .orderWithoutNoticeDate(LocalDate.now().minusDays(2)).build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            CallbackParams params = callbackParamsOf(updateData, MID, "populate-written-rep-preview-doc");
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+
         }
 
         @Test
@@ -2401,7 +2510,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldReturnErrors_whenApplicationIsUrgentButConsiderationDateIsNotProvided() {
-            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING, null);
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
+                                                                           null, OPTION_3,
+                                                                           null, null);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
@@ -2414,7 +2525,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldReturnErrors_whenUrgencyConsiderationDateIsInPastForUrgentApplication() {
             CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
-                    LocalDate.now().minusDays(1));
+                    LocalDate.now().minusDays(1), OPTION_3, null, null);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
@@ -2427,7 +2538,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenUrgencyConsiderationDateIsInFutureForUrgentApplication() {
             CaseData caseData = getApplication_MakeDecision_GiveDirections(GIVE_DIRECTIONS_WITHOUT_HEARING,
-                    LocalDate.now().plusDays(1));
+                    LocalDate.now().plusDays(1), OPTION_3, null, null);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
@@ -2439,7 +2550,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotCauseAnyErrors_whenApplicationIsNotUrgentAndConsiderationDateIsNotProvided() {
             CaseData caseData = getApplication_MakeDecision_GiveDirections(APPROVE_OR_EDIT,
-                    LocalDate.now().minusDays(1));
+                    LocalDate.now().minusDays(1), OPTION_3, null, null);
 
             CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
 
@@ -2499,8 +2610,44 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(PDFBuilder.DISMISSAL_ORDER_DOCUMENT.getDocumentLink());
         }
 
+        @Test
+        void shouldThrowErrors_whenCourtInitiativeDateIsPast() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(APPROVE_OR_EDIT,
+                                                                           LocalDate.now().minusDays(1),
+                                                                           OPTION_1,
+                                                                           LocalDate.now().minusDays(1),
+                                                                           LocalDate.now());
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+        }
+
+        @Test
+        void shouldThrowErrors_whenOrderWithoutNoticeDateIsPast() {
+            CaseData caseData = getApplication_MakeDecision_GiveDirections(APPROVE_OR_EDIT,
+                                                                           LocalDate.now().minusDays(1),
+                                                                           OPTION_2,
+                                                                           LocalDate.now(),
+                                                                           LocalDate.now().minusDays(2));
+
+            CallbackParams params = callbackParamsOf(caseData, MID, VALIDATE_MAKE_DECISION_SCREEN);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertEquals(response.getErrors().size(), 1);
+            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+        }
+
         private CaseData getApplication_MakeDecision_GiveDirections(GAJudgeMakeAnOrderOption orderOption,
-                                                                    LocalDate directionsResponseByDate) {
+                                                                    LocalDate directionsResponseByDate,
+                                                                    GAByCourtsInitiativeGAspec
+                                                                        gaByCourtsInitiativeGAspec,
+                                                                    LocalDate orderCourtOwnInitiativeDate,
+                                                                    LocalDate orderWithoutNoticeDate) {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
@@ -2529,6 +2676,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(orderOption)
+                                               .judicialByCourtsInitiative(gaByCourtsInitiativeGAspec)
+                                               .orderCourtOwnInitiativeDate(orderCourtOwnInitiativeDate)
+                                               .orderWithoutNoticeDate(orderWithoutNoticeDate)
                                                .judgeApproveEditOptionDate(LocalDate.now().plusDays(1))
                                                .directionsResponseByDate(directionsResponseByDate).build())
                 .build();
@@ -2818,20 +2968,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null);
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
-        }
-
-        @Test
-        void shouldSetUpReadyWhenPreferredTypeNotInPersonAndCaseProgressionFeatureEnabled() {
-            when(featureToggleService.isGaCaseProgressionEnabled()).thenReturn(true);
-            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
-
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
-            assertThat(responseCaseData.getIsCaseProgressionEnabled()).isEqualTo(YES);
         }
 
         @Test

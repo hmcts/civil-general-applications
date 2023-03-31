@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -27,6 +28,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -57,6 +60,7 @@ import java.util.stream.Collectors;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static org.apache.logging.log4j.util.Strings.concat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -66,6 +70,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_1;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_2;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
@@ -167,6 +173,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
+
+    private static final String ORDER_COURT_OWN_INITIATIVE = "As this order was made on the court's own initiative any "
+        + "party affected by the order may apply to set aside, vary or stay the order. "
+        + "Any such application must be made by 4pm on \n\n";
+
+    private static final String ORDER_WITHOUT_NOTICE = "If you were not notified of the application before this "
+        + "order was made, you may apply to set aside, vary or stay the order. "
+        + "Any such application must be made by 4pm on \n\n";
 
     private final ObjectMapper objectMapper;
 
@@ -346,14 +360,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
                                         ? DISMISSAL_ORDER_TEXT
                                         : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText());
+                .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
+                .orderWithoutNotice(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice())
+                .orderCourtOwnInitiative(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                 .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                 .dismissalOrderText(DISMISSAL_ORDER_TEXT)
                 .isOrderProcessedByStayScheduler(NO)
-                .isOrderProcessedByUnlessScheduler(NO);
+                .isOrderProcessedByUnlessScheduler(NO).orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                .orderWithoutNotice(ORDER_WITHOUT_NOTICE);
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
@@ -468,6 +485,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (judicialDecisionMakeOrder != null) {
             errors = validateUrgencyDates(judicialDecisionMakeOrder);
             errors.addAll(validateJudgeOrderRequestDates(judicialDecisionMakeOrder));
+            errors.addAll(validateCourtsInitiativeDates(judicialDecisionMakeOrder));
 
             caseDataBuilder
                 .judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
@@ -650,9 +668,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
         String caseId = caseData.getCcdCaseReference().toString();
-        if (featureToggleService.isGaCaseProgressionEnabled() == true) {
-            dataBuilder.isCaseProgressionEnabled(YES);
-        }
 
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
             if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
@@ -774,6 +789,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseDataBuilder.judicialConcurrentDateText(getJudicalConcurrentDatePupulatedText(caseData)).build();
         }
 
+        caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
+                                                                   .builder()
+                                                                   .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                                                                 .build())
+            .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
+                                                  .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+            .build();
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .errors(errors)
@@ -781,9 +804,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse gaPopulateWrittenRepPreviewDoc(CallbackParams callbackParams) {
+
         CaseData caseData = callbackParams.getCaseData();
         GAJudicialWrittenRepresentations judicialWrittenRepresentationsDate =
             caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations();
+
+        List<String> errors = ofNullable(validateCourtsInitiativeDatesForWrittenRep(caseData))
+            .orElse(Collections.emptyList());
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
@@ -816,7 +843,27 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
+            .errors(errors)
             .build();
+    }
+
+    public List<String> validateCourtsInitiativeDatesForWrittenRep(CaseData caseData) {
+        List<String> errors = new ArrayList<>();
+        GAByCourtsInitiativeGAspec gaByCourtsInitiativeGAspec = caseData.getJudicialByCourtsInitiativeForWrittenRep();
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)) {
+            if (LocalDate.now()
+                .isAfter(caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate())) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)) {
+            if (LocalDate.now()
+                .isAfter(caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate())) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+        return errors;
     }
 
     private CallbackResponse gaValidateHearingOrder(CallbackParams callbackParams) {
@@ -830,7 +877,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.judicialHearingGeneralOrderHearingText(getJudgeHearingPrePopulatedText(caseData))
             .judicialHearingGOHearingReqText(populateJudgeGOSupportRequirement(caseData))
-            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData)).build();
+            .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData))
+            .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
+                                                       .builder()
+                                                       .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE).build())
+            .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
+                                                  .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+            .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
@@ -839,8 +892,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private CallbackResponse gaPopulateHearingOrderDoc(CallbackParams callbackParams) {
+
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
+        List<String> errors = ofNullable(validateCourtsInitiativeDatesForHearing(caseData))
+            .orElse(Collections.emptyList());
 
         CaseDocument judgeDecision = null;
         if (caseData.getJudicialListForHearing() != null) {
@@ -853,7 +910,27 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
+            .errors(errors)
             .build();
+    }
+
+    public List<String> validateCourtsInitiativeDatesForHearing(CaseData caseData) {
+        List<String> errors = new ArrayList<>();
+        GAByCourtsInitiativeGAspec gaByCourtsInitiativeGAspec = caseData.getJudicialByCourtsInitiativeListForHearing();
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)) {
+            if (LocalDate.now()
+                .isAfter(caseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate())) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)) {
+            if (LocalDate.now()
+                .isAfter(caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate())) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+        return errors;
     }
 
     private String getJudgeHearingPrePopulatedText(CaseData caseData) {
@@ -1206,6 +1283,24 @@ public class JudicialDecisionHandler extends CallbackHandler {
             LocalDate directionsResponseByDate = judicialDecisionMakeOrder.getJudgeApproveEditOptionDate();
             if (LocalDate.now().isAfter(directionsResponseByDate)) {
                 errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+        return errors;
+    }
+
+    public List<String> validateCourtsInitiativeDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+        List<String> errors = new ArrayList<>();
+
+        if (judicialDecisionMakeOrder.getJudicialByCourtsInitiative().equals(OPTION_1)) {
+            if (LocalDate.now().isAfter(judicialDecisionMakeOrder.getOrderCourtOwnInitiativeDate())) {
+                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            }
+        }
+        if (judicialDecisionMakeOrder.getJudicialByCourtsInitiative().equals(OPTION_2)) {
+            {
+                if (LocalDate.now().isAfter(judicialDecisionMakeOrder.getOrderWithoutNoticeDate())) {
+                    errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+                }
             }
         }
         return errors;

@@ -8,11 +8,14 @@ import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
@@ -28,6 +31,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
@@ -110,7 +115,6 @@ public class CaseData implements MappableObject {
     private final String defendant2PartyName;
     private final GACaseLocation caseManagementLocation;
     private final YesOrNo isCcmccLocation;
-    private final YesOrNo isCaseProgressionEnabled;
     private final GACaseManagementCategory caseManagementCategory;
     private final String judicialGeneralHearingOrderRecital;
     private final String judicialGOHearingDirections;
@@ -148,6 +152,15 @@ public class CaseData implements MappableObject {
     private GAHearingNoticeDetail gaHearingNoticeDetail;
     private String gaHearingNoticeInformation;
     private final String migrationId;
+    private final String caseNameHmctsInternal;
+    private final FinalOrderSelection finalOrderSelection;
+    private final String freeFormRecitalText;
+    private final String freeFormRecordedText;
+    private final String freeFormOrderedText;
+    private final OrderOnCourts orderOnCourtsList;
+    private final FreeFormOrderValues orderOnCourtInitiative;
+    private final FreeFormOrderValues orderWithoutNotice;
+    private final Document gaFinalOrderDocPreview;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
@@ -190,6 +203,10 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
     private final String respondent1OrganisationIDCopy;
+    private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
+    private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
+    private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
+    private final GAOrderWithoutNoticeGAspec orderWithoutNoticeForWrittenRep;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
