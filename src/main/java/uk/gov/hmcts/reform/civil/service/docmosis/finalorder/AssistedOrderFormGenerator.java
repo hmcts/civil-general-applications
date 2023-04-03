@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
-import uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes;
-import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
+import uk.gov.hmcts.reform.civil.enums.dq.*;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
@@ -43,36 +41,43 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final String ON_COURTS_OWN = "This order is made on court’s own initiative.\n\n";
-    private static final String WITHOUT_NOTICE = "This order is made without notice.\n\n";
-    private static final String claimantDefendantHeardText = "The Judge heard from %s and .";
-    private static final String claimantHeardText = "The Judge heard from %s.";
-    private static final String defendantHeardText = "The Judge heard from %s.";
-    private static final String claimantNotAttendText = "The claimant did not attend the trial, but the Judge was satisfied that they had received notice of the trial and it was reasonable to proceed in their absence/ The claimant did not attend the trial and whilst the Judge was satisfied that they had received notice of the trial it was not reasonable to proceed in their absence/ The claimant did not attend the trial, but the Judge was not satisfied that they had received notice of the hearing and it was not reasonable to proceed in their absence)).\n\n";
-    private static final String defendantNotAttendText = "The defendant did not attend the trial, but the Judge was satisfied that they had received notice of the trial and it was reasonable to proceed in their absence/ The defendant did not attend the trial and whilst the Judge was satisfied that they had received notice of the trial it was not reasonable to proceed in their absence/ The defendant did not attend the trial, but the Judge was not satisfied that they had received notice of the hearing and it was not reasonable to proceed in their absence)).\n\n ";
-    private static final String judgeHeardFromText = "The Judge heard other representation: %s\n\n";
-    private static final String judgeConsiderPapersText = "The judge considered the papers.\n\n";
-    private static final String recitalRecordedText = "It is recorded that %s.\n\n";
-    private static final String costInCaseText = "Costs in the case have been ordered.\n";
-    private static final String noOrderToCost = "No order as to costs has been made.\n\n";
-    private static final String costsReserved = "Costs reserved:%s.\n\n";
-    private static final String costAmount = "Amount: %s \n\n";
-    private static final String costToBePaidBy =  "To be paid by: %s.\n\n";
-    private static final String costPartyHasBenefit = "The paying party has the benefit of cost protection under section 26 Sentencing and Punishment Offenders Act 2012. The amount of the costs pay shall be determined on an application by the receiving party under Legal Aid (Costs) Regulations 2013. Any objection by the paying party claimed shall be dealt with on that occasion.\n\n";
-    private static final String costPartyHasNoBenefit =  "The paying party does not have cost protection.\n\n";
-    private static final String costBespokeText = "Bespoke costs orders: %s \n\n";
+    private static final String LINE_BREAKER = "\n\n";
+    private static final String ORDER_MADE_ON_NONE_TEXT = "This order was not made on the court’s own initiative"
+                                                +" or without notice.";
+    private static final String CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT = "The Judge heard from %s and %s.";
+    private static final String CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT = "The Judge heard from %s.";
 
-    private static final String furtherHearingTakePlaceAfterText = "A further hearing will take place after: %s \n\n";
-    private static final String furtherHearingTakePlaceBeforeText = "It will take place before: %s\n\n";
-    private static final String furtherHearingLengthText = "The length of new hearing will be: %s\n\n";
+    private static final String CLAIMANT_NOT_ATTENDED_TEXT = "The claimant did not attend the trial";
+    private static final String DEFENDANT_NOT_ATTENDED_TEXT = "The defendant did not attend the trial";
+    private static final String JUDGE_SATISFIED_TO_PROCEED_TEXT = ", but the Judge was satisfied that they had received"
+        + " notice of the trial and it was reasonable to proceed in their absence.";
+    private static final String JUDGE_SATISFIED_NOTICE_OF_TRIAL_TEXT = " and whilst the Judge was satisfied that they had"
+        + " received notice of the trial it was not reasonable to proceed in their absence.";
+    private static final String JUDGE_NOT_SATISFIED_NOTICE_OF_TRIAL_TEXT = ", but the Judge was not satisfied that they had"
+        + " received notice of the hearing and it was not reasonable to proceed in their absence.";
+
+    private static final String judgeHeardFromText = "The Judge heard other representation: %s";
+    private static final String judgeConsiderPapersText = "The judge considered the papers.";
+    private static final String recitalRecordedText = "It is recorded that %s.";
+    private static final String costInCaseText = "Costs in the case have been ordered.";
+    private static final String noOrderToCost = "No order as to costs has been made.";
+    private static final String costsReserved = "Costs reserved:%s.";
+    private static final String costAmount = "Amount: %s ";
+    private static final String costToBePaidBy =  "To be paid by: %s.";
+    private static final String costPartyHasBenefit = "The paying party has the benefit of cost protection under section 26 Sentencing and Punishment Offenders Act 2012. The amount of the costs pay shall be determined on an application by the receiving party under Legal Aid (Costs) Regulations 2013. Any objection by the paying party claimed shall be dealt with on that occasion.";
+    private static final String costPartyHasNoBenefit =  "The paying party does not have cost protection.";
+    private static final String costBespokeText = "Bespoke costs orders: %s ";
+
+    private static final String furtherHearingTakePlaceAfterText = "A further hearing will take place after: %s ";
+    private static final String furtherHearingTakePlaceBeforeText = "It will take place before: %s";
+    private static final String furtherHearingLengthText = "The length of new hearing will be: %s";
     private static final String furtherHearingLengthOther = " %s/ %s/ %s";
-    private static final String furtherHearingAlternativeHearingText = "Alternative hearing location: %s\n\n";
-    private static final String furtherHearingMethodHearingText = "Method of hearing: %s\n\n";
+    private static final String furtherHearingAlternativeHearingText = "Alternative hearing location: %s";
+    private static final String furtherHearingMethodHearingText = "Method of hearing: %s";
+    private static final String permissionToAppealText = "The application for permission to appeal "
+                                                        + "for the %s is %s.";
+    private static final String permissionToAppealReasonsText = "Reasons: %s ";
 
-    private static final String defendantCostStandardBase = "It is recorded that %s.\n\n";
-    private static final String claimantCostStandardBase = "It is recorded that %s.\n\n";
-    private static final String defendantCostSummarilyBase = "It is recorded that %s.\n\n";
-    private static final String claimantCostSummarilyBase = "It is recorded that %s.\n\n";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
@@ -108,43 +113,10 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .costsText(getCostsTextValue(caseData))
                 .furtherHearingText(getFurtherHearingText(caseData))
-                .freeFormRecitalText(caseData.getFreeFormRecitalText())
-                .freeFormRecordedText(caseData.getFreeFormRecordedText())
-                .freeFormOrderedText(caseData.getFreeFormOrderedText())
-                .freeFormOrderValue(getFreeFormOrderValue(caseData))
+                .permissionToAppealText(getPermissionToAppealText(caseData))
+                .orderMadeOnText(getOrderMadeOnText(caseData))
+                .reasonText(getReasonText(caseData))
                 .build();
-    }
-
-    protected String getFreeFormOrderValue(CaseData caseData) {
-        StringBuilder orderValueBuilder = new StringBuilder();
-        if(isNull(caseData.getAssistedOrderRecitalsRecorded()) ||
-            isNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))) {
-            return null;
-        }else if(caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)){
-            if(nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
-                .getRepresentationType().equals(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT)){
-                if(!caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    orderValueBuilder.append(String.format(claimantDefendantHeardText,
-                                                           caseData.getAssistedOrderRepresentation()
-                                                               .getClaimantDefendantRepresentation()
-                                                               .getClaimantRepresentation().getDisplayedValue()));
-                }
-            }else if(nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
-                .getRepresentationType().equals(HeardFromRepresentationTypes.OTHER_REPRESENTATION)){
-                orderValueBuilder.append(String.format(judgeHeardFromText,
-                                                       caseData.getAssistedOrderRepresentation()
-                                                           .getOtherRepresentation().getDetailText()));
-            }
-            if(nonNull(caseData.getAssistedOrderRepresentation())
-                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()!=null
-                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList().get(0)
-                .equals(CONSIDERED)) {
-                orderValueBuilder.append(judgeConsiderPapersText);
-            }
-
-        }
-        return orderValueBuilder.toString();
     }
 
     protected String getCostsTextValue(CaseData caseData) {
@@ -173,8 +145,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 break;
                 case DEFENDANT_COST_STANDARD_BASE: {
                     costsTextBuilder.append(DEFENDANT_COST_STANDARD_BASE.getDisplayedValue());
-                    costsTextBuilder.append(". \n\n");
+                    costsTextBuilder.append(". ");
                     if(nonNull(caseData.getDefendantCostStandardBase())){
+                        costsTextBuilder.append(LINE_BREAKER);
                         costsTextBuilder.append(getCostText(caseData.getDefendantCostStandardBase()));
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostStandardBase()));
                     }
@@ -183,8 +156,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 case CLAIMANT_COST_STANDARD_BASE: {
                     costsTextBuilder.append(CLAIMANT_COST_STANDARD_BASE.getDisplayedValue());
-                    costsTextBuilder.append(". \n\n");
+                    costsTextBuilder.append(". ");
                     if(nonNull(caseData.getClaimantCostStandardBase())){
+                        costsTextBuilder.append(LINE_BREAKER);
                         costsTextBuilder.append(getCostText(caseData.getClaimantCostStandardBase()));
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostStandardBase()));
                     }
@@ -193,8 +167,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 case DEFENDANT_COST_SUMMARILY_BASE: {
                     costsTextBuilder.append(DEFENDANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                    costsTextBuilder.append(String.format(" %s. \n\n", caseData.getDefendantCostSummarilyBase()
-                        .formatCaseAmountToPounds()));
+                    costsTextBuilder.append(" ");
+                    costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
 
                     if(nonNull(caseData.getDefendantCostSummarilyBase())){
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostSummarilyBase()));
@@ -204,10 +178,11 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 case CLAIMANT_COST_SUMMARILY_BASE: {
                     costsTextBuilder.append(CLAIMANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                    costsTextBuilder.append(String.format(" %s. \n\n", caseData.getClaimantCostSummarilyBase()
-                        .formatCaseAmountToPounds()));
+                    costsTextBuilder.append(" ");
+                    costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
 
                     if(nonNull(caseData.getClaimantCostSummarilyBase())){
+                        costsTextBuilder.append(LINE_BREAKER);
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostSummarilyBase()));
                     }
                 }
@@ -237,14 +212,16 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                                                        getDateFormatted(
                                                            caseData.getAssistedOrderFurtherHearingDetails()
                                                                .getListFromDate())));
-            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate())) {
+            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate())) {
+                furtherHearingBuilder.append(LINE_BREAKER);
                 furtherHearingBuilder.append(String.format(furtherHearingTakePlaceBeforeText, getDateFormatted(
                     caseData.getAssistedOrderFurtherHearingDetails().getListToDate())));
             }
 
-            if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing())) {
-                if(caseData.getAssistedOrderFurtherHearingDetails()
+            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing())) {
+                if (caseData.getAssistedOrderFurtherHearingDetails()
                     .getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
+                    furtherHearingBuilder.append(LINE_BREAKER);
                     furtherHearingBuilder.append(String.format(furtherHearingLengthText,
                                                                String.format(furtherHearingLengthOther,
                                                                caseData.getAssistedOrderFurtherHearingDetails()
@@ -254,7 +231,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                                                                caseData.getAssistedOrderFurtherHearingDetails()
                                                                    .getLengthOfHearingOther()
                                                                                  .getLengthListOtherMinutes())));
-                }else {
+                } else {
+                    furtherHearingBuilder.append(LINE_BREAKER);
                     furtherHearingBuilder.append(String.format(furtherHearingLengthText,
                                                  caseData.getAssistedOrderFurtherHearingDetails()
                                                      .getLengthOfNewHearing().getDisplayedValue()));
@@ -262,6 +240,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             }
 
             if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation())){
+                furtherHearingBuilder.append(LINE_BREAKER);
                 furtherHearingBuilder.append(String.format(furtherHearingAlternativeHearingText,
                                                            caseData.getAssistedOrderFurtherHearingDetails()
                                                                .getAlternativeHearingLocation().getListItems()
@@ -270,6 +249,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             }
 
             if(nonNull(caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods())){
+                furtherHearingBuilder.append(LINE_BREAKER);
                 furtherHearingBuilder.append(String.format(furtherHearingMethodHearingText,
                                                            caseData.getAssistedOrderFurtherHearingDetails()
                                                                .getHearingMethods().getDisplayedValue()));
@@ -278,6 +258,31 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         }
         return null;
     }
+
+    private String getPermissionToAppealText(CaseData caseData) {
+        StringBuilder permissionToAppealBuilder = new StringBuilder();
+        if (nonNull(caseData.getAssistedOrderAppealToggle())
+            && nonNull(caseData.getAssistedOrderAppealToggle().get(0))
+            && caseData.getAssistedOrderAppealToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
+            if(nonNull(caseData.getAssistedOrderAppealDetails())){
+                permissionToAppealBuilder.append(String.format(permissionToAppealText,
+                                                               caseData.getAssistedOrderAppealDetails()
+                                                                   .getAppealOrigin().getDisplayedValue(),
+                                                               caseData.getAssistedOrderAppealDetails()
+                                                                   .getPermissionToAppeal().getDisplayedValue()));
+
+                if(nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())){
+                    permissionToAppealBuilder.append(LINE_BREAKER);
+                    permissionToAppealBuilder.append(String.format(permissionToAppealReasonsText,
+                                                                   caseData.getAssistedOrderAppealDetails()
+                                                                       .getReasonsText()));
+                }
+            }
+            return permissionToAppealBuilder.toString();
+        }
+        return null;
+    }
+
     protected String getRecitalRecordedText(CaseData caseData) {
         StringBuilder recordedText = new StringBuilder();
 
@@ -295,49 +300,135 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected String generalJudgeHeardFromText(CaseData caseData) {
-        StringBuilder orderValueBuilder = new StringBuilder();
+        StringBuilder judgeHeardFromBuilder = new StringBuilder();
         if(isNull(caseData.getAssistedOrderJudgeHeardFrom()) ||
             isNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))) {
             return null;
         }else if(caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)){
             if(nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
                 .getRepresentationType().equals(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT)){
+                //Both Attended
                 if(!caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                    && !caseData.getAssistedOrderRepresentation()
                     .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    orderValueBuilder.append(String.format(claimantDefendantHeardText,
-                                                           caseData.getAssistedOrderRepresentation()
+                    judgeHeardFromBuilder.append(String.format(
+                        CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT,
+                        caseData.getAssistedOrderRepresentation()
                                                                .getClaimantDefendantRepresentation()
-                                                               .getClaimantRepresentation().getDisplayedValue()));
+                                                               .getClaimantRepresentation().getDisplayedValue()
+                            .toLowerCase(),
+                        caseData.getAssistedOrderRepresentation()
+                                                                .getClaimantDefendantRepresentation()
+                                                                .getDefendantRepresentation().getDisplayedValue().toLowerCase()));
+
+                } else if(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                    && !caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+                    //Claimant Attended Defendant Not ATTENDED
+                    judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
+                                                            caseData.getAssistedOrderRepresentation()
+                                                                .getClaimantDefendantRepresentation()
+                                                                .getClaimantRepresentation().getDisplayedValue()));
+                    judgeHeardFromBuilder.append(LINE_BREAKER);
+                    judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
+                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                                                                        .getClaimantDefendantRepresentation()
+                                                                        .getHeardFromDefendantNotAttend()
+                                                                        .getListDef()));
+
+                }else if(!caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                    && caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+                    //Claimant Not ATTENDED, Defendant Attended
+                    judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
+                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                                                                        .getClaimantDefendantRepresentation()
+                                                                        .getHeardFromClaimantNotAttend()
+                                                                        .getListClaim()));
+                    judgeHeardFromBuilder.append(LINE_BREAKER);
+                    judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
+                                                            caseData.getAssistedOrderRepresentation()
+                                                                .getClaimantDefendantRepresentation()
+                                                                .getDefendantRepresentation()
+                                                                .getDisplayedValue()));
+                }else if(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                    && caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)){
+                    //Both Not Attended
+                    judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
+                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                                                                        .getClaimantDefendantRepresentation()
+                                                                        .getHeardFromClaimantNotAttend()
+                                                                        .getListClaim()));
+                    judgeHeardFromBuilder.append(LINE_BREAKER);
+                    judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
+                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                                                                        .getClaimantDefendantRepresentation()
+                                                                        .getHeardFromDefendantNotAttend()
+                                                                        .getListDef()));
                 }
             }else if(nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
                 .getRepresentationType().equals(HeardFromRepresentationTypes.OTHER_REPRESENTATION)){
-                orderValueBuilder.append(String.format(judgeHeardFromText,
-                                                       caseData.getAssistedOrderRepresentation()
+                judgeHeardFromBuilder.append(String.format(
+                    AssistedOrderFormGenerator.judgeHeardFromText,
+                    caseData.getAssistedOrderRepresentation()
                                                            .getOtherRepresentation().getDetailText()));
             }
             if(nonNull(caseData.getAssistedOrderRepresentation())
                 && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()!=null
                 && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList().get(0)
                 .equals(CONSIDERED)) {
-                orderValueBuilder.append(judgeConsiderPapersText);
+                judgeHeardFromBuilder.append(LINE_BREAKER);
+                judgeHeardFromBuilder.append(judgeConsiderPapersText);
             }
 
         }
-//        if (caseData.getOrderOnCourtsList().equals(ORDER_ON_COURT_INITIATIVE)) {
-//            orderValueBuilder.append(ON_COURTS_OWN);
-//            orderValueBuilder.append(caseData
-//                    .getOrderOnCourtInitiative().getOnInitiativeSelectionTextArea());
-//            orderValueBuilder.append(DATE_FORMATTER.format(caseData
-//                    .getOrderOnCourtInitiative().getOnInitiativeSelectionDate()));
-//        } else if (caseData.getOrderOnCourtsList().equals(ORDER_WITHOUT_NOTICE)) {
-//            orderValueBuilder.append(WITHOUT_NOTICE);
-//            orderValueBuilder.append(caseData
-//                    .getOrderWithoutNotice().getWithoutNoticeSelectionTextArea());
-//            orderValueBuilder.append(DATE_FORMATTER.format(caseData
-//                    .getOrderWithoutNotice().getWithoutNoticeSelectionDate()));
-//        }
-        return orderValueBuilder.toString();
+        return judgeHeardFromBuilder.toString();
     }
+
+    protected String getOrderMadeOnText(CaseData caseData) {
+        StringBuilder orderMadeOnText = new StringBuilder();
+        if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.COURTS_INITIATIVE)) {
+            orderMadeOnText.append(caseData.getOrderMadeOnOwnInitiative().getDetailText());
+            orderMadeOnText.append(DATE_FORMATTER.format(caseData.getOrderMadeOnOwnInitiative().getDate()));
+        } else if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.WITHOUT_NOTICE)) {
+            orderMadeOnText.append(caseData.getOrderMadeOnWithOutNotice().getDetailText());
+            orderMadeOnText.append(DATE_FORMATTER.format(caseData.getOrderMadeOnWithOutNotice().getDate()));
+        } else if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.NONE)) {
+            orderMadeOnText.append(ORDER_MADE_ON_NONE_TEXT);
+        }
+        return orderMadeOnText.toString();
+    }
+
+    protected String getOrderMadeDate(CaseData caseData) {
+
+        if (isNull(caseData.getAssistedOrderMadeDateHeardDetails())
+            || isNull(caseData.getAssistedOrderMadeDateHeardDetails().getDate())) {
+            return null;
+        }
+        return getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDate());
+    }
+
+    protected String getReasonText(CaseData caseData) {
+        if (isNull(caseData.getAssistedOrderGiveReasonsYesNo())
+            || caseData.getAssistedOrderGiveReasonsYesNo().equals(YesOrNo.NO)
+            || isNull(caseData.getAssistedOrderGiveReasonsDetails().getReasonsText())) {
+            return null;
+        } else {
+            StringBuilder reasonBuilder = new StringBuilder();
+            reasonBuilder.append(caseData.getAssistedOrderGiveReasonsDetails().getReasonsText());
+            return reasonBuilder.toString();
+        }
+    }
+
     protected String getFileName(DocmosisTemplates template) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(FILE_TIMESTAMP_FORMAT);
         return String.format(template.getDocumentTitle(),
@@ -364,18 +455,22 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
     }
 
-    protected String getOrderMadeDate(CaseData caseData) {
-
-        if (isNull(caseData.getAssistedOrderMadeDateHeardDetails())
-            || isNull(caseData.getAssistedOrderMadeDateHeardDetails().getDate())) {
-            return null;
-        }
-        return getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDate());
-    }
-
     protected String getCostText(AssistedOrderCost assistedOrderCost){
         if(nonNull(assistedOrderCost.getCostAmount())) {
            return String.format(costAmount, assistedOrderCost.formatCaseAmountToPounds());
+        }
+        return "";
+    }
+
+    protected  String getJudgeSatisfiedText(ClaimantDefendantNotAttendingType attendingType){
+        if(nonNull(attendingType)){
+            if(attendingType.equals(ClaimantDefendantNotAttendingType.SATISFIED_REASONABLE_TO_PROCEED)) {
+                return JUDGE_SATISFIED_TO_PROCEED_TEXT;
+            }else if(attendingType.equals(ClaimantDefendantNotAttendingType.SATISFIED_NOTICE_OF_TRIAL)) {
+                return JUDGE_SATISFIED_NOTICE_OF_TRIAL_TEXT;
+            }else if(attendingType.equals(ClaimantDefendantNotAttendingType.NOT_SATISFIED_NOTICE_OF_TRIAL)) {
+                return JUDGE_NOT_SATISFIED_NOTICE_OF_TRIAL_TEXT;
+            }
         }
         return "";
     }
@@ -383,14 +478,17 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         StringBuilder assistedCostBuilder = new StringBuilder();
 
         if(nonNull(assistedOrderCost.getCostPaymentDeadLine())) {
+            assistedCostBuilder.append(LINE_BREAKER);
             assistedCostBuilder.append(
                 String.format(costToBePaidBy, getDateFormatted(assistedOrderCost.getCostPaymentDeadLine())));
         }
 
         if(nonNull(assistedOrderCost.getIsPartyCostProtection())) {
             if(assistedOrderCost.getIsPartyCostProtection().equals(YesOrNo.YES)){
+                assistedCostBuilder.append(LINE_BREAKER);
                 assistedCostBuilder.append(costPartyHasBenefit);
             }else {
+                assistedCostBuilder.append(LINE_BREAKER);
                 assistedCostBuilder.append(costPartyHasNoBenefit);
             }
         }
