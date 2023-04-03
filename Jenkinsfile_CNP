@@ -8,8 +8,8 @@ import uk.gov.hmcts.contino.GithubAPI
 def type = "java"
 def product = "civil"
 def component = "general-applications"
-def camundaBranch = "master"
-def generalappCCDBranch = "master"
+def camundaBranch = "CIV-4995"
+def generalappCCDBranch = "CIV-4995"
 def ccddefbranch = "master"
 
 AppPipelineConfig pipelineConf
@@ -85,25 +85,6 @@ withPipeline(type, product, component) {
         env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         env.ENVIRONMENT = "demo"
         loadVaultSecrets(secrets)
-    }
-
-    afterAlways('checkout') {
-        onMaster {
-            withCredentials([usernamePassword(credentialsId: 'jenkins-github-hmcts-api-token', usernameVariable: 'USERNAME', passwordVariable: 'BEARER_TOKEN')]) {
-                try {
-                    sh '''
-            set -e
-
-            git remote set-url origin $(git config remote.origin.url | sed "s/github.com/${BEARER_TOKEN}@github.com/g")
-
-            git fetch origin demo:demo
-            git push --force origin HEAD:demo
-          '''
-                } catch (err) {
-                    notifyBuildEvent channel: '#civil_notifications', color: 'warning', message: 'Failed to update demo branch'
-                }
-            }
-        }
     }
 
     before('smoketest:preview') {
