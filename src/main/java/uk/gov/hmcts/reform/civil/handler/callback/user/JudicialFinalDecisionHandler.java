@@ -67,6 +67,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final String POPULATE_FINAL_ORDER_FORM_VALUES = "populate-finalOrder-form-values";
     private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
     private final ObjectMapper objectMapper;
+    private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -190,6 +191,17 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+    private List<String> validAssistedOrderForm(CaseData caseData) {
+        List<String> errors = new ArrayList<>();
+        if (caseData.getAssistedOrderMadeSelection() != null
+            && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
+            errors.add(DATE_HEARD_VALIDATION);
+        }
+
+        return errors;
     }
 
     @Override
