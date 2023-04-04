@@ -118,7 +118,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
             caseDataBuilder.gaFinalOrderDocPreview(freeform.getDocumentLink());
-        }else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
+        } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
             CaseDocument assistedOrder = assistedOrderFormGenerator.generate(
                 caseData,
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
