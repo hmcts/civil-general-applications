@@ -369,7 +369,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                                                            .getOtherRepresentation().getDetailText()));
             }
             if(nonNull(caseData.getAssistedOrderRepresentation())
-                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()!=null
+                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList() != null
                 && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList().get(0)
                 .equals(CONSIDERED)) {
                 judgeHeardFromBuilder.append(LINE_BREAKER);

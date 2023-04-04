@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -509,6 +510,7 @@ class AssistedOrderFormGeneratorTest {
 
     @Nested
     class JudgeHeardFrom {
+
         @Test
         void shouldReturnNull_When_AssistedHeardFrom_Null() {
             CaseData caseData = CaseData.builder()
@@ -551,7 +553,7 @@ class AssistedOrderFormGeneratorTest {
             String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
 
             assertThat(assistedOrderString).contains(DefendantRepresentationType.COST_DRAFTSMAN_FOR_THE_DEFENDANT
-                                                         .getDisplayedValue());
+                                                         .getDisplayedValue().toLowerCase());
         }
 
         @Test
@@ -607,12 +609,12 @@ class AssistedOrderFormGeneratorTest {
             assertThat(assistedOrderString).contains(JUDGE_CONSIDERED_PAPERS_TEXT);
         }
 
-
         private AssistedOrderHeardRepresentation getHeardRepresentation(boolean esBothAttended,
                                                                         boolean esClaimantAttendDefendantNot,
                                                                         boolean esClaimantNotDefendantAttended,
                                                                         boolean esBothNotAttended,
                                                                         boolean esOtherRepresentationType){
+
             AssistedOrderHeardRepresentation.AssistedOrderHeardRepresentationBuilder assistedRepBuilder
                 = AssistedOrderHeardRepresentation.builder();
             List<FinalOrderConsideredToggle> judgePapersList = new ArrayList<>();
@@ -624,12 +626,9 @@ class AssistedOrderFormGeneratorTest {
                     .otherRepresentation(DetailText.builder().detailText(TEST_TEXT).build())
                     .typeRepresentationJudgePapersList(judgePapersList)
                     .build();
-
-
             }else {
                 assistedRepBuilder.representationType(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT);
                 if (esBothAttended) {
-                    judgePapersList.add(null);
                     assistedRepBuilder
                         .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
                                                              .defendantRepresentation(
@@ -638,7 +637,6 @@ class AssistedOrderFormGeneratorTest {
                                                              .claimantRepresentation(
                                                                  ClaimantRepresentationType.COUNSEL_FOR_CLAIMANT)
                                                              .build())
-                        .typeRepresentationJudgePapersList(judgePapersList)
                         .build();
                 } else if (esClaimantAttendDefendantNot) {
                     judgePapersList.add(FinalOrderConsideredToggle.NOT_CONSIDERED);
@@ -692,10 +690,45 @@ class AssistedOrderFormGeneratorTest {
         }
 
     }
-    @Test
-    void getOrderMadeOnText() {
-    }
 
+    @Nested
+    class OrderMadeOn {
+
+        @Test
+        void shouldReturnText_When_OrderMadeOn_CourtInitiative() {
+            CaseData caseData = CaseData.builder()
+                .orderMadeOnOption(OrderMadeOnTypes.COURTS_INITIATIVE)
+                .orderMadeOnOwnInitiative(DetailTextWithDate.builder()
+                                              .detailText(TEST_TEXT)
+                                              .date(LocalDate.now())
+                                              .build())
+                .build();
+            String assistedOrderString = generator.getOrderMadeOnText(caseData);
+            assertThat(assistedOrderString).contains(TEST_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_When_OrderMadeOn_WithOutNotice() {
+            CaseData caseData = CaseData.builder()
+                .orderMadeOnOption(OrderMadeOnTypes.WITHOUT_NOTICE)
+                .orderMadeOnWithOutNotice(DetailTextWithDate.builder()
+                                              .detailText(TEST_TEXT)
+                                              .date(LocalDate.now())
+                                              .build())
+                .build();
+            String assistedOrderString = generator.getOrderMadeOnText(caseData);
+            assertThat(assistedOrderString).contains(TEST_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_When_OrderMadeOn_None() {
+            CaseData caseData = CaseData.builder()
+                .orderMadeOnOption(OrderMadeOnTypes.NONE)
+                .build();
+            String assistedOrderString = generator.getOrderMadeOnText(caseData);
+            assertThat(assistedOrderString).contains(ORDER_MADE_ON_NONE_TEXT);
+        }
+    }
     @Test
     void getOrderMadeDate() {
     }
