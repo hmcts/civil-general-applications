@@ -4,30 +4,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
-import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
-import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
+import uk.gov.hmcts.reform.civil.enums.dq.*;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
-import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.*;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
-import uk.gov.hmcts.reform.civil.service.GeneralApplicationCreationNotificationService;
-import uk.gov.hmcts.reform.civil.service.WorkingDayIndicator;
-import uk.gov.hmcts.reform.civil.service.bankholidays.PublicHolidaysCollection;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.io.IOException;
@@ -40,8 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
+
 @SpringBootTest(classes = {
     AssistedOrderFormGenerator.class
 })
@@ -89,7 +77,7 @@ class AssistedOrderFormGeneratorTest {
         + "for the %s is %s.";
     private static final String permissionToAppealReasonsText = "Reasons: %s ";
 
-    private static final String DETAIL_TEXT = "Test 123";
+    private static final String TEST_TEXT = "Test 123";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -110,7 +98,7 @@ class AssistedOrderFormGeneratorTest {
     @BeforeEach
     public void setUp() throws IOException {
 
-        detailText = DetailText.builder().detailText(DETAIL_TEXT).build();
+        detailText = DetailText.builder().detailText(TEST_TEXT).build();
         costDetails = AssistedOrderCost.builder()
             .costAmount(new BigDecimal(123))
             .costPaymentDeadLine(LocalDate.now())
@@ -139,7 +127,7 @@ class AssistedOrderFormGeneratorTest {
                 .costReservedDetails(detailText)
                 .build();
             String assistedOrderString = generator.getCostsTextValue(caseData);
-            assertThat(assistedOrderString).contains(DETAIL_TEXT);
+            assertThat(assistedOrderString).contains(TEST_TEXT);
         }
         @Test
         void shouldReturnText_WhenSelected_CostReservedOption_NoTextValue() {
@@ -270,7 +258,7 @@ class AssistedOrderFormGeneratorTest {
                 .bespokeCostDetails(detailText)
                 .build();
             String assistedOrderString = generator.getCostsTextValue(caseData);
-            assertThat(assistedOrderString).contains(DETAIL_TEXT);
+            assertThat(assistedOrderString).contains(TEST_TEXT);
         }
 
         @Test
@@ -462,14 +450,248 @@ class AssistedOrderFormGeneratorTest {
         }
     }
 
-    @Test
-    void getRecitalRecordedText() {
+    @Nested
+    class RecitalRecord {
+        @Test
+        void shouldReturnNull_When_RecitalsShowOption_Null() {
+            CaseData caseData = CaseData.builder()
+                .assistedOrderRecitals(null)
+                .build();
+            String assistedOrderString = generator.getRecitalRecordedText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_RecitalsShowOption_NoSelected() {
+            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
+            recitalsOrderShowOption.add(null);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderRecitals(recitalsOrderShowOption)
+                .build();
+            String assistedOrderString = generator.getRecitalRecordedText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_RecitalsShowOption_SelectedHide() {
+            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
+            recitalsOrderShowOption.add(FinalOrderShowToggle.HIDE);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderRecitals(recitalsOrderShowOption)
+                .build();
+            String assistedOrderString = generator.getRecitalRecordedText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_RecitalsShowOption_SelectedShow_RecitalTextEmpty() {
+            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
+            recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderRecitals(recitalsOrderShowOption)
+                .build();
+            String assistedOrderString = generator.getRecitalRecordedText(caseData);
+            assertTrue(assistedOrderString.isEmpty());
+        }
+
+        @Test
+        void shouldReturnNull_When_RecitalsShowOption_SelectedShow_WithRecitalText() {
+            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
+            recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderRecitals(recitalsOrderShowOption)
+                .assistedOrderRecitalsRecorded(AssistedOrderRecitalRecord.builder().text(TEST_TEXT).build())
+                .build();
+            String assistedOrderString = generator.getRecitalRecordedText(caseData);
+            assertThat(assistedOrderString).contains(TEST_TEXT);
+        }
     }
 
-    @Test
-    void generalJudgeHeardFromText() {
-    }
+    @Nested
+    class JudgeHeardFrom {
+        @Test
+        void shouldReturnNull_When_AssistedHeardFrom_Null() {
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(null)
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+            assertNull(assistedOrderString);
+        }
 
+        @Test
+        void shouldReturnNull_When_AssistedHeardFrom_NoTSelected() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(null);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_AssistedHeardFrom_SelectedHide() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.HIDE);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnText_When_AssistedHeardFrom_BothAttended() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .assistedOrderRepresentation(getHeardRepresentation(true, false, false, false, false))
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+
+            assertThat(assistedOrderString).contains(DefendantRepresentationType.COST_DRAFTSMAN_FOR_THE_DEFENDANT
+                                                         .getDisplayedValue());
+        }
+
+        @Test
+        void shouldReturnText_When_AssistedHeard_ClaimantAttendDefendantNot() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .assistedOrderRepresentation(getHeardRepresentation(false, true, false , false, false))
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+
+            assertThat(assistedOrderString).contains(JUDGE_SATISFIED_TO_PROCEED_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_When_AssistedHeard_ClaimantNotDefendantAttend() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .assistedOrderRepresentation(getHeardRepresentation(false, false, true , false, false))
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+
+            assertThat(assistedOrderString).contains(JUDGE_SATISFIED_NOTICE_OF_TRIAL_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_When_AssistedHeard_BothNotAttended() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .assistedOrderRepresentation(getHeardRepresentation(false, false, false , true, false))
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+
+            assertThat(assistedOrderString).contains(JUDGE_NOT_SATISFIED_NOTICE_OF_TRIAL_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_When_AssistedHeard_OtherRepresentation() {
+            List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+            judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .assistedOrderRepresentation(getHeardRepresentation(false, false, false , false, true))
+                .build();
+            String assistedOrderString = generator.generalJudgeHeardFromText(caseData);
+
+            assertThat(assistedOrderString).contains(TEST_TEXT);
+            assertThat(assistedOrderString).contains(JUDGE_CONSIDERED_PAPERS_TEXT);
+        }
+
+
+        private AssistedOrderHeardRepresentation getHeardRepresentation(boolean esBothAttended,
+                                                                        boolean esClaimantAttendDefendantNot,
+                                                                        boolean esClaimantNotDefendantAttended,
+                                                                        boolean esBothNotAttended,
+                                                                        boolean esOtherRepresentationType){
+            AssistedOrderHeardRepresentation.AssistedOrderHeardRepresentationBuilder assistedRepBuilder
+                = AssistedOrderHeardRepresentation.builder();
+            List<FinalOrderConsideredToggle> judgePapersList = new ArrayList<>();
+
+            if (esOtherRepresentationType) {
+                judgePapersList.add(FinalOrderConsideredToggle.CONSIDERED);
+                assistedRepBuilder
+                    .representationType(HeardFromRepresentationTypes.OTHER_REPRESENTATION)
+                    .otherRepresentation(DetailText.builder().detailText(TEST_TEXT).build())
+                    .typeRepresentationJudgePapersList(judgePapersList)
+                    .build();
+
+
+            }else {
+                assistedRepBuilder.representationType(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT);
+                if (esBothAttended) {
+                    judgePapersList.add(null);
+                    assistedRepBuilder
+                        .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                             .defendantRepresentation(
+                                                                 DefendantRepresentationType
+                                                                     .COST_DRAFTSMAN_FOR_THE_DEFENDANT)
+                                                             .claimantRepresentation(
+                                                                 ClaimantRepresentationType.COUNSEL_FOR_CLAIMANT)
+                                                             .build())
+                        .typeRepresentationJudgePapersList(judgePapersList)
+                        .build();
+                } else if (esClaimantAttendDefendantNot) {
+                    judgePapersList.add(FinalOrderConsideredToggle.NOT_CONSIDERED);
+                    assistedRepBuilder
+                        .claimantDefendantRepresentation(
+                            ClaimantDefendantRepresentation.builder()
+                                .defendantRepresentation(DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                                .heardFromDefendantNotAttend(HeardDefendantNotAttend.builder()
+                                                                 .listDef(ClaimantDefendantNotAttendingType
+                                                                              .SATISFIED_REASONABLE_TO_PROCEED)
+                                                                 .build())
+                                .claimantRepresentation(ClaimantRepresentationType.COUNSEL_FOR_CLAIMANT)
+
+                                .build())
+                        .typeRepresentationJudgePapersList(judgePapersList)
+                        .build();
+                } else if (esClaimantNotDefendantAttended) {
+                    assistedRepBuilder
+                        .claimantDefendantRepresentation(
+                            ClaimantDefendantRepresentation.builder()
+                                .defendantRepresentation(DefendantRepresentationType.COUNSEL_FOR_DEFENDANT)
+                                .claimantRepresentation(ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING)
+                                .heardFromClaimantNotAttend(HeardClaimantNotAttend.builder()
+                                                                .listClaim(ClaimantDefendantNotAttendingType
+                                                                               .SATISFIED_NOTICE_OF_TRIAL)
+                                                                .build())
+
+                                .build())
+                        .build();
+                } else if (esBothNotAttended) {
+                    assistedRepBuilder
+                        .claimantDefendantRepresentation(
+                            ClaimantDefendantRepresentation.builder()
+                                .claimantRepresentation(ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING)
+                                .heardFromClaimantNotAttend(HeardClaimantNotAttend.builder()
+                                                                .listClaim(ClaimantDefendantNotAttendingType
+                                                                               .SATISFIED_NOTICE_OF_TRIAL)
+                                                                .build())
+                                .defendantRepresentation(DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                                .heardFromDefendantNotAttend(HeardDefendantNotAttend.builder()
+                                                                 .listDef(ClaimantDefendantNotAttendingType
+                                                                              .NOT_SATISFIED_NOTICE_OF_TRIAL)
+                                                                 .build())
+                                .build())
+                        .build();
+                }
+            }
+
+            return assistedRepBuilder.build();
+
+        }
+
+    }
     @Test
     void getOrderMadeOnText() {
     }

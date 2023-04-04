@@ -112,11 +112,11 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .isOrderMade(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES))
                 .orderMadeDate(getOrderMadeDate(caseData))
                 .judgeHeardFromText(generalJudgeHeardFromText(caseData))
-                .recitalRecordedText(getRECITAL_RECORDED_TEXT(caseData))
+                .recitalRecordedText(getRecitalRecordedText(caseData))
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .costsText(getCostsTextValue(caseData))
                 .furtherHearingText(getFurtherHearingText(caseData))
-                .permissionToAppealText(getpermissionToAppealText(caseData))
+                .permissionToAppealText(getPermissionToAppealText(caseData))
                 .orderMadeOnText(getOrderMadeOnText(caseData))
                 .reasonText(getReasonText(caseData))
                 .build();
@@ -266,38 +266,14 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return null;
     }
 
-    private String getPermissionToAppealText(CaseData caseData) {
-        StringBuilder permissionToAppealBuilder = new StringBuilder();
-        if (nonNull(caseData.getAssistedOrderAppealToggle())
-            && nonNull(caseData.getAssistedOrderAppealToggle().get(0))
-            && caseData.getAssistedOrderAppealToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            if(nonNull(caseData.getAssistedOrderAppealDetails())){
-                permissionToAppealBuilder.append(String.format(
-                    PERMISSION_TO_APPEAL_TEXT,
-                    caseData.getAssistedOrderAppealDetails()
-                                                                   .getAppealOrigin().getDisplayedValue(),
-                    caseData.getAssistedOrderAppealDetails()
-                                                                   .getPermissionToAppeal().getDisplayedValue()));
-
-                if(nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())){
-                    permissionToAppealBuilder.append(LINE_BREAKER);
-                    permissionToAppealBuilder.append(String.format(permissionToAppealReasonsText,
-                                                                   caseData.getAssistedOrderAppealDetails()
-                                                                       .getReasonsText()));
-                }
-            }
-            return permissionToAppealBuilder.toString();
-        }
-        return null;
-    }
-
-    protected String getRECITAL_RECORDED_TEXT(CaseData caseData) {
+    protected String getRecitalRecordedText(CaseData caseData) {
         StringBuilder recordedText = new StringBuilder();
 
-        if(isNull(caseData.getAssistedOrderRecitals()) ||
-            isNull(caseData.getAssistedOrderRecitals().get(0))) {
+        if(isNull(caseData.getAssistedOrderRecitals())
+            || isNull(caseData.getAssistedOrderRecitals().get(0))
+            || !caseData.getAssistedOrderRecitals().get(0).equals(FinalOrderShowToggle.SHOW)) {
             return null;
-        }else if(caseData.getAssistedOrderRecitals().get(0).equals(FinalOrderShowToggle.SHOW)){
+        }else {
             if(nonNull(caseData.getAssistedOrderRecitalsRecorded())) {
                     recordedText.append(String.format(
                         RECITAL_RECORDED_TEXT,
@@ -310,10 +286,11 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
     protected String generalJudgeHeardFromText(CaseData caseData) {
         StringBuilder judgeHeardFromBuilder = new StringBuilder();
-        if(isNull(caseData.getAssistedOrderJudgeHeardFrom()) ||
-            isNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))) {
+        if(isNull(caseData.getAssistedOrderJudgeHeardFrom())
+            || isNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))
+            || !caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)) {
             return null;
-        }else if(caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)){
+        } else {
             if(nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
                 .getRepresentationType().equals(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT)){
                 //Both Attended
@@ -415,6 +392,31 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             orderMadeOnText.append(ORDER_MADE_ON_NONE_TEXT);
         }
         return orderMadeOnText.toString();
+    }
+
+    protected String getPermissionToAppealText(CaseData caseData) {
+        StringBuilder permissionToAppealBuilder = new StringBuilder();
+        if (nonNull(caseData.getAssistedOrderAppealToggle())
+            && nonNull(caseData.getAssistedOrderAppealToggle().get(0))
+            && caseData.getAssistedOrderAppealToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
+            if(nonNull(caseData.getAssistedOrderAppealDetails())){
+                permissionToAppealBuilder.append(String.format(
+                    PERMISSION_TO_APPEAL_TEXT,
+                    caseData.getAssistedOrderAppealDetails()
+                        .getAppealOrigin().getDisplayedValue(),
+                    caseData.getAssistedOrderAppealDetails()
+                        .getPermissionToAppeal().getDisplayedValue()));
+
+                if(nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())){
+                    permissionToAppealBuilder.append(LINE_BREAKER);
+                    permissionToAppealBuilder.append(String.format(permissionToAppealReasonsText,
+                                                                   caseData.getAssistedOrderAppealDetails()
+                                                                       .getReasonsText()));
+                }
+            }
+            return permissionToAppealBuilder.toString();
+        }
+        return null;
     }
 
     protected String getOrderMadeDate(CaseData caseData) {

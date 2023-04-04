@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum FinalOrderConsideredToggle {
-    CONSIDERED("The judge considered the papers");
+    CONSIDERED("The judge considered the papers"),
+    NOT_CONSIDERED("Not considered");
     private final String displayedValue;
 }
