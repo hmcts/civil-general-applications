@@ -250,7 +250,7 @@ ccd:
       imagePullPolicy: Always
       devmemoryRequests: 2048Mi
       devcpuRequests: 1000m
-      devmemoryLimits: "6Gi"
+      devmemoryLimits: "8Gi"
       devcpuLimits: 2000m
       environment:
         DEFINITION_STORE_DB_HOST: ${SERVICE_NAME}-postgresql
