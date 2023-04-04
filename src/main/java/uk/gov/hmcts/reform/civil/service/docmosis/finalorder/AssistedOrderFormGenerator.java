@@ -170,10 +170,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 case DEFENDANT_COST_SUMMARILY_BASE: {
                     costsTextBuilder.append(DEFENDANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
-
                     if(nonNull(caseData.getDefendantCostSummarilyBase())){
+                        costsTextBuilder.append(" ");
+                        costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostSummarilyBase()));
                     }
                 }
@@ -181,10 +180,10 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 case CLAIMANT_COST_SUMMARILY_BASE: {
                     costsTextBuilder.append(CLAIMANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
 
                     if(nonNull(caseData.getClaimantCostSummarilyBase())){
+                        costsTextBuilder.append(" ");
+                        costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
                         costsTextBuilder.append(LINE_BREAKER);
                         costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostSummarilyBase()));
                     }

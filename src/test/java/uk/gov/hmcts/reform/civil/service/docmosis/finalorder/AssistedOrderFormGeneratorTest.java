@@ -1,18 +1,40 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GeneralApplicationCreationNotificationService;
+import uk.gov.hmcts.reform.civil.service.WorkingDayIndicator;
+import uk.gov.hmcts.reform.civil.service.bankholidays.PublicHolidaysCollection;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
+@SpringBootTest(classes = {
+    AssistedOrderFormGenerator.class
+})
 class AssistedOrderFormGeneratorTest {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
@@ -57,6 +79,8 @@ class AssistedOrderFormGeneratorTest {
         + "for the %s is %s.";
     private static final String permissionToAppealReasonsText = "Reasons: %s ";
 
+    private static final String DETAIL_TEXT = "Test 123";
+
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
 
@@ -69,20 +93,188 @@ class AssistedOrderFormGeneratorTest {
     private CaseDetailsConverter caseDetailsConverter;
 
     @Autowired
-    private FreeFormOrderGenerator generator;
-    
-    @Test
-    void generate() {
+    private AssistedOrderFormGenerator generator;
+    private DetailText detailText;
+    private AssistedOrderCost costDetails;
+
+    @BeforeEach
+    public void setUp() throws IOException {
+
+        detailText = DetailText.builder().detailText(DETAIL_TEXT).build();
+        costDetails = AssistedOrderCost.builder()
+            .costAmount(new BigDecimal(123))
+            .costPaymentDeadLine(LocalDate.now())
+            .isPartyCostProtection(YesOrNo.YES)
+            .build();
     }
 
-    @Test
-    void getTemplateData() {
-    }
+    @Nested
+    class CostTextValues {
+        @Test
+        void shouldReturnText_WhenSelected_CostInCaseOption() {
+            CaseData caseData = CaseData.builder().assistedCostTypes(AssistedCostTypesList.COSTS_IN_CASE).build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains(COST_IN_CASE_TEXT);
+        }
+        @Test
+        void shouldReturnText_WhenSelected_NoOrderCostOption() {
+            CaseData caseData = CaseData.builder().assistedCostTypes(AssistedCostTypesList.NO_ORDER_TO_COST).build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains(NO_ORDER_COST_TEXT);
+        }
+        @Test
+        void shouldReturnText_WhenSelected_CostReservedOption() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.COSTS_RESERVED)
+                .costReservedDetails(detailText)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains(DETAIL_TEXT);
+        }
+        @Test
+        void shouldReturnText_WhenSelected_CostReservedOption_NoTextValue() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.COSTS_RESERVED)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).isEmpty();
+        }
 
-    @Test
-    void getCostsTextValue() {
-    }
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardCostBase() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE)
+                .defendantCostStandardBase(costDetails)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("To be paid by");
+        }
 
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardCostBase_NoCostDetails() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("The defendant shall pay the");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardCostBase_NoCostAmount() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE)
+                .defendantCostStandardBase(AssistedOrderCost.builder()
+                                               .costPaymentDeadLine(LocalDate.now())
+                                               .isPartyCostProtection(YesOrNo.YES)
+                                               .build())
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertFalse(assistedOrderString.contains("Amount:"));
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardCostBase_NoCostProtection() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE)
+                .defendantCostStandardBase(AssistedOrderCost.builder()
+                                               .costAmount(new BigDecimal(123))
+                                               .costPaymentDeadLine(LocalDate.now())
+                                               .isPartyCostProtection(YesOrNo.NO)
+                                               .build())
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString.contains("The paying party has the benefit of cost"));
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardCostBase_NoDate() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE)
+                .defendantCostStandardBase(AssistedOrderCost.builder().build())
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertFalse(assistedOrderString.contains("To be paid by"));
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_ClaimantStandardCostBase() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.CLAIMANT_COST_STANDARD_BASE)
+                .claimantCostStandardBase(costDetails)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("To be paid by");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_ClaimantStandardCostBase_NoCostDetails() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.CLAIMANT_COST_STANDARD_BASE)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("The claimant shall pay the");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardSummarilyBase() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_SUMMARILY_BASE)
+                .defendantCostSummarilyBase(costDetails)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("To be paid by");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_DefendantStandardSummarilyBase_NoCostDetails() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.DEFENDANT_COST_SUMMARILY_BASE)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("The defendant shall pay the");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_ClaimantSummarilyBase() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.CLAIMANT_COST_SUMMARILY_BASE)
+                .claimantCostSummarilyBase(costDetails)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("To be paid by");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_ClaimantSummarilyBase_NoCostDetails() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.CLAIMANT_COST_SUMMARILY_BASE)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains("The claimant shall pay the");
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_BespokeCostOrder() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.BESPOKE_COSTS_ORDER)
+                .bespokeCostDetails(detailText)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).contains(DETAIL_TEXT);
+        }
+
+        @Test
+        void shouldReturnText_WhenSelected_BespokeCostOrder_NoDetails() {
+            CaseData caseData = CaseData.builder()
+                .assistedCostTypes(AssistedCostTypesList.BESPOKE_COSTS_ORDER)
+                .build();
+            String assistedOrderString = generator.getCostsTextValue(caseData);
+            assertThat(assistedOrderString).isEmpty();
+        }
+
+
+
+    }
     @Test
     void getFurtherHearingText() {
     }
