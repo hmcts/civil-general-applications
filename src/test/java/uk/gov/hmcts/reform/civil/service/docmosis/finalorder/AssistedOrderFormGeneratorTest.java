@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
@@ -798,7 +799,7 @@ class AssistedOrderFormGeneratorTest {
                 .assistedOrderAppealToggle(recitalsOrderShowOption)
                 .build();
             String assistedOrderString = generator.getPermissionToAppealText(caseData);
-            assertNull(assistedOrderString);
+            assertThat(assistedOrderString).isEmpty();
         }
 
         @Test
@@ -931,7 +932,8 @@ class AssistedOrderFormGeneratorTest {
                                                        .build())
                 .build();
             String assistedOrderString = generator.getOrderMadeDate(caseData);
-            assertThat(assistedOrderString).contains(TEST_TEXT);
+            assertThat(assistedOrderString).contains(DateFormatHelper
+                                                         .formatLocalDate(LocalDate.now(), "dd/MMM/yyyy"));
         }
     }
 }

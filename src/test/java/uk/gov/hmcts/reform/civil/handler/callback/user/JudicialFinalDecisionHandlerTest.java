@@ -19,8 +19,12 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 
 @SpringBootTest(classes = {
+        AssistedOrderFormGenerator.class,
         JudicialFinalDecisionHandler.class,
         JacksonAutoConfiguration.class,
 })
@@ -51,7 +56,13 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objMapper;
     @MockBean
     private GeneralAppLocationRefDataService locationRefDataService;
+    @MockBean
+    private UnsecuredDocumentManagementService documentManagementService;
 
+    @MockBean
+    private DocumentGeneratorService documentGeneratorService;
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
             + "any party affected by the order may apply to set aside, vary or stay the order."
             + " Any such application must be made by 4pm on";
