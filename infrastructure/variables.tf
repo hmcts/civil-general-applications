@@ -28,12 +28,6 @@ variable "tenant_id" {
   description = "(Required) The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. This is usually sourced from environment variables and not normally required to be specified."
 }
 
-variable "appinsights_location" {
-  type        = string
-  default     = "West Europe"
-  description = "Location for Application Insights"
-}
-
 variable "send_grid_subscription" {
   default = "1c4f0704-a29e-403d-b719-b90c34ef14c9"
 }
