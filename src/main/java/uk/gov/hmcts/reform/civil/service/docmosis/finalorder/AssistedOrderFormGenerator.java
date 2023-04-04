@@ -116,7 +116,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .costsText(getCostsTextValue(caseData))
                 .furtherHearingText(getFurtherHearingText(caseData))
-                .permissionToAppealText(getPERMISSION_TO_APPEAL_TEXT(caseData))
+                .permissionToAppealText(getpermissionToAppealText(caseData))
                 .orderMadeOnText(getOrderMadeOnText(caseData))
                 .reasonText(getReasonText(caseData))
                 .build();
@@ -212,9 +212,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
             furtherHearingBuilder.append(String.format(
                 FURTHER_HEARING_TAKE_PLACE_AFTER_TEXT,
-                getDateFormatted(
-                                                           caseData.getAssistedOrderFurtherHearingDetails()
-                                                               .getListFromDate())));
+                getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate())));
+
             if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate())) {
                 furtherHearingBuilder.append(LINE_BREAKER);
                 furtherHearingBuilder.append(String.format(FURTHER_HEARING_TAKE_PLACE_BEFORE_TEXT, getDateFormatted(
@@ -267,7 +266,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return null;
     }
 
-    private String getPERMISSION_TO_APPEAL_TEXT(CaseData caseData) {
+    private String getPermissionToAppealText(CaseData caseData) {
         StringBuilder permissionToAppealBuilder = new StringBuilder();
         if (nonNull(caseData.getAssistedOrderAppealToggle())
             && nonNull(caseData.getAssistedOrderAppealToggle().get(0))

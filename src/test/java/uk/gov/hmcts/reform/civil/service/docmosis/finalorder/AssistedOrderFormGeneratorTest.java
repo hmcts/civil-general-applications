@@ -7,12 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
+import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
@@ -27,6 +34,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -264,7 +274,7 @@ class AssistedOrderFormGeneratorTest {
         }
 
         @Test
-        void shouldReturnText_WhenSelected_BespokeCostOrder_NoDetails() {
+        void shouldReturnEmptyText_WhenSelected_BespokeCostOrder_NoDetails() {
             CaseData caseData = CaseData.builder()
                 .assistedCostTypes(AssistedCostTypesList.BESPOKE_COSTS_ORDER)
                 .build();
@@ -272,11 +282,184 @@ class AssistedOrderFormGeneratorTest {
             assertThat(assistedOrderString).isEmpty();
         }
 
-
-
     }
-    @Test
-    void getFurtherHearingText() {
+    @Nested
+    class FurtherHearing {
+
+        private List<FinalOrderShowToggle> furtherHearingShowOption = new ArrayList<>();
+        @BeforeEach
+        public void setUp() throws IOException {
+            furtherHearingShowOption.add(FinalOrderShowToggle.SHOW);
+        }
+        @Test
+        void shouldReturnNull_When_FurtherHearingOption_notSelected() {
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(null)
+                .build();
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_FurtherHearingOption_Null() {
+            List<FinalOrderShowToggle> furtherHearingOption = new ArrayList<>();
+            furtherHearingOption.add(null);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingOption)
+                .build();
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldReturnNull_When_FurtherHearingOption_Hide() {
+            List<FinalOrderShowToggle> furtherHearingOption = new ArrayList<>();
+            furtherHearingOption.add(FinalOrderShowToggle.HIDE);
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingOption)
+                .build();
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertNull(assistedOrderString);
+        }
+
+        @Test
+        void shouldNotListToDate_When_FurtherHearingOption_NoLisToDate() {
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(false,
+                                                                              false,
+                                                                              false,
+                                                                              null,
+                                                                              false))
+
+                .build();
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertFalse(assistedOrderString.contains("It will take place before:"));
+        }
+
+        @Test
+        void shouldListToDate_When_FurtherHearingOption_LisToDate() {
+
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
+                                                                              false,
+                                                                              false,
+                                                                              null,
+                                                                              false))
+
+                .build();
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertThat(assistedOrderString).contains("It will take place before:");
+        }
+
+        @Test
+        void shouldNotReturnText_When_LengthOfHearingNull() {
+
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
+                                                                              false,
+                                                                              false,
+                                                                              null,
+                                                                              false))
+
+                .build();
+
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertFalse(assistedOrderString.contains("The length of new hearing will be:"));
+        }
+
+        @Test
+        void shouldReturnText_When_LengthOfHearingNotNull() {
+
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
+                                                                              true,
+                                                                              false,
+                                                                              null,
+                                                                              false))
+
+                .build();
+
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertThat(assistedOrderString).contains("The length of new hearing will be:");
+        }
+
+        @Test
+        void shouldReturnOtherText_When_LengthOfHearingOther() {
+
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
+                                                                              false,
+                                                                              true,
+                                                                              null,
+                                                                              false))
+
+                .build();
+
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertThat(assistedOrderString).contains("2/ 2/ 2");
+        }
+
+        @Test
+        void shouldReturnOtherText_When_AlternativeLocation_and_HearingMethodVideo() {
+            DynamicListElement location1 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            DynamicList alternateDirection =DynamicList.builder().listItems(List.of(location1)).build();
+            CaseData caseData = CaseData.builder()
+                .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+                .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
+                                                                              false,
+                                                                              true,
+                                                                              alternateDirection,
+                                                                              true))
+
+                .build();
+
+            String assistedOrderString = generator.getFurtherHearingText(caseData);
+            assertThat(assistedOrderString).contains("Site Name 2");
+            assertThat(assistedOrderString).contains("via video");
+        }
+
+        private AssistedOrderFurtherHearingDetails getFurtherHearingCaseData(boolean isListToDate,
+                                                                             boolean isLengthOfHearing,
+                                                                             boolean isLengthOfHearingOther,
+                                                                             DynamicList alternativeLocation,
+                                                                             boolean isHearingMethod){
+            AssistedOrderFurtherHearingDetails.AssistedOrderFurtherHearingDetailsBuilder furtherHearingBuilder
+                = AssistedOrderFurtherHearingDetails.builder();
+            furtherHearingBuilder.listFromDate(LocalDate.now());
+            if (isListToDate) {
+                furtherHearingBuilder.listToDate(LocalDate.now().plusDays(5));
+            }
+
+            if (isLengthOfHearing) {
+                furtherHearingBuilder.lengthOfNewHearing(LengthOfHearing.HOUR_1_5);
+            }
+
+            if (isLengthOfHearingOther) {
+                furtherHearingBuilder.lengthOfNewHearing(LengthOfHearing.OTHER);
+                furtherHearingBuilder.lengthOfHearingOther(HearingLength.builder()
+                                                               .lengthListOtherDays(2)
+                                                               .lengthListOtherMinutes(2)
+                                                               .lengthListOtherHours(2)
+                                                               .build());
+            }
+
+            if (alternativeLocation != null) {
+                furtherHearingBuilder.alternativeHearingLocation(alternativeLocation);
+            }
+
+            if (isHearingMethod) {
+                furtherHearingBuilder.hearingMethods(GAJudicialHearingType.VIDEO);
+            }
+
+            return furtherHearingBuilder.build();
+
+        }
     }
 
     @Test

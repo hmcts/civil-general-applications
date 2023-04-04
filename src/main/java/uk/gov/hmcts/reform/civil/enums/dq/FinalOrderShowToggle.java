@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum FinalOrderShowToggle {
-    SHOW("Show");
+    SHOW("Show"),
+    HIDE("Hide");
     private final String displayedValue;
 }
