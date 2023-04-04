@@ -149,7 +149,7 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getFileName() {
         String name = generator.getFileName(null, DocmosisTemplates.FREE_FORM_ORDER);
-        assertThat(name).startsWith("Free_form_order_");
+        assertThat(name).startsWith("General_order_for_application_");
         assertThat(name).endsWith(".pdf");
     }
 
