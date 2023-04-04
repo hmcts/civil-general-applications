@@ -349,7 +349,8 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder() {
 
             CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
-                    .documentLink(Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+                    .documentLink(Document.builder().documentUrl("url")
+                            .documentFileName("filename").documentHash("hash")
                             .documentBinaryUrl("binaryUrl").build())
                     .documentType(DocumentType.GENERAL_ORDER).documentSize(12L).build();
 

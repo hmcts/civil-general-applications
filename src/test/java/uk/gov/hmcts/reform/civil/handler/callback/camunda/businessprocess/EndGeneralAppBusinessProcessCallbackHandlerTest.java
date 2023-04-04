@@ -403,7 +403,8 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
         }
 
-        private CaseData getSampleGeneralApplicationCaseDataAfterOrderMade(YesOrNo isConsented, YesOrNo isTobeNotified) {
+        private CaseData getSampleGeneralApplicationCaseDataAfterOrderMade(YesOrNo isConsented,
+                                                                           YesOrNo isTobeNotified) {
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                             getGeneralApplication(isConsented, isTobeNotified))
                     .toBuilder().ccdCaseReference(CHILD_CCD_REF)
