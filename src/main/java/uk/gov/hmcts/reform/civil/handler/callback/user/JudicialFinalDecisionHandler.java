@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFu
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
@@ -41,6 +42,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
@@ -68,6 +70,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
     private final ObjectMapper objectMapper;
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
+    private final AssistedOrderFormGenerator assistedOrderFormGenerator;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -116,6 +119,12 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
             caseDataBuilder.gaFinalOrderDocPreview(freeform.getDocumentLink());
+        } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
+            CaseDocument assistedOrder = assistedOrderFormGenerator.generate(
+                caseData,
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+            caseDataBuilder.gaFinalOrderDocPreview(assistedOrder.getDocumentLink());
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))

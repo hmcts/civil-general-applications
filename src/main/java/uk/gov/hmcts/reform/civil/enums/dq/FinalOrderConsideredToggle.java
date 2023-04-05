@@ -5,11 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum AppealOriginTypes {
-
-    CLAIMANT("claimant"),
-    DEFENDANT("defendant"),
-    OTHER("other");
-
+public enum FinalOrderConsideredToggle {
+    CONSIDERED("The judge considered the papers"),
+    NOT_CONSIDERED("Not considered");
     private final String displayedValue;
 }

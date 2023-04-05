@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
@@ -47,6 +48,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private JudicialFinalDecisionHandler handler;
     @MockBean
     private FreeFormOrderGenerator freeFormOrderGenerator;
+    @MockBean
+    private AssistedOrderFormGenerator assistedOrderFormGenerator;
     @Autowired
     private ObjectMapper objMapper;
     @MockBean
@@ -220,6 +223,20 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
                 .build()
                 .toBuilder().finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData updatedData = objMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getGaFinalOrderDocPreview()).isNotNull();
+    }
+
+    @Test
+    void shouldGenerateAssistedOrderPreviewDocumentWhenPopulateFinalOrderPreviewDocIsCalled() {
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER).build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
