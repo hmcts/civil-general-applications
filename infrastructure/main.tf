@@ -12,7 +12,7 @@ data "azurerm_key_vault" "civil" {
 
 
 # TO DO: REMOVE THIS SECRET AFTER APPLICATION IS CONFGIURED TO FETCH FROM APP SPECIFIC KEY VAULT.
-resource "azurerm_application_insights" "appinsights" { 
+resource "azurerm_application_insights" "appinsights" {
   name                = "${var.product}-${var.component}-${var.env}"
   location            = var.appinsights_location
   resource_group_name = azurerm_resource_group.rg.name
