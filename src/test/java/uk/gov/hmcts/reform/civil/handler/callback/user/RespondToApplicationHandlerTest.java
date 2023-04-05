@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.GADebtorPaymentPlanGAspec;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
+import uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -31,6 +33,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
@@ -57,6 +60,8 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
@@ -126,6 +131,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     public static final LocalDate UNAVAILABILITY_DATE_FROM_INVALID = LocalDate.of(2022, 3, 1);
     public static final LocalDate UNAVAILABILITY_DATE_TO_INVALID = TRIAL_DATE_FROM_INVALID.minusDays(10L);
+    public static final String PAYMENT_DATE_CANNOT_BE_IN_PAST =
+        "The date entered cannot be in the past.";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -173,12 +180,44 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                           .courtName("Court Name").region("Region").build());
         when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
 
-        CallbackParams params = callbackParamsOf(getCaseWithRespondentResponse(), CallbackType.ABOUT_TO_START);
+        CaseData caseData = getCaseWithRespondentResponse();
+        CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
+        List<GeneralApplicationTypes> types = List.of(SUMMARY_JUDGEMENT);
+        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build()).build();
+
+        CallbackParams params = callbackParamsOf(updateCaseData.build(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
         errors.add(RESPONDENT_ERROR);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEqualTo(errors);
+
+        CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(data.getGeneralAppVaryJudgementType()).isEqualTo(NO);
+    }
+
+    @Test
+    void aboutToStartCallbackChecksRespondendResponseBeforeProceeding_VaryJudgement() {
+
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address").postcode("post code")
+                          .courtName("Court Name").region("Region").build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+
+        CaseData caseData = getCaseWithRespondentResponse();
+        CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
+        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build()).build();
+
+        CallbackParams params = callbackParamsOf(updateCaseData.build(), CallbackType.ABOUT_TO_START);
+        List<String> errors = new ArrayList<>();
+        errors.add(RESPONDENT_ERROR);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+
+        CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(data.getGeneralAppVaryJudgementType()).isEqualTo(YES);
     }
 
     @Test
@@ -201,6 +240,49 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(dynamicList).isNotNull();
         assertThat(locationsFromDynamicList(dynamicList))
             .containsOnly("siteName - court Address - post code");
+    }
+
+    @Test
+    void midCallBackValidateDebtorPaymentDatePastDateError() {
+        CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
+        CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
+        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build())
+            .gaRespondentDebtorOffer(
+            GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
+            GARespondentDebtorOfferOptionsGAspec.DECLINE)
+                .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
+                .paymentSetDate(LocalDate.now().minusDays(2)).build());
+
+        CallbackParams params = callbackParamsOf(updateCaseData.build(),
+                                                 CallbackType.MID, "validate-debtor-offer");
+
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors().get(0)).isEqualTo(PAYMENT_DATE_CANNOT_BE_IN_PAST);
+    }
+
+    @Test
+    void midCallBackValidateDebtorPaymentDateIsFuture() {
+        CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
+        CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
+        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build())
+            .gaRespondentDebtorOffer(
+                GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
+                        GARespondentDebtorOfferOptionsGAspec.DECLINE)
+                    .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
+                    .paymentSetDate(LocalDate.now().plusDays(2)).build());
+
+        CallbackParams params = callbackParamsOf(updateCaseData.build(),
+                                                 CallbackType.MID, "validate-debtor-offer");
+
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        assertThat(response.getErrors()).isEmpty();
     }
 
     @Test

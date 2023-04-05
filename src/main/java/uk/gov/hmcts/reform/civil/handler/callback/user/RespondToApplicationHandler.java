@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static java.time.LocalDate.now;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -47,6 +49,9 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.GADebtorPaymentPlanGAspec.PAYFULL;
+import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.DECLINE;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -83,6 +88,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     public static final String APPLICATION_RESPONSE_PRESENT = "The General Application has already "
         +  "received a response.";
     public static final String RESPONDENT_RESPONSE_EXISTS = "The application has already been responded to.";
+    public static final String PAYMENT_DATE_CANNOT_BE_IN_PAST =
+        "The date entered cannot be in the past.";
 
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
@@ -91,6 +98,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     protected Map<String, Callback> callbacks() {
         return Map.of(
             callbackKey(ABOUT_TO_START), this::applicationValidation,
+            callbackKey(MID, "validate-debtor-offer"), this::validateDebtorOffer,
             callbackKey(MID, "hearing-screen-response"), this::hearingScreenResponse,
             callbackKey(ABOUT_TO_SUBMIT), this::submitClaim,
             callbackKey(SUBMITTED), this::buildResponseConfirmation
@@ -101,6 +109,13 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)) {
+            caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
+        } else {
+            caseDataBuilder.generalAppVaryJudgementType(NO);
+        }
+
         caseDataBuilder
             .hearingDetailsResp(
                 GAHearingDetails
@@ -112,6 +127,22 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(applicationExistsValidation(callbackParams))
             .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
+    }
+
+    private CallbackResponse validateDebtorOffer(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        ArrayList<String> errors = new ArrayList<>();
+        if (ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
+            && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(DECLINE)) {
+            if (caseData.getGaRespondentDebtorOffer().getPaymentPlan().equals(PAYFULL)
+                && !now().isBefore(caseData.getGaRespondentDebtorOffer().getPaymentSetDate())) {
+                errors.add(PAYMENT_DATE_CANNOT_BE_IN_PAST);
+            }
+        }
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .errors(errors)
             .build();
     }
 
