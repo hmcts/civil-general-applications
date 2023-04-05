@@ -5,7 +5,7 @@ data "azuread_group" "dts_civil" {
 
 module "key-vault" {
   source                  = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
-  name                    = "${var.product}-general-applications-${var.env}"
+  name                    = "${var.product}-gen-apps-${var.env}" # NAME HAS BEEN ABBREVIATED DUE TO 24 LIMIT MAX ON KV NAMES
   product                 = var.product
   env                     = var.env
   tenant_id               = var.tenant_id
@@ -13,5 +13,5 @@ module "key-vault" {
   resource_group_name     = azurerm_resource_group.rg.name
   product_group_object_id = data.azuread_group.dts_civil.object_id
   common_tags             = var.common_tags
-  create_managed_identity = true
+  create_managed_identity = false
 }
