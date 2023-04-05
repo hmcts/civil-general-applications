@@ -472,7 +472,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         if (isNull(date)) {
             return null;
         }
-        return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
+        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     protected String getCostText(AssistedOrderCost assistedOrderCost) {
