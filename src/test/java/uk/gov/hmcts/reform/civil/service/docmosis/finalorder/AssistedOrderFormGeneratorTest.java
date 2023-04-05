@@ -47,7 +47,6 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentMan
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
