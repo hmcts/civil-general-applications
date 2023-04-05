@@ -1,5 +1,5 @@
-resource "azurerm_key_vault_secret" "app-insights-instrumentation-key" {
-  name         = "app-insights-instrumentation-key"
+resource "azurerm_key_vault_secret" "appinsights-instrumentation-key" {
+  name         = "appinsights-instrumentation-key"
   value        = azurerm_application_insights.appinsights.instrumentation_key
   key_vault_id = module.key-vault.key_vault_id
   content_type = "secret"
@@ -8,8 +8,8 @@ resource "azurerm_key_vault_secret" "app-insights-instrumentation-key" {
   })
 }
 
-resource "azurerm_key_vault_secret" "app-insights-connection-string" {
-  name         = "app-insights-connection-string"
+resource "azurerm_key_vault_secret" "appinsights-connection-string" {
+  name         = "appinsights-connection-string"
   value        = azurerm_application_insights.appinsights.connection_string
   key_vault_id = module.key-vault.key_vault_id
   content_type = "secret"
