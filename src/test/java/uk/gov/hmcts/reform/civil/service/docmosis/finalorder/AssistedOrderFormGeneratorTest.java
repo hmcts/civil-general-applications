@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
@@ -37,7 +38,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.HeardClaimantNotAttend;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.HeardDefendantNotAttend;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
@@ -46,7 +49,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -208,7 +213,7 @@ class AssistedOrderFormGeneratorTest {
                                                .build())
                 .build();
             String assistedOrderString = generator.getCostsTextValue(caseData);
-            assertThat(assistedOrderString.contains("The paying party has the benefit of cost"));
+            assertThat(assistedOrderString).contains("The paying party has the benefit of cost");
         }
 
         @Test
@@ -935,5 +940,43 @@ class AssistedOrderFormGeneratorTest {
             assertThat(assistedOrderString).contains(DateFormatHelper
                                                          .formatLocalDate(LocalDate.now(), "dd/MMM/yyyy"));
         }
+    }
+
+    @Test
+    void test_getCaseNumberFormatted() {
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1644495739087775L).build();
+        String formattedCaseNumber = generator.getCaseNumberFormatted(caseData);
+        assertThat(formattedCaseNumber).isEqualTo("1644-4957-3908-7775");
+    }
+
+    @Test
+    void test_getFileName() {
+        String name = generator.getFileName(DocmosisTemplates.ASSISTED_ORDER_FORM);
+        assertThat(name).startsWith("Assisted_order_form_");
+        assertThat(name).endsWith(".pdf");
+    }
+
+    @Test
+    void test_getDateFormatted() {
+        String dateString = generator.getDateFormatted(LocalDate.EPOCH);
+        assertThat(dateString).isEqualTo("01/Jan/1970");
+    }
+
+    @Test
+    void test_getReference() {
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
+
+        assertThat(generator.getReference(caseDetails, "applicantSolicitor1Reference")).isEqualTo("app1ref");
+        assertThat(generator.getReference(caseDetails, "notExist")).isNull();
+    }
+
+    @Test
+    void test_getTemplate() {
+        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
     }
 }

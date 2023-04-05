@@ -87,7 +87,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     private static final String FURTHER_HEARING_METHOD_HEARING_TEXT = "Method of hearing: %s";
     private static final String PERMISSION_TO_APPEAL_TEXT = "The application for permission to appeal "
                                                         + "for the %s is %s.";
-    private static final String permissionToAppealReasonsText = "Reasons: %s ";
+    private static final String PERMISSION_TO_APPEAL_REASONS_TEXT = "Reasons: %s ";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
@@ -417,8 +417,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
                 if (nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())) {
                     permissionToAppealBuilder.append(LINE_BREAKER);
-                    permissionToAppealBuilder.append(String.format(permissionToAppealReasonsText,
-                                                                   caseData.getAssistedOrderAppealDetails()
+                    permissionToAppealBuilder.append(String.format(
+                        PERMISSION_TO_APPEAL_REASONS_TEXT,
+                        caseData.getAssistedOrderAppealDetails()
                                                                        .getReasonsText()));
                 }
             }
