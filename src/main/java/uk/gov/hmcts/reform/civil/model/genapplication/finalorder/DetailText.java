@@ -14,7 +14,7 @@ public class DetailText {
     private final String detailText;
 
     @JsonCreator
-    DetailText(@JsonProperty("detailText") String detailText
+    DetailText(@JsonProperty("detailsRepresentationText") String detailText
     ) {
 
         this.detailText = detailText;

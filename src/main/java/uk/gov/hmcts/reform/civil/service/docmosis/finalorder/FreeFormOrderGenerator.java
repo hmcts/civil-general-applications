@@ -115,7 +115,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         if (isNull(date)) {
             return null;
         }
-        return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
+        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     protected DocmosisTemplates getTemplate(CaseData caseData) {

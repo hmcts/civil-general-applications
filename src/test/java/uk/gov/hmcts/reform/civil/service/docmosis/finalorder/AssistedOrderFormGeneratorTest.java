@@ -384,13 +384,15 @@ class AssistedOrderFormGeneratorTest {
 
         @Test
         void shouldReturnOtherText_When_LengthOfHearingOther() {
-
+            DynamicListElement location1 = DynamicListElement.builder()
+                .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            DynamicList alternateDirection = DynamicList.builder().listItems(List.of(location1)).build();
             CaseData caseData = CaseData.builder()
                 .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
                 .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
                                                                               false,
                                                                               true,
-                                                                              null,
+                                                                              alternateDirection,
                                                                               false))
 
                 .build();
@@ -403,7 +405,10 @@ class AssistedOrderFormGeneratorTest {
         void shouldReturnOtherText_When_AlternativeLocation_and_HearingMethodVideo() {
             DynamicListElement location1 = DynamicListElement.builder()
                 .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
-            DynamicList alternateDirection = DynamicList.builder().listItems(List.of(location1)).build();
+            DynamicList alternateDirection = DynamicList.builder()
+                .listItems(List.of(location1))
+                .value(location1)
+                .build();
             CaseData caseData = CaseData.builder()
                 .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
                 .assistedOrderFurtherHearingDetails(getFurtherHearingCaseData(true,
@@ -835,7 +840,7 @@ class AssistedOrderFormGeneratorTest {
         }
 
         @Test
-        void shouldReturnText_When_OrderMadeHeard() {
+        void shouldReturnText_When_OrderMadeDate() {
             CaseData caseData = CaseData.builder()
                 .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails
                                                        .builder()
@@ -910,7 +915,7 @@ class AssistedOrderFormGeneratorTest {
                 .build();
             String assistedOrderString = generator.getOrderMadeDate(caseData);
             assertThat(assistedOrderString).contains(DateFormatHelper
-                                                         .formatLocalDate(LocalDate.now(), "dd/MMM/yyyy"));
+                                                         .formatLocalDate(LocalDate.now(), " d MMMM yyyy"));
         }
     }
 
@@ -931,7 +936,7 @@ class AssistedOrderFormGeneratorTest {
     @Test
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo("01/Jan/1970");
+        assertThat(dateString).isEqualTo(" 1 January 1970");
     }
 
     @Test

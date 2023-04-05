@@ -251,13 +251,14 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 }
             }
 
-            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation())) {
+            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation())
+                && nonNull(caseData.getAssistedOrderFurtherHearingDetails()
+                               .getAlternativeHearingLocation().getValue())) {
                 furtherHearingBuilder.append(LINE_BREAKER);
                 furtherHearingBuilder.append(String.format(
                     FURTHER_HEARING_ALTERNATIVE_HEARING_TEXT,
                     caseData.getAssistedOrderFurtherHearingDetails()
-                                                               .getAlternativeHearingLocation().getListItems()
-                                                               .get(0).getLabel()));
+                                                               .getAlternativeHearingLocation().getValue().getLabel()));
 
             }
 
@@ -472,7 +473,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         if (isNull(date)) {
             return null;
         }
-        return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
+        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     protected String getCostText(AssistedOrderCost assistedOrderCost) {
