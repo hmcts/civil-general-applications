@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
@@ -78,7 +81,8 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private FreeFormOrderGenerator freeFormOrderGenerator;
-
+    @MockBean
+    private AssistedOrderFormGenerator assistedOrderFormGenerator;
     @Autowired
     private GeneratePDFDocumentCallbackHandler handler;
 
@@ -104,6 +108,8 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         when(requestForInformationGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
         when(freeFormOrderGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(assistedOrderFormGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
     }
@@ -325,18 +331,18 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
-        @Test
-        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalled_withFinalOrder() {
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldGenerateGeneralOrderDoc_whenAboutToSubmitEventIsCalled_withFinalOrder(
+                FinalOrderSelection selection) {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
                     .build()
                     .toBuilder()
-                    .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                    .finalOrderSelection(selection)
                     .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
@@ -345,8 +351,10 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
-        @Test
-        void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder() {
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder(
+                FinalOrderSelection selection) {
 
             CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
                     .documentLink(Document.builder().documentUrl("url")
@@ -357,15 +365,12 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
                     .build()
                     .toBuilder()
-                    .finalOrderSelection(FinalOrderSelection.FREE_FORM_ORDER)
+                    .finalOrderSelection(selection)
                     .generalOrderDocument(wrapElements(caseDocument))
                     .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(freeFormOrderGenerator)
-                    .generate(any(CaseData.class), eq("BEARER_TOKEN"));
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 

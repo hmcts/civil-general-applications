@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
@@ -31,6 +32,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
+import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
@@ -56,6 +58,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     private final FreeFormOrderGenerator freeFormOrderGenerator;
+    private final AssistedOrderFormGenerator assistedOrderFormGenerator;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -85,12 +88,17 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                List<Element<CaseDocument>> newGeneralOrderDocumentList =
-                        ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
-
-                newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
-                caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
+            } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
+                judgeDecision = assistedOrderFormGenerator.generate(
+                        caseDataBuilder.build(),
+                        callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
             }
+            List<Element<CaseDocument>> newGeneralOrderDocumentList =
+                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+
+            newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
+            caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT)) {

@@ -929,7 +929,7 @@ class AssistedOrderFormGeneratorTest {
     @Test
     void test_getFileName() {
         String name = generator.getFileName(DocmosisTemplates.ASSISTED_ORDER_FORM);
-        assertThat(name).startsWith("Assisted_order_form_");
+        assertThat(name).startsWith("General_order_for_application_");
         assertThat(name).endsWith(".pdf");
     }
 

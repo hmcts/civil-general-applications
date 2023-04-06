@@ -22,7 +22,9 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 
 @Service
@@ -50,7 +52,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;
         } else if (Objects.nonNull(data.getFinalOrderSelection())) {
-            newState = ORDER_MADE;
+            if (data.getFinalOrderSelection().equals(ASSISTED_ORDER)
+                && Objects.nonNull(data.getAssistedOrderFurtherHearingDetails())) {
+                newState = LISTING_FOR_A_HEARING;
+            } else {
+                newState = ORDER_MADE;
+            }
         } else {
             newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE
