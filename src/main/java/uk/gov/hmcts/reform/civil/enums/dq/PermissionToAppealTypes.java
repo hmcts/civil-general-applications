@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum PermissionToAppealTypes {
 
     GRANTED("granted"),
-    REFUSED("refused");
+    REFUSED("not granted");
 
     private final String displayedValue;
 }

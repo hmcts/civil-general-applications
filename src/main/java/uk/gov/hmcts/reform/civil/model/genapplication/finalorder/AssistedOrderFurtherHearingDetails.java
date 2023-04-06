@@ -20,7 +20,7 @@ public class AssistedOrderFurtherHearingDetails {
     private LocalDate listFromDate;
     private LocalDate listToDate;
     private LengthOfHearing lengthOfNewHearing;
-    private final HearingLength caseHearingLengthElement;
+    private final HearingLength lengthOfHearingOther;
     private DynamicList alternativeHearingLocation;
     private GAJudicialHearingType hearingMethods;
     private String hearingNotesText;
@@ -29,7 +29,7 @@ public class AssistedOrderFurtherHearingDetails {
     AssistedOrderFurtherHearingDetails(@JsonProperty("listFromDate") LocalDate listFromDate,
                                        @JsonProperty("listToDate") LocalDate listToDate,
                                        @JsonProperty("lengthOfNewHearing") LengthOfHearing lengthOfNewHearing,
-                                       @JsonProperty("caseHearingLengthElement") HearingLength caseHearingLengthElement,
+                                       @JsonProperty("lengthOfHearingOther") HearingLength lengthOfHearingOther,
                                        @JsonProperty("alternativeHearingLocation")
                                        DynamicList alternativeHearingLocation,
                                        @JsonProperty("hearingMethods") GAJudicialHearingType hearingMethods,
@@ -37,7 +37,7 @@ public class AssistedOrderFurtherHearingDetails {
         this.listFromDate = listFromDate;
         this.listToDate = listToDate;
         this.lengthOfNewHearing = lengthOfNewHearing;
-        this.caseHearingLengthElement = caseHearingLengthElement;
+        this.lengthOfHearingOther = lengthOfHearingOther;
         this.alternativeHearingLocation = alternativeHearingLocation;
         this.hearingMethods = hearingMethods;
         this.hearingNotesText = hearingNotesText;
