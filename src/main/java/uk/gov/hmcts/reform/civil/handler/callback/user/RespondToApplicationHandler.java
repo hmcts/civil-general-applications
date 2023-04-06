@@ -50,6 +50,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATIO
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.GADebtorPaymentPlanGAspec.PAYFULL;
+import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.ACCEPT;
 import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.DECLINE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -322,11 +323,23 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private GARespondentResponse buildResponse(CaseData caseData, UserDetails userDetails) {
 
+        YesOrNo generalAppDebtorRespondentRep = NO;
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+            && caseData.getParentClaimantIsApplicant().equals(NO)) {
+
+            if (ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
+                && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(ACCEPT)) {
+                generalAppDebtorRespondentRep = YES;
+            }
+        }
+
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
 
         gaRespondentResponseBuilder
-            .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative()
-                                                            .getGeneralAppRespondent1Representative())
+            .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative() == null
+                                                     ? generalAppDebtorRespondentRep
+                                                     : caseData.getGeneralAppRespondent1Representative()
+                .getGeneralAppRespondent1Representative())
             .gaHearingDetails(populateHearingDetailsResp(caseData))
             .gaRespondentDetails(userDetails.getId()).build();
 

@@ -567,8 +567,13 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void shouldReturn_Null_WhenPreferredTypeNotInPerson() {
+
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build()).build();
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
@@ -576,6 +581,53 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
+    }
+
+    @Test
+    void shouldReturn_No_WhenDebtorIsAcceptedByRespondent() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+            .gaRespondentDebtorOffer(
+            GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
+                    GARespondentDebtorOfferOptionsGAspec.DECLINE)
+                .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
+                .paymentSetDate(LocalDate.now().minusDays(2)).build());
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                       .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+    }
+
+    @Test
+    void shouldReturn_Yes_WhenDebtorIsAcceptedByRespondent() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+            .gaRespondentDebtorOffer(
+                GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
+                        GARespondentDebtorOfferOptionsGAspec.ACCEPT)
+                    .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL).build());
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                       .getGeneralAppRespondent1Representative()).isEqualTo(YES);
     }
 
     @Test
@@ -668,10 +720,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     private CaseData getCaseWithPreferredTypeInPersonLocationNull() {
         return CaseData.builder()
-            .generalAppRespondent1Representative(
-                GARespondentRepresentative.builder()
-                    .generalAppRespondent1Representative(YES)
-                    .build())
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                     .hearingPreferredLocation(DynamicList.builder().build())
