@@ -82,7 +82,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     private static final String FURTHER_HEARING_TAKE_PLACE_AFTER_TEXT = "A further hearing will take place after: %s ";
     private static final String FURTHER_HEARING_TAKE_PLACE_BEFORE_TEXT = "It will take place before: %s";
     private static final String FURTHER_HEARING_LENGTH_TEXT = "The length of new hearing will be: %s";
-    private static final String FURTHER_HEARING_LENGTH_OTHER = " %s/ %s/ %s";
+    private static final String FURTHER_HEARING_LENGTH_OTHER = "Day - %s, Hour - %s, Minutes - %s ";
     private static final String FURTHER_HEARING_ALTERNATIVE_HEARING_TEXT = "Alternative hearing location: %s";
     private static final String FURTHER_HEARING_METHOD_HEARING_TEXT = "Method of hearing: %s";
     private static final String PERMISSION_TO_APPEAL_TEXT = "The application for permission to appeal "
