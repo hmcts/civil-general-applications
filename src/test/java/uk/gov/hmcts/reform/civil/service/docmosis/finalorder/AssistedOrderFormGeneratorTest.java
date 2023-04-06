@@ -398,7 +398,7 @@ class AssistedOrderFormGeneratorTest {
                 .build();
 
             String assistedOrderString = generator.getFurtherHearingText(caseData);
-            assertThat(assistedOrderString).contains("2/ 2/ 2");
+            assertThat(assistedOrderString).contains("Day - 2, Hour - 2, Minutes - 2");
         }
 
         @Test
