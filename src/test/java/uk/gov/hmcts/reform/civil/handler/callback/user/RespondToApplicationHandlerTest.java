@@ -183,7 +183,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = getCaseWithRespondentResponse();
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
         List<GeneralApplicationTypes> types = List.of(SUMMARY_JUDGEMENT);
-        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build()).build();
+        updateCaseData.parentClaimantIsApplicant(YES)
+            .generalAppType(GAApplicationType.builder().types(types).build()).build();
 
         CallbackParams params = callbackParamsOf(updateCaseData.build(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
@@ -207,7 +208,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = getCaseWithRespondentResponse();
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
         List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
-        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build()).build();
+        updateCaseData.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(types).build()).build();
 
         CallbackParams params = callbackParamsOf(updateCaseData.build(), CallbackType.ABOUT_TO_START);
         List<String> errors = new ArrayList<>();
@@ -247,7 +249,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
         List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
-        updateCaseData.generalAppType(GAApplicationType.builder().types(types).build())
+        updateCaseData.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(types).build())
             .gaRespondentDebtorOffer(
             GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
             GARespondentDebtorOfferOptionsGAspec.DECLINE)

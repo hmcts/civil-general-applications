@@ -110,7 +110,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
 
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)) {
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+            && caseData.getParentClaimantIsApplicant().equals(NO)) {
             caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
         } else {
             caseDataBuilder.generalAppVaryJudgementType(NO);
