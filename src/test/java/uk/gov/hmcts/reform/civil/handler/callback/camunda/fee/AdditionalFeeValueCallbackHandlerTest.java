@@ -69,7 +69,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
      void shouldReturnCorrectTaskId() {
         CaseData caseData = CaseDataBuilder.builder().buildFeeValidationCaseData(FEE167, false, false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        assertThat(handler.camundaActivityId(params)).isEqualTo(TASK_ID);
+        assertThat(handler.camundaActivityId()).isEqualTo(TASK_ID);
     }
 
     @Test

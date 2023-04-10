@@ -38,7 +38,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
     private final Time time;
 
     @Override
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return TASK_ID;
     }
 
