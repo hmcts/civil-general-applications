@@ -117,12 +117,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String APPLICANT_REQUIRES = "Applicant requires ";
     private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = APPLICANT_REQUIRES + "support with regards to "
         + "vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = "\n\nRespondent requires support with "
-        + "regards to vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT = "\n\nRespondent 1 requires support with "
-        + "regards to vulnerability\n";
-    private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = "\n\nRespondent 2 requires support with "
-        + "regards to vulnerability\n";
     private static final String JUDICIAL_PREF_COURT_LOC_APPLICANT_TEXT = "Applicant prefers Location %s.";
     private static final String JUDICIAL_PREF_COURT_LOC_RESP1_TEXT = "Respondent 1 prefers Location %s.";
     private static final String JUDICIAL_PREF_COURT_LOC_RESP2_TEXT = "Respondent 2 prefers Location %s.";
@@ -141,9 +135,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_RECITAL_TEXT = "Judge: %s \n\n"
-        + "The Judge considered the%sapplication of %s dated %s \n\nAnd the Judge considered "
-        + "the information provided by the %s";
     private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
@@ -153,9 +144,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_CONCURRENT_DATE =
         "The applicant and respondent may respond with written representations by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
-    private static final String DISMISSAL_ORDER_TEXT = "This application is dismissed.\n\n"
-        + "[Insert Draft Order from application]\n\n";
-
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
         + " should be given, is required.";
@@ -174,13 +162,49 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
 
-    private static final String ORDER_COURT_OWN_INITIATIVE = "As this order was made on the court's own initiative any "
-        + "party affected by the order may apply to set aside, vary or stay the order. "
-        + "Any such application must be made by 4pm on \n\n";
+    private static final String ORDER_COURT_OWN_INITIATIVE = """
+        As this order was made on the court's own initiative any party affected by
+        the order may apply to set aside, vary or stay the order.
+        Any such application must be made by 4pm on
 
-    private static final String ORDER_WITHOUT_NOTICE = "If you were not notified of the application before this "
-        + "order was made, you may apply to set aside, vary or stay the order. "
-        + "Any such application must be made by 4pm on \n\n";
+        """;
+
+    private static final String ORDER_WITHOUT_NOTICE = """
+        If you were not notified of the application before this
+        order was made, you may apply to set aside, vary or stay the order.
+        Any such application must be made by 4pm on
+
+        """;
+
+    private static final String DISMISSAL_ORDER_TEXT = """
+        This application is dismissed.
+
+        [Insert Draft Order from application]
+
+        """;
+
+    private static final String JUDICIAL_RECITAL_TEXT = """
+        Judge: %s
+
+        The Judge considered the%sapplication of %s dated %s
+
+        And the Judge considered the information provided by the %s""";
+
+    private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = """
+
+
+        Respondent requires support with regards to vulnerability
+        """;
+    private static final String JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT = """
+
+
+        Respondent 1 requires support with regards to vulnerability
+        """;
+    private static final String JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT = """
+
+
+        Respondent 2 requires support with regards to vulnerability
+        """;
 
     private final ObjectMapper objectMapper;
 
