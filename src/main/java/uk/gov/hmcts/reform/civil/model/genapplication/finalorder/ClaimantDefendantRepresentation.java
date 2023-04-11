@@ -20,7 +20,7 @@ public class ClaimantDefendantRepresentation {
     private String detailsRepresentationText;
 
     @JsonCreator
-    ClaimantDefendantRepresentation(@JsonProperty("ClaimantRepresentation")
+    ClaimantDefendantRepresentation(@JsonProperty("claimantRepresentation")
                                     ClaimantRepresentationType claimantRepresentation,
                                     @JsonProperty("defendantRepresentation")
                                     DefendantRepresentationType defendantRepresentation,
