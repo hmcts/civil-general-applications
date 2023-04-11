@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.model.genapplication;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,10 @@ public class GARespondentDebtorOfferGAspec {
 
     private GARespondentDebtorOfferOptionsGAspec respondentDebtorOffer;
     private GADebtorPaymentPlanGAspec paymentPlan;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal monthlyInstalment;
+
     private LocalDate paymentSetDate;
     private String debtorObjections;
 
