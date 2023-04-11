@@ -166,7 +166,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         // Then
-        assertThat(response.getErrors().size() > 0);
+        assertThat(response.getErrors().size() > 0).isTrue();
 
     }
 
@@ -189,7 +189,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         // Then
-        assertThat(response.getErrors().size() > 0);
+        assertThat(response.getErrors().size() > 0).isFalse();
 
     }
 
@@ -212,7 +212,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         // Then
-        assertThat(response.getErrors().size() > 0);
+        assertThat(response.getErrors().size() > 0).isFalse();
 
     }
 
