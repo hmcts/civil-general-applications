@@ -376,6 +376,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         return gaJudicialRequestMoreInfoBuilder;
     }
+    public String dismissalOrderText(CaseData caseData) {
+        return caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
+            ? DISMISSAL_ORDER_TEXT
+            : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText();
+
+    }
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
                                                                                  CallbackParams callbackParams) {
@@ -389,9 +395,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
             makeAnOrderBuilder.orderText(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .judgeRecitalText(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
-                .dismissalOrderText(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
-                                        ? DISMISSAL_ORDER_TEXT
-                                        : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
+                .dismissalOrderText(dismissalOrderText(caseData))
                 .directionsText(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .orderWithoutNotice(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice())
                 .orderCourtOwnInitiative(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative());
@@ -408,22 +412,52 @@ public class JudicialDecisionHandler extends CallbackHandler {
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
         if (judicialDecisionMakeOrder != null) {
             return makeAnOrderBuilder
-                .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
-                    .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
-                .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
-                                                                     && APPROVE_OR_EDIT
-                    .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO)
-                .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) && APPROVE_OR_EDIT
-                    .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO);
+                .displayjudgeApproveEditOptionDate(displayjudgeApproveEditOptionDate(caseData,
+                                                                                     judicialDecisionMakeOrder))
+                .displayjudgeApproveEditOptionDateForUnlessOrder(
+                    displayjudgeApproveEditOptionDateForUnlessOrder(caseData, judicialDecisionMakeOrder))
+                .displayjudgeApproveEditOptionDoc(
+                    displayjudgeApproveEditOptionDoc(caseData, judicialDecisionMakeOrder));
         }
 
         return makeAnOrderBuilder
-            .displayjudgeApproveEditOptionDate(checkApplicationTypeForDate(caseData) ? YES : NO)
-            .displayjudgeApproveEditOptionDateForUnlessOrder(checkApplicationTypeForUnlessOrderDate(caseData)
-                                                                 ? YES : NO)
-            .displayjudgeApproveEditOptionDoc(checkApplicationTypeForDoc(caseData) ? YES : NO);
+            .displayjudgeApproveEditOptionDate(displayjudgeApproveEditOptionDate(caseData,
+                                                                                 judicialDecisionMakeOrder))
+            .displayjudgeApproveEditOptionDateForUnlessOrder(
+                displayjudgeApproveEditOptionDateForUnlessOrder(caseData, judicialDecisionMakeOrder))
+            .displayjudgeApproveEditOptionDoc(displayjudgeApproveEditOptionDoc(caseData, judicialDecisionMakeOrder));
     }
 
+    public YesOrNo displayjudgeApproveEditOptionDate(CaseData caseData,
+                                                     GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+
+        if (judicialDecisionMakeOrder != null) {
+            return checkApplicationTypeForDate(caseData) && APPROVE_OR_EDIT
+                .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO;
+        }
+        return checkApplicationTypeForDate(caseData) ? YES : NO;
+    }
+
+    public YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder(CaseData caseData,
+                                                                   GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+
+        if (judicialDecisionMakeOrder != null) {
+            return checkApplicationTypeForUnlessOrderDate(caseData)
+                && APPROVE_OR_EDIT
+                .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO;
+        }
+
+        return checkApplicationTypeForUnlessOrderDate(caseData) ? YES : NO;
+    }
+
+    public YesOrNo displayjudgeApproveEditOptionDoc(CaseData caseData,
+                                                    GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
+        if (judicialDecisionMakeOrder != null) {
+            return checkApplicationTypeForDoc(caseData) && APPROVE_OR_EDIT
+                .equals(judicialDecisionMakeOrder.getMakeAnOrder()) ? YES : NO;
+        }
+        return checkApplicationTypeForDoc(caseData) ? YES : NO;
+    }
     /*Return True if General Application types are only Extend Time or/and Strike Out
     Else, Return False*/
     private boolean checkApplicationTypeForDoc(CaseData caseData) {
