@@ -376,7 +376,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         return gaJudicialRequestMoreInfoBuilder;
     }
+
     public String dismissalOrderText(CaseData caseData) {
+
         return caseData.getJudicialDecisionMakeOrder().getDismissalOrderText() == null
             ? DISMISSAL_ORDER_TEXT
             : caseData.getJudicialDecisionMakeOrder().getDismissalOrderText();
@@ -458,6 +460,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         return checkApplicationTypeForDoc(caseData) ? YES : NO;
     }
+
     /*Return True if General Application types are only Extend Time or/and Strike Out
     Else, Return False*/
     private boolean checkApplicationTypeForDoc(CaseData caseData) {
