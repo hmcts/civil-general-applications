@@ -42,10 +42,10 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-        HearingScheduledEventCallbackHandler.class,
-        JacksonAutoConfiguration.class,
-        ValidationAutoConfiguration.class,
-        CaseDetailsConverter.class,
+    HearingScheduledEventCallbackHandler.class,
+    JacksonAutoConfiguration.class,
+    ValidationAutoConfiguration.class,
+    CaseDetailsConverter.class,
 })
 class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 

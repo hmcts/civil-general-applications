@@ -71,7 +71,6 @@ public enum CaseEvent {
     migrateCase(CAMUNDA),
     TRIGGER_LOCATION_UPDATE(USER);
 
-
     private final UserType userType;
 
     public boolean isCamundaEvent() {

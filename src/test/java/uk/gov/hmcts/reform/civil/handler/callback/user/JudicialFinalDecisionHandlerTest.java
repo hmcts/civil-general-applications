@@ -39,8 +39,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 
 @SpringBootTest(classes = {
-        JudicialFinalDecisionHandler.class,
-        JacksonAutoConfiguration.class,
+    JudicialFinalDecisionHandler.class,
+    JacksonAutoConfiguration.class,
 })
 class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 

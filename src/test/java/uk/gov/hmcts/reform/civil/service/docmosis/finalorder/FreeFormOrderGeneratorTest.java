@@ -41,8 +41,8 @@ import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.FREE_FORM_O
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        FreeFormOrderGenerator.class,
-        JacksonAutoConfiguration.class
+    FreeFormOrderGenerator.class,
+    JacksonAutoConfiguration.class
 })
 class FreeFormOrderGeneratorTest {
 
