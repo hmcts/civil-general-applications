@@ -1654,7 +1654,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -1673,7 +1673,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -1746,7 +1746,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
 
@@ -1768,7 +1768,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
 
@@ -1939,7 +1939,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(response).isNotNull();
-            assertThat(response.getErrors().contains(expectedErrorText)).isTrue();
+            assertThat(response.getErrors()).contains(expectedErrorText);
         }
 
         @Test
@@ -2623,7 +2623,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -2639,7 +2639,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST)).isTrue();
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         private CaseData getApplication_MakeDecision_GiveDirections(GAJudgeMakeAnOrderOption orderOption,
@@ -2746,7 +2746,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getShowRequestInfoPreviewDoc().equals(YES)).isTrue();
+            assertThat(updatedData.getShowRequestInfoPreviewDoc()).isEqualTo(YES);
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
         }
@@ -2952,8 +2952,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck() != null)
-                .isTrue();
+            assertThat(responseCaseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck()).isNotNull();
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
         }
@@ -2966,8 +2965,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null)
-                .isTrue();
+            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation()).isNull();
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
         }

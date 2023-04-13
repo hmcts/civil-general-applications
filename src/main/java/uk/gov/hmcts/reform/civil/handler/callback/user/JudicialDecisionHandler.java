@@ -370,11 +370,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                          ? CLAIMANT : DEFENDANT,
                                      DATE_FORMATTER.format(caseData.getCreatedDate()),
                                      (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
-                                         == NO ? PARTIES : (caseData.getParentClaimantIsApplicant() == null
-                                         || YES.equals(caseData.getParentClaimantIsApplicant()))
-                                         ? CLAIMANT : DEFENDANT))).build();
+                                         == NO ? PARTIES : identifySolicitor(caseData)))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
+    }
+
+    private String identifySolicitor(CaseData caseData) {
+
+        return (caseData.getParentClaimantIsApplicant() == null
+            || YES.equals(caseData.getParentClaimantIsApplicant()))
+            ? CLAIMANT : DEFENDANT;
+
     }
 
     public String dismissalOrderText(CaseData caseData) {
@@ -524,9 +530,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? CLAIMANT : DEFENDANT,
             DATE_FORMATTER.format(caseData.getCreatedDate()),
-            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : (caseData
-                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
-                ? CLAIMANT : DEFENDANT)
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : identifySolicitor(caseData)
+            )
         );
     }
 
@@ -539,9 +544,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 || YES.equals(caseData.getParentClaimantIsApplicant()))
                 ? CLAIMANT : DEFENDANT,
             DATE_FORMATTER.format(caseData.getCreatedDate()),
-            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : (caseData
-                .getParentClaimantIsApplicant() == null || YES.equals(caseData.getParentClaimantIsApplicant()))
-                ? CLAIMANT : DEFENDANT)
+            (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : identifySolicitor(caseData)
+            )
         );
     }
 
@@ -1284,9 +1288,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
 
             return isAppAndRespSameSupportReq == YES ? format(JUDICIAL_SUPPORT_REQ_TEXT_2, appSupportReq)
-                : format(JUDICIAL_SUPPORT_REQ_TEXT_1, applicantSupportReq.isEmpty() ? NO_SUPPORT : appSupportReq,
-                         respondentSupportReq.isEmpty() ? NO_SUPPORT : resSupportReq
-            );
+                : format(JUDICIAL_SUPPORT_REQ_TEXT_1,
+                         constructApplicantSupportReqText(applicantSupportReq, appSupportReq),
+                         constructRespondentSupportReqText(respondentSupportReq, resSupportReq));
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
@@ -1308,6 +1312,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         return StringUtils.EMPTY;
+    }
+
+    public String constructApplicantSupportReqText(List<String> applicantSupportReq, String appSupportReq) {
+        return format(applicantSupportReq.isEmpty() ? NO_SUPPORT : appSupportReq);
+    }
+
+    public String constructRespondentSupportReqText(List<String> respondentSupportReq, String resSupportReq) {
+        return format(respondentSupportReq.isEmpty() ? NO_SUPPORT : resSupportReq);
     }
 
     private String retrieveSupportRequirementsFromResponse(Optional<Element<GARespondentResponse>> response) {
