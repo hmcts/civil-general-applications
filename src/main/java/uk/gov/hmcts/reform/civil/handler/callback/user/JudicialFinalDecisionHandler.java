@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
@@ -192,7 +193,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private CallbackResponse setFinalDecisionBusinessProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        //caseDataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
+        caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();
         if (Objects.nonNull(caseData.getGaFinalOrderDocPreview())) {
             caseDataBuilder.gaFinalOrderDocPreview(null);
         }
