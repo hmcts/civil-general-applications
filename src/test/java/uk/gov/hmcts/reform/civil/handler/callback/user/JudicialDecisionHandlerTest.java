@@ -748,8 +748,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplication() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, YES), ABOUT_TO_START);
@@ -768,8 +768,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForNotifiedApplicationInitiatedByDefendant() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getNotifiedApplication(YES, NO), ABOUT_TO_START);
@@ -788,8 +788,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForCloakedApplicationInitiatedByClaimant() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the Claimant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(YES), ABOUT_TO_START);
@@ -808,8 +808,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForUnCloakedApplicationInitiatedByDefendant() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the Defendant";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
             CallbackParams params = callbackParamsOf(getCloakedApplication(NO), ABOUT_TO_START);
@@ -830,8 +830,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testAboutToStartForRequestMoreInfoCloakedAppln() {
 
             // Without notice application
-            String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+            String judgeRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the Claimant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
@@ -850,8 +850,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testJudgeRecitalTextForRequestMoreInfoCloakedApplnByDefendant() {
 
             // Without Notice application by Civil Defendant
-            String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022 \n\n"
+            String judgeRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the without notice application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the Defendant";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
@@ -868,8 +868,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void testAboutToStartForRequestMoreInfoUrgentAppln() {
 
             // With notice application by Claimant
-            String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022 \n\n"
+            String judgeRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Claimant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
             CallbackParams params = callbackParamsOf(getCaseDateForUrgentApp(), ABOUT_TO_START);
@@ -884,8 +884,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testJudgeRecitalTextForRequestMoreInfoWithNoticeByDefendant() {
-            String judgeRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+            String judgeRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -901,8 +901,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void testAboutToStartForDefendant_judgeRecitalText() {
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
 
             when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(NO);
@@ -1654,7 +1654,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -1673,7 +1673,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -1746,7 +1746,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
 
@@ -1768,7 +1768,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
 
@@ -1939,7 +1939,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(response).isNotNull();
-            assertThat(response.getErrors().contains(expectedErrorText));
+            assertThat(response.getErrors()).contains(expectedErrorText);
         }
 
         @Test
@@ -2420,8 +2420,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the without notice application of Claimant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the Claimant";
 
             assertThat(makeAnOrder.getJudgeRecitalText())
@@ -2439,8 +2439,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
             CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
 
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -2462,8 +2462,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build());
             CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
 
-            String expectedRecitalText = "Judge: test judge \n"
-                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022 \n\n"
+            String expectedRecitalText = "Judge: test judge\n"
+                + "\n" + "The Judge considered the application of Defendant dated 15 January 2022\n\n"
                 + "And the Judge considered the information provided by the parties";
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -2623,7 +2623,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         @Test
@@ -2639,7 +2639,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertEquals(response.getErrors().size(), 1);
-            assertThat(response.getErrors().get(0).equals(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST));
+            assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
         private CaseData getApplication_MakeDecision_GiveDirections(GAJudgeMakeAnOrderOption orderOption,
@@ -2746,7 +2746,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getShowRequestInfoPreviewDoc().equals(YES));
+            assertThat(updatedData.getShowRequestInfoPreviewDoc()).isEqualTo(YES);
             assertThat(updatedData.getJudicialRequestMoreInfoDocPreview())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
         }
@@ -2952,7 +2952,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck() != null);
+            assertThat(responseCaseData.getMakeAppVisibleToRespondents().getMakeAppAvailableCheck()).isNotNull();
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
         }
@@ -2965,7 +2965,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation() == null);
+            assertThat(responseCaseData.getJudicialListForHearing().getHearingPreferredLocation()).isNull();
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo("MAKE_DECISION");
         }
