@@ -384,7 +384,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId()).isEqualTo("CreatePDFDocument");
+            assertThat(handler.camundaActivityId(params)).isEqualTo("CreatePDFDocument");
         }
     }
 }

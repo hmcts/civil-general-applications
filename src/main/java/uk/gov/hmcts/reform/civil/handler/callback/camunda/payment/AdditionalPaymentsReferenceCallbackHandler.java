@@ -40,7 +40,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
     private final JudicialDecisionHelper judicialDecisionHelper;
 
     @Override
-    public String camundaActivityId() {
+    public String camundaActivityId(CallbackParams callbackParams) {
         return TASK_ID;
     }
 
