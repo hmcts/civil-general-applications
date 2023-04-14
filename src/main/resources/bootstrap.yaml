@@ -3,7 +3,7 @@ spring:
     propertiesvolume:
       enabled: true
       prefixed: false
-      paths: /mnt/secrets/civil
+      paths: /mnt/secrets/civil,/mnt/secrets/civil-gen-apps
       aliases:
         microservicekey-civil-general-applications: idam.s2s-auth.totp_secret
         system-update-user-password: CIVIL_SYSTEM_UPDATE_PASSWORD
