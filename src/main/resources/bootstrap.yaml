@@ -5,7 +5,7 @@ spring:
       prefixed: false
       paths: /mnt/secrets/civil
       aliases:
-        microservicekey-civil-service: idam.s2s-auth.totp_secret
+        microservicekey-civil-general-applications: idam.s2s-auth.totp_secret
         system-update-user-password: CIVIL_SYSTEM_UPDATE_PASSWORD
         system-update-user-username: CIVIL_SYSTEM_UPDATE_USERNAME
         cross-access-user-password: CIVIL_CROSS_ACCESS_PASSWORD
