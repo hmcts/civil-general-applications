@@ -173,7 +173,7 @@ class AdditionalPaymentsReferenceCallbackHandlerTest  extends BaseCallbackHandle
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId()).isEqualTo("GeneralApplicationMakeAdditionalPayment");
+            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralApplicationMakeAdditionalPayment");
         }
 
         @Test

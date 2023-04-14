@@ -130,93 +130,84 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected String getCostsTextValue(CaseData caseData) {
-
+        StringBuilder costsTextBuilder = new StringBuilder();
         if (isNull(caseData.getAssistedCostTypes())) {
             return null;
         } else {
-            return constructAssistedCostTypes(caseData);
-        }
-
-    }
-
-    public String constructAssistedCostTypes(CaseData caseData) {
-
-        StringBuilder costsTextBuilder = new StringBuilder();
-
-        switch (caseData.getAssistedCostTypes()) {
-            case COSTS_IN_CASE: {
-                costsTextBuilder.append(COST_IN_CASE_TEXT);
-            }
-            break;
-            case NO_ORDER_TO_COST: {
-                costsTextBuilder.append(NO_ORDER_COST_TEXT);
-            }
-            break;
-            case COSTS_RESERVED: {
-                if (nonNull(caseData.getCostReservedDetails())
-                    && nonNull(caseData.getCostReservedDetails().getDetailText())) {
-                    costsTextBuilder.append(String.format(
-                        COSTS_RESERVED_TEXT,
-                        caseData.getCostReservedDetails().getDetailText()
-                    ));
+            switch (caseData.getAssistedCostTypes()) {
+                case COSTS_IN_CASE: {
+                    costsTextBuilder.append(COST_IN_CASE_TEXT);
                 }
-            }
-            break;
-            case DEFENDANT_COST_STANDARD_BASE: {
-                costsTextBuilder.append(DEFENDANT_COST_STANDARD_BASE.getDisplayedValue());
-                costsTextBuilder.append(". ");
-                if (nonNull(caseData.getDefendantCostStandardBase())) {
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getCostText(caseData.getDefendantCostStandardBase()));
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostStandardBase()));
+                break;
+                case NO_ORDER_TO_COST: {
+                    costsTextBuilder.append(NO_ORDER_COST_TEXT);
                 }
-            }
-            break;
-
-            case CLAIMANT_COST_STANDARD_BASE: {
-                costsTextBuilder.append(CLAIMANT_COST_STANDARD_BASE.getDisplayedValue());
-                costsTextBuilder.append(". ");
-                if (nonNull(caseData.getClaimantCostStandardBase())) {
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getCostText(caseData.getClaimantCostStandardBase()));
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostStandardBase()));
+                break;
+                case COSTS_RESERVED: {
+                    if (nonNull(caseData.getCostReservedDetails())
+                        && nonNull(caseData.getCostReservedDetails().getDetailText())) {
+                        costsTextBuilder.append(String.format(
+                            COSTS_RESERVED_TEXT,
+                            caseData.getCostReservedDetails().getDetailText()
+                        ));
+                    }
                 }
-            }
-            break;
-
-            case DEFENDANT_COST_SUMMARILY_BASE: {
-                costsTextBuilder.append(DEFENDANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                if (nonNull(caseData.getDefendantCostSummarilyBase())) {
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostSummarilyBase()));
+                break;
+                case DEFENDANT_COST_STANDARD_BASE: {
+                    costsTextBuilder.append(DEFENDANT_COST_STANDARD_BASE.getDisplayedValue());
+                    costsTextBuilder.append(". ");
+                    if (nonNull(caseData.getDefendantCostStandardBase())) {
+                        costsTextBuilder.append(LINE_BREAKER);
+                        costsTextBuilder.append(getCostText(caseData.getDefendantCostStandardBase()));
+                        costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostStandardBase()));
+                    }
                 }
-            }
-            break;
+                break;
 
-            case CLAIMANT_COST_SUMMARILY_BASE: {
-                costsTextBuilder.append(CLAIMANT_COST_SUMMARILY_BASE.getDisplayedValue());
-
-                if (nonNull(caseData.getClaimantCostSummarilyBase())) {
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostSummarilyBase()));
+                case CLAIMANT_COST_STANDARD_BASE: {
+                    costsTextBuilder.append(CLAIMANT_COST_STANDARD_BASE.getDisplayedValue());
+                    costsTextBuilder.append(". ");
+                    if (nonNull(caseData.getClaimantCostStandardBase())) {
+                        costsTextBuilder.append(LINE_BREAKER);
+                        costsTextBuilder.append(getCostText(caseData.getClaimantCostStandardBase()));
+                        costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostStandardBase()));
+                    }
                 }
-            }
-            break;
-            case BESPOKE_COSTS_ORDER: {
-                if (nonNull(caseData.getBespokeCostDetails())) {
-                    costsTextBuilder.append(String.format(COST_BESPOKE_TEXT, caseData.getBespokeCostDetails()
-                        .getDetailText()));
-                }
-            }
-            break;
-            default:
+                break;
 
+                case DEFENDANT_COST_SUMMARILY_BASE: {
+                    costsTextBuilder.append(DEFENDANT_COST_SUMMARILY_BASE.getDisplayedValue());
+                    if (nonNull(caseData.getDefendantCostSummarilyBase())) {
+                        costsTextBuilder.append(" ");
+                        costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
+                        costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostSummarilyBase()));
+                    }
+                }
+                break;
+
+                case CLAIMANT_COST_SUMMARILY_BASE: {
+                    costsTextBuilder.append(CLAIMANT_COST_SUMMARILY_BASE.getDisplayedValue());
+
+                    if (nonNull(caseData.getClaimantCostSummarilyBase())) {
+                        costsTextBuilder.append(" ");
+                        costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
+                        costsTextBuilder.append(LINE_BREAKER);
+                        costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostSummarilyBase()));
+                    }
+                }
+                break;
+                case BESPOKE_COSTS_ORDER: {
+                    if (nonNull(caseData.getBespokeCostDetails())) {
+                        costsTextBuilder.append(String.format(COST_BESPOKE_TEXT, caseData.getBespokeCostDetails()
+                            .getDetailText()));
+                    }
+                }
+                break;
+                default:
+
+            }
         }
         return costsTextBuilder.toString();
-
     }
 
     protected String getFurtherHearingText(CaseData caseData) {

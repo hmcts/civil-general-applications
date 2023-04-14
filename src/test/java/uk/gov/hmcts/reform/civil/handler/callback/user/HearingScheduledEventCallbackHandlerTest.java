@@ -42,10 +42,10 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
-    HearingScheduledEventCallbackHandler.class,
-    JacksonAutoConfiguration.class,
-    ValidationAutoConfiguration.class,
-    CaseDetailsConverter.class,
+        HearingScheduledEventCallbackHandler.class,
+        JacksonAutoConfiguration.class,
+        ValidationAutoConfiguration.class,
+        CaseDetailsConverter.class,
 })
 class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
 
@@ -176,7 +176,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnHearingNoticeCreated_WhenSubmitted() {
 
             String header = "# Hearing notice created\n"
-                + "##### You may need to complete other tasks for the\n"
+                + "##### You may need to complete other tasks for the\n "
                 + "##### hearing for example, book an interpreter.<br/>" + "<br/>";
             String body = "<br/> <br/>";
             CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES).build().toBuilder()
