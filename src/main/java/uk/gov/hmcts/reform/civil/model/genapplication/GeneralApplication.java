@@ -39,6 +39,7 @@ public class GeneralApplication implements MappableObject {
     private final LocalDateTime generalAppDateDeadline;
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
+    private final String gaApplicantDisplayName;
     private CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails civilServiceUserRoles;
@@ -81,6 +82,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppDateDeadline") LocalDateTime generalAppDateDeadline,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
                        @JsonProperty("parentClaimantIsApplicant") YesOrNo parentClaimantIsApplicant,
+                       @JsonProperty("gaApplicantDisplayName") String gaApplicantDisplayName,
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
@@ -119,6 +121,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppDateDeadline = generalAppDateDeadline;
         this.isMultiParty = isMultiParty;
         this.parentClaimantIsApplicant = parentClaimantIsApplicant;
+        this.gaApplicantDisplayName = gaApplicantDisplayName;
         this.caseLink = caseLink;
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.civilServiceUserRoles = civilServiceUserRoles;
