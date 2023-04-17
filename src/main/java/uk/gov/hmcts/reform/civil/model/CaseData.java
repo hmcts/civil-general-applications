@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -244,6 +245,7 @@ public class CaseData implements MappableObject {
     private final DetailTextWithDate orderMadeOnWithOutNotice;
     private final YesOrNo assistedOrderGiveReasonsYesNo;
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
+    private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
