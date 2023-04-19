@@ -39,7 +39,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private final GeneralAppFeesConfiguration feesConfiguration;
 
     @Override
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return TASK_ID;
     }
 

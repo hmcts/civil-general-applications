@@ -42,7 +42,7 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        assertThat(handler.camundaActivityId(params)).isEqualTo("GenerateHearingNoticeDocument");
+        assertThat(handler.camundaActivityId()).isEqualTo("GenerateHearingNoticeDocument");
     }
 
     @Test

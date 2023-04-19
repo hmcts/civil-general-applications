@@ -58,7 +58,7 @@ public class UpdateCaseDataController {
         try {
             coreCaseDataService.triggerGaEvent(caseId, eventName, Map.of());
         } catch (FeignException e) {
-            log.error(String.format("Triggering event: %s on case %s failed due to: \n %s",
+            log.error(String.format("Triggering event: %s on case %s failed due to: %n %s",
                                     eventName, caseId, e.contentUTF8()));
             throw e;
         }
