@@ -86,7 +86,7 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            assertThat(handler.camundaActivityId(params)).isEqualTo("GeneralApplicationPaymentServiceReq");
+            assertThat(handler.camundaActivityId()).isEqualTo("GeneralApplicationPaymentServiceReq");
         }
 
         @Test
