@@ -11,6 +11,7 @@ data "azurerm_key_vault" "civil" {
 }
 
 
+# TO DO: REMOVE THIS SECRET AFTER APPLICATION IS CONFGIURED TO FETCH FROM APP SPECIFIC KEY VAULT.
 resource "azurerm_application_insights" "appinsights" {
   name                = "${var.product}-${var.component}-${var.env}"
   location            = var.appinsights_location
@@ -19,6 +20,7 @@ resource "azurerm_application_insights" "appinsights" {
   tags                = var.common_tags
 }
 
+# TO DO: REMOVE THIS SECRET AFTER APPLICATION IS CONFGIURED TO FETCH FROM APP SPECIFIC KEY VAULT.
 resource "azurerm_key_vault_secret" "app_insights_instrumental_key" {
   name         = "AppInsightsInstrumentationKeyGeneralApplications"
   value        = azurerm_application_insights.appinsights.instrumentation_key
@@ -29,6 +31,7 @@ resource "azurerm_key_vault_secret" "app_insights_instrumental_key" {
   })
 }
 
+# TO DO: REMOVE THIS SECRET AFTER APPLICATION IS CONFGIURED TO FETCH FROM APP SPECIFIC KEY VAULT.
 resource "azurerm_key_vault_secret" "app_insights_connection_string" {
   name         = "genapp-appinsights-connection-string"
   value        = azurerm_application_insights.appinsights.connection_string

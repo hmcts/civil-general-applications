@@ -35,7 +35,7 @@ import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_W
 
 public class JudicialDecisionNotificationUtil {
 
-    private JudicialDecisionNotificationUtil(){
+    private JudicialDecisionNotificationUtil() {
         // Utilities class, no instance
     }
 

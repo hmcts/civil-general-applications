@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-import com.google.common.collect.ImmutableMap;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.validation.constraints.NotNull;
@@ -22,6 +21,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.callback.CallbackVersion;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Api
@@ -59,7 +59,7 @@ public class CallbackController {
         CallbackParams callbackParams = CallbackParams.builder()
             .request(callback)
             .type(CallbackType.fromValue(callbackType))
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, authorisation))
+            .params(Map.of(CallbackParams.Params.BEARER_TOKEN, authorisation))
             .version(version.orElse(null))
             .pageId(pageId.orElse(null))
             .caseData(caseDetailsConverter.toCaseData(callback.getCaseDetails()))

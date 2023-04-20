@@ -40,8 +40,8 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        HearingFormGenerator.class,
-        JacksonAutoConfiguration.class
+    HearingFormGenerator.class,
+    JacksonAutoConfiguration.class
 })
 class HearingFormGeneratorTest {
 

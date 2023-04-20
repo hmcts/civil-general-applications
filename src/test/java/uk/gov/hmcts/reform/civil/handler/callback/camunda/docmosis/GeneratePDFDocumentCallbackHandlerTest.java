@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -24,6 +27,8 @@ import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
@@ -74,6 +79,10 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
+    @MockBean
+    private FreeFormOrderGenerator freeFormOrderGenerator;
+    @MockBean
+    private AssistedOrderFormGenerator assistedOrderFormGenerator;
     @Autowired
     private GeneratePDFDocumentCallbackHandler handler;
 
@@ -98,6 +107,10 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
         when(requestForInformationGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+        when(freeFormOrderGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(assistedOrderFormGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
     }
 
@@ -318,13 +331,60 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldGenerateGeneralOrderDoc_whenAboutToSubmitEventIsCalled_withFinalOrder(
+                FinalOrderSelection selection) {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(selection)
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+                    .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder(
+                FinalOrderSelection selection) {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                    .documentLink(Document.builder().documentUrl("url")
+                            .documentFileName("filename").documentHash("hash")
+                            .documentBinaryUrl("binaryUrl").build())
+                    .documentType(DocumentType.GENERAL_ORDER).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(selection)
+                    .generalOrderDocument(wrapElements(caseDocument))
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId(params)).isEqualTo("CreatePDFDocument");
+            assertThat(handler.camundaActivityId()).isEqualTo("CreatePDFDocument");
         }
     }
 }

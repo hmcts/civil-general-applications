@@ -48,7 +48,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     }
 
     @Override
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return TASK_ID;
     }
 

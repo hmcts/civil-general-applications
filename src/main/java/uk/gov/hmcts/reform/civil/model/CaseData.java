@@ -8,8 +8,11 @@ import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -36,6 +39,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToJudgeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAReferToLegalAdvisorGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -43,6 +47,15 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGiveReasonsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRecitalRecord;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -207,6 +220,31 @@ public class CaseData implements MappableObject {
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeForWrittenRep;
+
+    private final YesOrNo assistedOrderMadeSelection;
+    private final AssistedOrderMadeDateHeardDetails assistedOrderMadeDateHeardDetails;
+    private final List<FinalOrderShowToggle> assistedOrderJudgeHeardFrom;
+    private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
+    private final List<FinalOrderShowToggle> assistedOrderRecitals;
+    private final AssistedOrderRecitalRecord assistedOrderRecitalsRecorded;
+    private final AssistedCostTypesList assistedCostTypes;
+    private final AssistedOrderCost claimantCostStandardBase;
+    private final AssistedOrderCost defendantCostStandardBase;
+    private final AssistedOrderCost claimantCostSummarilyBase;
+    private final AssistedOrderCost defendantCostSummarilyBase;
+    private final DetailText costReservedDetails;
+    private final DetailText bespokeCostDetails;
+    private final String assistedOrderOrderedThatText;
+    private final List<FinalOrderShowToggle> assistedOrderFurtherHearingToggle;
+    private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;
+    private final List<FinalOrderShowToggle> assistedOrderAppealToggle;
+    private final AssistedOrderAppealDetails assistedOrderAppealDetails;
+    private final OrderMadeOnTypes orderMadeOnOption;
+    private final DetailTextWithDate orderMadeOnOwnInitiative;
+    private final DetailTextWithDate orderMadeOnWithOutNotice;
+    private final YesOrNo assistedOrderGiveReasonsYesNo;
+    private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
+    private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null

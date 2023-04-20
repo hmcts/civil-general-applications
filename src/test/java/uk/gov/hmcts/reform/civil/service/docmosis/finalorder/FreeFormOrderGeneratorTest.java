@@ -37,12 +37,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
-import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.FREE_FORM_ORDER;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-        FreeFormOrderGenerator.class,
-        JacksonAutoConfiguration.class
+    FreeFormOrderGenerator.class,
+    JacksonAutoConfiguration.class
 })
 class FreeFormOrderGeneratorTest {
 
@@ -56,7 +56,7 @@ class FreeFormOrderGeneratorTest {
             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     private static final CaseDocument CASE_DOCUMENT = CaseDocumentBuilder.builder()
             .documentName(fileName_application)
-            .documentType(FREE_FORM_ORDER)
+            .documentType(GENERAL_ORDER)
             .build();
 
     @MockBean
@@ -149,14 +149,14 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getFileName() {
         String name = generator.getFileName(null, DocmosisTemplates.FREE_FORM_ORDER);
-        assertThat(name).startsWith("Free_form_order_");
+        assertThat(name).startsWith("General_order_for_application_");
         assertThat(name).endsWith(".pdf");
     }
 
     @Test
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo("01/Jan/1970");
+        assertThat(dateString).isEqualTo(" 1 January 1970");
     }
 
     @Test

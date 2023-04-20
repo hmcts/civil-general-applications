@@ -34,7 +34,7 @@ allprojects {
 
   checkstyle {
     maxWarnings = 0
-    toolVersion = '8.29'
+    toolVersion = '10.4'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
   }
 
@@ -236,6 +236,13 @@ task runApiTests(type: Exec, description: 'Runs Api tests.') {
   commandLine '/usr/bin/yarn', '--silent', 'test:api'
 }
 
+task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
+  onlyIf {
+    return System.env.NIGHTLY_BUILD == 'true'
+  }
+  commandLine './bin/pull-latest-general-app-ccd-files.sh', 'master'
+}
+
 task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
@@ -248,7 +255,7 @@ task smoke(description: 'Runs the smoke tests.') {
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runApiTests, runNightlyAPITests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, installDependencies, runApiTests, runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
