@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.security.JwtGrantedAuthoritiesConverter.TOKEN_NAME;
 
 @SpringBootTest(classes = {JwtGrantedAuthoritiesConverter.class})
 class JwtGrantedAuthoritiesConverterTest {
@@ -31,6 +34,11 @@ class JwtGrantedAuthoritiesConverterTest {
 
     @Autowired
     private JwtGrantedAuthoritiesConverter converter;
+    private Map<String, Object> claims = new HashMap<>() {
+        {
+            put(TOKEN_NAME, "access_token");
+        }
+    };
 
     @Nested
     @DisplayName("Gets empty authorities")
@@ -56,7 +64,6 @@ class JwtGrantedAuthoritiesConverterTest {
         @Test
         void shouldReturnEmptyAuthorities_whenClaimValueDoesNotMatch() {
             Jwt jwt = Mockito.mock(Jwt.class);
-            when(jwt.containsClaim(anyString())).thenReturn(true);
             when(jwt.getClaim(anyString())).thenReturn("Test");
             Collection<GrantedAuthority> authorities = converter.convert(jwt);
             assertNotNull(authorities);
@@ -66,7 +73,7 @@ class JwtGrantedAuthoritiesConverterTest {
         @Test
         void shouldReturnEmptyAuthorities_whenIdamReturnsNoUsers() {
             Jwt jwt = Mockito.mock(Jwt.class);
-            when(jwt.containsClaim(anyString())).thenReturn(true);
+            when(jwt.getClaims()).thenReturn(claims);
             when(jwt.getClaim(anyString())).thenReturn("access_token");
             when(jwt.getTokenValue()).thenReturn("access_token");
             UserInfo userInfo = mock(UserInfo.class);
@@ -85,7 +92,7 @@ class JwtGrantedAuthoritiesConverterTest {
         @Test
         void shouldReturnAuthorities_whenIdamReturnsUserRoles() {
             Jwt jwt = Mockito.mock(Jwt.class);
-            when(jwt.containsClaim(anyString())).thenReturn(true);
+            when(jwt.getClaims()).thenReturn(claims);
             when(jwt.getClaim(anyString())).thenReturn("access_token");
             when(jwt.getTokenValue()).thenReturn("access_token");
             UserInfo userInfo = mock(UserInfo.class);
