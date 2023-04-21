@@ -32,8 +32,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
     @Test
     public void whenServiceRequestUpdateRequest() {
-
-        Exception e =  assertThrows( ServletException.class,
+        Exception e = assertThrows(ServletException.class,
             () -> doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
         );
         assertThat(e.getMessage()).contains("PaymentException");
