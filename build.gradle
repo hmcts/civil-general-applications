@@ -334,8 +334,7 @@ dependencies {
   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-core', version: versions.springStatemachine
   implementation group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
 
-  implementation group: 'io.springfox', name: 'springfox-boot-starter', version: versions.springfoxSwagger
-  implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.4'
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.3'
 
   implementation group: 'org.jdbi', name: 'jdbi3-sqlobject', version: '3.37.1'
