@@ -28,4 +28,22 @@
     ]]></notes>
     <cve>CVE-2023-20860</cve>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+     file name: spring-jcl-6.0.4.jar
+     file name: spring-webmvc-6.0.4.jar
+     file name: spring-tx-6.0.4.jar
+     file name: spring-test-6.0.4.jar
+     file name: spring-messaging-6.0.4.jar
+     file name: spring-jdbc-6.0.4.jar
+     file name: spring-expression-6.0.4.jar
+     file name: spring-core-6.0.4.jar
+     file name: spring-context-support-6.0.4.jar
+     file name: spring-context-6.0.4.jar
+     file name: spring-beans-6.0.4.jar
+     file name: spring-aspects-6.0.4.jar
+     file name: spring-aop-6.0.4.jar
+   ]]></notes>
+    <cve>CVE-2023-20863</cve>
+  </suppress>
 </suppressions>
