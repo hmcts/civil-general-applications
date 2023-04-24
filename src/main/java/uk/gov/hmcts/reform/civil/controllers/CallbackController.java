@@ -1,7 +1,8 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -22,9 +23,8 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 
 import java.util.Map;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 
-@Api
+@Tag(name = "CallbackController")
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -44,7 +44,7 @@ public class CallbackController {
         "/version/{version}/{callback-type}",
         "/version/{version}/{callback-type}/{page-id}"
     })
-    @ApiOperation("Handles all callbacks from CCD")
+    @Operation(summary = "Handles all callbacks from CCD")
     public CallbackResponse callback(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @PathVariable("callback-type") String callbackType,

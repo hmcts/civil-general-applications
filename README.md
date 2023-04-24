@@ -4,11 +4,10 @@
 
 ## Notes
 
-Since Spring Boot 2.1 bean overriding is disabled. If you want to enable it you will need to set `spring.main.allow-bean-definition-overriding` to `true`.
 
 JUnit 5 is now enabled by default in the project. Please refrain from using JUnit4 and use the next generation
 
-After updated to Springfox UI 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html for more details please see here http://springfox.github.io/springfox/docs/current/#changes-in-swagger-ui
+After updated to OpenApi 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html 
 
 ## Building and deploying the application
 

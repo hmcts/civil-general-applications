@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
+import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.util.NestedServletException;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestUpdateDto;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
@@ -32,8 +32,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
     @Test
     public void whenServiceRequestUpdateRequest() {
-
-        Exception e =  assertThrows(NestedServletException.class,
+        Exception e = assertThrows(ServletException.class,
             () -> doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
         );
         assertThat(e.getMessage()).contains("PaymentException");

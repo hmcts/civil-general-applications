@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.core.Map;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -31,6 +30,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -185,7 +185,7 @@ class CoreCaseDataServiceTest {
 
         @Test
         void shouldStartAndSubmitEvent_WhenCalled() {
-            service.triggerGaEvent(Long.valueOf(CASE_ID), CaseEvent.valueOf(EVENT_ID), Map.of());
+            service.triggerGaEvent(Long.valueOf(CASE_ID), CaseEvent.valueOf(EVENT_ID), new HashMap<>());
 
             verify(coreCaseDataApi).startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
                                                             JURISDICTION, GENERAL_APPLICATION_CASE_TYPE,
