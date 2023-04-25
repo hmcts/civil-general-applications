@@ -46,6 +46,9 @@ spring:
   flyway:
     enabled: ${REFERENCE_DATABASE_MIGRATION:false}
 
+springdoc:
+  packagesToScan: uk.gov.hmcts.reform.civil.controllers
+
 oidc:
   issuer: ${OIDC_ISSUER:http://fr-am:8080/openam/oauth2/hmcts}
 

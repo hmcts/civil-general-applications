@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import feign.FeignException;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 
-@Api
+@Tag(name = "TestingSupportController")
 @Slf4j
 @RestController
 @RequiredArgsConstructor

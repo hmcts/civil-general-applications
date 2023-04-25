@@ -122,6 +122,7 @@ public class CaseData implements MappableObject {
     private final String directionInRelationToHearingText;
     private final GAJudgesHearingListGAspec judicialListForHearing;
     private final String applicantPartyName;
+    private final String gaApplicantDisplayName;
     private final String claimant1PartyName;
     private final String claimant2PartyName;
     private final String defendant1PartyName;
