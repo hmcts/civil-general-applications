@@ -1,31 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <suppress>
-    <notes>jackson-core-2.13.4.jar
-      jackson-jaxrs-json-provider-2.13.4.jar
-      json-20210307.jar
-      json-smart-2.4.8.jar</notes>
-    <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
-    <notes>latest camunda jars and jakarta activation 2.1.1 is the latest</notes>
-    <cve>CVE-2008-7271</cve>
-    <cve>CVE-2010-4647</cve>
-  </suppress>
-  <suppress>
-    <notes>1.33 snake yaml is the supported version for the current spring boot. can be revisited once spring boot is upgraded</notes>
-    <cve>CVE-2022-1471</cve>
-  </suppress>
-  <suppress>
-    <notes>will need to be looked into</notes>
-    <cve>CVE-2023-28708</cve>
-    <cve>CVE-2023-20861</cve>
-    <cve>CVE-2023-20860</cve>
-  </suppress>
-  <suppress until="2023-05-26">
-    <notes><![CDATA[
-      First reported on 04-04-2023, all spring versions are vulnerable at the date of reporting.
-    ]]></notes>
-    <cve>CVE-2023-20860</cve>
-  </suppress>
+
 </suppressions>
