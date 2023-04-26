@@ -24,9 +24,7 @@ public class AssignCategoryId {
         if (!featureToggleService.isCaseFileViewEnabled()) {
             return;
         }
-        if (documentUpload == null) {
-            return;
-        }
+
         if (documentUpload == null) {
             return;
         }
