@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +34,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
     private static final String TASK_ID = "GenerateHearingNoticeDocument";
     private final HearingFormGenerator hearingFormGenerator;
     private final ObjectMapper objectMapper;
+    private final AssignCategoryId assignCategoryId;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -67,6 +69,10 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
                 callbackParams.getCaseData(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
         )));
+
+        assignCategoryId.assignCategoryIdToCollection(documents, document -> document.getValue().getDocumentLink(),
+                                                      "applications");
+
         caseDataBuilder.hearingNoticeDocument(documents);
     }
 }
