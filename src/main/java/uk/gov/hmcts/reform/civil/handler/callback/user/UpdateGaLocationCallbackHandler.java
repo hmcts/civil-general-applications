@@ -61,7 +61,9 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
             .caseManagementLocation(GACaseLocation.builder().baseLocation(civilCaseData.getCaseManagementLocation()
                                                                               .getBaseLocation())
                                         .region(civilCaseData.getCaseManagementLocation().getRegion())
-                                        .build());
+                                        .siteName(civilCaseData.getCaseManagementLocation().getSiteName())
+                                        .build())
+            .locationName(civilCaseData.getCaseManagementLocation().getSiteName());
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();

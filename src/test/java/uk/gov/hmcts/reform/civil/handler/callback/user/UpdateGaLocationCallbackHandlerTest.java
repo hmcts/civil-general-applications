@@ -103,12 +103,15 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
             assertThat(response.getData()).containsEntry(
                     "isCcmccLocation",
                     "No");
-
+            assertThat(response.getData()).containsEntry(
+                "locationName",
+                "county court claims");
             assertThat(response.getData()).containsEntry(
                     "caseManagementLocation",
                     Map.of(
                         "region", "2",
-                        "baseLocation", "00000"
+                        "baseLocation", "00000",
+                        "siteName", "county court claims"
                     ));
         }
 
