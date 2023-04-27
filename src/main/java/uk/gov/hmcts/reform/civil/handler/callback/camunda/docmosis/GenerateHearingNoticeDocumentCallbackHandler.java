@@ -71,7 +71,8 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         )));
 
         assignCategoryId.assignCategoryIdToCollection(documents, document -> document.getValue().getDocumentLink(),
-                                                      assignCategoryId.APPLICATIONS);
+                                                      AssignCategoryId.ORDER_DOCUMENTS
+        );
 
         caseDataBuilder.hearingNoticeDocument(documents);
     }

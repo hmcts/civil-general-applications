@@ -18,7 +18,7 @@ public class AssignCategoryId {
 
     private final FeatureToggleService featureToggleService;
 
-    public static final String APPLICATIONS = "orderDocuments";
+    public static final String ORDER_DOCUMENTS = "orderDocuments";
 
     public <T> void assignCategoryIdToCollection(List<Element<T>> documentUpload, Function<Element<T>, Document> documentExtractor, String theID) {
         if (!featureToggleService.isCaseFileViewEnabled()) {
