@@ -103,12 +103,15 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
             assertThat(response.getData()).containsEntry(
                     "isCcmccLocation",
                     "No");
-
+            assertThat(response.getData()).containsEntry(
+                "locationName",
+                "locationForRegion2");
             assertThat(response.getData()).containsEntry(
                     "caseManagementLocation",
                     Map.of(
                         "region", "2",
-                        "baseLocation", "00000"
+                        "baseLocation", "00000",
+                        "siteName", "locationForRegion2"
                     ));
         }
 
@@ -155,7 +158,8 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                 .caseManagementLocation(GACaseLocation.builder()
                                             .baseLocation("00000")
                                             .region("2")
-                                            .siteName("county court claims").build())
+                                            .siteName("locationForRegion2").build())
+                .locationName("locationForRegion2")
                 .claimantGaAppDetails(wrapElements(GeneralApplicationsDetails.builder()
                                                        .caseLink(CaseLink.builder()
                                                                      .caseReference(CHILD_CCD_REF.toString())
