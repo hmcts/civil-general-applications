@@ -80,6 +80,14 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse createPDFdocument(CallbackParams callbackParams) {
+
+        /*
+         * Setting up the CategoryID for Order documents will be covered under CIV-8316
+         * as it has dependency on CIV-7926.
+         *
+         * Uncomment the assignCategoryID code for setting up the categoryID after CIV-7926 is merged in Civil repo
+         * */
+
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -101,10 +109,10 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
             newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
-            assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
+
+            /*assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
-            );
+                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
             caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
@@ -114,9 +122,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS
-            );
+            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
 
             caseDataBuilder.generalOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
@@ -132,10 +139,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             newDirectionOrderDocumentList.addAll(wrapElements(judgeDecision));
 
-            assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
+            /*assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
-            );
+                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
             caseDataBuilder.directionOrderDocument(newDirectionOrderDocumentList);
 
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
@@ -145,9 +151,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS
-            );
+            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
 
             caseDataBuilder.dismissalOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
@@ -157,9 +162,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS
-            );
+            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
 
             caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
@@ -177,10 +181,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             newWrittenRepSequentialDocumentList.addAll(wrapElements(judgeDecision));
 
-            assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
+            /*assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
-            );
+                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
             caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
 
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
@@ -195,10 +198,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
 
             newWrittenRepConcurrentDocumentList.addAll(wrapElements(judgeDecision));
-            assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
+            /*assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
-            );
+                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
 
             caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
 
@@ -215,10 +217,10 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             newRequestForInfoDocumentList.addAll(wrapElements(judgeDecision));
 
-            assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
+            /*assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
                                                           AssignCategoryId.ORDER_DOCUMENTS
-            );
+            );*/
 
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         }
