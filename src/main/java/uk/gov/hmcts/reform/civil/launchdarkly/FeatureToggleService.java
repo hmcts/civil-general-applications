@@ -44,6 +44,10 @@ public class FeatureToggleService {
         return internalClient.boolVariation("rpaContinuousFeed", createLDUser().build(), false);
     }
 
+    public boolean isCaseFileViewEnabled() {
+        return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
+    }
+
     public LDUser.Builder createLDUser() {
         return new LDUser.Builder("civil-service")
             .custom("timestamp", String.valueOf(System.currentTimeMillis()))

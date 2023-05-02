@@ -67,6 +67,15 @@ class FeatureToggleServiceTest {
         verifyBoolVariationCalled(FAKE_FEATURE, List.of("timestamp", "environment"));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValue_whenCaseFileViewEnabled(Boolean toggleStat) {
+        var caseFileKey = "case-file-view";
+        givenToggle(caseFileKey, toggleStat);
+
+        assertThat(featureToggleService.isCaseFileViewEnabled()).isEqualTo(toggleStat);
+    }
+
     @Test
     void shouldCallBoolVariation_whenIsMultipartyEnabledInvoked() {
         var multipartyFeatureKey = "multiparty";
