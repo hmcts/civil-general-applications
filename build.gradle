@@ -91,7 +91,7 @@ allprojects {
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: '1.8.10'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.8.0'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: '1.8.10'
-      dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.7.5'
+      dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.3'
 
       // To prevent other libraries using conflicting versions
       dependency group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.5'
@@ -298,7 +298,7 @@ def versions = [
   springStatemachine : '3.2.0',
   springfoxSwagger   : '3.0.0',
   lombok             : '1.18.24',
-  springSecurity     : '6.0.0',
+  springSecurity     : '6.0.3',
   pact               : '3.5.24'
 ]
 
