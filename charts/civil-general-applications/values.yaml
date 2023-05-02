@@ -62,7 +62,6 @@ java:
       resourceGroup: civil
       secrets:
         - civil-idam-client-secret
-        - microservicekey-civil-service
         - system-update-user-username
         - system-update-user-password
         - cross-access-user-username
@@ -78,3 +77,8 @@ java:
         - robotics-notification-recipient
         - launch-darkly-sdk-key
         - robotics-notification-multipartyrecipient
+    civil-gen-apps:
+        resourceGroup: civil
+        secrets:
+          - microservicekey-civil-general-applications
+
