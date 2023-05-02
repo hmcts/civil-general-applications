@@ -78,6 +78,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo addApplicant2;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
+    private final YesOrNo generalAppConsentOrder;
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
     private final String generalAppReasonsOfOrder;
