@@ -106,7 +106,8 @@ withPipeline(type, product, component) {
         env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
         env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
         env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-        yarnBuilder.yarn('install')
+        yarnBuilder.yarn('yarn-update')
+        yarnBuilder.yarn('install-dependencies')
     }
 
     afterAlways('smoketest:preview') {
@@ -149,7 +150,8 @@ withPipeline(type, product, component) {
         env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
         env.CCD_DATA_STORE_URL = "https://civil-ga-data-store-staging-aat.service.core-compute-aat.internal"
         env.DM_STORE_URL = "https://dm-store-aat.service.core-compute-aat.internal"
-        yarnBuilder.yarn('install')
+        yarnBuilder.yarn('yarn-update')
+        yarnBuilder.yarn('install-dependencies')
     }
 
   afterAlways('smoketest:aat') {
