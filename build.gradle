@@ -218,7 +218,7 @@ task awaitApplicationReadiness(type: Exec, description: 'Awaits until applicatio
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:ga-smoke'
+  commandLine '/usr/bin/yarn', '--silent','run','test:ga-smoke'
 }
 
 def inStrictOrder(Task... tasks) {
@@ -229,7 +229,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:api'
+  commandLine '/usr/bin/yarn', '--silent','run', 'test:api'
 }
 
 task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
@@ -243,7 +243,7 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
   }
-  commandLine '/usr/bin/yarn', '--silent', 'test:nightly-api-tests'
+  commandLine '/usr/bin/yarn', '--silent','run','test:nightly-api-tests'
 }
 
 task smoke(description: 'Runs the smoke tests.') {
