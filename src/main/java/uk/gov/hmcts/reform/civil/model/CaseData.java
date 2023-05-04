@@ -247,6 +247,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo assistedOrderGiveReasonsYesNo;
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
+    private final YesOrNo gaRespondentConsent;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
