@@ -213,16 +213,12 @@ task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
-task installDependencies(type: Exec, description: 'Installs Yarn dependencies. ') {
-  commandLine '/usr/bin/yarn', '--mutex', 'network','--silent', 'install'
-}
-
 task awaitApplicationReadiness(type: Exec, description: 'Awaits until application is ready.') {
   commandLine './bin/wait-for.sh'
 }
 
 task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:ga-smoke'
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:ga-smoke'
 }
 
 def inStrictOrder(Task... tasks) {
@@ -233,7 +229,7 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
-  commandLine '/usr/bin/yarn', '--silent', 'test:api'
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
 }
 
 task pullTestAsset(type: Exec, description: 'Installs Yarn dependencies.') {
@@ -247,15 +243,15 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
   }
-  commandLine '/usr/bin/yarn', '--silent', 'test:nightly-api-tests'
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:nightly-api-tests'
 }
 
 task smoke(description: 'Runs the smoke tests.') {
- dependsOn(inStrictOrder(awaitApplicationReadiness, installDependencies, runSmokeTests))
+ dependsOn(inStrictOrder(awaitApplicationReadiness, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, installDependencies, runApiTests, runNightlyAPITests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, runApiTests, runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
