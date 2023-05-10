@@ -163,7 +163,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             );
 
             assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);
+                                                            AssignCategoryId.APPLICATIONS);
 
             caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
@@ -183,7 +183,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);
+                                                          AssignCategoryId.APPLICATIONS);
             caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
 
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
@@ -200,7 +200,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             newWrittenRepConcurrentDocumentList.addAll(wrapElements(judgeDecision));
             assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);
+                                                          AssignCategoryId.APPLICATIONS);
 
             caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
 
@@ -219,7 +219,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
+                                                          AssignCategoryId.APPLICATIONS
             );
 
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
