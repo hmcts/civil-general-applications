@@ -244,6 +244,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         if (Objects.nonNull(generalApplication.getGeneralAppEvidenceDocument())) {
             generalApplication.getGeneralAppEvidenceDocument().clear();
         }
+        generalApplication.setGeneralAppN245FormUpload(null);
         generalApplication.getBusinessProcess().setCamundaEvent(variables.getCaseEvent().name());
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             generalApplication.addCaseLink(CaseLink.builder().caseReference(String.valueOf(
