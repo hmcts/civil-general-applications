@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
@@ -116,7 +117,9 @@ public class CaseData implements MappableObject {
     private final Document judicialListHearingDocPreview;
     private final Document judicialWrittenRepDocPreview;
     private final Document judicialRequestMoreInfoDocPreview;
+    private final Document consentOrderDocPreview;
     private final GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
+    private final GAApproveConsentOrder approveConsentOrder;
     private final GAJudicialWrittenRepresentations judicialDecisionMakeAnOrderForWrittenRepresentations;
     private final String judgeRecitalText;
     private final String directionInRelationToHearingText;
