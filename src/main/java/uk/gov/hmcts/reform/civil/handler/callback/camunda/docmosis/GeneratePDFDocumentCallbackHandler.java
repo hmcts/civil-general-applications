@@ -162,8 +162,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
+            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);
 
             caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)

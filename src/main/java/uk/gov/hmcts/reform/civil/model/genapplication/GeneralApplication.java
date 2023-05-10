@@ -60,7 +60,7 @@ public class GeneralApplication implements MappableObject {
     private final String locationName;
     private final CaseCategory caseAccessCategory;
     private final YesOrNo generalAppVaryJudgementType;
-    private final Document generalAppN245FormUpload;
+    private Document generalAppN245FormUpload;
     private final GAHearingDateGAspec generalAppHearingDate;
 
     @JsonCreator
