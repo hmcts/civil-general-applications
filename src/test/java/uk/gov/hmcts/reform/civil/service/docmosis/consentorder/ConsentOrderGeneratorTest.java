@@ -39,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.CONSE
 })
 
 class ConsentOrderGeneratorTest {
+
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 

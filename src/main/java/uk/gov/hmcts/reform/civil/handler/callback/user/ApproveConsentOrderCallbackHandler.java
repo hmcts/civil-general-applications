@@ -49,14 +49,18 @@ public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
 
     private CallbackResponse validateApplicationType(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        List<String> errors = new ArrayList<>();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         List<GeneralApplicationTypes> validGATypes = Arrays.asList(STAY_THE_CLAIM);
-        caseData.
-        if (caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains)) {
-            caseDataBuilder.approveConsentOrder(GAApproveConsentOrder.builder().showConsentOrderDate(YesOrNo.YES).build());
+        GAApproveConsentOrder.GAApproveConsentOrderBuilder gaApproveConsentOrderBuilder = GAApproveConsentOrder.builder();
+        if (caseData.getGeneralAppDetailsOfOrder() != null) {
+            gaApproveConsentOrderBuilder.consentOrderDescription(caseData.getGeneralAppDetailsOfOrder()).build();
         }
 
+        if (caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains)) {
+            gaApproveConsentOrderBuilder.showConsentOrderDate(YesOrNo.YES).build();
+        }
+        List<String> errors = new ArrayList<>();
+        caseDataBuilder.approveConsentOrder(gaApproveConsentOrderBuilder.build());
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
             .data(caseDataBuilder.build().toMap(objectMapper))

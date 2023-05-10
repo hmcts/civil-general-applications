@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +55,9 @@ public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerT
     @Autowired
     private ApproveConsentOrderCallbackHandler handler;
 
+    @MockBean
+    private ConsentOrderGenerator consentOrderGenerator;
+
     @Test
     void handleEventsReturnsTheExpectedCallbackEventApproveConsentOrder() {
         assertThat(handler.handledEvents()).contains(APPROVE_CONSENT_ORDER);
@@ -69,6 +74,7 @@ public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerT
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response).isNotNull();
             CaseData data = mapper.convertValue(response.getData(), CaseData.class);
+            assertThat(data.getGeneralAppDetailsOfOrder()).isEqualTo(data.getApproveConsentOrder().getConsentOrderDescription());
             assertThat(data.getApproveConsentOrder().getShowConsentOrderDate()).isEqualTo(YES);
         }
 
@@ -80,7 +86,8 @@ public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerT
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response).isNotNull();
             CaseData data = mapper.convertValue(response.getData(), CaseData.class);
-            assertThat(data.getApproveConsentOrder()).isNull();
+            assertThat(data.getGeneralAppDetailsOfOrder()).isEqualTo(data.getApproveConsentOrder().getConsentOrderDescription());
+            assertThat(data.getApproveConsentOrder().getShowConsentOrderDate()).isNull();
         }
     }
 
@@ -90,7 +97,7 @@ public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerT
         private static final String VALIDATE_CONSENT_ORDER = "populate-consent-order-doc";
 
         @Test
-        void shouldGenerateListingForHearingDocument() {
+        void shouldGenerateConsentOrderDocument() {
             List<GeneralApplicationTypes> types = List.of(
                                                           (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             CallbackParams params = callbackParamsOf(getGeneralAppCaseData(types), MID, "populate-consent-order-doc");
@@ -119,6 +126,7 @@ public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerT
     public CaseData getGeneralAppCaseData(List<GeneralApplicationTypes> types) {
 
         return CaseData.builder()
+            .generalAppDetailsOfOrder("Testing prepopulated text")
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
