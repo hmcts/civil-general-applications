@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
@@ -24,10 +25,24 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private final ListGeneratorService listGeneratorService;
 
     @Override
     public ConsentOrderForm getTemplateData(CaseData caseData)  {
-        return null;
+
+        String claimantName = listGeneratorService.claimantsName(caseData);
+
+        String defendantName = listGeneratorService.defendantsName(caseData);
+
+        ConsentOrderForm.ConsentOrderFormBuilder consentOrderFormBuilder =
+            ConsentOrderForm.builder()
+                .claimNumber(caseData.getCcdCaseReference().toString())
+                .claimantName(claimantName)
+                .defendantName(defendantName)
+                .consentOrder(caseData.getApproveConsentOrder()
+                                  .getConsentOrderDescription());
+
+        return consentOrderFormBuilder.build();
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {

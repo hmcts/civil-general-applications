@@ -79,7 +79,6 @@ class ConsentOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
             .build();
 
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData))
             .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
