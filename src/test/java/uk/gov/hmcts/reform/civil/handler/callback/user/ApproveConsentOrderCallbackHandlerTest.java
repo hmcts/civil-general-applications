@@ -49,7 +49,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
     ValidationAutoConfiguration.class,
     CaseDetailsConverter.class,
 })
-public class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerTest {
+ class ApproveConsentOrderCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private final ObjectMapper mapper = new ObjectMapper();

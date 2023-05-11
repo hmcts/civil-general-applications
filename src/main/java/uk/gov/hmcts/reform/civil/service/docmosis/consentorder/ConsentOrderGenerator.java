@@ -48,7 +48,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
     public CaseDocument generate(CaseData caseData, String authorisation) {
         ConsentOrderForm templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -67,7 +67,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
         return String.format(docmosisTemplate.getDocumentTitle(), LocalDateTime.now().format(formatter));
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return CONSENT_ORDER_FORM;
     }
 
