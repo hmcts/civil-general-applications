@@ -93,6 +93,17 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             assertThat(data.getGeneralAppDetailsOfOrder()).isEqualTo(data.getApproveConsentOrder().getConsentOrderDescription());
             assertThat(data.getApproveConsentOrder().getShowConsentOrderDate()).isNull();
         }
+
+        @Test
+        void shouldNotAutoCompleteConsentOrderWhenApplicationOrderDetailsEmpty() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseDataWithoutOrderDetails(types), ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            CaseData data = mapper.convertValue(response.getData(), CaseData.class);
+            assertThat(data.getApproveConsentOrder()).isNull();
+        }
     }
 
     @Nested
@@ -138,6 +149,33 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
         return CaseData.builder()
             .generalAppDetailsOfOrder("Testing prepopulated text")
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+            .applicantPartyName("ApplicantPartyName")
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
+    }
+
+    public CaseData getGeneralAppCaseDataWithoutOrderDetails(List<GeneralApplicationTypes> types) {
+
+        return CaseData.builder()
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
