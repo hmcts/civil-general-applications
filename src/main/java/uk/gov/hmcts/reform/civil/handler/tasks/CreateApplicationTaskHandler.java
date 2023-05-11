@@ -100,8 +100,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                  * */
                 if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
                     && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
-                    || (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
+                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))) {
 
                     /*
                      * Add the case to applicant solicitor collection if parent claimant is applicant
@@ -155,11 +154,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 /*
                  * Respondent Agreement is NO and with notice.
                  * Application should be visible to all solicitors
+                 * Consent order should be visible to all solicitors
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+                if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
                     && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
-
+                    && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
+                    || generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
                     applications = addApplication(
                         buildApplication(generalApplication, caseData),
                         caseData.getClaimantGaAppDetails()
