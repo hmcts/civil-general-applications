@@ -219,23 +219,14 @@ public class JudicialDecisionNotificationUtil {
 
             var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
             return isWithNotice(caseData)
-                && isNonConsent(caseData)
                 && isNonUrgent(caseData)
                 && !(StringUtils.isEmpty(recipient));
         }
         return false;
     }
 
-    public static boolean isNonConsent(CaseData caseData) {
-        return caseData
-                .getGeneralAppRespondentAgreement()
-                .getHasAgreed() == NO;
-    }
-
     public static boolean isWithNotice(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement() != null
-                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppInformOtherParty() != null
+        return caseData.getGeneralAppInformOtherParty() != null
                 && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 

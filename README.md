@@ -1,4 +1,4 @@
-# civil-general-applications
+# civil-general-applications 
 
 [![Build Status](https://travis-ci.org/hmcts/civil-general-applications.svg?branch=master)](https://travis-ci.org/hmcts/civil-general-applications)
 
@@ -7,7 +7,7 @@
 
 JUnit 5 is now enabled by default in the project. Please refrain from using JUnit4 and use the next generation
 
-After updated to OpenApi 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html 
+After updated to OpenApi 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html
 
 ## Building and deploying the application
 
