@@ -240,6 +240,27 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendForDismissal_when_withoutConsentOrder() {
+            CaseData caseData = caseDataForJudgeDismissal(NO, NO, YES);
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService
+                .sendNotification(caseData, APPLICANT);
+
+            judicialNotificationService
+                .sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStrikeOut(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationUncloakShouldSendForDismissal() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -312,6 +333,23 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
             verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToStayTheClaim(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendSendTo_applicant_ifApplicationApproveOrEditFor_withoutConsentOrder() {
+            CaseData caseData = caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(NO, NO, YES);
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -673,6 +711,27 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSend_Applicant_When_ApplicationIsDismissed_withOutConsentOrder() {
+
+            CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO, YES)
+                .toBuilder()
+                .build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationUncloakShouldSendForApprovedDamageWhenRespondentsAreInList() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -876,6 +935,8 @@ class JudicialApplicantNotificationServiceTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .applicationIsCloaked(isCloaked)
                 .generalAppRespondentSolicitors(respondentSolicitors())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
@@ -1139,6 +1200,8 @@ class JudicialApplicantNotificationServiceTest {
                     .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                     .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                                   .caseReference(CASE_REFERENCE.toString()).build())
+                    .judicialDecision(GAJudicialDecision.builder()
+                                          .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
                     .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(
                         GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION
                     ).build())
@@ -1359,7 +1422,7 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSend_ApplicantRespondent_When_RequestForInformation_withOutConsentOrder() {
+        void notificationShouldSend_Applicant_When_RequestForInformation_withOutConsentOrder() {
 
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES,
                                                                                       REQUEST_MORE_INFORMATION);
