@@ -25,6 +25,7 @@ public class GeneralApplication implements MappableObject {
 
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
+    private final YesOrNo generalAppConsentOrder;
     private final BusinessProcess businessProcess;
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
@@ -67,6 +68,8 @@ public class GeneralApplication implements MappableObject {
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
                        @JsonProperty("generalAppRespondentAgreement")
                            GARespondentOrderAgreement generalAppRespondentAgreement,
+                       @JsonProperty("generalAppConsentOrder")
+                       YesOrNo generalAppConsentOrder,
                        @JsonProperty("businessProcess") BusinessProcess businessProcess,
                        @JsonProperty("generalAppPBADetails") GAPbaDetails generalAppPBADetails,
                        @JsonProperty("generalAppDetailsOfOrder") String generalAppDetailsOfOrder,
@@ -107,6 +110,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
+        this.generalAppConsentOrder = generalAppConsentOrder;
         this.businessProcess = businessProcess;
         this.generalAppPBADetails = generalAppPBADetails;
         this.generalAppDetailsOfOrder = generalAppDetailsOfOrder;
