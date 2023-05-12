@@ -411,6 +411,7 @@ class JudicialApplicantNotificationServiceTest {
                                                                                                               YES, YES)
                 .toBuilder()
                 .generalAppConsentOrder(YES)
+                .applicationIsCloaked(null)
                 .build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -420,6 +421,30 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
             verify(notificationService, times(3)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesToAmendStatementOfCase(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSend_Applicant_When_JudicialDirectionOrderRep_ConsentOrder_withRespondentNull() {
+
+            CaseData caseData = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(YES,
+                                                                                                              YES, YES)
+                .toBuilder()
+                .generalAppConsentOrder(YES)
+                .generalAppRespondentSolicitors(null)
+                .build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
