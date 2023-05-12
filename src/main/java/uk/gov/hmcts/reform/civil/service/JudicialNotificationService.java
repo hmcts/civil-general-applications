@@ -23,6 +23,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationCloaked;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
@@ -318,7 +319,8 @@ public class JudicialNotificationService implements NotificationData {
     }
 
     private boolean isSendEmailToDefendant(CaseData caseData) {
-        return areRespondentSolicitorsPresent(caseData) && !isApplicationCloaked(caseData);
+        return areRespondentSolicitorsPresent(caseData)
+            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
     }
 
     private void applicationListForHearing(CaseData caseData, String solicitorType) {
