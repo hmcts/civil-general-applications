@@ -1260,27 +1260,20 @@ class JudicialApplicantNotificationServiceTest {
 
     @Test
     void testIsNotificationCriteriaSatisfied() {
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, NO, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, NO, RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, YES, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, YES, RESPONDENT))).isTrue();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, NO, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, NO, RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, YES, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, YES, RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, NO, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, NO, RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, YES,  null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, YES,  RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, NO, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, NO, RESPONDENT))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, YES, null))).isFalse();
-        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, YES, RESPONDENT))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, null))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, RESPONDENT))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, NO, null))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, null))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(NO, YES, RESPONDENT))).isTrue();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, RESPONDENT))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, null))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, NO, RESPONDENT))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, null))).isFalse();
+        assertThat(isNotificationCriteriaSatisfied(getCaseData(YES, YES, RESPONDENT))).isFalse();
     }
 
-    private CaseData getCaseData(YesOrNo isConsented, YesOrNo isUrgent, YesOrNo informOtherParty, String recipient) {
+    private CaseData getCaseData(YesOrNo isUrgent, YesOrNo informOtherParty, String recipient) {
         return CaseData.builder()
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(isUrgent).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(informOtherParty).build())
             .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()

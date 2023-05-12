@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -323,13 +324,15 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private GARespondentResponse buildResponse(CaseData caseData, UserDetails userDetails) {
 
-        YesOrNo generalAppDebtorRespondentRep = NO;
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+        YesOrNo generalOther = NO;
+        if (Objects.nonNull(caseData.getGeneralAppConsentOrder())) {
+            generalOther = caseData.getGaRespondentConsent();
+        } else if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)) {
 
             if (ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
                 && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(ACCEPT)) {
-                generalAppDebtorRespondentRep = YES;
+                generalOther = YES;
             }
         }
 
@@ -337,7 +340,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         gaRespondentResponseBuilder
             .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative() == null
-                                                     ? generalAppDebtorRespondentRep
+                                                     ? generalOther
                                                      : caseData.getGeneralAppRespondent1Representative()
                 .getGeneralAppRespondent1Representative())
             .gaHearingDetails(populateHearingDetailsResp(caseData))
