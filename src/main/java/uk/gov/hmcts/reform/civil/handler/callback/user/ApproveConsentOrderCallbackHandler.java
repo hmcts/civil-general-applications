@@ -58,6 +58,7 @@ public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
         GAApproveConsentOrder.GAApproveConsentOrderBuilder gaApproveConsentOrderBuilder = GAApproveConsentOrder.builder();
         if (caseData.getGeneralAppDetailsOfOrder() != null) {
             gaApproveConsentOrderBuilder.consentOrderDescription(caseData.getGeneralAppDetailsOfOrder()).build();
+            gaApproveConsentOrderBuilder.showConsentOrderDate(YesOrNo.NO).build();
         }
 
         if (caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains)) {
@@ -76,7 +77,9 @@ public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (caseData.getApproveConsentOrder() != null
+            && caseData.getApproveConsentOrder().getShowConsentOrderDate() != null
             && caseData.getApproveConsentOrder().getShowConsentOrderDate().equals(YesOrNo.YES)
+            && caseData.getApproveConsentOrder().getConsentOrderDateToEnd() != null
             && LocalDate.now().isAfter(caseData.getApproveConsentOrder().getConsentOrderDateToEnd())) {
             errors.add(ORDER_DATE_IN_PAST);
         }

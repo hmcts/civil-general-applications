@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -95,7 +96,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             assertThat(response).isNotNull();
             CaseData data = mapper.convertValue(response.getData(), CaseData.class);
             assertThat(data.getGeneralAppDetailsOfOrder()).isEqualTo(data.getApproveConsentOrder().getConsentOrderDescription());
-            assertThat(data.getApproveConsentOrder().getShowConsentOrderDate()).isNull();
+            assertThat(data.getApproveConsentOrder().getShowConsentOrderDate()).isEqualTo(NO);
         }
 
         @Test
@@ -137,11 +138,48 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.STAY_THE_CLAIM));
             CallbackParams params = callbackParamsOf(getGeneralAppCaseDataForGeneratingDocument(types,
-                                                                                                LocalDate.now().minusDays(1)),
+                                                                                                LocalDate.now().minusDays(1),
+                                                                                                YES),
                                                      MID, "populate-consent-order-doc");
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ORDER_DATE_IN_PAST);
+        }
+
+        @Test
+        void shouldNotThrowErrorsWhileValidatingDate() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.STAY_THE_CLAIM));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseDataForGeneratingDocument(types,
+                                                                                                LocalDate.now().plusDays(1),
+                                                                                                YES),
+                                                     MID, "populate-consent-order-doc");
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldNotThrowErrorsWhileValidatingDateWithOrderDateAsNull() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.STAY_THE_CLAIM));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseDataForGeneratingDocument(types,
+                                                                                                null,
+                                                                                                YES),
+                                                     MID, "populate-consent-order-doc");
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isEmpty();
+        }
+
+        @Test
+        void shouldNotThrowErrorsWhileValidatingDateWithOrderDateAsNullAndDisplayIsNotVisible() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseDataForGeneratingDocument(types,
+                                                                                                null,
+                                                                                                NO),
+                                                     MID, "populate-consent-order-doc");
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isEmpty();
         }
     }
 
@@ -189,13 +227,15 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             .build();
     }
 
-    public CaseData getGeneralAppCaseDataForGeneratingDocument(List<GeneralApplicationTypes> types, LocalDate orderDate) {
+    public CaseData getGeneralAppCaseDataForGeneratingDocument(List<GeneralApplicationTypes> types, LocalDate orderDate,
+                                                               YesOrNo showConsent) {
 
         return CaseData.builder()
             .generalAppDetailsOfOrder("Testing prepopulated text")
             .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("Testing prepopulated text")
-                                     .showConsentOrderDate(YES)
-                                     .consentOrderDateToEnd(orderDate).build())
+                                     .showConsentOrderDate(showConsent)
+                                     .consentOrderDateToEnd(orderDate)
+                                    .build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
