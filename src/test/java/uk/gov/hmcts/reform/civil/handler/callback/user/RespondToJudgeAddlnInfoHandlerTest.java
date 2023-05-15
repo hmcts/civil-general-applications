@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
@@ -20,6 +22,8 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,10 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
 
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    AssignCategoryId assignCategoryId;
+    @MockBean
+    ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -84,6 +92,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaAddlnInfoList().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
 
     }
 
@@ -119,7 +128,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaAddlnInfoList().size()).isEqualTo(4);
-
+        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(4);
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {

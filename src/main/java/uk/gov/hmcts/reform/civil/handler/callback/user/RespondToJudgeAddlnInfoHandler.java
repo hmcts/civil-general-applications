@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +26,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,8 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final AssignCategoryId assignCategoryId;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -46,13 +51,25 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
-        caseDataBuilder.gaAddlnInfoList(addAddlnInfoResponse(caseData));
-
+        List<Element<Document>> toBeAdded = addAddlnInfoResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(toBeAdded, Element::getValue,
+                AssignCategoryId.APPLICATIONS
+        );
+        caseDataBuilder.gaAddlnInfoList(toBeAdded);
+        if (!toBeAdded.isEmpty()) {
+            List<Element<Document>> updatedGaRespDoc =
+                    ofNullable(caseData.getGaRespDocument()).orElse(newArrayList());
+            updatedGaRespDoc.addAll(toBeAdded);
+            caseDataBuilder.gaRespDocument(updatedGaRespDoc);
+        }
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
 
         CaseData updatedCaseData = caseDataBuilder.build();
 
+        parentCaseUpdateHelper.updateParentWithGAState(
+                updatedCaseData,
+                updatedCaseData.getCcdState().getDisplayedValue()
+        );
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();

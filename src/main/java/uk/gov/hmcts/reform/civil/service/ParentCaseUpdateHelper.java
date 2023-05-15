@@ -7,6 +7,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
@@ -16,6 +17,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +29,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -43,15 +49,23 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
-        "directionOrder", "hearingNotice"
+        "directionOrder", "hearingNotice",
+        "gaResp"
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
     };
 
+    private static List<CaseState> DOCUMENT_STATES = Arrays.asList(
+            AWAITING_ADDITIONAL_INFORMATION,
+            AWAITING_WRITTEN_REPRESENTATIONS,
+            AWAITING_DIRECTIONS_ORDER_DOCS
+    );
+
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+        String[] roles = new String[4];
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
                                                                                 UPDATE_CASE_WITH_GA_STATE);
@@ -74,6 +88,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+                roles[0] = "RespondentSol";
             }
         }
 
@@ -94,6 +109,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+                roles[1] = "RespondentSolTwo";
             }
         }
 
@@ -109,7 +125,8 @@ public class ParentCaseUpdateHelper {
         List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
             caseData,
             newState,
-            applicationId
+            applicationId,
+            roles
         );
 
         /*
@@ -120,11 +137,16 @@ public class ParentCaseUpdateHelper {
             newState,
             applicationId
         );
-
+        roles[3] = "Staff";
+        Map<String, Object> updateMap = getUpdatedCaseData(caseData, generalApplications,
+                respondentSpecficGADetails,
+                respondentSpecficGADetailsTwo,
+                gaDetailsMasterCollection);
+        if (DOCUMENT_STATES.contains(caseData.getCcdState())) {
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, roles);
+        }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                   respondentSpecficGADetails,
-                                                   respondentSpecficGADetailsTwo, gaDetailsMasterCollection)));
+            startEventResponse, updateMap));
     }
 
     public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
@@ -233,7 +255,8 @@ public class ParentCaseUpdateHelper {
                 gaDetailsClaimant = updateGaApplicationState(
                     caseData,
                     newState,
-                    applicationId
+                    applicationId,
+                    null
                 );
             }
 
@@ -328,7 +351,7 @@ public class ParentCaseUpdateHelper {
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
-                                                                               String applicationId) {
+                                                                               String applicationId, String[] roles) {
         List<Element<GeneralApplicationsDetails>> generalApplications = ofNullable(
             caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
@@ -342,6 +365,9 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
+                if(Objects.nonNull(roles)) {
+                    roles[2] = "Claimant";
+                }
             }
         }
         return generalApplications;

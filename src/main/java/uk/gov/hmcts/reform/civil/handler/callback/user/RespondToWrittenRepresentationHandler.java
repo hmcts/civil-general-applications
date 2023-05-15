@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +33,8 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final AssignCategoryId assignCategoryId;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
 
@@ -46,13 +50,24 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
-        caseDataBuilder.gaWrittenRepDocList(addWrittenRepresentationResponse(caseData));
-
+        List<Element<Document>> toBeAdded = addWrittenRepresentationResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(toBeAdded, Element::getValue,
+                AssignCategoryId.APPLICATIONS
+        );
+        caseDataBuilder.gaWrittenRepDocList(toBeAdded);
+        if (!toBeAdded.isEmpty()) {
+            List<Element<Document>> updatedGaRespDoc =
+                    ofNullable(caseData.getGaRespDocument()).orElse(newArrayList());
+            updatedGaRespDoc.addAll(toBeAdded);
+            caseDataBuilder.gaRespDocument(updatedGaRespDoc);
+        }
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
 
         CaseData updatedCaseData = caseDataBuilder.build();
-
+        parentCaseUpdateHelper.updateParentWithGAState(
+                updatedCaseData,
+                updatedCaseData.getCcdState().getDisplayedValue()
+        );
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
