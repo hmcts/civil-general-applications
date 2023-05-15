@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -240,6 +241,10 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private void updateParentCaseGeneralApplication(ExternalTaskInput variables,
                                                     GeneralApplication generalApplication) {
         generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
+        if (Objects.nonNull(generalApplication.getGeneralAppEvidenceDocument())) {
+            generalApplication.getGeneralAppEvidenceDocument().clear();
+        }
+        generalApplication.setGeneralAppN245FormUpload(null);
         generalApplication.getBusinessProcess().setCamundaEvent(variables.getCaseEvent().name());
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             generalApplication.addCaseLink(CaseLink.builder().caseReference(String.valueOf(
