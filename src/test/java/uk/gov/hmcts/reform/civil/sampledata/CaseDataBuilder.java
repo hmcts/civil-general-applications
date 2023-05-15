@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeApplication;
@@ -513,11 +514,13 @@ public class CaseDataBuilder {
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
+            .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("testing purpose")
+                                     .build())
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .orderText("Test Order")
                                            .orderCourtOwnInitiative("abcd")
-                                           .orderCourtOwnInitiativeDate(LocalDate.now())
+                                           .orderCourtOwnInitiativeDate(now())
                                            .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
