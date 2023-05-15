@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,9 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(APPROVE_CONSENT_ORDER);
+    public static final String ORDER_DATE_IN_PAST = "The date, by which the order to end"
+        + " should be given, cannot be in past.";
+
     private final ConsentOrderGenerator consentOrderGenerator;
     private final ObjectMapper objectMapper;
 
@@ -71,6 +75,12 @@ public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         List<String> errors = new ArrayList<>();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        if (caseData.getApproveConsentOrder() != null
+            && caseData.getApproveConsentOrder().getShowConsentOrderDate().equals(YesOrNo.YES)
+            && LocalDate.now().isAfter(caseData.getApproveConsentOrder().getConsentOrderDateToEnd())) {
+            errors.add(ORDER_DATE_IN_PAST);
+        }
+
         CaseDocument consentOrderDocument = null;
 
         consentOrderDocument = consentOrderGenerator.generate(

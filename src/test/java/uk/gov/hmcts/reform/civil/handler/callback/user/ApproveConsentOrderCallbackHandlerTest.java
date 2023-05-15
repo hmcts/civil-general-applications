@@ -24,11 +24,13 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -56,6 +58,8 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
     private static final String CAMUNDA_EVENT = "APPROVE_CONSENT_ORDER";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
+    public static final String ORDER_DATE_IN_PAST = "The date, by which the order to end"
+        + " should be given, cannot be in past.";
     @Autowired
     private ApproveConsentOrderCallbackHandler handler;
 
@@ -127,6 +131,18 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
             assertThat(response).isNotNull();
         }
+
+        @Test
+        void shouldThrowErrorsWhileValidatingDate() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.STAY_THE_CLAIM));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseDataForGeneratingDocument(types,
+                                                                                                LocalDate.now().minusDays(1)),
+                                                     MID, "populate-consent-order-doc");
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors()).isNotEmpty();
+            assertThat(response.getErrors()).contains(ORDER_DATE_IN_PAST);
+        }
     }
 
     @Nested
@@ -149,6 +165,37 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
         return CaseData.builder()
             .generalAppDetailsOfOrder("Testing prepopulated text")
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .createdDate(LocalDateTime.of(2022, 1, 15, 0, 0, 0))
+            .applicantPartyName("ApplicantPartyName")
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
+    }
+
+    public CaseData getGeneralAppCaseDataForGeneratingDocument(List<GeneralApplicationTypes> types, LocalDate orderDate) {
+
+        return CaseData.builder()
+            .generalAppDetailsOfOrder("Testing prepopulated text")
+            .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("Testing prepopulated text")
+                                     .showConsentOrderDate(YES)
+                                     .consentOrderDateToEnd(orderDate).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
