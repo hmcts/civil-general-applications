@@ -14,6 +14,7 @@ import java.util.Map;
 import static java.util.Collections.emptyList;
 import static java.util.Map.entry;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPROVE_CONSENT_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
@@ -43,6 +44,7 @@ public class FlowStateAllowedEventService {
                                         RESPOND_TO_APPLICATION,
                                         REFER_TO_JUDGE,
                                         REFER_TO_LEGAL_ADVISOR,
+                                        APPROVE_CONSENT_ORDER,
                                         MAKE_DECISION,
                                         HEARING_SCHEDULED_GA,
                                         GENERATE_DIRECTIONS_ORDER,
