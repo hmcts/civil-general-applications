@@ -64,7 +64,7 @@ public class ParentCaseUpdateHelper {
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
-        String[] doc_visibility_roles = new String[4];
+        String[] docVisibilityRoles = new String[4];
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
                                                                                 UPDATE_CASE_WITH_GA_STATE);
@@ -87,7 +87,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                doc_visibility_roles[0] = "RespondentSol";
+                docVisibilityRoles[0] = "RespondentSol";
             }
         }
 
@@ -108,7 +108,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                doc_visibility_roles[1] = "RespondentSolTwo";
+                docVisibilityRoles[1] = "RespondentSolTwo";
             }
         }
 
@@ -125,7 +125,7 @@ public class ParentCaseUpdateHelper {
             caseData,
             newState,
             applicationId,
-            doc_visibility_roles
+            docVisibilityRoles
         );
 
         /*
@@ -136,13 +136,13 @@ public class ParentCaseUpdateHelper {
             newState,
             applicationId
         );
-        doc_visibility_roles[3] = "Staff";
+        docVisibilityRoles[3] = "Staff";
         Map<String, Object> updateMap = getUpdatedCaseData(caseData, generalApplications,
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
         if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
-            updateCaseDocument(updateMap, caseData, generalAppCaseData, doc_visibility_roles);
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap));
