@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -60,6 +61,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     private final FreeFormOrderGenerator freeFormOrderGenerator;
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
+    private final ConsentOrderGenerator consentOrderGenerator;
     private final ObjectMapper objectMapper;
 
     private final AssignCategoryId assignCategoryId;
@@ -91,9 +93,23 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
         CaseDocument judgeDecision = null;
-        if (Objects.nonNull(caseData.getFinalOrderSelection())) {
+        if (Objects.nonNull(caseData.getApproveConsentOrder())) {
+            judgeDecision = consentOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            List<Element<CaseDocument>> consentOrderDocumentList =
+                ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+
+            consentOrderDocumentList.addAll(wrapElements(judgeDecision));
+
+            assignCategoryId.assignCategoryIdToCollection(consentOrderDocumentList,
+                                                          document -> document.getValue().getDocumentLink(),
+                                                          AssignCategoryId.ORDER_DOCUMENTS);
+            caseDataBuilder.generalOrderDocument(consentOrderDocumentList);
+        } else if (Objects.nonNull(caseData.getFinalOrderSelection())) {
             if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
                 judgeDecision = freeFormOrderGenerator.generate(
                         caseDataBuilder.build(),

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.consentorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.ConsentOrderForm;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -14,9 +15,11 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.CONSENT_ORDER_FORM;
 
 @Service
@@ -39,10 +42,19 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .defendantName(defendantName)
+                .orderDate(getDateFormatted(LocalDate.now()))
+                .courtName(caseData.getCaseManagementLocation().getSiteName())
                 .consentOrder(caseData.getApproveConsentOrder()
                                   .getConsentOrderDescription());
 
         return consentOrderFormBuilder.build();
+    }
+
+    protected String getDateFormatted(LocalDate date) {
+        if (isNull(date)) {
+            return null;
+        }
+        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {

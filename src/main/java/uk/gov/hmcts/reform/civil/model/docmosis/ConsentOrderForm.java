@@ -16,4 +16,7 @@ public class ConsentOrderForm implements MappableObject {
     private final String claimantName;
     private final String defendantName;
     private final String consentOrder;
+    private final String orderDate;
+    private final String courtName;
+
 }

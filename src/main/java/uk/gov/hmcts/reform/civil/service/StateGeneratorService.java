@@ -60,6 +60,8 @@ public class StateGeneratorService {
             } else {
                 return ORDER_MADE;
             }
+        } else if (data.getApproveConsentOrder() != null) {
+            return ORDER_MADE;
         }
         return data.getCcdState();
     }
