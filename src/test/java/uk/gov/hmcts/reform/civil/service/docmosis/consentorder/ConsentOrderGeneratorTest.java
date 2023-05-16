@@ -20,9 +20,11 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -55,7 +57,7 @@ class ConsentOrderGeneratorTest {
 
     @Test
     void shouldGenerateConsentOrderDocument() {
-        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
+        CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build();
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(CONSENT_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(CONSENT_ORDER_FORM.getDocumentTitle(), bytes));
@@ -76,7 +78,7 @@ class ConsentOrderGeneratorTest {
 
     @Test
     void whenCaseWorkerMakeDecision_ShouldGetConsentOrderData() {
-        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
+        CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder()
             .build();
 
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
@@ -95,8 +97,18 @@ class ConsentOrderGeneratorTest {
             () -> assertEquals(templateData.getClaimantName(), getClaimants(caseData)),
             () -> assertEquals(templateData.getDefendantName(), getDefendants(caseData)),
             () -> assertEquals(templateData.getConsentOrder(),
-                               caseData.getApproveConsentOrder().getConsentOrderDescription())
+                               caseData.getApproveConsentOrder().getConsentOrderDescription()),
+            () -> assertEquals(templateData.getCourtName(),
+                               caseData.getCaseManagementLocation().getSiteName()),
+            () -> assertEquals(templateData.getOrderDate(),
+                               consentOrderGenerator.getDateFormatted(LocalDate.now()))
         );
+    }
+
+    @Test
+    void test_getDateFormatted() {
+        String dateString = consentOrderGenerator.getDateFormatted(LocalDate.EPOCH);
+        assertThat(dateString).isEqualTo(" 1 January 1970");
     }
 
     private String getClaimants(CaseData caseData) {

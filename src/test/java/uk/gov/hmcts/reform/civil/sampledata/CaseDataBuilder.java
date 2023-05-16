@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeApplication;
@@ -502,6 +503,36 @@ public class CaseDataBuilder {
             .build();
     }
 
+    public CaseData.CaseDataBuilder consentOrderApplication() {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .createdDate(SUBMITTED_DATE_TIME)
+            .caseManagementLocation(GACaseLocation.builder()
+                                        .siteName("County Court")
+                                        .region("4").build())
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(EXTEND_TIME))
+                                .build())
+            .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("testing purpose")
+                                     .build())
+            .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                           .orderText("Test Order")
+                                           .orderCourtOwnInitiative("abcd")
+                                           .orderCourtOwnInitiativeDate(now())
+                                           .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
+                                           .reasonForDecisionText("Test Reason")
+                                           .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
+                                           .judgeRecitalText("Test Judge's recital")
+                                           .build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
     public CaseData.CaseDataBuilder generalOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
@@ -514,8 +545,6 @@ public class CaseDataBuilder {
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
-            .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("testing purpose")
-                                     .build())
             .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .orderText("Test Order")

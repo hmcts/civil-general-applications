@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -63,6 +64,9 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private GeneralOrderGenerator generalOrderGenerator;
+
+    @MockBean
+    private ConsentOrderGenerator consentOrderGenerator;
 
     @MockBean
     private RequestForInformationGenerator requestForInformationGenerator;
@@ -122,6 +126,8 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
         when(assistedOrderFormGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(consentOrderGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.CONSENT_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
     }
 
@@ -387,6 +393,23 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getGeneralOrderDocument().size()).isEqualTo(2);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldGenerateConsentOrderDocument_whenAboutToSubmitEventIsCalled() {
+            CaseData caseData = CaseDataBuilder.builder().consentOrderApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(consentOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+                .isEqualTo(PDFBuilder.CONSENT_ORDER_DOCUMENT);
+
         }
 
         @Test
