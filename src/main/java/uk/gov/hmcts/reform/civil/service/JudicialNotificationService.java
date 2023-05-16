@@ -439,12 +439,6 @@ public class JudicialNotificationService implements NotificationData {
             ));
     }
 
-    private boolean isSendUncloakAdditionalFeeEmail(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-            && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
-            && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
-    }
-
     private boolean isSendUncloakAdditionalFeeEmailForWithoutNotice(CaseData caseData) {
         return caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
             && caseData.getGeneralAppInformOtherParty().getIsWithNotice().equals(NO)
