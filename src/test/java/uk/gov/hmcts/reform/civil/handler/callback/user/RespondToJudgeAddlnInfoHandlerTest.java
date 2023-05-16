@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -30,7 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -93,7 +96,10 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaAddlnInfoList().size()).isEqualTo(2);
         assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
-
+        verify(parentCaseUpdateHelper, times(1)).updateParentWithGAState(
+                any(),
+                any()
+        );
     }
 
     @Test
@@ -158,7 +164,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
                                  .status(BusinessProcessStatus.STARTED)
                                  .activityId(ACTIVITY_ID)
                                  .build())
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .build();
     }
 }

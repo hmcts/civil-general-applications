@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class ParentCaseUpdateHelper {
         "Claimant", "RespondentSol", "RespondentSolTwo"
     };
 
-    private static List<CaseState> DOCUMENT_STATES = Arrays.asList(
+    protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
             AWAITING_WRITTEN_REPRESENTATIONS,
             AWAITING_DIRECTIONS_ORDER_DOCS
@@ -365,7 +364,7 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if(Objects.nonNull(roles)) {
+                if (Objects.nonNull(roles)) {
                     roles[2] = "Claimant";
                 }
             }

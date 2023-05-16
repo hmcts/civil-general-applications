@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -92,6 +95,10 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         assertThat(responseCaseData.getGeneralAppWrittenRepUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaWrittenRepDocList().size()).isEqualTo(2);
         assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
+        verify(parentCaseUpdateHelper, times(1)).updateParentWithGAState(
+                any(),
+                any()
+        );
     }
 
     @Test
