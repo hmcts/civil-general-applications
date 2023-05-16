@@ -56,10 +56,7 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         );
         caseDataBuilder.gaWrittenRepDocList(toBeAdded);
         if (!toBeAdded.isEmpty()) {
-            List<Element<Document>> updatedGaRespDoc =
-                    ofNullable(caseData.getGaRespDocument()).orElse(newArrayList());
-            updatedGaRespDoc.addAll(toBeAdded);
-            caseDataBuilder.gaRespDocument(updatedGaRespDoc);
+            caseDataBuilder.gaRespDocument(toBeAdded);
         }
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
 

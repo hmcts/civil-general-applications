@@ -56,10 +56,7 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         );
         caseDataBuilder.gaAddlnInfoList(toBeAdded);
         if (!toBeAdded.isEmpty()) {
-            List<Element<Document>> updatedGaRespDoc =
-                    ofNullable(caseData.getGaRespDocument()).orElse(newArrayList());
-            updatedGaRespDoc.addAll(toBeAdded);
-            caseDataBuilder.gaRespDocument(updatedGaRespDoc);
+            caseDataBuilder.gaRespDocument(toBeAdded);
         }
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
 
