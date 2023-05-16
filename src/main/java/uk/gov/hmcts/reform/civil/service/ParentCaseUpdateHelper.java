@@ -141,7 +141,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
-        if (DOCUMENT_STATES.contains(caseData.getCcdState())) {
+        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, roles);
         }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
