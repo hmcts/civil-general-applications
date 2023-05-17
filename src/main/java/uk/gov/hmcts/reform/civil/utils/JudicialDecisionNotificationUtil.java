@@ -53,7 +53,7 @@ public class JudicialDecisionNotificationUtil {
             return LIST_FOR_HEARING;
         }
         if (isJudicialDismissal(caseData)
-            && !isApplicationCloaked(caseData)) {
+            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData))) {
             return JUDGE_DISMISSED_APPLICATION;
         }
         if (isApplicationCloaked(caseData)
@@ -61,7 +61,7 @@ public class JudicialDecisionNotificationUtil {
             return JUDGE_DISMISSED_APPLICATION_CLOAK;
         }
         if (isJudicialApproval(caseData)
-            && !isApplicationCloaked(caseData)) {
+            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData))) {
             return JUDGE_APPROVED_THE_ORDER;
         }
         if (isApplicationCloaked(caseData)
@@ -69,7 +69,7 @@ public class JudicialDecisionNotificationUtil {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
         }
         if (isDirectionOrder(caseData)
-            && !isApplicationCloaked(caseData)) {
+            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData))) {
             return JUDGE_DIRECTION_ORDER;
         }
         if (isDirectionOrder(caseData)
@@ -77,7 +77,7 @@ public class JudicialDecisionNotificationUtil {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
         if (isRequestForInformation(caseData)
-            && !isApplicationCloaked(caseData)) {
+            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData))) {
             return REQUEST_FOR_INFORMATION;
         }
         if (isRequestForInformation(caseData)
@@ -136,6 +136,10 @@ public class JudicialDecisionNotificationUtil {
         return isJudicialDecisionEvent(caseData)
             && Objects.nonNull(decision)
             && (Objects.isNull(caseData.getApplicationIsCloaked()) || caseData.getApplicationIsCloaked().equals(YES));
+    }
+
+    public static boolean isGeneralAppConsentOrder(CaseData caseData) {
+        return Objects.nonNull(caseData.getGeneralAppConsentOrder());
     }
 
     private static boolean isListForHearing(CaseData caseData) {

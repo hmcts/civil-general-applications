@@ -87,6 +87,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 
 @Service
 @RequiredArgsConstructor
@@ -342,8 +343,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
             }
 
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
-            gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
-
+            if (isGeneralAppConsentOrder(caseData)) {
+                gaJudicialRequestMoreInfoBuilder.isWithNotice(NO).build();
+            } else {
+                gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
+            }
         }
 
         /*
