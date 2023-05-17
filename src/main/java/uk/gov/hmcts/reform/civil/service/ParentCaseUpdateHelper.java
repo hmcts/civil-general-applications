@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
@@ -22,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
@@ -326,27 +325,22 @@ public class ParentCaseUpdateHelper {
         String civilCollectionName = type + "Doc" + role;
         Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(gaCollectionName));
-        List<Element<CaseDocument>> gaDocs =
-                (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
+        List<Element> gaDocs =
+                (List<Element>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
         Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(civilCollectionName));
-        List<Element<CaseDocument>> civilDocs =
-                (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
+        List<Element> civilDocs =
+                (List<Element>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
-
-        if (gaDocs != null
-                && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
-            civilDocs.addAll(gaDocs);
+        if (gaDocs != null) {
+            List<UUID> ids = civilDocs.stream().map(Element::getId).toList();
+            for (Element gaDoc : gaDocs) {
+                if (!ids.contains(gaDoc.getId())) {
+                    civilDocs.add(gaDoc);
+                }
+            }
         }
-
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
-    }
-
-    private int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
-                                      List<Element<CaseDocument>> gaCaseDocumentlist) {
-        return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
-                        .parallelStream().anyMatch(gaDocument -> gaDocument.getId().equals(civilDocument.getId())))
-                .collect(Collectors.toList()).size();
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
