@@ -93,30 +93,30 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        CaseDocument judgeDecision = null;
+        CaseDocument decision = null;
         if (Objects.nonNull(caseData.getApproveConsentOrder())) {
-            judgeDecision = consentOrderGenerator.generate(
+            decision = consentOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
             List<Element<CaseDocument>> consentOrderDocumentList =
-                ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+                ofNullable(caseData.getConsentOrderDocument()).orElse(newArrayList());
 
-            consentOrderDocumentList.addAll(wrapElements(judgeDecision));
+            consentOrderDocumentList.addAll(wrapElements(decision));
 
             assignCategoryId.assignCategoryIdToCollection(consentOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
                                                           AssignCategoryId.ORDER_DOCUMENTS);
-            caseDataBuilder.generalOrderDocument(consentOrderDocumentList);
+            caseDataBuilder.consentOrderDocument(consentOrderDocumentList);
         } else if (Objects.nonNull(caseData.getFinalOrderSelection())) {
             if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
-                judgeDecision = freeFormOrderGenerator.generate(
+                decision = freeFormOrderGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
-                judgeDecision = assistedOrderFormGenerator.generate(
+                decision = assistedOrderFormGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
@@ -124,7 +124,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newGeneralOrderDocumentList =
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
-            newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
+            newGeneralOrderDocumentList.addAll(wrapElements(decision));
 
             assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
@@ -133,19 +133,19 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
-            judgeDecision = generalOrderGenerator.generate(
+            decision = generalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.ORDER_DOCUMENTS);
 
-            caseDataBuilder.generalOrderDocument(wrapElements(judgeDecision));
+            caseDataBuilder.generalOrderDocument(wrapElements(decision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
-            judgeDecision = directionOrderGenerator.generate(
+            decision = directionOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -153,7 +153,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newDirectionOrderDocumentList =
                 ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
 
-            newDirectionOrderDocumentList.addAll(wrapElements(judgeDecision));
+            newDirectionOrderDocumentList.addAll(wrapElements(decision));
 
             assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
@@ -162,32 +162,32 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
-            judgeDecision = dismissalOrderGenerator.generate(
+            decision = dismissalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.ORDER_DOCUMENTS);
 
-            caseDataBuilder.dismissalOrderDocument(wrapElements(judgeDecision));
+            caseDataBuilder.dismissalOrderDocument(wrapElements(decision));
         } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
             && caseData.getJudicialListForHearing() != null) {
-            judgeDecision = hearingOrderGenerator.generate(
+            decision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.APPLICATIONS);
 
-            caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
+            caseDataBuilder.hearingOrderDocument(wrapElements(decision));
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getWrittenSequentailRepresentationsBy() != null
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getSequentialApplicantMustRespondWithin() != null) {
-            judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
+            decision = writtenRepresentationSequentailOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
@@ -195,7 +195,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
                 ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
 
-            newWrittenRepSequentialDocumentList.addAll(wrapElements(judgeDecision));
+            newWrittenRepSequentialDocumentList.addAll(wrapElements(decision));
 
             assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
@@ -205,7 +205,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
             && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
             .getWrittenConcurrentRepresentationsBy() != null) {
-            judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
+            decision = writtenRepresentationConcurrentOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -213,7 +213,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
                 ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
 
-            newWrittenRepConcurrentDocumentList.addAll(wrapElements(judgeDecision));
+            newWrittenRepConcurrentDocumentList.addAll(wrapElements(decision));
             assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
                                                           AssignCategoryId.APPLICATIONS);
@@ -223,7 +223,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
             && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
-            judgeDecision = requestForInformationGenerator.generate(
+            decision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -231,7 +231,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newRequestForInfoDocumentList =
                 ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
 
-            newRequestForInfoDocumentList.addAll(wrapElements(judgeDecision));
+            newRequestForInfoDocumentList.addAll(wrapElements(decision));
 
             assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
                                                           document -> document.getValue().getDocumentLink(),

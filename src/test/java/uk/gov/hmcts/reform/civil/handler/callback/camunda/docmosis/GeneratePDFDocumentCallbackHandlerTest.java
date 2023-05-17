@@ -407,7 +407,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+            assertThat(updatedData.getConsentOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.CONSENT_ORDER_DOCUMENT);
 
         }
