@@ -84,6 +84,9 @@ public class JudicialDecisionNotificationUtil {
             && isApplicationCloaked(caseData)) {
             return REQUEST_FOR_INFORMATION_CLOAK;
         }
+        if (Objects.nonNull(caseData.getApproveConsentOrder())) {
+            return JUDGE_APPROVED_THE_ORDER;
+        }
         return NON_CRITERION;
     }
 
