@@ -50,13 +50,13 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        List<Element<Document>> toBeAdded = addAddlnInfoResponse(caseData);
-        assignCategoryId.assignCategoryIdToCollection(toBeAdded, Element::getValue,
+        List<Element<Document>> addAddInfoResponseList = addAddlnInfoResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(addAddInfoResponseList, Element::getValue,
                 AssignCategoryId.APPLICATIONS
         );
-        caseDataBuilder.gaAddlnInfoList(toBeAdded);
-        if (!toBeAdded.isEmpty()) {
-            caseDataBuilder.gaRespDocument(toBeAdded);
+        caseDataBuilder.gaAddlnInfoList(addAddInfoResponseList);
+        if (!addAddInfoResponseList.isEmpty()) {
+            caseDataBuilder.gaRespDocument(addAddInfoResponseList);
         }
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
 

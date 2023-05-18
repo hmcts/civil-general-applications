@@ -50,13 +50,13 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        List<Element<Document>> toBeAdded = addDirectionsOrderResponse(caseData);
-        assignCategoryId.assignCategoryIdToCollection(toBeAdded, Element::getValue,
+        List<Element<Document>> addDirectionOrderResponseList = addDirectionsOrderResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(addDirectionOrderResponseList, Element::getValue,
                 AssignCategoryId.APPLICATIONS
         );
-        caseDataBuilder.gaDirectionDocList(toBeAdded);
-        if (!toBeAdded.isEmpty()) {
-            caseDataBuilder.gaRespDocument(toBeAdded);
+        caseDataBuilder.gaDirectionDocList(addDirectionOrderResponseList);
+        if (!addDirectionOrderResponseList.isEmpty()) {
+            caseDataBuilder.gaRespDocument(addDirectionOrderResponseList);
         }
         caseDataBuilder.generalAppDirOrderUpload(Collections.emptyList());
 

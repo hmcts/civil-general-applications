@@ -50,13 +50,13 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        List<Element<Document>> toBeAdded = addWrittenRepresentationResponse(caseData);
-        assignCategoryId.assignCategoryIdToCollection(toBeAdded, Element::getValue,
+        List<Element<Document>> addWrittenResponseList = addWrittenRepresentationResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(addWrittenResponseList, Element::getValue,
                 AssignCategoryId.APPLICATIONS
         );
-        caseDataBuilder.gaWrittenRepDocList(toBeAdded);
-        if (!toBeAdded.isEmpty()) {
-            caseDataBuilder.gaRespDocument(toBeAdded);
+        caseDataBuilder.gaWrittenRepDocList(addWrittenResponseList);
+        if (!addWrittenResponseList.isEmpty()) {
+            caseDataBuilder.gaRespDocument(addWrittenResponseList);
         }
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
 
