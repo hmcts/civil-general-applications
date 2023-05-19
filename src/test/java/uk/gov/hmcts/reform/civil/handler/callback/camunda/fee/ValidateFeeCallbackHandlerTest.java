@@ -115,7 +115,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ERROR_MESSAGE_FEE_CHANGED);
         }
@@ -128,7 +128,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(FEE275);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            verify(feesService).getFeeForGA(feesConfiguration.getWithNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -136,13 +136,13 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnNoErrors_whenNotConsentedNotifiedApplicationIsBeingMade() {
 
             CaseData caseData =  CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
-            when(feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword()))
+            when(feesService.getFeeForGA(caseData))
                 .thenReturn(FEE108);
 
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -194,8 +194,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData =  CaseDataBuilder.builder()
                 .varyApplication(types).build();
-            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
-                .thenReturn(true);
 
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             handler.handle(params);
@@ -209,8 +207,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData =  CaseDataBuilder.builder()
                 .varyApplication(types).build();
-            when(feesService.hasAppContainVaryOrder(caseData))
-                .thenReturn(true);
 
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             handler.handle(params);
@@ -224,8 +220,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData =  CaseDataBuilder.builder()
                 .varyApplication(types).build();
-            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
-                .thenReturn(true);
 
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             handler.handle(params);

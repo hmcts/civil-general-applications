@@ -56,7 +56,7 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
 
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee());
+            Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee(), null, null);
 
             GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails()
                 .toBuilder().fee(feeForGA).build();

@@ -87,7 +87,7 @@ class GeneralAppFeesServiceTest {
             .version("2")
             .build();
 
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend());
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend(), "miscellaneous", "other");
 
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         assertThat(queryCaptor.getValue().toString())
@@ -110,7 +110,7 @@ class GeneralAppFeesServiceTest {
             .version("1")
             .build();
 
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword(), null, null);
 
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         assertThat(queryCaptor.getValue().toString())
@@ -133,7 +133,7 @@ class GeneralAppFeesServiceTest {
             .version("1")
             .build();
 
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword(), null, null);
 
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         assertThat(queryCaptor.getValue().toString())
@@ -156,7 +156,7 @@ class GeneralAppFeesServiceTest {
             .version("1")
             .build();
 
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getWithNoticeKeyword());
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null);
 
         assertThat(feeDto).isEqualTo(expectedFeeDto);
         verify(feesConfiguration, times(1)).getWithNoticeKeyword();
@@ -185,37 +185,6 @@ class GeneralAppFeesServiceTest {
     }
 
     @Test
-    void shouldReturnTrueForVaryOrder() {
-        CaseData caseData = new CaseDataBuilder()
-            .generalAppType(GAApplicationType.builder().types(singletonList(VARY_ORDER))
-                                .build())
-            .build();
-
-        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isTrue();
-    }
-
-    @Test
-    void shouldReturnTrueForVaryJudgement() {
-        CaseData caseData = new CaseDataBuilder()
-            .generalAppType(GAApplicationType.builder().types(singletonList(VARY_JUDGEMENT))
-                                .build())
-            .build();
-
-        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isTrue();
-    } //hasAppContainVaryOrder
-
-    @Test
-    void shouldReturnTrueForVaryOrderWithMultipleType() {
-        CaseData caseData = new CaseDataBuilder()
-            .generalAppType(GAApplicationType.builder().types(List.of(VARY_ORDER, STAY_THE_CLAIM))
-                                .build())
-            .build();
-
-        assertThat(feesService.isOnlyVaryOrSuspendApplication(caseData)).isFalse();
-        assertThat(feesService.hasAppContainVaryOrder(caseData)).isTrue();
-    }
-
-    @Test
     void shouldBeFree_whenConsentedLateThan14DaysAdjournVacateApplicationIsBeingMade() {
         CaseData caseData = new CaseDataBuilder()
             .adjournOrVacateHearingApplication(YesOrNo.YES, LocalDate.now().plusDays(15))
@@ -230,7 +199,7 @@ class GeneralAppFeesServiceTest {
             .thenThrow(new RuntimeException("Some Exception"));
 
         Exception exception = assertThrows(RuntimeException.class, () -> feesService
-            .getFeeForGA(feesConfiguration.getWithNoticeKeyword()));
+            .getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null));
 
         assertThat(exception.getMessage()).isEqualTo("java.lang.RuntimeException: Some Exception");
     }
@@ -241,7 +210,7 @@ class GeneralAppFeesServiceTest {
             .thenReturn(null);
 
         Exception exception = assertThrows(RuntimeException.class, () -> feesService
-            .getFeeForGA(feesConfiguration.getWithNoticeKeyword()));
+            .getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null));
 
         assertThat(exception.getMessage())
             .isEqualTo("No Fees returned by fee-service while creating General Application");
@@ -256,7 +225,7 @@ class GeneralAppFeesServiceTest {
                             .build());
 
         Exception exception = assertThrows(RuntimeException.class, () -> feesService
-            .getFeeForGA(feesConfiguration.getWithNoticeKeyword()));
+            .getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null));
 
         assertThat(exception.getMessage())
             .isEqualTo("No Fees returned by fee-service while creating General Application");
@@ -278,7 +247,7 @@ class GeneralAppFeesServiceTest {
                 .version("1")
                 .build();
 
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getFreeKeyword());
+        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
         assertThat(feeDto).isEqualTo(expectedFeeDto);
     }
 
