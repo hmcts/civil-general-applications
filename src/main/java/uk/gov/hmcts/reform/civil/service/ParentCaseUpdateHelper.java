@@ -7,25 +7,29 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -43,15 +47,23 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
-        "directionOrder", "hearingNotice"
+        "directionOrder", "hearingNotice",
+        "gaResp"
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
     };
 
+    protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
+            AWAITING_ADDITIONAL_INFORMATION,
+            AWAITING_WRITTEN_REPRESENTATIONS,
+            AWAITING_DIRECTIONS_ORDER_DOCS
+    );
+
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+        String[] docVisibilityRoles = new String[4];
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
                                                                                 UPDATE_CASE_WITH_GA_STATE);
@@ -74,6 +86,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+                docVisibilityRoles[0] = "RespondentSol";
             }
         }
 
@@ -94,6 +107,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
+                docVisibilityRoles[1] = "RespondentSolTwo";
             }
         }
 
@@ -109,7 +123,8 @@ public class ParentCaseUpdateHelper {
         List<Element<GeneralApplicationsDetails>> generalApplications = updateGaApplicationState(
             caseData,
             newState,
-            applicationId
+            applicationId,
+            docVisibilityRoles
         );
 
         /*
@@ -120,11 +135,16 @@ public class ParentCaseUpdateHelper {
             newState,
             applicationId
         );
-
+        docVisibilityRoles[3] = "Staff";
+        Map<String, Object> updateMap = getUpdatedCaseData(caseData, generalApplications,
+                respondentSpecficGADetails,
+                respondentSpecficGADetailsTwo,
+                gaDetailsMasterCollection);
+        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
+        }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                   respondentSpecficGADetails,
-                                                   respondentSpecficGADetailsTwo, gaDetailsMasterCollection)));
+            startEventResponse, updateMap));
     }
 
     public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
@@ -233,7 +253,8 @@ public class ParentCaseUpdateHelper {
                 gaDetailsClaimant = updateGaApplicationState(
                     caseData,
                     newState,
-                    applicationId
+                    applicationId,
+                    null
                 );
             }
 
@@ -304,31 +325,26 @@ public class ParentCaseUpdateHelper {
         String civilCollectionName = type + "Doc" + role;
         Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(gaCollectionName));
-        List<Element<CaseDocument>> gaDocs =
-                (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
+        List<Element> gaDocs =
+                (List<Element>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
         Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(civilCollectionName));
-        List<Element<CaseDocument>> civilDocs =
-                (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
+        List<Element> civilDocs =
+                (List<Element>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
-
-        if (gaDocs != null
-                && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
-            civilDocs.addAll(gaDocs);
+        if (gaDocs != null) {
+            List<UUID> ids = civilDocs.stream().map(Element::getId).toList();
+            for (Element gaDoc : gaDocs) {
+                if (!ids.contains(gaDoc.getId())) {
+                    civilDocs.add(gaDoc);
+                }
+            }
         }
-
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
     }
 
-    private int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
-                                      List<Element<CaseDocument>> gaCaseDocumentlist) {
-        return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
-                        .parallelStream().anyMatch(gaDocument -> gaDocument.getId().equals(civilDocument.getId())))
-                .collect(Collectors.toList()).size();
-    }
-
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
-                                                                               String applicationId) {
+                                                                               String applicationId, String[] roles) {
         List<Element<GeneralApplicationsDetails>> generalApplications = ofNullable(
             caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
@@ -342,6 +358,9 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
+                if (Objects.nonNull(roles)) {
+                    roles[2] = "Claimant";
+                }
             }
         }
         return generalApplications;

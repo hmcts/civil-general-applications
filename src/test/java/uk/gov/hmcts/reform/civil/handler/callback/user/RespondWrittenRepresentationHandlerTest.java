@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
@@ -20,12 +22,17 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -45,7 +52,10 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
 
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
-
+    @MockBean
+    AssignCategoryId assignCategoryId;
+    @MockBean
+    ParentCaseUpdateHelper parentCaseUpdateHelper;
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
@@ -84,7 +94,11 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppWrittenRepUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaWrittenRepDocList().size()).isEqualTo(2);
-
+        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
+        verify(parentCaseUpdateHelper, times(1)).updateParentWithGAState(
+                any(),
+                any()
+        );
     }
 
     @Test
@@ -119,7 +133,7 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppWrittenRepUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaWrittenRepDocList().size()).isEqualTo(4);
-
+        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(4);
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {

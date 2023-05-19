@@ -35,10 +35,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper.DOCUMENT_STATES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -128,6 +132,14 @@ class ParentCaseUpdateHelperTest {
         assertThat(updateMap).isNotNull();
         assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
         assertThat(updateMap.get("directionOrderDocClaimant")).isNotNull();
+    }
+
+    @Test
+    void updateParentWithGAState_Respond_Doc() {
+        assertThat(DOCUMENT_STATES.size()).isEqualTo(3);
+        assertThat(DOCUMENT_STATES.contains(AWAITING_ADDITIONAL_INFORMATION)).isTrue();
+        assertThat(DOCUMENT_STATES.contains(AWAITING_WRITTEN_REPRESENTATIONS)).isTrue();
+        assertThat(DOCUMENT_STATES.contains(AWAITING_DIRECTIONS_ORDER_DOCS)).isTrue();
     }
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {

@@ -121,7 +121,7 @@ class HearingFormGeneratorTest {
     @Test
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo("01/Jan/1970");
+        assertThat(dateString).isEqualTo("1 January 1970");
     }
 
     @Test
