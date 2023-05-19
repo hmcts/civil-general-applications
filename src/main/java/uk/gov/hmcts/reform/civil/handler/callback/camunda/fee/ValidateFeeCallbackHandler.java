@@ -34,7 +34,6 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private static final String TASK_ID = "GeneralApplicationValidateFee";
 
     private final GeneralAppFeesService feeService;
-    private final GeneralAppFeesConfiguration feesConfiguration;
 
     @Override
     public String camundaActivityId() {

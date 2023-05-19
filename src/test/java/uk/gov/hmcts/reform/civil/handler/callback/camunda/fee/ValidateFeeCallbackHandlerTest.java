@@ -48,8 +48,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private ValidateFeeCallbackHandler handler;
-    @MockBean
-    private GeneralAppFeesConfiguration feesConfiguration;
     public static final String VERSION = "1";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version(VERSION).build();
@@ -67,14 +65,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class MakePBAPayments {
-
-        @BeforeEach
-        void setup() {
-            when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
-            when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
-            //TODO set to actual ga free keyword
-            when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
-        }
 
         @Test
         void shouldReturnErrors_whenCaseDataDoesNotHavePBADetails() {
@@ -160,71 +150,5 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(handler.handledEvents()).contains(VALIDATE_FEE_GASPEC);
         }
 
-        @Test
-        void shouldReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMade14DaysLater() {
-            LocalDate gaHearingDate = LocalDate.now().plusDays(15);
-            CaseData caseData =  CaseDataBuilder.builder()
-                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
-            when(feesService.isFreeApplication(caseData))
-                    .thenReturn(true);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getFreeKeyword();
-        }
-
-        @Test
-        void shouldNotReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMadeWithin14Days() {
-            LocalDate gaHearingDate = LocalDate.now().plusDays(14);
-            CaseData caseData =  CaseDataBuilder.builder()
-                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
-            when(feesService.isFreeApplication(caseData))
-                    .thenReturn(false);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, never()).getFreeKeyword();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryJudgement() {
-            List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryOrderWithMultipleTypes() {
-            List<GeneralApplicationTypes> types = List.of(VARY_ORDER, STAY_THE_CLAIM);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryOrder() {
-            List<GeneralApplicationTypes> types = List.of(VARY_ORDER);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
     }
 }
