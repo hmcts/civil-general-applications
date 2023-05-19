@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +33,8 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final AssignCategoryId assignCategoryId;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_DIRECTIONS);
 
@@ -42,17 +46,26 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
         );
     }
 
-    private CallbackResponse submitClaim(CallbackParams callbackParams) {
+    protected CallbackResponse submitClaim(CallbackParams callbackParams) {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
-        caseDataBuilder.gaDirectionDocList(addDirectionsOrderResponse(caseData));
-
+        List<Element<Document>> addDirectionOrderResponseList = addDirectionsOrderResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(addDirectionOrderResponseList, Element::getValue,
+                AssignCategoryId.APPLICATIONS
+        );
+        caseDataBuilder.gaDirectionDocList(addDirectionOrderResponseList);
+        if (!addDirectionOrderResponseList.isEmpty()) {
+            caseDataBuilder.gaRespDocument(addDirectionOrderResponseList);
+        }
         caseDataBuilder.generalAppDirOrderUpload(Collections.emptyList());
 
         CaseData updatedCaseData = caseDataBuilder.build();
 
+        parentCaseUpdateHelper.updateParentWithGAState(
+                updatedCaseData,
+                updatedCaseData.getCcdState().getDisplayedValue()
+        );
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
