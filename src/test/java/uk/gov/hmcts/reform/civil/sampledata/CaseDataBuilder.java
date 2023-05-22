@@ -512,6 +512,7 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(SUBMITTED_DATE_TIME)
+            .locationName("County Court")
             .caseManagementLocation(GACaseLocation.builder()
                                         .siteName("County Court")
                                         .region("4").build())
