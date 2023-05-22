@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -65,11 +66,12 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     }
 
     @Test
-    void aboutToStartCallbackShouldThrowErrorCourtValidationState() {
+    void aboutToStartCallbackShouldThrowErrorCourtValidationState_referToLegalAdvisor() {
         CallbackParams params = callbackParamsOf(
             getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
             CallbackType.ABOUT_TO_START
-        );
+
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_LEGAL_ADVISOR").build()).build();
         List<String> errors = new ArrayList<>();
         errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -78,12 +80,49 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
     }
 
     @Test
-    void aboutToStartCallbackShouldNotThrowErrorCourtValidationState() {
+    void aboutToStartCallbackShouldNotThrowErrorCourtValidationState_BeforeSDO_ReferToJudge() {
         CallbackParams params = callbackParamsOf(
             getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, YES),
             CallbackType.ABOUT_TO_START
-        );
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_JUDGE").build()).build();
         List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackShouldNotThrowErrorCourtValidationState_AfterSDO_ReferToJudge() {
+        CallbackParams params = callbackParamsOf(
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
+            CallbackType.ABOUT_TO_START
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_JUDGE").build()).build();
+        List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackShouldNotThrowErrorCourtValidationState_BeforeSDO_WithReferToLegalAdvisor() {
+        CallbackParams params = callbackParamsOf(
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, YES),
+            CallbackType.ABOUT_TO_START
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_LEGAL_ADVISOR").build()).build();
+        List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
+
+    @Test
+    void aboutToStartCallbackShouldThrowErrorCourtValidationState_AfterSDO_WithReferToLegalAdvisor() {
+        CallbackParams params = callbackParamsOf(
+            getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION, NO),
+            CallbackType.ABOUT_TO_START
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_LEGAL_ADVISOR").build()).build();
+        List<String> errors = new ArrayList<>();
+        errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
         assertThat(response.getErrors()).isEqualTo(errors);
@@ -94,7 +133,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
         CallbackParams params = callbackParamsOf(
             getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED, YES),
             CallbackType.ABOUT_TO_START
-        );
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_JUDGE").build()).build();
         List<String> errors = new ArrayList<>();
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
@@ -106,7 +145,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
         CallbackParams params = callbackParamsOf(
             getCase(ADDITIONAL_RESPONSE_TIME_EXPIRED, NO),
             CallbackType.ABOUT_TO_START
-        );
+        ).toBuilder().request(CallbackRequest.builder().eventId("REFER_TO_LEGAL_ADVISOR").build()).build();
         List<String> errors = new ArrayList<>();
         errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
