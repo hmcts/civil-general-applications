@@ -9,14 +9,11 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
@@ -27,7 +24,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISO
 public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
 
     public static final String COURT_ASSIGNE_ERROR_MESSAGE = "A Court has already been assigned";
-
 
     private static final List<CaseEvent> EVENTS = List.of(
         REFER_TO_JUDGE,
@@ -57,9 +53,9 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
     public List<String> courtAssignedValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         YesOrNo localCourtAssigned = caseData.getIsCcmccLocation();
+
         List<String> errors = new ArrayList<>();
-        if (YesOrNo.NO.equals(localCourtAssigned)
-            && !callbackParams.getRequest().getEventId().equals("REFER_TO_JUDGE")) {
+        if (YesOrNo.NO.equals(localCourtAssigned)) {
             errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         }
         return errors;
