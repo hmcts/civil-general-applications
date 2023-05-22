@@ -39,29 +39,20 @@ public class GeneralAppFeesService {
     private static final String JURISDICTION2 = "jurisdiction2";
     private static final String SERVICE = "service";
     private static final String KEYWORD = "keyword";
-    private static final List<GeneralApplicationTypes> VARY_TYPES
+    protected static final List<GeneralApplicationTypes> VARY_TYPES
             = Arrays.asList(GeneralApplicationTypes.VARY_JUDGEMENT,
                             GeneralApplicationTypes.VARY_ORDER);
-    private static final List<GeneralApplicationTypes> SET_ASIDE
+    protected static final List<GeneralApplicationTypes> SET_ASIDE
             = List.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT);
-    private static final List<GeneralApplicationTypes> ADJOURN_TYPES
+    protected static final List<GeneralApplicationTypes> ADJOURN_TYPES
             = List.of(GeneralApplicationTypes.ADJOURN_VACATE_HEARING);
-    private static final List<GeneralApplicationTypes> SD_CONSENT_TYPES
+    protected static final List<GeneralApplicationTypes> SD_CONSENT_TYPES
             = List.of(GeneralApplicationTypes.SETTLE_OR_DISCONTINUE_CONSENT);
 
     public Fee getFeeForGA(CaseData caseData) {
         Fee result = Fee.builder().calculatedAmountInPence(BigDecimal.valueOf(Integer.MAX_VALUE)).build();
         int typeSize = caseData.getGeneralAppType().getTypes().size();
-        if (CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), ADJOURN_TYPES)) {
-            if (isFreeApplication(caseData)) {
-                result = getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
-            } else {
-                result = getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
-            }
-            typeSize--;
-        }
-        if (typeSize>0
-                && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), VARY_TYPES)) {
+        if (CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), VARY_TYPES)) {
             Fee varyFeeForGA = getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend(), "miscellaneous", "other");
             if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)) {
                 typeSize--;
@@ -93,7 +84,12 @@ public class GeneralAppFeesService {
             }
         }
         if (typeSize>0) {
-            Fee defaultFee = getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
+            Fee defaultFee;
+            if (isFreeApplication(caseData)) {
+                defaultFee = getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
+            } else {
+                defaultFee = getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
+            }
             if (defaultFee.getCalculatedAmountInPence()
                     .compareTo(result.getCalculatedAmountInPence())<0) {
                 result = defaultFee;
@@ -146,7 +142,8 @@ public class GeneralAppFeesService {
 
     public boolean isFreeApplication(final CaseData caseData) {
         if (caseData.getGeneralAppType().getTypes().size() == 1
-                && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
+                && caseData.getGeneralAppType().getTypes()
+                .contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
                 && caseData.getGeneralAppRespondentAgreement() != null
                 && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
                 && caseData.getGeneralAppHearingDate() != null
