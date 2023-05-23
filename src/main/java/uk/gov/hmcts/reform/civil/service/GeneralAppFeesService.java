@@ -61,29 +61,29 @@ public class GeneralAppFeesService {
                 typeSize--;
             }
             if (varyFeeForGA.getCalculatedAmountInPence()
-                    .compareTo(result.getCalculatedAmountInPence())<0) {
+                    .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = varyFeeForGA;
             }
         }
-        if (typeSize>0
+        if (typeSize > 0
                 && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SD_CONSENT_TYPES)) {
             typeSize--;
             Fee sdConsentFeeForGA = getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword(), null, null);
             if (sdConsentFeeForGA.getCalculatedAmountInPence()
-                    .compareTo(result.getCalculatedAmountInPence())<0) {
+                    .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = sdConsentFeeForGA;
             }
         }
-        if (typeSize>0
+        if (typeSize > 0
                 && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SET_ASIDE)) {
             typeSize--;
             Fee setAsideFeeForGA = getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null);
             if (setAsideFeeForGA.getCalculatedAmountInPence()
-                    .compareTo(result.getCalculatedAmountInPence())<0) {
+                    .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = setAsideFeeForGA;
             }
         }
-        if (typeSize>0) {
+        if (typeSize > 0) {
             Fee defaultFee;
             if (isFreeApplication(caseData)) {
                 defaultFee = getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
@@ -91,21 +91,11 @@ public class GeneralAppFeesService {
                 defaultFee = getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
             }
             if (defaultFee.getCalculatedAmountInPence()
-                    .compareTo(result.getCalculatedAmountInPence())<0) {
+                    .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = defaultFee;
             }
         }
         return result;
-    }
-
-    protected String getFeeRegisterKeyword(CaseData caseData) {
-        boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
-                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppInformOtherParty() != null
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
-        return isNotified
-                ? feesConfiguration.getWithNoticeKeyword()
-                : feesConfiguration.getConsentedOrWithoutNoticeKeyword();
     }
 
     public Fee getFeeForGA(String keyword, String event, String service) {
@@ -138,6 +128,16 @@ public class GeneralAppFeesService {
             throw new RuntimeException("No Fees returned by fee-service while creating General Application");
         }
         return buildFeeDto(feeLookupResponseDto);
+    }
+
+    protected String getFeeRegisterKeyword(CaseData caseData) {
+        boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
+                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+                && caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+        return isNotified
+                ? feesConfiguration.getWithNoticeKeyword()
+                : feesConfiguration.getConsentedOrWithoutNoticeKeyword();
     }
 
     public boolean isFreeApplication(final CaseData caseData) {
