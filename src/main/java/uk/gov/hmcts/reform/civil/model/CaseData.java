@@ -202,6 +202,8 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> generalOrderDocRespondentSol;
     private final List<Element<CaseDocument>> generalOrderDocRespondentSolTwo;
     @Builder.Default
+    private final List<Element<CaseDocument>> draftApplication = new ArrayList<>();
+    @Builder.Default
     private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
     private final List<Element<CaseDocument>> dismissalOrderDocStaff;
     private final List<Element<CaseDocument>> dismissalOrderDocClaimant;

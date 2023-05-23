@@ -14,7 +14,9 @@ public enum DocmosisTemplates {
     FREE_FORM_ORDER("CV-UNS-GAP-ENG-01075.docx", "General_order_for_application_%s.pdf"),
     ASSISTED_ORDER_FORM("CV-UNS-GAP-ENG-01076.docx", "General_order_for_application_%s.pdf"),
 
-    CONSENT_ORDER_FORM("CV-UNS-GAP-ENG-01078.docx", "General_order_for_application_%s.pdf");
+    CONSENT_ORDER_FORM("CV-UNS-GAP-ENG-01078.docx", "General_order_for_application_%s.pdf"),
+    GENERAL_APPLICATION_DRAFT("CV-UNS-GAP-ENG-01077.docx", "Draft_application _%s.pdf");
+
     private final String template;
     private final String documentTitle;
 
