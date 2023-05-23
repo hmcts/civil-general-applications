@@ -56,7 +56,7 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
 
         List<String> errors = new ArrayList<>();
         if (YesOrNo.NO.equals(localCourtAssigned)
-            && !callbackParams.getRequest().getEventId().equals("REFER_TO_JUDGE")) {
+            && callbackParams.getRequest().getEventId().equals("REFER_TO_LEGAL_ADVISOR")) {
             errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         }
         return errors;
