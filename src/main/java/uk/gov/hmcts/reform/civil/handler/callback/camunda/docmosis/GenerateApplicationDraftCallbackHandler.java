@@ -18,13 +18,12 @@ import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DRAFT_DOCUMENT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
@@ -57,15 +56,16 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        CaseDocument draftApplication = null;
-        if (Objects.nonNull(caseData)) {
+        CaseDocument draftApplication;
+        if (caseData.getGeneralAppInformOtherParty() != null
+            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
+
             draftApplication = gaDraftGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            List<Element<CaseDocument>> draftApplicationList =
-                ofNullable(caseData.getConsentOrderDocument()).orElse(newArrayList());
+            List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
             draftApplicationList.addAll(wrapElements(draftApplication));
 

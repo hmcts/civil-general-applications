@@ -45,7 +45,4 @@ public class GADraftForm implements MappableObject {
     private final String supportRequirementLanguageInterpreter;
     private final String supportRequirementOther;
     private final String name;
-    private final boolean isWithNoticeApp;
-
-
 }

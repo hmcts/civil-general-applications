@@ -50,18 +50,24 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         String claimantName = listGeneratorService.claimantsName(caseData);
 
         String defendantName = listGeneratorService.defendantsName(caseData);
-        List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getGeneralAppHearingDetails()
-            .getGeneralAppUnavailableDates();
+
         LocalDate dateFrom = null;
         LocalDate dateTo  = null;
-        for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-            dateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-            dateTo = dateRange.getValue().getUnavailableTrialDateTo();
+
+        if (caseData.getGeneralAppHearingDetails() != null && caseData.getGeneralAppHearingDetails()
+            .getGeneralAppUnavailableDates() != null) {
+
+            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getGeneralAppHearingDetails()
+                .getGeneralAppUnavailableDates();
+
+            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
+                dateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
+                dateTo = dateRange.getValue().getUnavailableTrialDateTo();
+            }
         }
 
         GADraftForm.GADraftFormBuilder gaDraftFormBuilder =
             GADraftForm.builder()
-                .isWithNoticeApp(checkIsWithNoticeOrNot(caseData))
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .defendantName(defendantName)
@@ -71,8 +77,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .applicantPartyName(caseData.getApplicantPartyName())
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
                 .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
-                .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty()
-                                             .getReasonsForWithoutNotice())
+                .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
+                                             .getReasonsForWithoutNotice() : null)
                 .generalAppUrgency(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())
                 .urgentAppConsiderationDate(getDateFormatted(caseData.getGeneralAppUrgencyRequirement()
                                                                  .getUrgentAppConsiderationDate()))
@@ -87,10 +93,12 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .hearingPreferencesPreferredType(caseData.getGeneralAppHearingDetails()
                                                      .getHearingPreferencesPreferredType()
                                                      .getDisplayedValue())
-                .hearingPreferredLocation(caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
-                                              .getValue().getLabel())
+                .reasonForPreferredHearingType(caseData.getGeneralAppHearingDetails()
+                                                   .getReasonForPreferredHearingType())
+                .hearingPreferredLocation(getHearingLocation(caseData))
                 .hearingDetailsTelephoneNumber(caseData.getGeneralAppHearingDetails()
                                                    .getHearingDetailsTelephoneNumber())
+
                 .hearingDetailsEmailId(caseData.getGeneralAppHearingDetails()
                                            .getHearingDetailsEmailID())
                 .unavailableTrialRequiredYesOrNo(caseData.getGeneralAppHearingDetails()
@@ -98,21 +106,36 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .unavailableTrialDateTo(getDateFormatted(dateTo))
                 .unavailableTrialDateFrom(getDateFormatted(dateFrom))
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
-                .supportRequirement(caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(
-                    GAHearingSupportRequirements::getDisplayedValue).collect(Collectors.joining(", ")))
+                .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
                 .supportRequirementLanguageInterpreter(caseData.getGeneralAppHearingDetails()
                                                            .getSupportRequirementLanguageInterpreter())
                 .supportRequirementOther(caseData.getGeneralAppHearingDetails().getSupportRequirementOther())
-                .name(caseData.getGeneralAppStatementOfTruth().getName())
+                .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
+                    .getGeneralAppStatementOfTruth().getName() : null)
                 .date(getDateFormatted(LocalDate.now()));
 
         return gaDraftFormBuilder.build();
     }
 
-    private boolean checkIsWithNoticeOrNot(CaseData caseData) {
-        return caseData.getGeneralAppInformOtherParty() != null
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+    private String getGaSupportRequirement(CaseData caseData) {
+        String gaSupportRequirement = null;
+        if (caseData.getGeneralAppHearingDetails() != null
+            && caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
+            gaSupportRequirement = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream().map(
+                GAHearingSupportRequirements::getDisplayedValue).collect(Collectors.joining(", "));
+        }
+        return  gaSupportRequirement;
+    }
+
+    private String getHearingLocation(CaseData caseData) {
+        String preferredLocation = null;
+        if (caseData.getGeneralAppHearingDetails() != null
+            && caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() != null) {
+            preferredLocation = caseData.getGeneralAppHearingDetails().getHearingPreferredLocation()
+                .getValue().getLabel();
+        }
+        return preferredLocation;
     }
 
     @SuppressWarnings("unchecked")
