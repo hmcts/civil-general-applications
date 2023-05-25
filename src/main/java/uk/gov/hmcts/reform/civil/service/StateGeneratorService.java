@@ -87,9 +87,9 @@ public class StateGeneratorService {
             if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
                 return APPLICATION_ADD_PAYMENT;
             } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
-                && nonNull(caseData.getGeneralAppConsentOrder())){
+                && nonNull(caseData.getGeneralAppConsentOrder())) {
                 return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
-            }else {
+            } else {
                 return AWAITING_RESPONDENT_RESPONSE;
             }
         }
