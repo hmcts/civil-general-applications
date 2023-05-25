@@ -81,7 +81,8 @@ public class StateGeneratorService {
 
     private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
+            && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 return APPLICATION_ADD_PAYMENT;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
