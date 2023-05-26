@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -128,6 +129,17 @@ public class StateGeneratorServiceTest {
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
 
         assertThat(caseState).isEqualTo(LISTING_FOR_A_HEARING);
+    }
+
+    @Test
+    public void shouldReturnOrderDateWhenCaseworkerApprovesApplication() {
+        CaseData caseData = CaseData.builder()
+            .approveConsentOrder(GAApproveConsentOrder.builder().consentOrderDescription("Test Order")
+                                     .build())
+            .build();
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(ORDER_MADE);
     }
 
     @Test
