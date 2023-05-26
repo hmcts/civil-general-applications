@@ -20,11 +20,14 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -57,6 +60,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Service
@@ -67,6 +71,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
     private final IdamClient idamClient;
+    private final GeneralApplicationDraftGenerator gaDraftGenerator;
+    private final AssignCategoryId assignCategoryId;
     private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
@@ -278,12 +284,30 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.respondentsResponses(respondentsResponses);
         caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
+
+        CaseDocument gaDraftDocument;
+        if (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())) {
+
+            gaDraftDocument = gaDraftGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
+
+            List<Element<CaseDocument>> draftApplicationList = newArrayList();
+
+            draftApplicationList.addAll(wrapElements(gaDraftDocument));
+
+            assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                          document -> document.getValue().getDocumentLink(),
+                                                          AssignCategoryId.APPLICATIONS);
+            caseDataBuilder.gaDraftDocument(draftApplicationList);
+        }
         CaseData updatedCaseData = caseDataBuilder.build();
 
         CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
             ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
             : AWAITING_RESPONDENT_RESPONSE;
-        parentCaseUpdateHelper.updateParentWithGAState(caseData, newState.getDisplayedValue());
+        parentCaseUpdateHelper.updateParentWithGAState(updatedCaseData, newState.getDisplayedValue());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newState.toString())

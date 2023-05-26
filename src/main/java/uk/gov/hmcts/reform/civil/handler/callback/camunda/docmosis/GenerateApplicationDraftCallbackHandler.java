@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TO
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DRAFT_DOCUMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
@@ -56,23 +57,26 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        CaseDocument draftApplication;
-        if (caseData.getGeneralAppInformOtherParty() != null
-            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
+        CaseDocument gaDraftDocument;
+        if ((caseData.getGeneralAppInformOtherParty() != null
+            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            ||
+            (caseData.getGeneralAppUrgencyRequirement() != null
+        && YES.equals(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()))) {
 
-            draftApplication = gaDraftGenerator.generate(
+            gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
             List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
-            draftApplicationList.addAll(wrapElements(draftApplication));
+            draftApplicationList.addAll(wrapElements(gaDraftDocument));
 
             assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
                                                           document -> document.getValue().getDocumentLink(),
                                                           AssignCategoryId.APPLICATIONS);
-            caseDataBuilder.draftApplication(draftApplicationList);
+            caseDataBuilder.gaDraftDocument(draftApplicationList);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
