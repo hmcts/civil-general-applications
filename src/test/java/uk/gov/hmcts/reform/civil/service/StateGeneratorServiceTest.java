@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROV
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SET_ASIDE_JUDGEMENT;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -199,15 +201,32 @@ public class StateGeneratorServiceTest {
     }
 
     @Test
-    void shouldReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
+    void shouldNotReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
         CaseData caseData = CaseDataBuilder.builder()
             .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
-                                                                         NO, YesOrNo.NO).build();
+                                                                         NO, YesOrNo.NO)
+            .generalAppType(GAApplicationType.builder()
+                    .types(singletonList(SET_ASIDE_JUDGEMENT))
+                    .build()).build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(false);
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
+    }
+
+    @Test
+    void shouldReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
+        CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
+                        NO, YesOrNo.NO).build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(true);
+
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
     }
 
     @Test
@@ -223,6 +242,7 @@ public class StateGeneratorServiceTest {
             .build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(false);
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
     }
