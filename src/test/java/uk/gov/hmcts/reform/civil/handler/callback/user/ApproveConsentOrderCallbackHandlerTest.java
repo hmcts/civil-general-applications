@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPROVE_CONSENT_ORDER;
@@ -127,7 +128,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
         void shouldGenerateConsentOrderDocument() {
             List<GeneralApplicationTypes> types = List.of(
                                                           (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-            CallbackParams params = callbackParamsOf(getGeneralAppCaseData(types), MID, "populate-consent-order-doc");
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseData(types), MID, VALIDATE_CONSENT_ORDER);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
             assertThat(response).isNotNull();
@@ -181,6 +182,22 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response.getErrors()).isEmpty();
         }
+    }
+
+    @Nested
+    class AboutToSubmitHandling {
+
+        @Test
+        void shouldValidateBusinessProcess() {
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.EXTEND_TIME), (GeneralApplicationTypes.STAY_THE_CLAIM));
+            CallbackParams params = callbackParamsOf(getGeneralAppCaseData(types), ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getData()).extracting("businessProcess").extracting("camundaEvent").isEqualTo(
+                "APPROVE_CONSENT_ORDER");
+        }
+
     }
 
     @Nested
