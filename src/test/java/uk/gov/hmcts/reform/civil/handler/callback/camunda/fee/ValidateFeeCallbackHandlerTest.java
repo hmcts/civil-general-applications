@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.fee;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
-import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -21,20 +17,13 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VALIDATE_FEE_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_JUDGEMENT;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_ORDER;
 
 @SpringBootTest(classes = {
     ValidateFeeCallbackHandler.class,
@@ -48,8 +37,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private ValidateFeeCallbackHandler handler;
-    @MockBean
-    private GeneralAppFeesConfiguration feesConfiguration;
     public static final String VERSION = "1";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(10800)).code("FEE0443").version(VERSION).build();
@@ -67,14 +54,6 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class MakePBAPayments {
-
-        @BeforeEach
-        void setup() {
-            when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
-            when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
-            //TODO set to actual ga free keyword
-            when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
-        }
 
         @Test
         void shouldReturnErrors_whenCaseDataDoesNotHavePBADetails() {
@@ -115,7 +94,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors()).contains(ERROR_MESSAGE_FEE_CHANGED);
         }
@@ -128,7 +107,7 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(FEE275);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            verify(feesService).getFeeForGA(feesConfiguration.getWithNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -136,13 +115,13 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnNoErrors_whenNotConsentedNotifiedApplicationIsBeingMade() {
 
             CaseData caseData =  CaseDataBuilder.builder().buildFeeValidationCaseData(FEE108, false, false);
-            when(feesService.getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword()))
+            when(feesService.getFeeForGA(caseData))
                 .thenReturn(FEE108);
 
             params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            verify(feesService).getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword());
+            verify(feesService).getFeeForGA(caseData);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -160,77 +139,5 @@ class ValidateFeeCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(handler.handledEvents()).contains(VALIDATE_FEE_GASPEC);
         }
 
-        @Test
-        void shouldReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMade14DaysLater() {
-            LocalDate gaHearingDate = LocalDate.now().plusDays(15);
-            CaseData caseData =  CaseDataBuilder.builder()
-                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
-            when(feesService.isFreeApplication(caseData))
-                    .thenReturn(true);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getFreeKeyword();
-        }
-
-        @Test
-        void shouldNotReturnFreeFee_whenAdjournOrVacateHearingAppIsBeingMadeWithin14Days() {
-            LocalDate gaHearingDate = LocalDate.now().plusDays(14);
-            CaseData caseData =  CaseDataBuilder.builder()
-                    .adjournOrVacateHearingApplication(YesOrNo.YES, gaHearingDate).build();
-            when(feesService.isFreeApplication(caseData))
-                    .thenReturn(false);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, never()).getFreeKeyword();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryJudgement() {
-            List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
-                .thenReturn(true);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryOrderWithMultipleTypes() {
-            List<GeneralApplicationTypes> types = List.of(VARY_ORDER, STAY_THE_CLAIM);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-            when(feesService.hasAppContainVaryOrder(caseData))
-                .thenReturn(true);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
-
-        @Test
-        void shouldSet14Fees_whenApplicationIsVaryOrder() {
-            List<GeneralApplicationTypes> types = List.of(VARY_ORDER);
-
-            CaseData caseData =  CaseDataBuilder.builder()
-                .varyApplication(types).build();
-            when(feesService.isOnlyVaryOrSuspendApplication(caseData))
-                .thenReturn(true);
-
-            params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            handler.handle(params);
-
-            verify(feesConfiguration, times(1)).getAppnToVaryOrSuspend();
-        }
     }
 }
