@@ -81,7 +81,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
 
@@ -106,7 +106,7 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 BigDecimal.valueOf(16700)).code("").version(VERSION).build());
 
@@ -116,13 +116,13 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        verify(generalAppFeesService, never()).getFeeForGA(any());
+        verify(generalAppFeesService, never()).getFeeForGA(any(), any(), any());
     }
 
     @Test
     void shouldThrowError_whenRunTimeExceptionHappens() {
 
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
