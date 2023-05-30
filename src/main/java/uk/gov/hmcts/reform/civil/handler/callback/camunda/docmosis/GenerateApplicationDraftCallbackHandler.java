@@ -62,7 +62,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
             ||
             (caseData.getGeneralAppUrgencyRequirement() != null
-        && YES.equals(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()))) {
+            && YES.equals(caseData.getGeneralAppUrgencyRequirement()
+                              .getGeneralAppUrgency()))) {
 
             gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),

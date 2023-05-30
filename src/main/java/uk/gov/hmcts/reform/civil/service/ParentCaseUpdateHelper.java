@@ -27,7 +27,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.*;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -46,7 +49,7 @@ public class ParentCaseUpdateHelper {
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
         "directionOrder", "hearingNotice",
-        "gaResp","gaDraft"
+        "gaResp", "gaDraft"
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"

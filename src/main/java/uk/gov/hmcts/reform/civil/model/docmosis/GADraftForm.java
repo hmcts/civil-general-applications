@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @EqualsAndHashCode
 public class GADraftForm implements MappableObject {
@@ -45,4 +45,43 @@ public class GADraftForm implements MappableObject {
     private final String supportRequirementLanguageInterpreter;
     private final String supportRequirementOther;
     private final String name;
+
+    private final YesOrNo resp1HasAgreed;
+    private final YesOrNo gaResp1Consent;
+    private final String resp1DebtorOffer;
+    private final YesOrNo resp1HearingYesOrNo;
+    private final String resp1Hearingdate;
+    private final String resp1HearingPreferredType;
+    private final String resp1ReasonForPreferredType;
+    private final String resp1PreferredLocation;
+    private final String resp1PreferredTelephone;
+    private final String resp1PreferredEmail;
+    private final YesOrNo resp1UnavailableTrialRequired;
+    private final String resp1UnavailableTrialDateFrom;
+    private final String resp1UnavailableTrialDateTo;
+    private final YesOrNo resp1VulnerableQuestions;
+    private final String resp1SupportRequirement;
+    private final String resp1SignLanguage;
+    private final String resp1LanguageInterpreter;
+    private final String resp1Other;
+    private final YesOrNo isOneVTwoApp;
+    private final YesOrNo isVaryJudgmentApp;
+    private final YesOrNo resp2HasAgreed;
+    private final YesOrNo gaResp2Consent;
+    private final String resp2DebtorOffer;
+    private final YesOrNo resp2HearingYesOrNo;
+    private final String resp2Hearingdate;
+    private final String resp2HearingPreferredType;
+    private final String resp2ReasonForPreferredType;
+    private final String resp2PreferredLocation;
+    private final String resp2PreferredTelephone;
+    private final String resp2PreferredEmail;
+    private final YesOrNo resp2UnavailableTrialRequired;
+    private final String resp2UnavailableTrialDateFrom;
+    private final String resp2UnavailableTrialDateTo;
+    private final YesOrNo resp2VulnerableQuestions;
+    private final String resp2SupportRequirement;
+    private final String resp2SignLanguage;
+    private final String resp2LanguageInterpreter;
+    private final String resp2Other;
 }
