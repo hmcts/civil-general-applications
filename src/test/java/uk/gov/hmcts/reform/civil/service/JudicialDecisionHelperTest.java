@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -18,11 +19,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SET_ASIDE_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
@@ -278,6 +283,49 @@ public class JudicialDecisionHelperTest {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakApplication(NO).build();
             assertThat(helper.isApplicationUncloakedWithAdditionalFee(caseData)).isFalse();
+        }
+    }
+
+    @Nested
+    class ContainsTypesNeedNoAdditionalFee {
+        @Test
+        void shouldReturnFalse_WhenApplicationIsUncloakedTypeRequestMoreInformation() {
+            CaseData caseData = CaseDataBuilder.builder()
+                    .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO).build();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnTrue_WhenApplicationIsUncloakedTypeRequestMoreInformation_has_setaside() {
+            CaseData caseData = CaseDataBuilder.builder()
+                    .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO)
+                    .generalAppType(GAApplicationType.builder()
+                            .types(singletonList(SET_ASIDE_JUDGEMENT))
+                            .build())
+                    .build();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isTrue();
+        }
+
+        @Test
+        void shouldReturnFalse_WhenApplicationIsUncloakedTypeRequestMoreInformation_has_setaside() {
+            CaseData caseData = CaseDataBuilder.builder()
+                    .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO)
+                    .generalAppType(GAApplicationType.builder()
+                            .types(List.of(SET_ASIDE_JUDGEMENT, EXTEND_TIME))
+                            .build())
+                    .build();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnTrue_WhenApplicationIsUncloakedTypeRequestMoreInformation_has_varyorder() {
+            CaseData caseData = CaseDataBuilder.builder()
+                    .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, NO)
+                    .generalAppType(GAApplicationType.builder()
+                            .types(List.of(VARY_ORDER, EXTEND_TIME))
+                            .build())
+                    .build();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isTrue();
         }
     }
 
