@@ -42,8 +42,11 @@ public class GADraftForm implements MappableObject {
     private final YesOrNo vulnerabilityQuestionsYesOrNo;
     private final String supportRequirement;
     private final String supportRequirementSignLanguage;
+    private final Boolean isSignLanguageExists;
     private final String supportRequirementLanguageInterpreter;
+    private final Boolean isLanguageInterpreterExists;
     private final String supportRequirementOther;
+    private final Boolean isOtherSupportExists;
     private final String name;
 
     private final YesOrNo resp1HasAgreed;
@@ -65,7 +68,12 @@ public class GADraftForm implements MappableObject {
     private final String resp1LanguageInterpreter;
     private final String resp1Other;
     private final YesOrNo isOneVTwoApp;
+    private final YesOrNo isConsentOrderApp;
     private final YesOrNo isVaryJudgmentApp;
+    private final Boolean isResp1SignLanguageExists;
+    private final Boolean isResp1LanguageInterpreterExists;
+    private final Boolean isResp1OtherSupportExists;
+
     private final YesOrNo resp2HasAgreed;
     private final YesOrNo gaResp2Consent;
     private final String resp2DebtorOffer;
@@ -84,4 +92,7 @@ public class GADraftForm implements MappableObject {
     private final String resp2SignLanguage;
     private final String resp2LanguageInterpreter;
     private final String resp2Other;
+    private final Boolean isResp2SignLanguageExists;
+    private final Boolean isResp2LanguageInterpreterExists;
+    private final Boolean isResp2OtherSupportExists;
 }

@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -286,7 +287,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
 
         CaseDocument gaDraftDocument;
-        if (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())) {
+        if (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
+            && isNull(caseData.getJudicialDecision())) {
 
             gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),

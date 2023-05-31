@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
@@ -32,6 +34,9 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.LANGUAGE_INTERPRETER;
+import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.OTHER_SUPPORT;
+import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.SIGN_INTERPRETER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_APPLICATION_DRAFT;
 
 @Service
@@ -137,20 +142,25 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
                 .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
+                .isSignLanguageExists(checkAdditionalSupport(caseData, SIGN_INTERPRETER))
                 .supportRequirementLanguageInterpreter(caseData.getGeneralAppHearingDetails()
                                                            .getSupportRequirementLanguageInterpreter())
+                .isLanguageInterpreterExists(checkAdditionalSupport(caseData, LANGUAGE_INTERPRETER))
                 .supportRequirementOther(caseData.getGeneralAppHearingDetails().getSupportRequirementOther())
+                .isOtherSupportExists(checkAdditionalSupport(caseData, OTHER_SUPPORT))
                 .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
                     .getGeneralAppStatementOfTruth().getName() : null)
                 .date(getDateFormatted(LocalDate.now()));
 
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_ONE) {
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
             GAHearingDetails gaResp1HearingDetails = caseData.getRespondentsResponses().get(0)
                 .getValue().getGaHearingDetails();
+            GARespondentResponse resp1Response = caseData.getRespondentsResponses().get(0).getValue();
             gaDraftFormBuilder = gaDraftFormBuilder.build().toBuilder()
                 .isVaryJudgmentApp(checkAppIsVaryJudgment(caseData))
+                .isConsentOrderApp(checkAppIsConsentOrder(caseData))
                 .isOneVTwoApp(caseData.getRespondentsResponses().size() >= ONE_V_TWO ? YesOrNo.YES : YesOrNo.NO)
-                .resp1HasAgreed(caseData.getGeneralAppRespondent1Representative().getGeneralAppRespondent1Representative())
+                .resp1HasAgreed(resp1Response.getGeneralAppRespondent1Representative())
                 .gaResp1Consent(caseData.getGaRespondentConsent())
                 .resp1DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer()
@@ -170,15 +180,19 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp1VulnerableQuestions(gaResp1HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp1SupportRequirement(getRespSupportRequirement(caseData, ONE_V_ONE))
                 .resp1SignLanguage(gaResp1HearingDetails.getSupportRequirementSignLanguage())
+                .isResp1SignLanguageExists(checkResp1AdditionalSupport(caseData, SIGN_INTERPRETER))
                 .resp1LanguageInterpreter(gaResp1HearingDetails
                                               .getSupportRequirementLanguageInterpreter())
+                .isResp1LanguageInterpreterExists(checkResp1AdditionalSupport(caseData, LANGUAGE_INTERPRETER))
+                .isResp1OtherSupportExists(checkResp1AdditionalSupport(caseData, OTHER_SUPPORT))
                 .resp1Other(gaResp1HearingDetails.getSupportRequirementOther());
         }
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() > ONE_V_ONE) {
             GAHearingDetails gaResp2HearingDetails = caseData.getRespondentsResponses().get(1)
                 .getValue().getGaHearingDetails();
+            GARespondentResponse resp2Response = caseData.getRespondentsResponses().get(1).getValue();
             gaDraftFormBuilder = gaDraftFormBuilder.build().toBuilder()
-                .resp2HasAgreed(caseData.getGeneralAppRespondent1Representative().getGeneralAppRespondent1Representative())
+                .resp2HasAgreed(resp2Response.getGeneralAppRespondent1Representative())
                 .gaResp2Consent(caseData.getGaRespondentConsent())
                 .resp2DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer()
@@ -198,12 +212,45 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp2VulnerableQuestions(gaResp2HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp2SupportRequirement(getRespSupportRequirement(caseData, ONE_V_TWO))
                 .resp2SignLanguage(gaResp2HearingDetails.getSupportRequirementSignLanguage())
+                .isResp2SignLanguageExists(checkResp2AdditionalSupport(caseData, SIGN_INTERPRETER))
                 .resp2LanguageInterpreter(gaResp2HearingDetails
                                               .getSupportRequirementLanguageInterpreter())
-                .resp2Other(gaResp2HearingDetails.getSupportRequirementOther());
+                .isResp2LanguageInterpreterExists(checkResp2AdditionalSupport(caseData, LANGUAGE_INTERPRETER))
+                .resp2Other(gaResp2HearingDetails.getSupportRequirementOther())
+                .isResp2OtherSupportExists(checkResp2AdditionalSupport(caseData, OTHER_SUPPORT));
         }
 
         return gaDraftFormBuilder.build();
+    }
+
+    private Boolean checkAdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
+        if (isNull(getGaSupportRequirement(caseData))) {
+            return null;
+        } else {
+            return getGaSupportRequirement(caseData).contains(additionalSupport.getDisplayedValue());
+        }
+    }
+
+    private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
+        if (isNull(getRespSupportRequirement(caseData, ONE_V_ONE))) {
+            return null;
+        } else {
+            return getRespSupportRequirement(caseData, ONE_V_ONE).contains(additionalSupport.getDisplayedValue());
+        }
+    }
+
+    private Boolean checkResp2AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
+        if (isNull(getRespSupportRequirement(caseData, ONE_V_TWO))) {
+            return null;
+        } else {
+            return getRespSupportRequirement(caseData, ONE_V_TWO).contains(additionalSupport.getDisplayedValue());
+        }
+    }
+
+    private YesOrNo checkAppIsConsentOrder(CaseData caseData) {
+        YesOrNo isConsentOrderApp;
+        isConsentOrderApp = caseData.getGeneralAppConsentOrder() != null ? YesOrNo.YES : YesOrNo.NO;
+        return isConsentOrderApp;
     }
 
     private YesOrNo checkAppIsVaryJudgment(CaseData caseData) {
@@ -257,11 +304,14 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
             .get(0).getValue().getGaHearingDetails();
 
         if (resp1HearingDetails != null
+            && resp1HearingDetails.getHearingPreferredLocation() != null
             && resp1HearingDetails.getHearingPreferredLocation().getValue() != null
             && size == ONE_V_ONE) {
             preferredLocation = resp1HearingDetails.getHearingPreferredLocation()
                 .getValue().getLabel();
         } else if (size == ONE_V_TWO
+            && caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+            .getHearingPreferredLocation() != null
             && caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
             .getHearingPreferredLocation().getValue() != null) {
             preferredLocation = caseData.getRespondentsResponses().get(1).getValue()
