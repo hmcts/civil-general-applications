@@ -81,6 +81,8 @@ class JudicialApplicantNotificationServiceTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private JudicialDecisionHelper judicialDecisionHelper;
 
     private static final String APPLICANT = "applicant";
     private static final String RESPONDENT = "respondent";
