@@ -1480,6 +1480,28 @@ class JudicialApplicantNotificationServiceTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+
+        @Test
+        void notificationShouldSend_Both_When_RequestForInformation_UncloakedApplication_NoAdditionalPayment() {
+
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+                    SEND_APP_TO_OTHER_PARTY).toBuilder()
+                    .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE).build();
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                    .thenReturn(caseData);
+            when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any()))
+                    .thenReturn(true);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(3)).sendMail(
+                    DUMMY_EMAIL,
+                    "general-application-apps-judicial-notification-template-id",
+                    notificationPropertiesToStayTheClaim(),
+                    "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
     }
 
     @Test
