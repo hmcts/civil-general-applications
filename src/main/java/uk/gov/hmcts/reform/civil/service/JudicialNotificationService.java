@@ -46,6 +46,7 @@ public class JudicialNotificationService implements NotificationData {
     private final CoreCaseDataService coreCaseDataService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CaseData sendNotification(CaseData caseData, String solicitorType) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
@@ -215,8 +216,9 @@ public class JudicialNotificationService implements NotificationData {
 
         }
 
-        if (isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
-            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData)) {
+        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
+            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))
+            && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
             // Send notification to applicant only if it's without notice application
             if (solicitorType.equals(APPLICANT)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
