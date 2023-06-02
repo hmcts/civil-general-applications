@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
@@ -136,10 +137,11 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void updateParentWithGAState_Respond_Doc() {
-        assertThat(DOCUMENT_STATES.size()).isEqualTo(3);
+        assertThat(DOCUMENT_STATES.size()).isEqualTo(4);
         assertThat(DOCUMENT_STATES.contains(AWAITING_ADDITIONAL_INFORMATION)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_WRITTEN_REPRESENTATIONS)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_DIRECTIONS_ORDER_DOCS)).isTrue();
+        assertThat(DOCUMENT_STATES.contains(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)).isTrue();
     }
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
