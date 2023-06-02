@@ -259,6 +259,24 @@ public class StateGeneratorServiceTest {
         assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
     }
 
+    @Test
+    void shouldAwaitingJudicialDecision__WhenAdditionalPaymentReceived_RequestMoreInformation_ConsentOrder() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .reference("123456")
+                                                                    .status(PaymentStatus.SUCCESS)
+                                                                    .build())
+                                      .build())
+            .generalAppConsentOrder(NO)
+            .build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+    }
+
     private List<GeneralApplicationTypes> applicationTypeJudgement() {
         return List.of(
             GeneralApplicationTypes.STRIKE_OUT
