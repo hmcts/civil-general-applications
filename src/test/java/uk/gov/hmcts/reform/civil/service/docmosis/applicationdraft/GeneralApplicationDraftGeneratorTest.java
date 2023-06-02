@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,13 +12,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.GADraftForm;
@@ -25,13 +31,14 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -57,6 +64,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_APPLICATION_DRAFT;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SuppressWarnings("ALL")
@@ -67,7 +75,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     GeneralApplicationDraftGenerator.class
 })
 
-public class GeneralApplicationDraftGeneratorTest  {
+public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
@@ -84,9 +92,14 @@ public class GeneralApplicationDraftGeneratorTest  {
     ListGeneratorService listGeneratorService;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Autowired
     GeneralApplicationDraftGenerator generalApplicationDraftGenerator;
+    List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+    DynamicListElement location1 = DynamicListElement.builder()
+        .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
 
     @Test
     void shouldGenerateApplicationDraftDocument() {
@@ -113,6 +126,159 @@ public class GeneralApplicationDraftGeneratorTest  {
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
                                                                   eq(GENERAL_APPLICATION_DRAFT));
+    }
+
+    @Test
+    void shouldGenerateDocumentWithApplicantAndRespondent1Response_1v1_test() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        CaseData caseData = getCase(respondentSols, NO);
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThatRespondentFieldsAreCorrect_DraftApp(templateData, caseData);
+    }
+
+    public List<Element<GARespondentResponse>> getRespondentResponses1nad2(YesOrNo vulQuestion1, YesOrNo vulQuestion2,
+                                                                           YesOrNo hasResp1PreferLocation,
+                                                                           YesOrNo hasResp2PreferLocation, YesOrNo addRespondent) {
+
+        List<GAHearingSupportRequirements> respSupportReq1 = new ArrayList<>();
+        respSupportReq1
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        List<GAHearingSupportRequirements> respSupportReq2 = new ArrayList<>();
+        respSupportReq2
+            .add(GAHearingSupportRequirements.LANGUAGE_INTERPRETER);
+
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .vulnerabilityQuestionsYesOrNo(vulQuestion1)
+                                                   .vulnerabilityQuestion("dummy1")
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .supportRequirement(respSupportReq1)
+                                                   .hearingPreferredLocation(hasResp1PreferLocation == YES
+                                                                                 ? DynamicList.builder()
+                                                       .listItems(List.of(location1))
+                                                       .value(location1).build() : null)
+                                                   .build())
+                             .gaRespondentDetails("1L").build()));
+        if (addRespondent == YES) {
+            respondentsResponses
+                .add(element(GARespondentResponse.builder()
+                                 .gaHearingDetails(GAHearingDetails.builder()
+                                                       .vulnerabilityQuestionsYesOrNo(vulQuestion2)
+                                                       .vulnerabilityQuestion("dummy2")
+                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                       .hearingDuration(GAHearingDuration.MINUTES_30)
+                                                       .supportRequirement(respSupportReq2)
+                                                       .hearingPreferredLocation(hasResp2PreferLocation == YES
+                                                                                     ? DynamicList.builder()
+                                                           .listItems(List.of(location1))
+                                                           .value(location1).build() : null)
+                                                       .build())
+                                 .gaRespondentDetails("2L").build()));
+        }
+        return respondentsResponses;
+    }
+
+    @Test
+    void shouldGenerateDocumentWithApplicantAndRespondentsResponse_1v2_test() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
+
+        CaseData caseData = getCase(respondentSols, YES);
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThatRespondentFieldsAreCorrect_DraftApp(templateData, caseData);
+    }
+
+    private CaseData getCase(List<Element<GASolicitorDetailsGAspec>> respondentSols,
+                                                 YesOrNo addRespondent) {
+        List<GeneralApplicationTypes> types = List.of(
+            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        DynamicListElement location1 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+        return CaseData.builder()
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .ccdCaseReference(CHILD_CCD_REF)
+            .generalAppRespondentSolicitors(respondentSols)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+            .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+            .generalAppHearingDetails(GAHearingDetails.builder()
+                                          .hearingPreferredLocation(DynamicList.builder()
+                                                                        .listItems(List.of(location1))
+                                                                        .value(location1).build())
+                                          .vulnerabilityQuestionsYesOrNo(YES)
+                                          .vulnerabilityQuestion("dummy2")
+                                          .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                          .hearingDuration(GAHearingDuration.MINUTES_30)
+                                          .hearingDetailsEmailID(DUMMY_EMAIL)
+                                          .hearingDetailsTelephoneNumber(DUMMY_TELEPHONE_NUM).build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferredLocation(
+                                        DynamicList.builder()
+                                            .listItems(List.of(location1))
+                                            .value(location1).build())
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .hearingDuration(GAHearingDuration.MINUTES_30)
+                                    .hearingDetailsEmailID(DUMMY_EMAIL)
+                                    .hearingDetailsTelephoneNumber(DUMMY_TELEPHONE_NUM)
+                                    .build())
+            .respondentsResponses(getRespondentResponses1nad2(YES, YES, YES, YES, addRespondent))
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .parentClaimantIsApplicant(YES)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                          .caseReference(PARENT_CCD_REF.toString()).build())
+            .build();
     }
 
     private CaseData getSampleGeneralApplicationCaseData(YesOrNo isConsented, YesOrNo isTobeNotified) {
@@ -180,10 +346,19 @@ public class GeneralApplicationDraftGeneratorTest  {
 
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
 
-        assertThatFieldsAreCorrect_DraftApp(templateData, caseData);
+        assertThatApplicantFieldsAreCorrect_DraftApp(templateData, caseData);
     }
 
-    private void assertThatFieldsAreCorrect_DraftApp(GADraftForm templateData, CaseData caseData) {
+    private void assertThatApplicantFieldsAreCorrect_DraftApp(GADraftForm templateData, CaseData caseData) {
+        Assertions.assertAll(
+            "DraftApplication data should be as expected",
+            () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+            () -> assertEquals(templateData.getClaimantName(), getClaimants(caseData)),
+            () -> assertEquals(templateData.getDefendantName(), getDefendants(caseData))
+        );
+    }
+
+    private void assertThatRespondentFieldsAreCorrect_DraftApp(GADraftForm templateData, CaseData caseData) {
         Assertions.assertAll(
             "DraftApplication data should be as expected",
             () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
@@ -228,4 +403,5 @@ public class GeneralApplicationDraftGeneratorTest  {
         }
         return String.join(", ", defendantsName);
     }
+
 }

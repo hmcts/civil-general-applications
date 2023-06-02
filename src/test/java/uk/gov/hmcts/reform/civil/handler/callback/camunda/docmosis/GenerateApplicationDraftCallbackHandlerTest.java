@@ -86,6 +86,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
     private static final String DUMMY_TELEPHONE_NUM = "234345435435";
     public static final LocalDate APPLICATION_SUBMITTED_DATE = now();
+    private static final String TASK_ID = "GenerateDraftDocumentId";
 
     @Test
     void shouldTriggerTheEventAndAboutToSubmit() {
@@ -94,6 +95,11 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldReturnCorrectTaskId() {
+        assertThat(handler.camundaActivityId()).isEqualTo(TASK_ID);
     }
 
     @Test
