@@ -224,27 +224,26 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     }
 
     private Boolean checkAdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-        if (isNull(getGaSupportRequirement(caseData))) {
-            return null;
-        } else {
-            return getGaSupportRequirement(caseData).contains(additionalSupport.getDisplayedValue());
-        }
+
+        return getGaSupportRequirement(caseData) != null
+            && getGaSupportRequirement(caseData).contains(additionalSupport.getDisplayedValue());
+
     }
 
     private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-        if (isNull(getRespSupportRequirement(caseData, ONE_V_ONE))) {
-            return null;
-        } else {
-            return getRespSupportRequirement(caseData, ONE_V_ONE).contains(additionalSupport.getDisplayedValue());
-        }
+        return getRespSupportRequirement(caseData, ONE_V_TWO) != null && getRespSupportRequirement(
+            caseData,
+            ONE_V_ONE
+        ).contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp2AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-        if (isNull(getRespSupportRequirement(caseData, ONE_V_TWO))) {
-            return null;
-        } else {
-            return getRespSupportRequirement(caseData, ONE_V_TWO).contains(additionalSupport.getDisplayedValue());
-        }
+
+        return getRespSupportRequirement(caseData, ONE_V_TWO) != null && getRespSupportRequirement(
+            caseData,
+            ONE_V_TWO
+        ).contains(additionalSupport.getDisplayedValue());
+
     }
 
     private YesOrNo checkAppIsConsentOrder(CaseData caseData) {

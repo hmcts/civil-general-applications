@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -74,8 +75,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     CaseDetailsConverter.class,
     GeneralApplicationDraftGenerator.class
 })
-
-public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
+class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
@@ -154,52 +154,6 @@ public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTes
         assertThatRespondentFieldsAreCorrect_DraftApp(templateData, caseData);
     }
 
-    public List<Element<GARespondentResponse>> getRespondentResponses1nad2(YesOrNo vulQuestion1, YesOrNo vulQuestion2,
-                                                                           YesOrNo hasResp1PreferLocation,
-                                                                           YesOrNo hasResp2PreferLocation, YesOrNo addRespondent) {
-
-        List<GAHearingSupportRequirements> respSupportReq1 = new ArrayList<>();
-        respSupportReq1
-            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
-
-        List<GAHearingSupportRequirements> respSupportReq2 = new ArrayList<>();
-        respSupportReq2
-            .add(GAHearingSupportRequirements.LANGUAGE_INTERPRETER);
-
-        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
-        respondentsResponses
-            .add(element(GARespondentResponse.builder()
-                             .gaHearingDetails(GAHearingDetails.builder()
-                                                   .vulnerabilityQuestionsYesOrNo(vulQuestion1)
-                                                   .vulnerabilityQuestion("dummy1")
-                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                   .hearingDuration(GAHearingDuration.HOUR_1)
-                                                   .supportRequirement(respSupportReq1)
-                                                   .hearingPreferredLocation(hasResp1PreferLocation == YES
-                                                                                 ? DynamicList.builder()
-                                                       .listItems(List.of(location1))
-                                                       .value(location1).build() : null)
-                                                   .build())
-                             .gaRespondentDetails("1L").build()));
-        if (addRespondent == YES) {
-            respondentsResponses
-                .add(element(GARespondentResponse.builder()
-                                 .gaHearingDetails(GAHearingDetails.builder()
-                                                       .vulnerabilityQuestionsYesOrNo(vulQuestion2)
-                                                       .vulnerabilityQuestion("dummy2")
-                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
-                                                       .hearingDuration(GAHearingDuration.MINUTES_30)
-                                                       .supportRequirement(respSupportReq2)
-                                                       .hearingPreferredLocation(hasResp2PreferLocation == YES
-                                                                                     ? DynamicList.builder()
-                                                           .listItems(List.of(location1))
-                                                           .value(location1).build() : null)
-                                                       .build())
-                                 .gaRespondentDetails("2L").build()));
-        }
-        return respondentsResponses;
-    }
-
     @Test
     void shouldGenerateDocumentWithApplicantAndRespondentsResponse_1v2_test() {
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
@@ -229,6 +183,62 @@ public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTes
         when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
         assertThatRespondentFieldsAreCorrect_DraftApp(templateData, caseData);
+    }
+
+    public List<Element<GARespondentResponse>> getRespondentResponses1nad2(YesOrNo vulQuestion1, YesOrNo vulQuestion2,
+                                                                           YesOrNo hasResp1PreferLocation,
+                                                                           YesOrNo hasResp2PreferLocation, YesOrNo addRespondent) {
+
+        List<GAHearingSupportRequirements> respSupportReq1 = new ArrayList<>();
+        respSupportReq1
+            .add(GAHearingSupportRequirements.OTHER_SUPPORT);
+
+        List<GAHearingSupportRequirements> respSupportReq2 = new ArrayList<>();
+        respSupportReq2
+            .add(GAHearingSupportRequirements.LANGUAGE_INTERPRETER);
+        List<Element<GAUnavailabilityDates>> resp1UnavailabilityDates = new ArrayList<>();
+        resp1UnavailabilityDates.add(element(GAUnavailabilityDates.builder()
+                                         .unavailableTrialDateTo(LocalDate.now().plusDays(5))
+                                         .unavailableTrialDateFrom(LocalDate.now()).build()));
+        List<Element<GAUnavailabilityDates>> resp2UnavailabilityDates = new ArrayList<>();
+        resp2UnavailabilityDates.add(element(GAUnavailabilityDates.builder()
+                                         .unavailableTrialDateTo(LocalDate.now().plusDays(3))
+                                         .unavailableTrialDateFrom(LocalDate.now()).build()));
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .vulnerabilityQuestionsYesOrNo(vulQuestion1)
+                                                   .vulnerabilityQuestion("dummy1")
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .supportRequirement(respSupportReq1)
+                                                   .unavailableTrialRequiredYesOrNo(YES)
+                                                   .generalAppUnavailableDates(resp1UnavailabilityDates)
+                                                   .hearingPreferredLocation(hasResp1PreferLocation == YES
+                                                                                 ? DynamicList.builder()
+                                                       .listItems(List.of(location1))
+                                                       .value(location1).build() : null)
+                                                   .build())
+                             .gaRespondentDetails("1L").build()));
+        if (addRespondent == YES) {
+            respondentsResponses
+                .add(element(GARespondentResponse.builder()
+                                 .gaHearingDetails(GAHearingDetails.builder()
+                                                       .vulnerabilityQuestionsYesOrNo(vulQuestion2)
+                                                       .vulnerabilityQuestion("dummy2")
+                                                       .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                       .hearingDuration(GAHearingDuration.MINUTES_30)
+                                                       .supportRequirement(respSupportReq2)
+                                                       .generalAppUnavailableDates(resp2UnavailabilityDates)
+                                                       .hearingPreferredLocation(hasResp2PreferLocation == YES
+                                                                                     ? DynamicList.builder()
+                                                           .listItems(List.of(location1))
+                                                           .value(location1).build() : null)
+                                                       .build())
+                                 .gaRespondentDetails("2L").build()));
+        }
+        return respondentsResponses;
     }
 
     private CaseData getCase(List<Element<GASolicitorDetailsGAspec>> respondentSols,
@@ -293,6 +303,10 @@ public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTes
     private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified) {
         DynamicListElement location1 = DynamicListElement.builder()
             .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+        List<Element<GAUnavailabilityDates>> appUnavailabilityDates = new ArrayList<>();
+        appUnavailabilityDates.add(element(GAUnavailabilityDates.builder()
+                                                 .unavailableTrialDateTo(LocalDate.now().plusDays(2))
+                                                 .unavailableTrialDateFrom(LocalDate.now()).build()));
         return GeneralApplication.builder()
             .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
@@ -316,6 +330,7 @@ public class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTes
                                                                         .value(location1).build())
                                           .vulnerabilityQuestionsYesOrNo(YES)
                                           .vulnerabilityQuestion("dummy2")
+                                          .generalAppUnavailableDates(appUnavailabilityDates)
                                           .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                           .hearingDuration(GAHearingDuration.MINUTES_30)
                                           .hearingDetailsEmailID(DUMMY_EMAIL)
