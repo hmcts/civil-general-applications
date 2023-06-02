@@ -60,6 +60,9 @@ public class GAJudgesHearingListGAspec {
         this.hearingPreferencesPreferredTypeLabel1 = hearingPreferencesPreferredTypeLabel1;
         this.judgeHearingSupportReqText1 = judgeHearingSupportReqText1;
         this.judicialVulnerabilityText = judicialVulnerabilityText;
+        this.judgeOtherSupport = judgeOtherSupport;
+        this.judgeSignLanguage = judgeSignLanguage;
+        this.judgeLanguageInterpreter = judgeLanguageInterpreter;
 
     }
 }
