@@ -26,6 +26,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 
 @Slf4j
 @Service
@@ -89,7 +90,10 @@ public class PaymentRequestUpdateCallbackService {
         log.info("Processing the callback for making Additional Payment"
                      + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
         try {
-            judicialNotificationService.sendNotification(caseData, "respondent");
+
+            if (!isGeneralAppConsentOrder(caseData)) {
+                judicialNotificationService.sendNotification(caseData, "respondent");
+            }
 
             caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
 
