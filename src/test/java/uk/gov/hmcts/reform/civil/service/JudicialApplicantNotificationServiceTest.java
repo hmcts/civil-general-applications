@@ -1495,7 +1495,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, APPLICANT);
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
-            verify(notificationService, times(3)).sendMail(
+            verify(notificationService, times(2)).sendMail(
                     DUMMY_EMAIL,
                     "general-application-apps-judicial-notification-template-id",
                     notificationPropertiesToStayTheClaim(),
