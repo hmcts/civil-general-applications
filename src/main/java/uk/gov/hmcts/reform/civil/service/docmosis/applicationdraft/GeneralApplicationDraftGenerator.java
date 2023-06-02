@@ -53,48 +53,6 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     @Override
     public GADraftForm getTemplateData(CaseData caseData)  {
 
-        LocalDate dateFrom = null;
-        LocalDate dateTo  = null;
-        if (caseData.getGeneralAppHearingDetails() != null && caseData.getGeneralAppHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getGeneralAppHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                dateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                dateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
-        }
-        LocalDate resp1DateFrom = null;
-        LocalDate resp1DateTo  = null;
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_ONE
-            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                resp1DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                resp1DateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
-        }
-        LocalDate resp2DateFrom = null;
-        LocalDate resp2DateTo  = null;
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_TWO
-            && caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                resp2DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                resp2DateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
-        }
-
         CaseDetails civilMainCase = coreCaseDataService
             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference()));
         String claimantName = listGeneratorService.claimantsName(caseData);
@@ -137,8 +95,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                            .getHearingDetailsEmailID())
                 .unavailableTrialRequiredYesOrNo(caseData.getGeneralAppHearingDetails()
                                                      .getUnavailableTrialRequiredYesOrNo())
-                .unavailableTrialDateTo(getDateFormatted(dateTo))
-                .unavailableTrialDateFrom(getDateFormatted(dateFrom))
+                .unavailableTrialDateTo(getDateFormatted(getAppUnavailabilityDate(caseData, YesOrNo.YES)))
+                .unavailableTrialDateFrom(getDateFormatted(getAppUnavailabilityDate(caseData, YesOrNo.NO)))
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
                 .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
@@ -175,8 +133,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp1PreferredTelephone(gaResp1HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp1PreferredEmail(gaResp1HearingDetails.getHearingDetailsEmailID())
                 .resp1UnavailableTrialRequired(gaResp1HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp1UnavailableTrialDateFrom(getDateFormatted(resp1DateFrom))
-                .resp1UnavailableTrialDateTo(getDateFormatted(resp1DateTo))
+                .resp1UnavailableTrialDateFrom(getDateFormatted(getResp1UnavailabilityDate(caseData, YesOrNo.YES)))
+                .resp1UnavailableTrialDateTo(getDateFormatted(getResp1UnavailabilityDate(caseData, YesOrNo.NO)))
                 .resp1VulnerableQuestions(gaResp1HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp1SupportRequirement(getRespSupportRequirement(caseData, ONE_V_ONE))
                 .resp1SignLanguage(gaResp1HearingDetails.getSupportRequirementSignLanguage())
@@ -207,8 +165,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp2PreferredTelephone(gaResp2HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp2PreferredEmail(gaResp2HearingDetails.getHearingDetailsEmailID())
                 .resp2UnavailableTrialRequired(gaResp2HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp2UnavailableTrialDateFrom(getDateFormatted(resp2DateFrom))
-                .resp2UnavailableTrialDateTo(getDateFormatted(resp2DateTo))
+                .resp2UnavailableTrialDateFrom(getDateFormatted(getResp2UnavailabilityDate(caseData, YesOrNo.YES)))
+                .resp2UnavailableTrialDateTo(getDateFormatted(getResp2UnavailabilityDate(caseData, YesOrNo.NO)))
                 .resp2VulnerableQuestions(gaResp2HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp2SupportRequirement(getRespSupportRequirement(caseData, ONE_V_TWO))
                 .resp2SignLanguage(gaResp2HearingDetails.getSupportRequirementSignLanguage())
@@ -223,26 +181,72 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         return gaDraftFormBuilder.build();
     }
 
+    private LocalDate getAppUnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
+        LocalDate appDateFrom = null;
+        LocalDate appDateTo = null;
+        if (caseData.getGeneralAppHearingDetails() != null && caseData.getGeneralAppHearingDetails()
+            .getGeneralAppUnavailableDates() != null) {
+
+            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getGeneralAppHearingDetails()
+                .getGeneralAppUnavailableDates();
+
+            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
+                appDateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
+                appDateTo = dateRange.getValue().getUnavailableTrialDateTo();
+            }
+        }
+        return unavailabilityFrom == YesOrNo.YES ? appDateFrom : appDateTo;
+    }
+
+    private LocalDate getResp2UnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
+        LocalDate resp2DateFrom = null;
+        LocalDate resp2DateTo = null;
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_TWO
+            && caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+            .getGeneralAppUnavailableDates() != null) {
+
+            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
+                .getGeneralAppUnavailableDates();
+
+            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
+                resp2DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
+                resp2DateTo = dateRange.getValue().getUnavailableTrialDateTo();
+            }
+        }
+        return unavailabilityFrom == YesOrNo.YES ? resp2DateFrom : resp2DateTo;
+    }
+
+    private LocalDate getResp1UnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
+        LocalDate resp1DateFrom = null;
+        LocalDate resp1DateTo = null;
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_ONE
+            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+            .getGeneralAppUnavailableDates() != null) {
+
+            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+                .getGeneralAppUnavailableDates();
+
+            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
+                resp1DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
+                resp1DateTo = dateRange.getValue().getUnavailableTrialDateTo();
+            }
+        }
+        return unavailabilityFrom == YesOrNo.YES ? resp1DateFrom : resp1DateTo;
+    }
+
     private Boolean checkAdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-
-        return getGaSupportRequirement(caseData) != null
-            && getGaSupportRequirement(caseData).contains(additionalSupport.getDisplayedValue());
-
+        String appSupportRequirement = getGaSupportRequirement(caseData);
+        return appSupportRequirement != null && appSupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-        return getRespSupportRequirement(caseData, ONE_V_ONE) != null && getRespSupportRequirement(
-            caseData,
-            ONE_V_ONE
-        ).contains(additionalSupport.getDisplayedValue());
+        String resp1SupportRequirement = getRespSupportRequirement(caseData, ONE_V_ONE);
+        return resp1SupportRequirement != null && resp1SupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp2AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-
-        return getRespSupportRequirement(caseData, ONE_V_TWO) != null && getRespSupportRequirement(
-            caseData,
-            ONE_V_TWO
-        ).contains(additionalSupport.getDisplayedValue());
+        String resp2SupportRequirement = getRespSupportRequirement(caseData, ONE_V_TWO);
+        return resp2SupportRequirement != null && resp2SupportRequirement.contains(additionalSupport.getDisplayedValue());
 
     }
 
