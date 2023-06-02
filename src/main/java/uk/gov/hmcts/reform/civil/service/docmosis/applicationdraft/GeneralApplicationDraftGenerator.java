@@ -231,7 +231,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     }
 
     private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
-        return getRespSupportRequirement(caseData, ONE_V_TWO) != null && getRespSupportRequirement(
+        return getRespSupportRequirement(caseData, ONE_V_ONE) != null && getRespSupportRequirement(
             caseData,
             ONE_V_ONE
         ).contains(additionalSupport.getDisplayedValue());
