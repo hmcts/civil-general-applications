@@ -116,6 +116,7 @@ public class FlowStateAllowedEventService {
 
         entry(LISTED_FOR_HEARING.fullName(),
               List.of(HEARING_SCHEDULED_GA,
+                      MAKE_DECISION,
                       GENERATE_HEARING_NOTICE_DOCUMENT,
                       NOTIFY_HEARING_NOTICE_CLAIMANT,
                       NOTIFY_HEARING_NOTICE_DEFENDANT,
@@ -130,6 +131,7 @@ public class FlowStateAllowedEventService {
               List.of(RESPOND_TO_JUDGE_ADDITIONAL_INFO,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       RESPOND_TO_APPLICATION,
+                      MAKE_DECISION,
                       TRIGGER_LOCATION_UPDATE,
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                       MAIN_CASE_CLOSED)
@@ -139,12 +141,14 @@ public class FlowStateAllowedEventService {
               List.of(RESPOND_TO_JUDGE_DIRECTIONS,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       TRIGGER_LOCATION_UPDATE,
+                      MAKE_DECISION,
                       MAIN_CASE_CLOSED)
         ),
 
         entry(JUDGE_WRITTEN_REPRESENTATION.fullName(),
               List.of(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
+                      MAKE_DECISION,
                       TRIGGER_LOCATION_UPDATE,
                       MAIN_CASE_CLOSED)
         )
