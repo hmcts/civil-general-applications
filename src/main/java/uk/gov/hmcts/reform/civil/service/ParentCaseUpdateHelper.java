@@ -57,6 +57,8 @@ public class ParentCaseUpdateHelper {
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
     };
+    private static String GA_EVIDENCE = "gaEvidence";
+    private static String CIVIL_GA_EVIDENCE = "generalAppEvidence";
 
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
@@ -167,7 +169,7 @@ public class ParentCaseUpdateHelper {
             n245Role = docVisibilityRoles;
         }
         if (Objects.nonNull(n245Role)) {
-            updateSingleTypeByRoles(updateMap, "gaEvidence", n245Role,
+            updateSingleTypeByRoles(updateMap, GA_EVIDENCE, n245Role,
                     civilCaseData, generalAppCaseData);
         }
     }
@@ -385,8 +387,8 @@ public class ParentCaseUpdateHelper {
             return;
         }
         String gaCollectionName = type + "Document";
-        if (type.equals("gaEvidence")) {
-            gaCollectionName = "generalAppEvidence" + "Document";
+        if (type.equals(GA_EVIDENCE)) {
+            gaCollectionName = CIVIL_GA_EVIDENCE + "Document";
         }
 
         String civilCollectionName = type + "Doc" + role;
