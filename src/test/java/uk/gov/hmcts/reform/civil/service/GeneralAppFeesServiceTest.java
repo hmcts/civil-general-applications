@@ -78,8 +78,9 @@ class GeneralAppFeesServiceTest {
             .calculatedAmountInPence(TEST_FEE_AMOUNT_PENCE_14).code("test_fee_code").version("2").build();
     private static final FeeLookupResponseDto FEE_POUNDS_0 = FeeLookupResponseDto.builder()
             .feeAmount(BigDecimal.ZERO).code("test_fee_code").version(2).build();
+    public static final String FREE_REF = "FREE";
     private static final Fee FEE_PENCE_0 = Fee.builder()
-            .calculatedAmountInPence(BigDecimal.ZERO).code("test_fee_code").version("2").build();
+            .calculatedAmountInPence(BigDecimal.ZERO).code(FREE_REF).version("1").build();
 
     @Captor
     private ArgumentCaptor<URI> queryCaptor;
@@ -105,8 +106,6 @@ class GeneralAppFeesServiceTest {
         when(feesConfiguration.getWithNoticeKeyword()).thenReturn("GAOnNotice");
         when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn("GeneralAppWithoutNotice");
         when(feesConfiguration.getAppnToVaryOrSuspend()).thenReturn("AppnToVaryOrSuspend");
-        //TODO set to actual ga free keyword
-        when(feesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
     }
 
     @Test
@@ -236,16 +235,6 @@ class GeneralAppFeesServiceTest {
             .isEqualTo("No Fees returned by fee-service while creating General Application");
     }
 
-    //TODO remove this after we have real free fee for GA
-    @Test
-    void fake_freeFee_getFeeForGA() {
-        when(restTemplate.getForObject(queryCaptor.capture(), eq(FeeLookupResponseDto.class)))
-                .thenReturn(FEE_POUNDS_275);
-
-        Fee feeDto = feesService.getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
-        assertThat(feeDto).isEqualTo(FEE_PENCE_275);
-    }
-
     private GeneralApplication.GeneralApplicationBuilder adjournOrVacateHearingApplication(
             YesOrNo isRespondentAgreed, LocalDate gaHearingDate) {
         GAHearingDateGAspec generalAppHearingDate = GAHearingDateGAspec.builder()
@@ -275,8 +264,6 @@ class GeneralAppFeesServiceTest {
                         .thenReturn(FEE_POUNDS_275);
                 when(restTemplate.getForObject(new URI(AppnToVaryOrSuspend), FeeLookupResponseDto.class))
                         .thenReturn(FEE_POUNDS_14);
-                when(restTemplate.getForObject(new URI(GAFree), FeeLookupResponseDto.class))
-                        .thenReturn(FEE_POUNDS_0);
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
