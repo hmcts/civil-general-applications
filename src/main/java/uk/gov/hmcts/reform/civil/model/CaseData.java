@@ -102,6 +102,10 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final IdamUserDetails civilServiceUserRoles;
     private final List<Element<Document>> generalAppEvidenceDocument;
+    private final List<Element<Document>> gaEvidenceDocStaff;
+    private final List<Element<Document>> gaEvidenceDocClaimant;
+    private final List<Element<Document>> gaEvidenceDocRespondentSol;
+    private final List<Element<Document>> gaEvidenceDocRespondentSolTwo;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
     private final List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
@@ -231,6 +235,7 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
     private final String respondent1OrganisationIDCopy;
+    private final String respondent2OrganisationIDCopy;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
