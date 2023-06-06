@@ -293,17 +293,17 @@ class GeneralAppFeesServiceTest {
         @Test
         void adjourn_should_pay_default_or_free_fee() {
             CaseData caseDataWithin14DaysWithNotice = getFeeCase(
-                    List.of(GeneralApplicationTypes.ADJOURN_VACATE_HEARING),
+                    List.of(GeneralApplicationTypes.ADJOURN_HEARING),
                     YesOrNo.NO, YesOrNo.YES, LocalDate.now().plusDays(1));
             assertThat(feesService.getFeeForGA(caseDataWithin14DaysWithNotice))
                     .isEqualTo(FEE_PENCE_275);
             CaseData caseDataWithin14DaysWithoutNotice = getFeeCase(
-                    List.of(GeneralApplicationTypes.ADJOURN_VACATE_HEARING),
+                    List.of(GeneralApplicationTypes.ADJOURN_HEARING),
                     YesOrNo.NO, YesOrNo.NO, LocalDate.now().plusDays(1));
             assertThat(feesService.getFeeForGA(caseDataWithin14DaysWithoutNotice))
                     .isEqualTo(FEE_PENCE_108);
             CaseData caseDataOutside14Days = getFeeCase(
-                    List.of(GeneralApplicationTypes.ADJOURN_VACATE_HEARING),
+                    List.of(GeneralApplicationTypes.ADJOURN_HEARING),
                     YesOrNo.YES, YesOrNo.NO, LocalDate.now().plusDays(15));
             assertThat(feesService.getFeeForGA(caseDataOutside14Days))
                     .isEqualTo(FEE_PENCE_0);
@@ -351,7 +351,7 @@ class GeneralAppFeesServiceTest {
         @Test
         void mix_default_adjourn_should_not_free() {
             List<GeneralApplicationTypes> randomList = getRandomDefaultTypes();
-            randomList.add(GeneralApplicationTypes.ADJOURN_VACATE_HEARING);
+            randomList.add(GeneralApplicationTypes.ADJOURN_HEARING);
             CaseData caseDataOutside14Days = getFeeCase(
                     randomList,
                     YesOrNo.YES, YesOrNo.YES, LocalDate.now().plusDays(15));
