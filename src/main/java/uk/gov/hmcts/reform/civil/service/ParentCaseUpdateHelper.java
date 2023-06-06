@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
@@ -142,7 +143,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
-        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
+        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState()) && isNull(generalAppCaseData.getGaDraftDocument())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
@@ -278,9 +279,9 @@ public class ParentCaseUpdateHelper {
             if (gaDetailsRespondentSolTwo.isEmpty()) {
                 ROLES[2] = null;
             }
-            if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
-                updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
-            }
+
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
+
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
 
