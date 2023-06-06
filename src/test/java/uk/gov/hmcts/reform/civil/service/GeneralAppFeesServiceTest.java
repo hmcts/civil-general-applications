@@ -43,7 +43,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_VACATE_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 
 @SpringBootTest(classes = {GeneralAppFeesService.class, RestTemplate.class, GeneralAppFeesConfiguration.class})
@@ -246,7 +246,7 @@ class GeneralAppFeesServiceTest {
                 .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
                         .build())
                 .generalAppType(GAApplicationType.builder()
-                        .types(singletonList(ADJOURN_VACATE_HEARING))
+                        .types(singletonList(ADJOURN_HEARING))
                         .build())
                 .generalAppHearingDate(generalAppHearingDate)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement
