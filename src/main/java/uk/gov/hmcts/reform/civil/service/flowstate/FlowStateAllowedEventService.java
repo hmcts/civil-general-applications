@@ -91,6 +91,8 @@ public class FlowStateAllowedEventService {
                     MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                     END_BUSINESS_PROCESS_GASPEC,
                     TRIGGER_LOCATION_UPDATE,
+                    REFER_TO_JUDGE,
+                    REFER_TO_LEGAL_ADVISOR,
                     APPLICATION_PROCEEDS_IN_HERITAGE,
                     MAIN_CASE_CLOSED)
         ),
@@ -107,6 +109,8 @@ public class FlowStateAllowedEventService {
                     NOTIFY_GENERAL_APPLICATION_RESPONDENT,
                     RESPOND_TO_APPLICATION,
                     MAKE_DECISION,
+                    REFER_TO_JUDGE,
+                    REFER_TO_LEGAL_ADVISOR,
                     APPROVE_CONSENT_ORDER,
                     MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                     TRIGGER_LOCATION_UPDATE,
