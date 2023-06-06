@@ -278,7 +278,9 @@ public class ParentCaseUpdateHelper {
             if (gaDetailsRespondentSolTwo.isEmpty()) {
                 ROLES[2] = null;
             }
-            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
+            if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
+                updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
+            }
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
 
