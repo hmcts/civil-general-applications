@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -34,8 +35,13 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         + " Applications tab of this case listing."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
+    private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
+            + " on this application."
+            + "<br/> <p>  The other party's legal representative has been notified that you have"
+            + " submitted this application";
 
+    private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
+    private final GeneralAppFeesService generalAppFeesService;
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -73,10 +79,11 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     private String buildConfirmationSummary(GeneralApplication application, Long ccdCaseReference) {
 
         BigDecimal fee = application.getGeneralAppPBADetails().getFee().toPounds();
-        return format(
+        return generalAppFeesService.isFreeGa(application) ? CONFIRMATION_BODY_FREE : format(
             CONFIRMATION_BODY,
             fee,
             format("/cases/case-details/%s#Applications", ccdCaseReference)
         );
     }
+
 }

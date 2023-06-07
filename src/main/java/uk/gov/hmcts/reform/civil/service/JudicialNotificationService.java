@@ -46,6 +46,7 @@ public class JudicialNotificationService implements NotificationData {
     private final CoreCaseDataService coreCaseDataService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CaseData sendNotification(CaseData caseData, String solicitorType) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
@@ -193,7 +194,8 @@ public class JudicialNotificationService implements NotificationData {
     private CaseData applicationRequestForInformation(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)
-            && caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+            && (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)
+                || judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData))) {
 
             // Send notification to respondent if payment is made
             caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
@@ -215,10 +217,11 @@ public class JudicialNotificationService implements NotificationData {
 
         }
 
-        if (isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
-            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData)) {
+        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
+            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))) {
             // Send notification to applicant only if it's without notice application
-            if (solicitorType.equals(APPLICANT)) {
+            if (solicitorType.equals(APPLICANT)
+                    && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
 
                 sendNotificationForJudicialDecision(
