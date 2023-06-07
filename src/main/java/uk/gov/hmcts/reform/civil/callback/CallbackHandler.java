@@ -51,8 +51,8 @@ public abstract class CallbackHandler {
             return false;
         }
 
-        return businessProcess != null &&
-            !businessProcess.getStatus().equals(BusinessProcessStatus.STARTED)
+        return businessProcess != null
+            && !businessProcess.getStatus().equals(BusinessProcessStatus.STARTED)
             && camundaActivityId().equals(businessProcess.getActivityId());
     }
 

@@ -50,12 +50,11 @@ public class CaseStateSearchServiceTest extends ElasticSearchServiceTest {
     }
 
     @Override
-    protected Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus){
+    protected Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus) {
         return new Query(
             boolQuery().must(matchQuery("data.businessProcess.status", processStatus)),
             List.of(),
             startIndex
         );
     }
-
 }

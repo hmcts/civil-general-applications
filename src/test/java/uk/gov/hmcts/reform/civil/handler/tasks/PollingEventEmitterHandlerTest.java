@@ -75,9 +75,9 @@ class PollingEventEmitterHandlerTest {
                        .status(BusinessProcessStatus.FINISHED)
                        .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build())).build();
 
-        caseData1 = getCaseData(1l);
-        caseData2 = getCaseData(2l);
-        caseData3 = getCaseData(3l);
+        caseData1 = getCaseData(1L);
+        caseData2 = getCaseData(2L);
+        caseData3 = getCaseData(3L);
 
     }
 
@@ -93,7 +93,7 @@ class PollingEventEmitterHandlerTest {
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenCases_withStartedStatusSTARTED() {
+    void shouldEmitBusinessProcessEvent_whenCases_withStartedStatusStarted() {
         when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED))
             .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
 
@@ -103,9 +103,9 @@ class PollingEventEmitterHandlerTest {
 
         pollingEventEmitterHandler.execute(externalTask, externalTaskService);
         verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1l), false);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2l), false);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(3l), false);
+        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1L), false);
+        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2L), false);
+        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(3L), false);
         verifyNoMoreInteractions(eventEmitterService);
 
     }

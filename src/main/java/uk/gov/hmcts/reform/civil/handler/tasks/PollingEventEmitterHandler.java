@@ -38,8 +38,9 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         log.info("Emitting {} camunda event for case through poller: {}",
                  caseData.getBusinessProcess().getCamundaEvent(),
                  caseData.getCcdCaseReference());
-            eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
+        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
     }
+
     @Override
     public int getMaxAttempts() {
         return 1;

@@ -189,7 +189,8 @@ class CallbackHandlerFactoryTest {
             .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
             .caseDetailsBefore(CaseDetails.builder().data(Map.of(
                 "businessProcess",
-                BusinessProcess.builder().activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()
+                BusinessProcess.builder().activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1")
+                    .status(BusinessProcessStatus.READY).build()
             )).build())
             .build();
 
@@ -231,7 +232,7 @@ class CallbackHandlerFactoryTest {
     }
 
     @Test
-    void shouldProcessEventAgain_whenEventIsAlreadyProcessed_withStateSTARTED() {
+    void shouldProcessEventAgain_whenEventIsAlreadyProcessed_withStateStarted() {
         CallbackRequest callbackRequest = CallbackRequest
             .builder()
             .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
@@ -252,7 +253,7 @@ class CallbackHandlerFactoryTest {
 
         CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
 
-        assertEquals(ALREADY_HANDLED_EVENT_RESPONSE, callbackResponse);
+        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
     }
 
     @Test
@@ -262,7 +263,7 @@ class CallbackHandlerFactoryTest {
             .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
             .caseDetailsBefore(CaseDetails.builder().data(Map.of(
                 "businessProcess",
-                BusinessProcess.builder().activityId("unProcessedTask").build()
+                BusinessProcess.builder().activityId("unProcessedTask").status(BusinessProcessStatus.STARTED).build()
             )).build())
             .build();
 
