@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
 
@@ -20,9 +22,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
 @Service
@@ -34,6 +38,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
     private static final String TASK_ID = "GeneralApplicationPaymentServiceReq";
 
     private final PaymentsService paymentsService;
+    private final GeneralAppFeesService feeService;
     private final ObjectMapper objectMapper;
     private final Time time;
 
@@ -60,14 +65,37 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
         try {
             log.info("calling payment service request " + caseData.getCcdCaseReference());
-            var serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
-                                                                        .getServiceRequestReference();
+            String serviceRequestReference = GeneralAppFeesService.FREE_REF;
+            boolean freeGa = feeService.isFreeApplication(caseData);
+            if (!freeGa) {
+                serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
+                        .getServiceRequestReference();
+            }
             GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+            GAPbaDetails.GAPbaDetailsBuilder pbaDetailsBuilder = pbaDetails.toBuilder();
+            pbaDetailsBuilder
+                    .fee(caseData.getGeneralAppPBADetails().getFee())
+                    .serviceReqReference(serviceRequestReference);
             caseData = caseData.toBuilder()
-                .generalAppPBADetails(pbaDetails.toBuilder()
+                .generalAppPBADetails(pbaDetailsBuilder
                                           .fee(caseData.getGeneralAppPBADetails().getFee())
                                           .serviceReqReference(serviceRequestReference).build())
                 .build();
+            if (freeGa) {
+                PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
+                        .map(PaymentDetails::toBuilder)
+                        .orElse(PaymentDetails.builder())
+                        .status(SUCCESS)
+                        .customerReference(serviceRequestReference)
+                        .reference(serviceRequestReference)
+                        .errorCode(null)
+                        .errorMessage(null)
+                        .build();
+                pbaDetailsBuilder.paymentDetails(paymentDetails)
+                                .paymentSuccessfulDate(time.now()).build();
+            }
+            caseData = caseData.toBuilder()
+                    .generalAppPBADetails(pbaDetailsBuilder.build()).build();
         } catch (FeignException e) {
             log.info(String.format("Http Status %s ", e.status()), e);
             errors.add(ERROR_MESSAGE);
