@@ -4,6 +4,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.search.Query;
@@ -53,9 +54,10 @@ public class CaseStateSearchService extends ElasticSearchService {
         );
     }
 
-    public Query queryForBusinessProcessStatus(int startIndex, String status) {
+    @Override
+    public Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus) {
         return new Query(
-            boolQuery().must(matchQuery("data.businessProcess.status", status)),
+            boolQuery().must(matchQuery("data.businessProcess.status", processStatus)),
             List.of(),
             startIndex
         );

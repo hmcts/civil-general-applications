@@ -22,7 +22,8 @@ public class EventEmitterService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RuntimeService runtimeService;
 
-    public void emitBusinessProcessCamundaEvent(Long caseId, BusinessProcess businessProcess, boolean dispatchProcess) {
+    public void emitBusinessProcessCamundaEvent(Long caseId, GeneralApplication application, boolean dispatchProcess) {
+        var businessProcess = application.getBusinessProcess();
 
         var camundaEvent = businessProcess.getCamundaEvent();
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));

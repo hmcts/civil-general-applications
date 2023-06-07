@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service.search;
 import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.search.Query;
@@ -53,15 +54,15 @@ public abstract class ElasticSearchService {
         return caseDetails;
     }
 
-    public List<CaseDetails> getGeneralApplicationsWithBusinessProcess(String applicationStatus) {
+    public List<CaseDetails> getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus processStatus) {
         SearchResult searchResult = coreCaseDataService
-            .searchGeneralApplication(queryForBusinessProcessStatus(START_INDEX, applicationStatus));
+            .searchGeneralApplication(queryForBusinessProcessStatus(START_INDEX, processStatus));
         int pages = calculatePages(searchResult);
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
-                .searchGeneralApplication(queryForBusinessProcessStatus(i * ES_DEFAULT_SEARCH_LIMIT, applicationStatus));
+                .searchGeneralApplication(queryForBusinessProcessStatus(i * ES_DEFAULT_SEARCH_LIMIT, processStatus));
             caseDetails.addAll(result.getCases());
         }
 
@@ -73,7 +74,7 @@ public abstract class ElasticSearchService {
     abstract Query queryForOrderMade(int startIndex, CaseState caseState,
                                      GeneralApplicationTypes gaType);
 
-    abstract Query queryForBusinessProcessStatus(int startIndex, String status);
+    abstract Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus);
 
     private int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();

@@ -4,11 +4,15 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 
+import java.util.List;
+
 import static java.util.Collections.emptyList;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 public class CaseStateSearchServiceTest extends ElasticSearchServiceTest {
@@ -44,4 +48,14 @@ public class CaseStateSearchServiceTest extends ElasticSearchServiceTest {
             startIndex
         );
     }
+
+    @Override
+    protected Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus){
+        return new Query(
+            boolQuery().must(matchQuery("data.businessProcess.status", processStatus)),
+            List.of(),
+            startIndex
+        );
+    }
+
 }

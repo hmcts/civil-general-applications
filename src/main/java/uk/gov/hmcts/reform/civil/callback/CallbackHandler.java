@@ -50,11 +50,10 @@ public abstract class CallbackHandler {
 
             return false;
         }
-       // return false;
+
         return businessProcess != null &&
             !businessProcess.getStatus().equals(BusinessProcessStatus.STARTED)
             && camundaActivityId().equals(businessProcess.getActivityId());
-        //bu
     }
 
     public void register(Map<String, CallbackHandler> handlers) {
