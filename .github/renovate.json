@@ -20,5 +20,6 @@
     }
   ],
   "schedule": ["after 9pm on sunday"],
-  "prConcurrentLimit": 10
+  "prConcurrentLimit": 10,
+  "rebaseWhen": "conflicted"
 }
