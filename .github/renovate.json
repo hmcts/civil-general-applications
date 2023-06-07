@@ -19,5 +19,6 @@
       ]
     }
   ],
+  "schedule": ["after 9pm on sunday"],
   "prConcurrentLimit": 10
 }
