@@ -42,7 +42,8 @@ public class EventEmitterAspect {
                         && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
                 if (generalApplicationElementOptional.isPresent()) {
                     GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
-                    eventEmitterService.emitBusinessProcessCamundaEvent(caseId, generalApplicationElement, false);
+                    eventEmitterService.emitBusinessProcessCamundaEvent(
+                        caseId, generalApplicationElement.getBusinessProcess(), false);
                 }
             } else {
                 if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == READY) {

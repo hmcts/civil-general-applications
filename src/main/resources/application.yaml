@@ -208,6 +208,11 @@ payments:
     url: http://localhost:8765
     callback-url: http://localhost:4550/service-request-update
 
+polling:
+  event:
+    emitter:
+      enabled: true
+
 idam:
   web:
     url: http://localhost:9002

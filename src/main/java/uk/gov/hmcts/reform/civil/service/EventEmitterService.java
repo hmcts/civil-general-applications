@@ -7,6 +7,7 @@ import org.camunda.bpm.extension.rest.exception.RemoteProcessEngineException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.event.DispatchBusinessProcessEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
@@ -21,8 +22,8 @@ public class EventEmitterService {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RuntimeService runtimeService;
 
-    public void emitBusinessProcessCamundaEvent(Long caseId, GeneralApplication application, boolean dispatchProcess) {
-        var businessProcess = application.getBusinessProcess();
+    public void emitBusinessProcessCamundaEvent(Long caseId, BusinessProcess businessProcess, boolean dispatchProcess) {
+
         var camundaEvent = businessProcess.getCamundaEvent();
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         boolean nullTenantAttempt = false;

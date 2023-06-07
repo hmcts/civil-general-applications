@@ -53,10 +53,27 @@ public abstract class ElasticSearchService {
         return caseDetails;
     }
 
+    public List<CaseDetails> getGeneralApplicationsWithBusinessProcess(String applicationStatus) {
+        SearchResult searchResult = coreCaseDataService
+            .searchGeneralApplication(queryForBusinessProcessStatus(START_INDEX, applicationStatus));
+        int pages = calculatePages(searchResult);
+        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+
+        for (int i = 1; i < pages; i++) {
+            SearchResult result = coreCaseDataService
+                .searchGeneralApplication(queryForBusinessProcessStatus(i * ES_DEFAULT_SEARCH_LIMIT, applicationStatus));
+            caseDetails.addAll(result.getCases());
+        }
+
+        return caseDetails;
+    }
+
     abstract Query query(int startIndex, CaseState caseState);
 
     abstract Query queryForOrderMade(int startIndex, CaseState caseState,
                                      GeneralApplicationTypes gaType);
+
+    abstract Query queryForBusinessProcessStatus(int startIndex, String status);
 
     private int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();
