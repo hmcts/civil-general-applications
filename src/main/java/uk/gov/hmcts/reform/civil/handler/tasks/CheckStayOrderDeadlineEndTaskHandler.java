@@ -10,15 +10,18 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
+import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
@@ -49,11 +52,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
             .getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         return orderMadeCases.stream()
             .map(caseDetailsConverter::toCaseData)
-            .filter(caseData -> caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
-                && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByStayScheduler() != null
-                && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByStayScheduler().equals(YesOrNo.NO)
-                && (!now().isBefore(caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate()))
-                )
+            .filter(isJudgeOrderStayDeadlineExpired.or(isConsentOrderStayDeadlineExpired))
             .collect(Collectors.toList());
     }
 
@@ -69,13 +68,32 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     }
 
     private CaseData updateCaseData(CaseData caseData) {
-        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
-        caseData = caseData.toBuilder()
-            .judicialDecisionMakeOrder(
-                judicialDecisionMakeOrder.toBuilder().isOrderProcessedByStayScheduler(YesOrNo.YES).build())
-            .build();
+        if (caseData.getApproveConsentOrder() != null) {
+            GAApproveConsentOrder consentOrder = caseData.getApproveConsentOrder();
+            caseData = caseData.toBuilder()
+                .approveConsentOrder(
+                    consentOrder.toBuilder().isOrderProcessedByStayScheduler(YesOrNo.YES).build())
+                .build();
+
+        } else {
+            GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+            caseData = caseData.toBuilder()
+                .judicialDecisionMakeOrder(
+                    judicialDecisionMakeOrder.toBuilder().isOrderProcessedByStayScheduler(YesOrNo.YES).build())
+                .build();
+        }
         return caseData;
     }
+
+    private  Predicate<CaseData> isJudgeOrderStayDeadlineExpired = caseData ->
+        caseData.getJudicialDecisionMakeOrder() != null
+            && caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
+            && (!now().isBefore(caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate()));
+
+    private Predicate<CaseData> isConsentOrderStayDeadlineExpired = caseData ->
+        caseData.getApproveConsentOrder() != null
+            && (nonNull(caseData.getApproveConsentOrder().getConsentOrderDateToEnd()))
+            && (!now().isBefore(caseData.getApproveConsentOrder().getConsentOrderDateToEnd()));
 
     private Map<String, Object> getUpdatedCaseDataMapper(CaseData caseData) {
         return caseData.toMap(mapper);
