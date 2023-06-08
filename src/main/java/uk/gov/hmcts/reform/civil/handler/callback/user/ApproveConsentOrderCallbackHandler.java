@@ -66,6 +66,7 @@ public class ApproveConsentOrderCallbackHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppType().getTypes().stream().anyMatch(validGATypes::contains)) {
             gaApproveConsentOrderBuilder.showConsentOrderDate(YesOrNo.YES).build();
+            gaApproveConsentOrderBuilder.isOrderProcessedByStayScheduler(YesOrNo.NO);
         }
         List<String> errors = new ArrayList<>();
         caseDataBuilder.approveConsentOrder(gaApproveConsentOrderBuilder.build());

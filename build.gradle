@@ -286,7 +286,7 @@ def versions = [
   springBoot         : springBoot.class.package.implementationVersion,
   springStatemachine : '3.2.0',
   springfoxSwagger   : '3.0.0',
-  lombok             : '1.18.24',
+  lombok             : '1.18.28',
   springSecurity     : '6.0.3',
   pact               : '3.5.24'
 ]
