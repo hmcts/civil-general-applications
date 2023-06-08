@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.LANGUAGE_INTERPRETER;
@@ -67,6 +68,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .defendantReference(getReference(civilMainCase, "respondentSolicitor1Reference"))
                 .date(getDateFormatted(LocalDate.now()))
                 .applicantPartyName(caseData.getApplicantPartyName())
+                .isCasePastDueDate(validateCasePastDueDate(caseData))
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
                 .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
                 .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
@@ -179,6 +181,11 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         }
 
         return gaDraftFormBuilder.build();
+    }
+
+    private Boolean validateCasePastDueDate(CaseData caseData) {
+        return caseData.getGeneralAppNotificationDeadlineDate() != null
+            && now().isAfter(caseData.getGeneralAppNotificationDeadlineDate());
     }
 
     private LocalDate getAppUnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {

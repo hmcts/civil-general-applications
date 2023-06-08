@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,16 +12,23 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Slf4j
 @Service
@@ -28,6 +36,9 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AW
 public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHandler {
 
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final GeneralApplicationDraftGenerator gaDraftGenerator;
+    private final AssignCategoryId assignCategoryId;
+    private final ObjectMapper objectMapper;
 
     private static final List<CaseEvent> EVENTS = singletonList(CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
 
@@ -46,8 +57,26 @@ public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHan
 
     private CallbackResponse changeApplicationState(CallbackParams callbackParams) {
         Long caseId = callbackParams.getCaseData().getCcdCaseReference();
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         log.info("Changing state to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION for caseId: {}", caseId);
+        CaseDocument gaDraftDocument;
+        gaDraftDocument = gaDraftGenerator.generate(
+            caseDataBuilder.build(),
+            callbackParams.getParams().get(BEARER_TOKEN).toString()
+        );
+
+        List<Element<CaseDocument>> draftApplicationList = newArrayList();
+
+        draftApplicationList.addAll(wrapElements(gaDraftDocument));
+
+        assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                      document -> document.getValue().getDocumentLink(),
+                                                      AssignCategoryId.APPLICATIONS);
+        caseDataBuilder.gaDraftDocument(draftApplicationList);
+        CaseData updatedCaseData = caseDataBuilder.build();
         return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
             .state(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString())
             .build();
     }
