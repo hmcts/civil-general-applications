@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
 import uk.gov.hmcts.reform.civil.service.NotificationException;
 
@@ -29,6 +30,8 @@ class JudicialDecisionApplicantNotificationHandlerTest extends BaseCallbackHandl
     private JudicialDecisionApplicantNotificationHandler handler;
     @MockBean
     JudicialNotificationService judicialNotificationService;
+    @MockBean
+    JudicialDecisionHelper judicialDecisionHelper;
     private CallbackParams params;
 
     @Test

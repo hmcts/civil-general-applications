@@ -72,7 +72,6 @@ genApp:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
-      free: CopyPagesUpTo10
       appnToVaryOrSuspend: AppnToVaryOrSuspend
   lrd:
     endpoint: /refdata/location/court-venues
