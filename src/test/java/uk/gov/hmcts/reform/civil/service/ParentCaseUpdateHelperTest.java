@@ -72,7 +72,7 @@ class ParentCaseUpdateHelperTest {
     @Autowired
     ObjectMapper objectMapper;
     @Captor
-    private ArgumentCaptor<Map<String,Object>> mapCaptor;
+    private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
     @Test
     void updateParentApplicationVisibilityWithNewState() {
@@ -376,6 +376,8 @@ class ParentCaseUpdateHelperTest {
                         GASolicitorDetailsGAspec.builder()
                                 .organisationIdentifier("RespondentSolTwo").build());
                 break;
+            default:
+                break;
         }
         return builder.build();
     }
@@ -443,6 +445,8 @@ class ParentCaseUpdateHelperTest {
                 builder.claimantGaAppDetails(generalApplicationsDetailsList);
                 builder.respondentSolGaAppDetails(gaDetailsRespondentSolList);
                 builder.respondentSolTwoGaAppDetails(gaDetailsRespondentSolListTwo);
+                break;
+            default:
                 break;
         }
         return builder.build();
