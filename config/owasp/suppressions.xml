@@ -11,5 +11,6 @@
     <notes>latest camunda jars and jakarta activation 2.1.1 is the latest</notes>
     <cve>CVE-2008-7271</cve>
     <cve>CVE-2010-4647</cve>
+    <cve>CVE-2023-20883</cve>
   </suppress>
 </suppressions>
