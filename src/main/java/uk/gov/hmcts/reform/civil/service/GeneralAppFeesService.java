@@ -156,7 +156,7 @@ public class GeneralAppFeesService {
     public boolean isFreeGa(GeneralApplication application) {
         if (application.getGeneralAppType().getTypes().size() == 1
                 && application.getGeneralAppType().getTypes()
-                .contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
+                .contains(GeneralApplicationTypes.ADJOURN_HEARING)
                 && application.getGeneralAppRespondentAgreement() != null
                 && YES.equals(application.getGeneralAppRespondentAgreement().getHasAgreed())
                 && application.getGeneralAppHearingDate() != null
