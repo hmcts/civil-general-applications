@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
+import org.camunda.bpm.client.task.ExternalTaskService;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -17,6 +19,8 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
+import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @Slf4j
 @Component
@@ -37,6 +41,24 @@ public class EndJudgeMakesDecisionBusinessProcessTaskHandler implements BaseExte
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+    }
+
+    @Override
+    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+
+        ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
+        String caseId = variables.getCaseId();
+
+        StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+
+        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
+        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+            .status(BusinessProcessStatus.FAILED).build();
+
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+
+        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

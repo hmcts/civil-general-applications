@@ -3,13 +3,16 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
+import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -27,10 +30,12 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @RequiredArgsConstructor
 @Component
@@ -288,5 +293,23 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
         return output;
+    }
+
+    @Override
+    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+
+        ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
+        String caseId = variables.getCaseId();
+
+        StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+
+        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
+        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+            .status(BusinessProcessStatus.FAILED).build();
+
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+
+        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 }
