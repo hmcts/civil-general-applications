@@ -141,6 +141,7 @@ public class CaseDataBuilder {
     private static final Long CASE_REFERENCE = 111111L;
     protected GAJudicialMakeAnOrder judicialMakeAnOrder;
     protected GAApplicationType generalAppType;
+    protected GAApproveConsentOrder  approveConsentOrder;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -297,6 +298,11 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder approveConsentOrder(GAApproveConsentOrder approveConsentOrder) {
+        this.approveConsentOrder = approveConsentOrder;
+        return this;
+    }
+
     public static CaseDataBuilder builder() {
         return new CaseDataBuilder();
     }
@@ -345,6 +351,7 @@ public class CaseDataBuilder {
             .makeAppVisibleToRespondents(makeAppVisibleToRespondents)
             .judicialDecisionMakeOrder(judicialMakeAnOrder)
             .generalAppType(generalAppType)
+            .approveConsentOrder(approveConsentOrder)
             .build();
     }
 

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
@@ -30,7 +31,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 public class GeneralAppFeesService {
 
     private static final BigDecimal PENCE_PER_POUND = BigDecimal.valueOf(100);
-    private static final int FREE_GA_DAYS = 14;
+    public static final int FREE_GA_DAYS = 14;
     private final RestTemplate restTemplate;
     private final GeneralAppFeesConfiguration feesConfiguration;
     private static final String CHANNEL = "channel";
@@ -39,6 +40,9 @@ public class GeneralAppFeesService {
     private static final String JURISDICTION2 = "jurisdiction2";
     private static final String SERVICE = "service";
     private static final String KEYWORD = "keyword";
+    public static final String FREE_REF = "FREE";
+    private static final Fee FREE_FEE = Fee.builder()
+            .calculatedAmountInPence(BigDecimal.ZERO).code(FREE_REF).version("1").build();
     protected static final List<GeneralApplicationTypes> VARY_TYPES
             = Arrays.asList(GeneralApplicationTypes.VARY_JUDGEMENT,
                             GeneralApplicationTypes.VARY_ORDER);
@@ -119,7 +123,7 @@ public class GeneralAppFeesService {
 
     private Fee getDefaultFee(CaseData caseData) {
         if (isFreeApplication(caseData)) {
-            return getFeeForGA(feesConfiguration.getFreeKeyword(), "copies", "insolvency");
+            return FREE_FEE;
         } else {
             return getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
         }
@@ -145,6 +149,20 @@ public class GeneralAppFeesService {
                 && caseData.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
             return caseData.getGeneralAppHearingDate().getHearingScheduledDate()
                     .isAfter(LocalDate.now().plusDays(FREE_GA_DAYS));
+        }
+        return false;
+    }
+
+    public boolean isFreeGa(GeneralApplication application) {
+        if (application.getGeneralAppType().getTypes().size() == 1
+                && application.getGeneralAppType().getTypes()
+                .contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
+                && application.getGeneralAppRespondentAgreement() != null
+                && YES.equals(application.getGeneralAppRespondentAgreement().getHasAgreed())
+                && application.getGeneralAppHearingDate() != null
+                && application.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
+            return application.getGeneralAppHearingDate().getHearingScheduledDate()
+                    .isAfter(LocalDate.now().plusDays(GeneralAppFeesService.FREE_GA_DAYS));
         }
         return false;
     }
