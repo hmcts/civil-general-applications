@@ -157,7 +157,7 @@ public class ParentCaseUpdateHelper {
             startEventResponse, updateMap));
     }
 
-    private void updateN245(Map <String, Object> updateMap, CaseData civilCaseData,
+    protected void updateN245(Map <String, Object> updateMap, CaseData civilCaseData,
                             CaseData generalAppCaseData, String[] docVisibilityRoles) {
         String[] n245Role = null;
         if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
@@ -174,7 +174,7 @@ public class ParentCaseUpdateHelper {
         }
     }
 
-    private void updateSingleTypeByRoles(Map <String, Object> updateMap, String type, String[] roles,
+    protected void updateSingleTypeByRoles(Map <String, Object> updateMap, String type, String[] roles,
                                          CaseData civilCaseData, CaseData generalAppCaseData) {
         for (String role : roles) {
             try {
@@ -185,7 +185,7 @@ public class ParentCaseUpdateHelper {
         }
     }
 
-    private String findGaCreator(CaseData civilCaseData, CaseData generalAppCaseData) {
+    protected String findGaCreator(CaseData civilCaseData, CaseData generalAppCaseData) {
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
             return "Claimant";
         }
