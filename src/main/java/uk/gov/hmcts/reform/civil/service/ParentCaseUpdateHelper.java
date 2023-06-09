@@ -47,6 +47,7 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
+    private static final String GA_DRAFT_FORM = "gaDraft";
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
         "directionOrder", "hearingNotice",
@@ -280,11 +281,8 @@ public class ParentCaseUpdateHelper {
             if (gaDetailsRespondentSolTwo.isEmpty()) {
                 ROLES[2] = null;
             }
-            if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())
-                || APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.equals(generalAppCaseData.getCcdState())
-                && isNull(caseData.getGaDraftDocument())) {
-                updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
-            }
+
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
 
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
@@ -341,13 +339,15 @@ public class ParentCaseUpdateHelper {
         List<Element> civilDocs =
                 (List<Element>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
-        if (gaDocs != null) {
+        if (gaDocs != null && !(type.equals(GA_DRAFT_FORM))) {
             List<UUID> ids = civilDocs.stream().map(Element::getId).toList();
             for (Element gaDoc : gaDocs) {
                 if (!ids.contains(gaDoc.getId())) {
                     civilDocs.add(gaDoc);
                 }
             }
+        } else if (gaDocs != null && type.equals(GA_DRAFT_FORM)) {
+            civilDocs.addAll(gaDocs);
         }
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
     }
