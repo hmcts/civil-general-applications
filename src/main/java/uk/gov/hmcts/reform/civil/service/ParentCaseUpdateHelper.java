@@ -19,12 +19,12 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
@@ -59,8 +59,7 @@ public class ParentCaseUpdateHelper {
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
             AWAITING_WRITTEN_REPRESENTATIONS,
-            AWAITING_DIRECTIONS_ORDER_DOCS,
-            APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            AWAITING_DIRECTIONS_ORDER_DOCS
     );
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
@@ -143,7 +142,9 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
-        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState()) && isNull(generalAppCaseData.getGaDraftDocument())) {
+        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())
+            || APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.equals(generalAppCaseData.getCcdState())
+                && isNull(caseData.getGaDraftDocument())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
@@ -293,7 +294,7 @@ public class ParentCaseUpdateHelper {
     protected void updateCaseDocument(Map<String, Object> updateMap,
                                     CaseData civilCaseData, CaseData generalAppCaseData, String[] roles) {
         for (String role : roles) {
-            if (Objects.nonNull(role)) {
+            if (nonNull(role)) {
                 updateCaseDocumentByRole(updateMap, role,
                         civilCaseData, generalAppCaseData);
             }
@@ -363,7 +364,7 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if (Objects.nonNull(roles)) {
+                if (nonNull(roles)) {
                     roles[2] = "Claimant";
                 }
             }
