@@ -3,19 +3,27 @@ package uk.gov.hmcts.reform.civil.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -36,9 +44,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
@@ -60,6 +71,8 @@ class ParentCaseUpdateHelperTest {
     CaseDetailsConverter caseDetailsConverter;
     @Autowired
     ObjectMapper objectMapper;
+    @Captor
+    private ArgumentCaptor<Map<String,Object>> mapCaptor;
 
     @Test
     void updateParentApplicationVisibilityWithNewState() {
@@ -140,6 +153,112 @@ class ParentCaseUpdateHelperTest {
         assertThat(DOCUMENT_STATES.contains(AWAITING_ADDITIONAL_INFORMATION)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_WRITTEN_REPRESENTATIONS)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_DIRECTIONS_ORDER_DOCS)).isTrue();
+    }
+
+    @Test
+    void findGaCreator() {
+        String role = "Claimant";
+        assertThat(parentCaseUpdateHelper
+                .findGaCreator(getVaryMainCaseData(role),
+                         getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED)))
+                .isEqualTo(role);
+        role = "RespondentSol";
+        assertThat(parentCaseUpdateHelper
+                .findGaCreator(getVaryMainCaseData(role),
+                        getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED)))
+                .isEqualTo(role);
+        role = "RespondentSolTwo";
+        assertThat(parentCaseUpdateHelper
+                .findGaCreator(getVaryMainCaseData(role),
+                        getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED)))
+                .isEqualTo(role);
+    }
+
+    @Test
+    void updateSingleTypeByRoles() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        Map<String, Object> updateMap = new HashMap<>();
+        String[] roles = {"RespondentSol", "Staff"};
+        try {
+            parentCaseUpdateHelper.updateSingleTypeByRoles(updateMap, "directionOrder", roles,
+                    civilCase, gaCase);
+            assertThat(updateMap).isNotNull();
+            assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
+            assertThat(updateMap.get("directionOrderDocStaff")).isNotNull();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void updateN245_before() {
+        Map<String, Object> updateMap = new HashMap<>();
+        String role = "RespondentSolTwo";
+        String[] docVisibilityRoles = {"Claimant", "RespondentSol", "RespondentSolTwo", "Staff"};
+        parentCaseUpdateHelper.updateN245(updateMap, getVaryMainCaseData(role),
+                getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED), docVisibilityRoles);
+        assertThat(updateMap).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocRespondentSolTwo")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocRespondentSol")).isNull();
+        assertThat(updateMap.get("gaEvidenceDocClaimant")).isNull();
+    }
+
+    @Test
+    void updateN245_after() {
+        Map<String, Object> updateMap = new HashMap<>();
+        String role = "RespondentSolTwo";
+        String[] docVisibilityRoles = {"Claimant", "RespondentSol", "RespondentSolTwo", "Staff"};
+        parentCaseUpdateHelper.updateN245(updateMap, getVaryMainCaseData(role),
+                getGaVaryCaseData(role, AWAITING_APPLICATION_PAYMENT), docVisibilityRoles);
+        assertThat(updateMap).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocRespondentSolTwo")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocRespondentSol")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocClaimant")).isNotNull();
+    }
+
+    @Test
+    void updateParentWithGAState_with_n245_after_payment() {
+        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", AWAITING_APPLICATION_PAYMENT);
+        CaseData civilCase = getVaryMainCaseData("RespondentSolTwo");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_RESPONDENT_RESPONSE.toString());
+        verify(coreCaseDataService, times(1))
+                .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSolTwo")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSol")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocClaimant")).isNotNull();
+    }
+
+    @Test
+    void updateParentWithGAState_with_n245_before_payment() {
+        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", PENDING_APPLICATION_ISSUED);
+        CaseData civilCase = getVaryMainCaseData("RespondentSolTwo");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_APPLICATION_PAYMENT.toString());
+        verify(coreCaseDataService, times(1))
+                .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSolTwo")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSol")).isNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocClaimant")).isNull();
+    }
+
+    @Test
+    void updateParentWithGAState_without_n245() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_APPLICATION_PAYMENT.toString());
+        verify(coreCaseDataService, times(1))
+                .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNull();
     }
 
     private StartEventResponse getStartEventResponse(YesOrNo isConsented, YesOrNo isTobeNotified) {
@@ -224,5 +343,108 @@ class ParentCaseUpdateHelperTest {
                 .toBuilder().directionOrderDocument(singletonList(Element.<CaseDocument>builder()
                         .id(UUID.fromString(uid))
                         .value(pdfDocument).build())).build();
+    }
+
+    private CaseData getGaVaryCaseData(String role, CaseState state) {
+        CaseData.CaseDataBuilder builder = CaseData.builder();
+        builder.generalAppType(GAApplicationType.builder()
+                .types(List.of(GeneralApplicationTypes.VARY_JUDGEMENT)).build())
+                .ccdCaseReference(CaseDataBuilder.CASE_ID)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink
+                        .builder().caseReference(CaseDataBuilder.CASE_ID.toString()).build())
+                .ccdState(state);
+        Document pdfDocument = Document.builder()
+                .documentUrl("fake-url")
+                .documentFileName("file-name")
+                .documentBinaryUrl("binary-url")
+                .build();
+        String uid = "f000aa01-0451-4000-b000-000000000000";
+        builder.generalAppEvidenceDocument(singletonList(Element.<Document>builder()
+                .id(UUID.fromString(uid))
+                .value(pdfDocument).build()));
+        switch (role) {
+            case "Claimant":
+                builder.parentClaimantIsApplicant(YES);
+                break;
+            case "RespondentSol":
+                builder.parentClaimantIsApplicant(NO).generalAppApplnSolicitor(
+                        GASolicitorDetailsGAspec.builder()
+                                .organisationIdentifier("RespondentSol").build());
+                break;
+            case "RespondentSolTwo":
+                builder.parentClaimantIsApplicant(NO).isMultiParty(YES).generalAppApplnSolicitor(
+                        GASolicitorDetailsGAspec.builder()
+                                .organisationIdentifier("RespondentSolTwo").build());
+                break;
+        }
+        return builder.build();
+    }
+
+    private CaseData getVaryMainCaseData(String role) {
+        CaseData.CaseDataBuilder builder = CaseData.builder();
+
+        GeneralApplication generalApplication = GeneralApplication
+                .builder()
+                .caseLink(CaseLink.builder().caseReference(CaseDataBuilder.CASE_ID.toString()).build())
+                .build();
+
+        List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
+
+        GeneralApplicationsDetails generalApplicationsDetails = GeneralApplicationsDetails.builder()
+                .generalApplicationType(GeneralApplicationTypes.VARY_JUDGEMENT.toString())
+                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+                .caseLink(generalApplication.getCaseLink())
+                .caseState(PENDING_APPLICATION_ISSUED.toString()).build();
+        generalApplicationsDetailsList.add(element(generalApplicationsDetails));
+
+        List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection = Lists.newArrayList();
+        GeneralApplicationsDetails gaDetailsMasterColl = GeneralApplicationsDetails.builder()
+                .generalApplicationType(GeneralApplicationTypes.VARY_JUDGEMENT.toString())
+                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+                .caseLink(generalApplication.getCaseLink())
+                .caseState(PENDING_APPLICATION_ISSUED.toString()).build();
+        gaDetailsMasterCollection.add(element(gaDetailsMasterColl));
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList = Lists.newArrayList();
+        GADetailsRespondentSol gaDetailsRespondentSol = GADetailsRespondentSol.builder()
+                .generalApplicationType(GeneralApplicationTypes.VARY_JUDGEMENT.toString())
+                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+                .caseLink(generalApplication.getCaseLink())
+                .caseState(PENDING_APPLICATION_ISSUED.toString()).build();
+        gaDetailsRespondentSolList.add(element(gaDetailsRespondentSol));
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolListTwo = Lists.newArrayList();
+        GADetailsRespondentSol gaDetailsRespondentSolTwo = GADetailsRespondentSol.builder()
+                .generalApplicationType(GeneralApplicationTypes.VARY_JUDGEMENT.toString())
+                .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
+                .caseLink(generalApplication.getCaseLink())
+                .caseState(PENDING_APPLICATION_ISSUED.toString()).build();
+        gaDetailsRespondentSolListTwo.add(element(gaDetailsRespondentSolTwo));
+
+        List<Element<GeneralApplication>> generalApplications = wrapElements(generalApplication);
+        builder.generalApplications(generalApplications);
+        builder.gaDetailsMasterCollection(gaDetailsMasterCollection);
+        switch (role) {
+            case "Claimant":
+                builder.claimantGaAppDetails(generalApplicationsDetailsList);
+                break;
+            case "RespondentSol":
+                builder.respondent1OrganisationPolicy(OrganisationPolicy.builder().build())
+                        .respondent1OrganisationIDCopy("RespondentSol");
+                builder.claimantGaAppDetails(generalApplicationsDetailsList);
+                builder.respondentSolGaAppDetails(gaDetailsRespondentSolList);
+                break;
+            case "RespondentSolTwo":
+                builder.respondent1OrganisationPolicy(OrganisationPolicy.builder().build());
+                builder.respondent2OrganisationPolicy(OrganisationPolicy.builder().build())
+                        .respondent2OrganisationIDCopy("RespondentSolTwo")
+                        .respondent2SameLegalRepresentative(NO)
+                        .addApplicant2(NO);
+                builder.claimantGaAppDetails(generalApplicationsDetailsList);
+                builder.respondentSolGaAppDetails(gaDetailsRespondentSolList);
+                builder.respondentSolTwoGaAppDetails(gaDetailsRespondentSolListTwo);
+                break;
+        }
+        return builder.build();
     }
 }
