@@ -12,4 +12,8 @@
     <cve>CVE-2008-7271</cve>
     <cve>CVE-2010-4647</cve>
   </suppress>
+  <suppress>
+    <notes>spring boot 3.0.6</notes>
+    <cve>CVE-2023-20883</cve>
+  </suppress>
 </suppressions>
