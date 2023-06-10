@@ -51,7 +51,7 @@ public class ParentCaseUpdateHelper {
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
         "directionOrder", "hearingNotice",
-        "gaResp", "gaDraft"
+        "gaResp", GA_DRAFT_FORM
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
@@ -346,7 +346,7 @@ public class ParentCaseUpdateHelper {
                     civilDocs.add(gaDoc);
                 }
             }
-        } else if (gaDocs != null && type.equals(GA_DRAFT_FORM)
+        } else if (gaDocs != null
             && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
             civilDocs.addAll(gaDocs);
         }
