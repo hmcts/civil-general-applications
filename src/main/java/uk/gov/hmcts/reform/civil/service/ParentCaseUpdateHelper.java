@@ -57,7 +57,7 @@ public class ParentCaseUpdateHelper {
     private static final String CLAIMANT_ROLE = "Claimant";
     private static final String RESPONDENTSOL_ROLE = "RespondentSol";
     private static final String RESPONDENTSOL_TWO_ROLE = "RespondentSolTwo";
-    private static String[] ROLES = {CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE};
+    private static String[] roles = {CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE};
     private static final String GA_EVIDENCE = "gaEvidence";
     private static final String CIVIL_GA_EVIDENCE = "generalAppEvidence";
 
@@ -337,9 +337,9 @@ public class ParentCaseUpdateHelper {
              * update documents
              * */
             if (gaDetailsRespondentSolTwo.isEmpty()) {
-                ROLES[2] = null;
+                roles[2] = null;
             }
-            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, roles);
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
 

@@ -116,7 +116,7 @@ class ParentCaseUpdateHelperTest {
         try {
             parentCaseUpdateHelper.updateCaseDocumentByType(updateMap, "directionOrder", null,
                     civilCase, gaCase);
-            assertThat(updateMap.size()).isEqualTo(0);
+            assertThat(updateMap.size()).isZero();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -191,7 +191,7 @@ class ParentCaseUpdateHelperTest {
                         getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED).toBuilder()
                                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                         .organisationIdentifier("Nothing").build()).build()))
-                .isEqualTo(null);
+                .isNull();
     }
 
     @Test
