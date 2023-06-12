@@ -70,6 +70,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
     @MockBean
     private NotificationService notificationService;
+    @MockBean
+    private JudicialDecisionHelper judicialDecisionHelper;
 
     @MockBean
     private SolicitorEmailValidation solicitorEmailValidation;

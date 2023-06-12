@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -29,6 +32,8 @@ import static java.lang.String.format;
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -48,6 +53,8 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Autowired
     private InitiateGeneralApplicationHandler handler;
+    @MockBean
+    private GeneralAppFeesService generalAppFeesService;
 
     @Value("${civil.response-pack-url}")
     private static final String STRING_CONSTANT = "this is a string";
@@ -58,7 +65,10 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         + "%n%n To pay this fee, you will need to open your application from the"
         + " Applications tab of this case listing."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
-
+    private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
+            + " on this application."
+            + "<br/> <p>  The other party's legal representative has been notified that you have"
+            + " submitted this application";
     private static final Fee FEE275 = Fee.builder().calculatedAmountInPence(
         BigDecimal.valueOf(27500)).code("FEE0444").version("1").build();
 
@@ -129,7 +139,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().ccdCaseReference(CASE_ID).build(), true);
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
             GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
-
+            when(generalAppFeesService.isFreeGa(any())).thenReturn(false);
             String body = format(
                 CONFIRMATION_BODY,
                 genapp.getGeneralAppPBADetails().getFee().toPounds(),
@@ -145,6 +155,25 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
                     .build());
             assertThat(response).isNotNull();
             assertThat(response.getConfirmationBody()).isEqualTo(body);
+        }
+
+        @Test
+        void shouldReturnFreeGAConfirmationBodyBody_whenFreeGA() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().ccdCaseReference(CASE_ID).build(), true);
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
+            when(generalAppFeesService.isFreeGa(any())).thenReturn(true);
+
+            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            assertThat(response).usingRecursiveComparison().isEqualTo(
+                    SubmittedCallbackResponse.builder()
+                            .confirmationHeader(
+                                    "# You have made an application")
+                            .confirmationBody(CONFIRMATION_BODY_FREE)
+                            .build());
+            assertThat(response).isNotNull();
+            assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_BODY_FREE);
         }
 
         @Test
