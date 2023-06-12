@@ -36,6 +36,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
+import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 
 @RequiredArgsConstructor
 @Component
@@ -298,17 +299,21 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
-        String caseId = variables.getCaseId();
+        int remainingRetries =getMaximumAttemptLeft(externalTask,getMaxAttempts());
 
-        StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+        if( remainingRetries == 1) {
+            ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
+            String caseId = variables.getCaseId();
 
-        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
-        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-            .status(BusinessProcessStatus.FAILED).build();
+            StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
-        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
+            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+                .processInstanceId(externalTask.getProcessInstanceId()).build();
+
+            CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
+            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+        }
 
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }

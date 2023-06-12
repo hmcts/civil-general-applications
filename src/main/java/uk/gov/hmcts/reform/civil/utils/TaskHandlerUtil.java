@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
-import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
+import org.camunda.bpm.client.task.ExternalTask;
 
 import java.util.Map;
 
@@ -23,4 +23,7 @@ public class TaskHandlerUtil {
             .build();
     }
 
+    public static int getMaximumAttemptLeft(ExternalTask externalTask, int maxAttempts){
+        return externalTask.getRetries() == null ? maxAttempts : externalTask.getRetries();
+    }
 }

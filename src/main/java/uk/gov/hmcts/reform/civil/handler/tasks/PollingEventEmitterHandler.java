@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.controllers.testingsupport.CamundaRestEngineClient;
+import uk.gov.hmcts.reform.civil.controllers.testingsupport.TestingSupportController;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -19,8 +21,10 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
+import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,12 +35,12 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final CaseStateSearchService caseSearchService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final EventEmitterService eventEmitterService;
-    private final CoreCaseDataService coreCaseDataService;
+    private final CamundaRestEngineClient camundaRestEngineClient;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
         List<CaseDetails> cases = caseSearchService
-            .getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
+            .getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
         cases.stream()
             .map(caseDetailsConverter::toCaseData)
@@ -47,18 +51,14 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         log.info("Emitting {} camunda event for case through poller: {}",
                  caseData.getBusinessProcess().getCamundaEvent(),
                  caseData.getCcdCaseReference());
-       String caseId = String.valueOf(caseData.getCcdCaseReference());
 
-       StartEventResponse startEventResponse = coreCaseDataService
-            .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+        var businessProcess = caseData.getBusinessProcess();
 
-       CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-       BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-           .status(BusinessProcessStatus.STARTED).build();
-
-       CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
-       coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
-       eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
+               Optional<String> incidentMessage = camundaRestEngineClient.findIncidentByProcessInstanceId(businessProcess.getProcessInstanceId())
+                    .map(camundaRestEngineClient::getIncidentMessage);
+               if(incidentMessage.isPresent()){
+                   eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
+               }
     }
 
     @Override
@@ -66,18 +66,4 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         return 1;
     }
 
-    private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
-                                              BusinessProcess businessProcess) {
-        Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
-        objectDataMap.put("businessProcess", businessProcess);
-        log.info("businessProcess {}", businessProcess);
-
-        return CaseDataContent.builder()
-            .eventToken(startGaEventResponse.getToken())
-            .event(Event.builder().id(startGaEventResponse.getEventId())
-                       .build())
-            .data(objectDataMap)
-            .build();
-
-    }
 }
