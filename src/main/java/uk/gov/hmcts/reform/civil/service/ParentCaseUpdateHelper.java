@@ -346,7 +346,7 @@ public class ParentCaseUpdateHelper {
                     civilDocs.add(gaDoc);
                 }
             }
-        } else if (gaDocs != null
+        } else if (gaDocs != null && gaDocs.size() == 1
             && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
             civilDocs.addAll(gaDocs);
         }
