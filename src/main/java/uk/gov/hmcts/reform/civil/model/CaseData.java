@@ -165,6 +165,8 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
+    private final String respondent1OrganisationIDCopy;
+    private final String respondent2OrganisationIDCopy;
     private final YesOrNo respondent2SameLegalRepresentative;
     private final GAReferToJudgeGAspec referToJudge;
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
@@ -230,7 +232,6 @@ public class CaseData implements MappableObject {
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
-    private final String respondent1OrganisationIDCopy;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
