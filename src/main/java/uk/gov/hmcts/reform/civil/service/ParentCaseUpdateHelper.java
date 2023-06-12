@@ -356,8 +356,8 @@ public class ParentCaseUpdateHelper {
     protected int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
                                         List<Element<CaseDocument>> gaCaseDocumentlist) {
         return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
-            .parallelStream().anyMatch(gaDocument -> gaDocument.getId()
-                .equals(civilDocument.getId()))).toList().size();
+            .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
+                .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
