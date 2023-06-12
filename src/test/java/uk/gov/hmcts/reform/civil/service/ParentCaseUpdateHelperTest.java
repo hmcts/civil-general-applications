@@ -109,6 +109,20 @@ class ParentCaseUpdateHelperTest {
     }
 
     @Test
+    void updateCaseDocumentByType_null() {
+        CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
+        CaseData civilCase = getCaseWithApplicationData(false);
+        Map<String, Object> updateMap = new HashMap<>();
+        try {
+            parentCaseUpdateHelper.updateCaseDocumentByType(updateMap, "directionOrder", null,
+                    civilCase, gaCase);
+            assertThat(updateMap.size()).isEqualTo(0);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void updateCaseDocumentByType() {
         CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
         CaseData civilCase = getCaseWithApplicationData(false);
@@ -172,6 +186,12 @@ class ParentCaseUpdateHelperTest {
                 .findGaCreator(getVaryMainCaseData(role),
                         getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED)))
                 .isEqualTo(role);
+        assertThat(parentCaseUpdateHelper
+                .findGaCreator(getVaryMainCaseData(role),
+                        getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED).toBuilder()
+                                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                        .organisationIdentifier("Nothing").build()).build()))
+                .isEqualTo(null);
     }
 
     @Test

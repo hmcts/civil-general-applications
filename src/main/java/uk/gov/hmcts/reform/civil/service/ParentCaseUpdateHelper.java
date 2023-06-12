@@ -54,11 +54,14 @@ public class ParentCaseUpdateHelper {
         "directionOrder", "hearingNotice",
         "gaResp"
     };
+    private static final String CLAIMANT_ROLE = "Claimant";
+    private static final String RESPONDENTSOL_ROLE = "RespondentSol";
+    private static final String RESPONDENTSOL_TWO_ROLE = "RespondentSolTwo";
     private static String[] ROLES = {
-        "Claimant", "RespondentSol", "RespondentSolTwo"
+            CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE
     };
-    private static String GA_EVIDENCE = "gaEvidence";
-    private static String CIVIL_GA_EVIDENCE = "generalAppEvidence";
+    private static final String GA_EVIDENCE = "gaEvidence";
+    private static final String CIVIL_GA_EVIDENCE = "generalAppEvidence";
 
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
@@ -92,7 +95,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                docVisibilityRoles[0] = "RespondentSol";
+                docVisibilityRoles[0] = RESPONDENTSOL_ROLE;
             }
         }
 
@@ -113,7 +116,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                docVisibilityRoles[1] = "RespondentSolTwo";
+                docVisibilityRoles[1] = RESPONDENTSOL_TWO_ROLE;
             }
         }
 
@@ -187,7 +190,7 @@ public class ParentCaseUpdateHelper {
 
     protected String findGaCreator(CaseData civilCaseData, CaseData generalAppCaseData) {
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
-            return "Claimant";
+            return CLAIMANT_ROLE;
         }
         String creatorId = generalAppCaseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
         String respondent1OrganisationId = civilCaseData.getRespondent1OrganisationPolicy().getOrganisation()
@@ -195,7 +198,7 @@ public class ParentCaseUpdateHelper {
                 .getOrganisationID() : civilCaseData.getRespondent1OrganisationIDCopy();
         if (creatorId
                 .equals(respondent1OrganisationId)) {
-            return "RespondentSol";
+            return RESPONDENTSOL_ROLE;
         }
         String respondent2OrganisationId = civilCaseData.getRespondent2OrganisationPolicy().getOrganisation()
                 != null ? civilCaseData.getRespondent2OrganisationPolicy().getOrganisation()
@@ -204,7 +207,7 @@ public class ParentCaseUpdateHelper {
                 && civilCaseData.getRespondent2SameLegalRepresentative().equals(NO)
                 && creatorId
                 .equals(respondent2OrganisationId)) {
-            return "RespondentSolTwo";
+            return RESPONDENTSOL_TWO_ROLE;
         }
         return null;
     }
@@ -428,7 +431,7 @@ public class ParentCaseUpdateHelper {
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
                 if (Objects.nonNull(roles)) {
-                    roles[2] = "Claimant";
+                    roles[2] = CLAIMANT_ROLE;
                 }
             }
         }
