@@ -38,6 +38,8 @@ public class CaseStateSearchService extends ElasticSearchService {
     Query queryForOrderMade(int startIndex, CaseState caseState, GeneralApplicationTypes gaType) {
         MatchQueryBuilder queryCaseState = QueryBuilders.matchQuery("state", caseState.toString());
         MatchQueryBuilder queryGaType = QueryBuilders.matchQuery("data.generalAppType.types", gaType);
+        MatchQueryBuilder consentOrder = QueryBuilders
+            .matchQuery("data.approveConsentOrder.isOrderProcessedByStayScheduler", "No");
         MatchQueryBuilder queryOrderProcessStatus = gaType.equals(UNLESS_ORDER)
             ? QueryBuilders
             .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByUnlessScheduler", "No")
@@ -45,7 +47,11 @@ public class CaseStateSearchService extends ElasticSearchService {
             .matchQuery("data.judicialDecisionMakeOrder.isOrderProcessedByStayScheduler", "No");
 
         BoolQueryBuilder query = QueryBuilders.boolQuery();
-        query.must(queryCaseState).must(queryGaType).must(queryOrderProcessStatus);
+        query.must(queryCaseState)
+            .must(queryGaType)
+            .should(queryOrderProcessStatus)
+            .should(consentOrder)
+            .minimumShouldMatch(1);
 
         return new Query(
             query,
