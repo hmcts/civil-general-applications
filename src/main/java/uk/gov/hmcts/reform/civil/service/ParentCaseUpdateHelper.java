@@ -151,25 +151,25 @@ public class ParentCaseUpdateHelper {
         }
         if (Objects.nonNull(generalAppCaseData.getGeneralAppEvidenceDocument())
             && !generalAppCaseData.getGeneralAppEvidenceDocument().isEmpty()) {
-            updateN245(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
+            updateEvidence(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap));
     }
 
-    protected void updateN245(Map<String, Object> updateMap, CaseData civilCaseData,
-                            CaseData generalAppCaseData, String[] docVisibilityRoles) {
-        String[] n245Role = null;
+    protected void updateEvidence(Map<String, Object> updateMap, CaseData civilCaseData,
+                                  CaseData generalAppCaseData, String[] docVisibilityRoles) {
+        String[] evidenceRole = null;
         if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
-            String[] n245RoleBefore = new String[2];
-            n245RoleBefore[0] = "Staff";
-            n245RoleBefore[1] = findGaCreator(civilCaseData, generalAppCaseData);
-            n245Role = n245RoleBefore;
+            String[] evidenceRoleBefore = new String[2];
+            evidenceRoleBefore[0] = "Staff";
+            evidenceRoleBefore[1] = findGaCreator(civilCaseData, generalAppCaseData);
+            evidenceRole = evidenceRoleBefore;
         } else if (generalAppCaseData.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)) {
-            n245Role = docVisibilityRoles;
+            evidenceRole = docVisibilityRoles;
         }
-        if (Objects.nonNull(n245Role)) {
-            updateSingleTypeByRoles(updateMap, GA_EVIDENCE, n245Role,
+        if (Objects.nonNull(evidenceRole)) {
+            updateSingleTypeByRoles(updateMap, GA_EVIDENCE, evidenceRole,
                     civilCaseData, generalAppCaseData);
         }
     }

@@ -196,7 +196,7 @@ class ParentCaseUpdateHelperTest {
         Map<String, Object> updateMap = new HashMap<>();
         String role = "RespondentSolTwo";
         String[] docVisibilityRoles = {"Claimant", "RespondentSol", "RespondentSolTwo", "Staff"};
-        parentCaseUpdateHelper.updateN245(updateMap, getVaryMainCaseData(role),
+        parentCaseUpdateHelper.updateEvidence(updateMap, getVaryMainCaseData(role),
                 getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED), docVisibilityRoles);
         assertThat(updateMap).isNotNull();
         assertThat(updateMap.get("gaEvidenceDocRespondentSolTwo")).isNotNull();
@@ -210,7 +210,7 @@ class ParentCaseUpdateHelperTest {
         Map<String, Object> updateMap = new HashMap<>();
         String role = "RespondentSolTwo";
         String[] docVisibilityRoles = {"Claimant", "RespondentSol", "RespondentSolTwo", "Staff"};
-        parentCaseUpdateHelper.updateN245(updateMap, getVaryMainCaseData(role),
+        parentCaseUpdateHelper.updateEvidence(updateMap, getVaryMainCaseData(role),
                 getGaVaryCaseData(role, AWAITING_APPLICATION_PAYMENT), docVisibilityRoles);
         assertThat(updateMap).isNotNull();
         assertThat(updateMap.get("gaEvidenceDocRespondentSolTwo")).isNotNull();
