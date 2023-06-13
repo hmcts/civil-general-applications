@@ -21,7 +21,9 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
+import java.util.Objects;
 
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_PROCESS_STATE_FOR_CIVIL_GA;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
@@ -71,10 +73,15 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
                     externalTask.getAllVariables(),
                     ExternalTaskInput.class
                 );
-                String caseId = variables.getCaseId();
+                String caseId;
+                if (Objects.nonNull(variables.getGeneralApplicationCaseId())) {
+                    caseId = variables.getGeneralApplicationCaseId();
+                } else {
+                    caseId = variables.getCaseId();
+                }
 
                 StartEventResponse startEventResp = coreCaseDataService
-                    .startGaUpdate(caseId, UPDATE_PROCESS_STATE_FOR_CIVIL_GA);
+                    .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
                 CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
                 BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
