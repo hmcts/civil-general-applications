@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import static java.util.Optional.ofNullable;
@@ -146,7 +145,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
-        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState()) && isNull(generalAppCaseData.getGaDraftDocument())) {
+        if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
 
