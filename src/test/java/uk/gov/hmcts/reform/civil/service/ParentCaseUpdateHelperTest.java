@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,6 +134,20 @@ class ParentCaseUpdateHelperTest {
         assertThat(updateMap).isNotNull();
         assertThat(updateMap.get("directionOrderDocRespondentSol")).isNotNull();
         assertThat(updateMap.get("directionOrderDocClaimant")).isNotNull();
+    }
+
+    @Test
+    void checkIfDocumentExists() {
+        Element<CaseDocument> same = Element.<CaseDocument>builder()
+            .id(UUID.randomUUID())
+            .value(CaseDocument.builder().documentLink(Document.builder().documentUrl("string").build())
+                       .build()).build();
+        List<Element<CaseDocument>> civilCaseDocumentList = new ArrayList<>();
+        civilCaseDocumentList.add(same);
+        List<Element<CaseDocument>> gaDocumentList = new ArrayList<>();
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isNotPositive();
+        gaDocumentList.add(same);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(1);
     }
 
     @Test
