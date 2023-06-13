@@ -31,6 +31,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSU
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
 @Component
@@ -139,7 +140,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
                         && caseData.getRespondent2SameLegalRepresentative().equals(NO)
                         && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
+                        .equals(getRespondent2SolicitorOrgId(caseData))) {
 
                         GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
                             generalApplication, caseData);
