@@ -14,6 +14,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1SolicitorOrgId;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @Slf4j
 @Service
@@ -44,59 +46,43 @@ public class SolicitorEmailValidation {
                                                        CaseData civilCaseData, CaseData gaCaseData) {
 
         // civil claim applicant
-
         if (civilCaseData.getApplicant1OrganisationPolicy() != null
-            && checkIfOrgIdExists(civilCaseData.getApplicant1OrganisationPolicy())) {
-
-            if (checkIfOrgIdAndEmailAreSame(civilCaseData.getApplicant1OrganisationPolicy()
+            && checkIfOrgIdExists(civilCaseData.getApplicant1OrganisationPolicy())
+            && (checkIfOrgIdAndEmailAreSame(civilCaseData.getApplicant1OrganisationPolicy()
                                                 .getOrganisation().getOrganisationID(),
                                             civilCaseData.getApplicantSolicitor1UserDetails().getEmail(),
-                                            generalAppSolicitor)) {
+                                            generalAppSolicitor))) {
 
-                // Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email
-                log.info("Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email");
-                return updateSolDetails(civilCaseData.getApplicantSolicitor1UserDetails()
+            // Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email
+            log.info("Update GA Solicitor Email ID as same as Civil Claim claimant Solicitor Email");
+            return updateSolDetails(civilCaseData.getApplicantSolicitor1UserDetails()
                                             .getEmail(), generalAppSolicitor);
 
-            }
         }
 
         // civil claim defendant 1
-
         if (civilCaseData.getRespondent1OrganisationPolicy() != null
-            && checkIfOrgIdExists(civilCaseData.getRespondent1OrganisationPolicy())) {
-
-            if (checkIfOrgIdAndEmailAreSame(civilCaseData.getRespondent1OrganisationPolicy()
-                                                .getOrganisation().getOrganisationID(),
+            && getRespondent1SolicitorOrgId(civilCaseData) != null
+            && (checkIfOrgIdAndEmailAreSame(getRespondent1SolicitorOrgId(civilCaseData),
                                             civilCaseData.getRespondentSolicitor1EmailAddress(),
-                                            generalAppSolicitor)) {
+                                            generalAppSolicitor))) {
 
-                log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor one Email");
-                return updateSolDetails(civilCaseData.getRespondentSolicitor1EmailAddress(), generalAppSolicitor);
+            log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor one Email");
+            return updateSolDetails(civilCaseData.getRespondentSolicitor1EmailAddress(), generalAppSolicitor);
 
-            }
         }
 
+        // civil claim defendant 2
         if (YES.equals(gaCaseData.getIsMultiParty())
-            && NO.equals(civilCaseData.getRespondent2SameLegalRepresentative())) {
+            && NO.equals(civilCaseData.getRespondent2SameLegalRepresentative())
+            && (getRespondent2SolicitorOrgId(civilCaseData) != null
+            && (checkIfOrgIdAndEmailAreSame(getRespondent2SolicitorOrgId(civilCaseData),
+                                            civilCaseData.getRespondentSolicitor2EmailAddress(),
+                                            generalAppSolicitor)))) {
 
-            // civil claim defendant 2
-
-            if (civilCaseData.getRespondent2OrganisationPolicy() != null
-                && checkIfOrgIdExists(civilCaseData.getRespondent2OrganisationPolicy())) {
-
-                if (checkIfOrgIdAndEmailAreSame(civilCaseData.getRespondent2OrganisationPolicy()
-                                                    .getOrganisation().getOrganisationID(),
-                                                civilCaseData.getRespondentSolicitor2EmailAddress(),
-                                                generalAppSolicitor)) {
-
-                    log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor Two Email");
-                    return updateSolDetails(civilCaseData.getRespondentSolicitor2EmailAddress(), generalAppSolicitor);
-
-                }
-            }
+            log.info("Update GA Solicitor Email ID as same as Civil Claim Respondent Solicitor Two Email");
+            return updateSolDetails(civilCaseData.getRespondentSolicitor2EmailAddress(), generalAppSolicitor);
         }
-
         return generalAppSolicitor;
 
     }

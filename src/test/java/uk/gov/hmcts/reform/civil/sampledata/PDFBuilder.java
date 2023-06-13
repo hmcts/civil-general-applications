@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.civil.model.documents.Document;
 
 import java.time.LocalDateTime;
 
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_APPLICATION_DRAFT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.CONSENT_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DISMISSAL_ORDER;
@@ -115,6 +116,19 @@ public final class PDFBuilder {
         .documentName("document name")
         .documentSize(0L)
         .documentType(CONSENT_ORDER)
+        .createdDatetime(LocalDateTime.now())
+        .documentLink(Document.builder()
+                          .documentUrl("fake-url")
+                          .documentFileName("file-name")
+                          .documentBinaryUrl("binary-url")
+                          .build())
+        .build();
+
+    public static final CaseDocument APPLICATION_DRAFT_DOCUMENT = CaseDocument.builder()
+        .createdBy("John")
+        .documentName("document name")
+        .documentSize(0L)
+        .documentType(GENERAL_APPLICATION_DRAFT)
         .createdDatetime(LocalDateTime.now())
         .documentLink(Document.builder()
                           .documentUrl("fake-url")
