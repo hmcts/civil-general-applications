@@ -84,7 +84,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
                                                     Exception e){
         int maxRetries = getMaxAttempts();
         int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
-
+        log.info("Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
         externalTaskService.handleFailure(
             externalTask,
             e.getMessage(),

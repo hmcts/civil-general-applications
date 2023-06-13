@@ -36,11 +36,12 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final EventEmitterService eventEmitterService;
     private final CamundaRestEngineClient camundaRestEngineClient;
+    private final CoreCaseDataService coreCaseDataService;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
         List<CaseDetails> cases = caseSearchService
-            .getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
+            .getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
         cases.stream()
             .map(caseDetailsConverter::toCaseData)
@@ -54,11 +55,8 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
 
         var businessProcess = caseData.getBusinessProcess();
 
-               Optional<String> incidentMessage = camundaRestEngineClient.findIncidentByProcessInstanceId(businessProcess.getProcessInstanceId())
-                    .map(camundaRestEngineClient::getIncidentMessage);
-               if(incidentMessage.isPresent()){
-                   eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
-               }
+        startEventToUpdateState(caseData);
+        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
     }
 
     @Override
@@ -66,4 +64,32 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         return 1;
     }
 
+    private void startEventToUpdateState(CaseData caseData){
+
+        String caseId = String.valueOf(caseData.getCcdCaseReference());
+        StartEventResponse startEventResponse = coreCaseDataService
+            .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+
+        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+            .status(BusinessProcessStatus.STARTED).build();
+
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+    }
+
+    private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
+                                              BusinessProcess businessProcess) {
+        Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
+        objectDataMap.put("businessProcess", businessProcess);
+        log.info("businessProcess {}", businessProcess);
+
+        return CaseDataContent.builder()
+            .eventToken(startGaEventResponse.getToken())
+            .event(Event.builder().id(startGaEventResponse.getEventId())
+                       .build())
+            .data(objectDataMap)
+            .build();
+
+    }
 }
