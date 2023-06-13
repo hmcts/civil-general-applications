@@ -53,13 +53,13 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         var businessProcess = caseData.getBusinessProcess();
 
 
-        if( caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION") ) {
-            startCivilEventToUpdateState(caseData);
-            eventEmitterService.emitBusinessProcessCamundaEvent(caseData.getCcdCaseReference(),caseData.getBusinessProcess(), true);
-        } else {
+//        if( caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION") ) {
+//            startCivilEventToUpdateState(caseData);
+//            eventEmitterService.emitBusinessProcessCamundaEvent(caseData.getCcdCaseReference(),caseData, true);
+//        } else {
             startGAEventToUpdateState(caseData);
             eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
-        }
+//        }
 
 
 
@@ -88,14 +88,14 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
 
         String caseId = String.valueOf(caseData.getCcdCaseReference());
         StartEventResponse startEventResponse = coreCaseDataService
-            .startUpdate(caseId, UPDATE_PROCESS_STATE_FOR_CIVIL_GA);
+            .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
             .status(BusinessProcessStatus.STARTED).build();
 
         CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
-        coreCaseDataService.submitUpdate(caseId, caseDataContent);
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
     private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
