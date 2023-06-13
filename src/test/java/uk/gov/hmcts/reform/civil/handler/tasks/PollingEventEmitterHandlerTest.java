@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
@@ -37,15 +38,14 @@ class PollingEventEmitterHandlerTest {
 
     @MockBean
     private ExternalTaskService externalTaskService;
-
     @MockBean
     private CaseStateSearchService searchService;
-
     @MockBean
     private EventEmitterService eventEmitterService;
-
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
 
     @Autowired
     private PollingEventEmitterHandler pollingEventEmitterHandler;

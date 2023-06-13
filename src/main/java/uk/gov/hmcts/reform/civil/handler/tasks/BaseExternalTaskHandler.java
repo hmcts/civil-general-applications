@@ -81,7 +81,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
     }
 
     default void handleFailureToExternalTaskService(ExternalTask externalTask, ExternalTaskService externalTaskService,
-                                                    Exception e){
+                                                    Exception e) {
         int maxRetries = getMaxAttempts();
         int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
         log.info("Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
@@ -98,6 +98,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      *
      * @return the number of attempts for an external task.
      */
+
     default int getMaxAttempts() {
         return 3;
     }

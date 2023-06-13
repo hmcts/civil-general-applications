@@ -10,6 +10,10 @@ import java.util.Map;
 
 public class TaskHandlerUtil {
 
+    private TaskHandlerUtil() {
+        // NO-OP
+    }
+
     public static CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
                                               BusinessProcess businessProcess) {
         Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
@@ -23,7 +27,7 @@ public class TaskHandlerUtil {
             .build();
     }
 
-    public static int getMaximumAttemptLeft(ExternalTask externalTask, int maxAttempts){
+    public static int getMaximumAttemptLeft(ExternalTask externalTask, int maxAttempts) {
         return externalTask.getRetries() == null ? maxAttempts : externalTask.getRetries();
     }
 }

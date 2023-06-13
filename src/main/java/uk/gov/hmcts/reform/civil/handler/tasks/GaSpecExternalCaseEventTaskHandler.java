@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
@@ -9,7 +8,6 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -61,13 +59,14 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries =getMaximumAttemptLeft(externalTask,getMaxAttempts());
+        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
 
-        if( remainingRetries == 1) {
+        if(remainingRetries == 1) {
             ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
             String caseId = variables.getCaseId();
 
-            StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+            StartEventResponse startEventResp = coreCaseDataService
+                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
             CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
             BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()

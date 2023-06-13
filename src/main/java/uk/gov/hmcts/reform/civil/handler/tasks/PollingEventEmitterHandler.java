@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.controllers.testingsupport.CamundaRestEngineClient;
-import uk.gov.hmcts.reform.civil.controllers.testingsupport.TestingSupportController;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -21,10 +20,9 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_PROCESS_STATE_FOR_CIVIL_GA;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,7 +33,6 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final CaseStateSearchService caseSearchService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final EventEmitterService eventEmitterService;
-    private final CamundaRestEngineClient camundaRestEngineClient;
     private final CoreCaseDataService coreCaseDataService;
 
     @Override
@@ -55,8 +52,17 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
 
         var businessProcess = caseData.getBusinessProcess();
 
-        startEventToUpdateState(caseData);
-        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
+
+        if( caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION") ) {
+            startCivilEventToUpdateState(caseData);
+            eventEmitterService.emitBusinessProcessCamundaEvent(caseData.getCcdCaseReference(),caseData.getBusinessProcess(), true);
+        } else {
+            startGAEventToUpdateState(caseData);
+            eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
+        }
+
+
+
     }
 
     @Override
@@ -64,7 +70,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         return 1;
     }
 
-    private void startEventToUpdateState(CaseData caseData){
+    private void startGAEventToUpdateState(CaseData caseData){
 
         String caseId = String.valueOf(caseData.getCcdCaseReference());
         StartEventResponse startEventResponse = coreCaseDataService
@@ -76,6 +82,20 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
 
         CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+    }
+
+    private void startCivilEventToUpdateState(CaseData caseData){
+
+        String caseId = String.valueOf(caseData.getCcdCaseReference());
+        StartEventResponse startEventResponse = coreCaseDataService
+            .startUpdate(caseId, UPDATE_PROCESS_STATE_FOR_CIVIL_GA);
+
+        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+            .status(BusinessProcessStatus.STARTED).build();
+
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        coreCaseDataService.submitUpdate(caseId, caseDataContent);
     }
 
     private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,

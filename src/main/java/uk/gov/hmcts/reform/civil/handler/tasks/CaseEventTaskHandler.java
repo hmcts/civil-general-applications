@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 
@@ -79,17 +78,20 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries =getMaximumAttemptLeft(externalTask,getMaxAttempts());
+        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
 
-        if( remainingRetries == 1) {
+        if(remainingRetries == 1) {
             ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
             String caseId = variables.getCaseId();
 
-            StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+            StartEventResponse startEventResp = coreCaseDataService
+                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
             CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
             BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId()).build();
+                .processInstanceId(externalTask.getProcessInstanceId())
+                .status(BusinessProcessStatus.FAILED)
+                .build();
 
             CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
             coreCaseDataService.submitGaUpdate(caseId, caseDataContent);

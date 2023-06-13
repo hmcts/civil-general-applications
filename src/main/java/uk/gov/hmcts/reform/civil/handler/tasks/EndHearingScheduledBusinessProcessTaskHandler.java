@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -48,17 +47,20 @@ public class EndHearingScheduledBusinessProcessTaskHandler implements BaseExtern
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries =getMaximumAttemptLeft(externalTask,getMaxAttempts());
+        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
 
-        if( remainingRetries == 1) {
+        if(remainingRetries == 1) {
             ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
             String caseId = variables.getCaseId();
 
-            StartEventResponse startEventResp = coreCaseDataService.startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+            StartEventResponse startEventResp = coreCaseDataService
+                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
             CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
             BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId()).build();
+                .processInstanceId(externalTask.getProcessInstanceId())
+                .status(BusinessProcessStatus.FAILED)
+                .build();
 
             CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
             coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
