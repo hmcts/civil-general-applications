@@ -88,15 +88,16 @@ java:
       username: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
 
-wiremock:
-  container_name: wiremock
-  image: wiremock/wiremock
-  volumes:
-    - ./../mocks/wiremock:/home/wiremock:rw
-  ports:
-    - 8765:8080
-  command:
-    - -global-response-templating
+services:
+  wiremock:
+    container_name: wiremock
+    image: wiremock/wiremock
+    volumes:
+      - ./../mocks/wiremock:/home/wiremock:rw
+    ports:
+      - 8765:8080
+    command:
+      - -global-response-templating
 
 civil-service:
   enabled: true
