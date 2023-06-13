@@ -74,7 +74,6 @@ public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHan
                                                       document -> document.getValue().getDocumentLink(),
                                                       AssignCategoryId.APPLICATIONS);
         caseDataBuilder.gaDraftDocument(draftApplicationList);
-        CaseData updatedCaseData = caseDataBuilder.build();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .state(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString())
