@@ -80,7 +80,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
 
         int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
 
-        if(remainingRetries == 1) {
+        if (remainingRetries == 1) {
             ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
             String caseId = variables.getCaseId();
 

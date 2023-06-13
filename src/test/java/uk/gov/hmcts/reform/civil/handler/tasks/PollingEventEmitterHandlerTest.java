@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -18,6 +21,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +30,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
@@ -60,20 +66,20 @@ class PollingEventEmitterHandlerTest {
     @BeforeEach
     void init() {
         caseDetails1 = CaseDetails.builder().id(1L).data(
-            Map.of("businessProcess",
-                   BusinessProcess.builder()
-                       .status(BusinessProcessStatus.STARTED)
-                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build())).build();
+            new HashMap<>(Map.of("businessProcess",
+                                 BusinessProcess.builder()
+                       .status(BusinessProcessStatus.FAILED)
+                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
         caseDetails2 = CaseDetails.builder().id(2L).data(
-            Map.of("businessProcess",
+            new HashMap<>(Map.of("businessProcess",
                    BusinessProcess.builder()
-                       .status(BusinessProcessStatus.STARTED)
-                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build())).build();
+                       .status(BusinessProcessStatus.FAILED)
+                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
         caseDetails3 = CaseDetails.builder().id(3L).data(
-            Map.of("businessProcess",
+            new HashMap<>(Map.of("businessProcess",
                    BusinessProcess.builder()
                        .status(BusinessProcessStatus.FINISHED)
-                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build())).build();
+                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
 
         caseData1 = getCaseData(1L);
         caseData2 = getCaseData(2L);
@@ -83,29 +89,41 @@ class PollingEventEmitterHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenZeroCasesFound() {
-        when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED))
+        when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
             .thenReturn(List.of());
 
         pollingEventEmitterHandler.execute(externalTask, externalTaskService);
 
-        verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
+        verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
         verifyNoInteractions(eventEmitterService);
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenCases_withStartedStatusStarted() {
-        when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED))
-            .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
+    void shouldEmitBusinessProcessEvent_whenCases_withStatusFailed() {
 
+        when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
+            .thenReturn(List.of(caseDetails1, caseDetails2));
+        when(coreCaseDataService.startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE))
+            .thenReturn(getStartEventResponse(caseDetails1));
+        when(coreCaseDataService.startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE))
+            .thenReturn(getStartEventResponse(caseDetails2));
         when(caseDetailsConverter.toCaseData(caseDetails1)).thenReturn(caseData1);
         when(caseDetailsConverter.toCaseData(caseDetails2)).thenReturn(caseData2);
         when(caseDetailsConverter.toCaseData(caseDetails3)).thenReturn(caseData3);
 
         pollingEventEmitterHandler.execute(externalTask, externalTaskService);
-        verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1L), false);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2L), false);
-        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(3L), false);
+        verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
+        verify(coreCaseDataService).startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE);
+
+        verify(coreCaseDataService)
+            .submitGaUpdate(String.valueOf(1L),
+                            gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
+        verify(coreCaseDataService).startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE);
+        verify(coreCaseDataService)
+            .submitGaUpdate(String.valueOf(2L),
+                            gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()));
+        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1L), true);
+        verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2L), true);
         verifyNoMoreInteractions(eventEmitterService);
 
     }
@@ -124,5 +142,27 @@ class PollingEventEmitterHandlerTest {
                                  .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1")
                                  .build())
             .build();
+    }
+
+    private StartEventResponse getStartEventResponse(CaseDetails caseDetails) {
+        return StartEventResponse.builder()
+            .eventId(UPDATE_BUSINESS_PROCESS_STATE.name())
+            .caseDetails(caseDetails)
+            .token("1234")
+            .build();
+    }
+
+    private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
+                                              BusinessProcess businessProcess) {
+        Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
+        objectDataMap.put("businessProcess", businessProcess);
+
+        return CaseDataContent.builder()
+            .eventToken(startGaEventResponse.getToken())
+            .event(Event.builder().id(startGaEventResponse.getEventId())
+                       .build())
+            .data(objectDataMap)
+            .build();
+
     }
 }

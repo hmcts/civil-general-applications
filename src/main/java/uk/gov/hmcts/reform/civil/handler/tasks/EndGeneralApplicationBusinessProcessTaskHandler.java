@@ -51,7 +51,7 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
 
         int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
 
-        if(remainingRetries == 1) {
+        if (remainingRetries == 1) {
             ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
             String caseId = variables.getCaseId();
 

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_PROCESS_STATE_FOR_CIVIL_GA;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 
@@ -68,29 +67,30 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
 
         int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
         log.info("GeneralApplicationTaskHandler : Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
-        if(remainingRetries == 1) {
-                ExternalTaskInput variables = mapper.convertValue(
-                    externalTask.getAllVariables(),
-                    ExternalTaskInput.class
-                );
-                String caseId;
-                if (Objects.nonNull(variables.getGeneralApplicationCaseId())) {
-                    caseId = variables.getGeneralApplicationCaseId();
-                } else {
-                    caseId = variables.getCaseId();
-                }
+        if (remainingRetries == 1) {
 
-                StartEventResponse startEventResp = coreCaseDataService
-                    .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+            ExternalTaskInput variables = mapper.convertValue(
+                externalTask.getAllVariables(),
+                ExternalTaskInput.class
+            );
+            String caseId;
+            if (Objects.nonNull(variables.getGeneralApplicationCaseId())) {
+                caseId = variables.getGeneralApplicationCaseId();
+            } else {
+                caseId = variables.getCaseId();
+            }
 
-                CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
-                BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                    .processInstanceId(externalTask.getProcessInstanceId())
-                    .status(BusinessProcessStatus.FAILED)
-                    .build();
+            StartEventResponse startEventResp = coreCaseDataService
+                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
-                CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
-                coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
+            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+                .processInstanceId(externalTask.getProcessInstanceId())
+                .status(BusinessProcessStatus.FAILED)
+                .build();
+
+            CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
+            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
         }
 
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
