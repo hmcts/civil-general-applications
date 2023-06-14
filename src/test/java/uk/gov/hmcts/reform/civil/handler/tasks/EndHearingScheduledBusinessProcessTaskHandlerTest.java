@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -51,6 +52,9 @@ class EndHearingScheduledBusinessProcessTaskHandlerTest {
     @MockBean
     private CoreCaseDataService coreCaseDataService;
 
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
+
     @Autowired
     private EndHearingScheduledBusinessProcessTaskHandler handler;
 
@@ -79,6 +83,8 @@ class EndHearingScheduledBusinessProcessTaskHandlerTest {
 
         when(coreCaseDataService.startGaUpdate(CASE_ID, END_HEARING_SCHEDULED_PROCESS_GASPEC))
             .thenReturn(startEventResponse);
+        when(taskHandlerHelper.gaCaseDataContent(any(), any()))
+            .thenReturn(getCaseDataContent(caseDetails, startEventResponse));
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);

@@ -9,17 +9,13 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
-
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 
 @RequiredArgsConstructor
 @Component
@@ -28,6 +24,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
+    private final TaskHandlerHelper taskHandlerHelper;
     private final StateFlowEngine stateFlowEngine;
 
     private CaseData data;
@@ -43,7 +40,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
@@ -59,24 +56,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
-
-        if (remainingRetries == 1) {
-            ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
-            String caseId = variables.getCaseId();
-
-            StartEventResponse startEventResp = coreCaseDataService
-                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
-
-            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
-            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId())
-                .status(BusinessProcessStatus.FAILED)
-                .build();
-
-            CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
-        }
+        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
 
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -64,6 +65,8 @@ public class GeneralApplicationTaskHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private StateFlowEngine stateFlowEngine;
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
 
     @Mock
     private StateFlow mockedStateFlow;

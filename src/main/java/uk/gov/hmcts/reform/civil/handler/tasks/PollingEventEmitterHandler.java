@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -19,7 +20,6 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,6 +31,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final EventEmitterService eventEmitterService;
     private final CoreCaseDataService coreCaseDataService;
+    private final TaskHandlerHelper taskHandlerHelper;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
@@ -66,7 +67,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
             .status(BusinessProcessStatus.STARTED).build();
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
@@ -80,7 +81,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
             .status(BusinessProcessStatus.STARTED).build();
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 

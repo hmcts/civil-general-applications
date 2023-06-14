@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -32,7 +33,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
@@ -52,6 +52,8 @@ class PollingEventEmitterHandlerTest {
     private CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
 
     @Autowired
     private PollingEventEmitterHandler pollingEventEmitterHandler;
@@ -110,6 +112,12 @@ class PollingEventEmitterHandlerTest {
         when(caseDetailsConverter.toCaseData(caseDetails1)).thenReturn(caseData1);
         when(caseDetailsConverter.toCaseData(caseDetails2)).thenReturn(caseData2);
         when(caseDetailsConverter.toCaseData(caseDetails3)).thenReturn(caseData3);
+
+        when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()))
+            .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()));
+
+        when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()))
+            .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
 
         pollingEventEmitterHandler.execute(externalTask, externalTaskService);
         verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);

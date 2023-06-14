@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -102,6 +103,9 @@ public class CreateApplicationTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
 
     @Autowired
     private CreateApplicationTaskHandler createApplicationTaskHandler;
