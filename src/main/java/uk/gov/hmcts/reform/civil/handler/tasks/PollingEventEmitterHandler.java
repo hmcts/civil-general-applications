@@ -60,7 +60,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
                 .startUpdate(parentCaseId, UPDATE_CASE_WITH_GA_STATE);
 
         CaseData civilCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        if( caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION") ) {
+        if (caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION")) {
             Element<GeneralApplication> applicationElement = null;
             int idx = -1;
             for (Element<GeneralApplication> element : civilCaseData.getGeneralApplications()) {

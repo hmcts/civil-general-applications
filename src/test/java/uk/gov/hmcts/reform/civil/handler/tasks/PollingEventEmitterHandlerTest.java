@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.EventEmitterService;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @SpringBootTest(classes = {
@@ -70,17 +72,20 @@ class PollingEventEmitterHandlerTest {
         caseDetails1 = CaseDetails.builder().id(1L).data(
             new HashMap<>(Map.of("businessProcess",
                                  BusinessProcess.builder()
-                       .status(BusinessProcessStatus.FAILED)
-                       .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
+                                     .status(BusinessProcessStatus.FAILED)
+                                     .camundaEvent("MAKE_DECISION")
+                                     .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
         caseDetails2 = CaseDetails.builder().id(2L).data(
             new HashMap<>(Map.of("businessProcess",
                    BusinessProcess.builder()
                        .status(BusinessProcessStatus.FAILED)
+                       .camundaEvent("MAKE_DECISION")
                        .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
         caseDetails3 = CaseDetails.builder().id(3L).data(
             new HashMap<>(Map.of("businessProcess",
                    BusinessProcess.builder()
                        .status(BusinessProcessStatus.FINISHED)
+                       .camundaEvent("MAKE_DECISION")
                        .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()))).build();
 
         caseData1 = getCaseData(1L);
@@ -105,10 +110,17 @@ class PollingEventEmitterHandlerTest {
 
         when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
             .thenReturn(List.of(caseDetails1, caseDetails2));
+
+        when(coreCaseDataService.startUpdate(String.valueOf(1L), UPDATE_CASE_WITH_GA_STATE))
+            .thenReturn(getStartEventResponse(caseDetails1));
         when(coreCaseDataService.startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE))
             .thenReturn(getStartEventResponse(caseDetails1));
-        when(coreCaseDataService.startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE))
+
+        when(coreCaseDataService.startUpdate(String.valueOf(2L), UPDATE_CASE_WITH_GA_STATE))
             .thenReturn(getStartEventResponse(caseDetails2));
+        when(coreCaseDataService.startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE))
+
+            .thenReturn(getStartEventResponse(caseDetails1));
         when(caseDetailsConverter.toCaseData(caseDetails1)).thenReturn(caseData1);
         when(caseDetailsConverter.toCaseData(caseDetails2)).thenReturn(caseData2);
         when(caseDetailsConverter.toCaseData(caseDetails3)).thenReturn(caseData3);
@@ -126,10 +138,12 @@ class PollingEventEmitterHandlerTest {
         verify(coreCaseDataService)
             .submitGaUpdate(String.valueOf(1L),
                             gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
+
         verify(coreCaseDataService).startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE);
         verify(coreCaseDataService)
             .submitGaUpdate(String.valueOf(2L),
                             gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()));
+
         verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1L), true);
         verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2L), true);
         verifyNoMoreInteractions(eventEmitterService);
@@ -145,9 +159,11 @@ class PollingEventEmitterHandlerTest {
         return CaseDataBuilder.builder()
             .ccdCaseReference(ccdId)
             .ccdState(ORDER_MADE)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference(String.valueOf(ccdId)).build())
             .businessProcess(BusinessProcess.builder()
                                  .status(BusinessProcessStatus.STARTED)
                                  .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1")
+                                 .camundaEvent("MAKE_DECISION")
                                  .build())
             .build();
     }
