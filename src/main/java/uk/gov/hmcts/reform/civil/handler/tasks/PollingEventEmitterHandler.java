@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -38,6 +39,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final EventEmitterService eventEmitterService;
     private final CoreCaseDataService coreCaseDataService;
+    private final TaskHandlerHelper taskHandlerHelper;
     private final ObjectMapper mapper;
 
     @Override
@@ -116,7 +118,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
             .status(BusinessProcessStatus.STARTED).build();
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
@@ -130,7 +132,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
             .status(BusinessProcessStatus.STARTED).build();
 
-        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 

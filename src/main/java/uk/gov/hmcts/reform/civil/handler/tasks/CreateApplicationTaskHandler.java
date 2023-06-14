@@ -7,12 +7,11 @@ import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -30,13 +29,10 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
@@ -53,6 +49,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
+    private final TaskHandlerHelper taskHandlerHelper;
     private CaseData data;
     private CaseData generalAppCaseData;
 
@@ -300,24 +297,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
-
-        if (remainingRetries == 1) {
-            ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
-            String caseId = variables.getCaseId();
-
-            StartEventResponse startEventResp = coreCaseDataService
-                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
-
-            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
-            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId())
-                .status(BusinessProcessStatus.FAILED)
-                .build();
-
-            CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
-        }
+        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
 
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }

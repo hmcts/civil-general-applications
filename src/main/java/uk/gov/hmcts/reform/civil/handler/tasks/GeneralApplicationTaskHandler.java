@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -24,8 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.getMaximumAttemptLeft;
 
 @RequiredArgsConstructor
 @Component
@@ -35,6 +34,7 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
+    private final TaskHandlerHelper taskHandlerHelper;
 
     private CaseData data;
 
@@ -65,8 +65,8 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries = getMaximumAttemptLeft(externalTask, getMaxAttempts());
-        log.info("GeneralApplicationTaskHandler : Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
+        int remainingRetries = taskHandlerHelper.getMaximumAttemptLeft(externalTask, getMaxAttempts());
+
         if (remainingRetries == 1) {
 
             ExternalTaskInput variables = mapper.convertValue(
@@ -89,7 +89,7 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
                 .status(BusinessProcessStatus.FAILED)
                 .build();
 
-            CaseDataContent caseDataContent = gaCaseDataContent(startEventResp, businessProcess);
+            CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResp, businessProcess);
             coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
         }
 
