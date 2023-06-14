@@ -27,7 +27,6 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
-import static uk.gov.hmcts.reform.civil.utils.TaskHandlerUtil.gaCaseDataContent;
 
 @Slf4j
 @RequiredArgsConstructor
