@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -22,9 +21,6 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
-import java.util.Objects;
-
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
 
 @RequiredArgsConstructor
 @Component
@@ -65,33 +61,7 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
 
-        int remainingRetries = taskHandlerHelper.getMaximumAttemptLeft(externalTask, getMaxAttempts());
-
-        if (remainingRetries == 1) {
-
-            ExternalTaskInput variables = mapper.convertValue(
-                externalTask.getAllVariables(),
-                ExternalTaskInput.class
-            );
-            String caseId;
-            if (Objects.nonNull(variables.getGeneralApplicationCaseId())) {
-                caseId = variables.getGeneralApplicationCaseId();
-            } else {
-                caseId = variables.getCaseId();
-            }
-
-            StartEventResponse startEventResp = coreCaseDataService
-                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
-
-            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
-            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId())
-                .status(BusinessProcessStatus.FAILED)
-                .build();
-
-            CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResp, businessProcess);
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
-        }
+        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
 
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
