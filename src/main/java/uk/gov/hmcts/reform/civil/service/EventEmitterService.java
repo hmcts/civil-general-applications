@@ -73,15 +73,11 @@ public class EventEmitterService {
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         boolean nullTenantAttempt = false;
         try {
-            String procId = runtimeService.createMessageCorrelation(camundaEvent)
+            runtimeService.createMessageCorrelation(camundaEvent)
                 .tenantId(TENANT_ID)
+                .processInstanceId(judgeBusinessProcess.getProcessInstanceId())
                 .setVariable("caseId", caseId)
-                .correlateStartMessage().getProcessInstanceId();
-            if (Objects.nonNull(judgeBusinessProcess.getCamundaEvent())) {
-                runtimeService.createProcessInstanceModification(procId)
-                        .startBeforeActivity(judgeBusinessProcess.getCamundaEvent())
-                        .execute();
-            }
+                .correlateStartMessage();
             if (dispatchProcess) {
                 applicationEventPublisher.publishEvent(new DispatchBusinessProcessEvent(caseId, judgeBusinessProcess));
             }
