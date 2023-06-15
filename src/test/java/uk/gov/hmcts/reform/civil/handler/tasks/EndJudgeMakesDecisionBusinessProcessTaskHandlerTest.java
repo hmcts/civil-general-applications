@@ -28,6 +28,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
@@ -96,6 +97,20 @@ class EndJudgeMakesDecisionBusinessProcessTaskHandlerTest {
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_JUDGE_BUSINESS_PROCESS_GASPEC);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
+    }
+
+    @Test
+    void shouldTrigger_HandleFailure_whenThereIsException() {
+
+        when(coreCaseDataService.startGaUpdate(CASE_ID, END_JUDGE_BUSINESS_PROCESS_GASPEC))
+            .thenAnswer(invocation -> {
+                throw new Exception("errorMessage");
+            });
+
+        handler.execute(mockExternalTask, externalTaskService);
+
+        verify(taskHandlerHelper, times(1))
+            .updateEventToFailedState(mockExternalTask, 3);
     }
 
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {

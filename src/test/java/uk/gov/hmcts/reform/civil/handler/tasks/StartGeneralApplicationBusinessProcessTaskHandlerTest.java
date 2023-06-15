@@ -37,6 +37,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -177,6 +178,20 @@ class StartGeneralApplicationBusinessProcessTaskHandlerTest {
             anyLong()
         );
         verify(externalTaskService).handleBpmnError(mockTask, ERROR_CODE);
+    }
+
+    @Test
+    void shouldTrigger_HandleFailure_whenThereIsException() {
+
+        when(coreCaseDataService.startGaUpdate(CASE_ID, START_GA_BUSINESS_PROCESS))
+            .thenAnswer(invocation -> {
+                throw new Exception("errorMessage");
+            });
+
+        handler.execute(mockTask, externalTaskService);
+
+        verify(taskHandlerHelper, times(1))
+            .updateEventToFailedState(mockTask, 3);
     }
 
     private CaseDataContent content(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

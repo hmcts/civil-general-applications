@@ -582,6 +582,40 @@ public class CreateApplicationTaskHandlerTest {
         }
 
         @Test
+        void shouldHandleFailure() {
+            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+                .businessProcess(BusinessProcess.builder().status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
+            VariableMap variables = Variables.createVariables();
+            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_FLAGS, Map.of());
+            variables.putValue("generalApplicationCaseId", GA_ID);
+
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            CaseDataContent caseDataContent = CaseDataContent.builder().build();
+
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenAnswer(invocation -> {
+                    throw new Exception("there was an error");
+                });
+
+            when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
+                .thenReturn(startEventResponse);
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(
+                any(StartEventResponse.class),
+                anyMap()
+            )).thenReturn(caseDataContent);
+
+            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
+            verify(coreCaseDataService, never()).submitUpdate(CASE_ID, caseDataContent);
+        }
+
+        @Test
         void shouldTriggerCCDEventWhenAdditionalFieldAdded() {
             GeneralApplication generalApplication = getGeneralApplication();
 

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
@@ -33,7 +32,6 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     private final EventEmitterService eventEmitterService;
     private final CoreCaseDataService coreCaseDataService;
     private final TaskHandlerHelper taskHandlerHelper;
-    private final ObjectMapper mapper;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
@@ -60,17 +58,18 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     }
 
     private void startGAEventToUpdateState(CaseData caseData) {
+        if (!caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION")) {
+            String caseId = String.valueOf(caseData.getCcdCaseReference());
+            StartEventResponse startEventResponse = coreCaseDataService
+                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
-        String caseId = String.valueOf(caseData.getCcdCaseReference());
-        StartEventResponse startEventResponse = coreCaseDataService
-            .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
+            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+                .status(BusinessProcessStatus.STARTED).build();
 
-        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-            .status(BusinessProcessStatus.STARTED).build();
-
-        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
-        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+            CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
+            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+        }
     }
 
 }

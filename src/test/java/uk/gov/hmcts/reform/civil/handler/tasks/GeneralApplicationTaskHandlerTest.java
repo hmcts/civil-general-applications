@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.civil.stateflow.model.State;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
@@ -164,6 +165,20 @@ public class GeneralApplicationTaskHandlerTest extends BaseCallbackHandlerTest {
             verify(caseDetailsConverter).toCaseData(startEventResponse.getCaseDetails());
 
             verify(coreCaseDataService).submitGaUpdate(GA_CASE_ID, caseDataContent);
+        }
+
+        @Test
+        void shouldTrigger_HandleFailure_whenThereIsException() {
+
+            when(coreCaseDataService.startGaUpdate(GA_CASE_ID, LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE))
+                .thenAnswer(invocation -> {
+                    throw new Exception("errorMessage");
+                });
+
+            generalApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(taskHandlerHelper, times(1))
+                .updateEventToFailedState(mockTask, 3);
         }
     }
 }

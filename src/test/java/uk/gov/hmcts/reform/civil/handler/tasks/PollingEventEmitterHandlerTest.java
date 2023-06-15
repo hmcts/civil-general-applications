@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCESS_STATE;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @SpringBootTest(classes = {
@@ -111,16 +111,12 @@ class PollingEventEmitterHandlerTest {
         when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
             .thenReturn(List.of(caseDetails1, caseDetails2));
 
-        when(coreCaseDataService.startUpdate(String.valueOf(1L), UPDATE_CASE_WITH_GA_STATE))
-            .thenReturn(getStartEventResponse(caseDetails1));
         when(coreCaseDataService.startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE))
             .thenReturn(getStartEventResponse(caseDetails1));
 
-        when(coreCaseDataService.startUpdate(String.valueOf(2L), UPDATE_CASE_WITH_GA_STATE))
-            .thenReturn(getStartEventResponse(caseDetails2));
         when(coreCaseDataService.startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE))
-
             .thenReturn(getStartEventResponse(caseDetails1));
+
         when(caseDetailsConverter.toCaseData(caseDetails1)).thenReturn(caseData1);
         when(caseDetailsConverter.toCaseData(caseDetails2)).thenReturn(caseData2);
         when(caseDetailsConverter.toCaseData(caseDetails3)).thenReturn(caseData3);
@@ -147,6 +143,53 @@ class PollingEventEmitterHandlerTest {
         verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(1L), true);
         verify(eventEmitterService).emitBusinessProcessCamundaGAEvent(getCaseData(2L), true);
         verifyNoMoreInteractions(eventEmitterService);
+
+    }
+
+    @Test
+    void shouldNotEmitBusinessProcessEvent_whenEvent_isNotCorrect() {
+
+        when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
+            .thenReturn(List.of(caseDetails1, caseDetails2));
+
+        when(coreCaseDataService.startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE))
+            .thenReturn(getStartEventResponse(caseDetails1));
+
+        when(coreCaseDataService.startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE))
+            .thenReturn(getStartEventResponse(caseDetails1));
+
+        BusinessProcess businessProcess = BusinessProcess
+            .builder()
+            .camundaEvent("INITIATE_GENERAL_APPLICATION")
+            .build();
+
+        when(caseDetailsConverter.toCaseData(caseDetails1))
+            .thenReturn(caseData1.toBuilder().businessProcess(businessProcess).build());
+        when(caseDetailsConverter.toCaseData(caseDetails2))
+            .thenReturn(caseData2.toBuilder().businessProcess(businessProcess).build());
+
+        when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()))
+            .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()));
+
+        when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()))
+            .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
+
+        pollingEventEmitterHandler.execute(externalTask, externalTaskService);
+
+        verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
+        verify(coreCaseDataService, never()).startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE);
+
+        verify(coreCaseDataService, never())
+            .submitGaUpdate(String.valueOf(1L),
+                            gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
+
+        verify(coreCaseDataService, never()).startGaUpdate(String.valueOf(2L), UPDATE_BUSINESS_PROCESS_STATE);
+        verify(coreCaseDataService, never())
+            .submitGaUpdate(String.valueOf(2L),
+                            gaCaseDataContent(getStartEventResponse(caseDetails2), caseData2.getBusinessProcess()));
+
+        verify(eventEmitterService, never()).emitBusinessProcessCamundaGAEvent(getCaseData(1L), true);
+        verify(eventEmitterService, never()).emitBusinessProcessCamundaGAEvent(getCaseData(2L), true);
 
     }
 
