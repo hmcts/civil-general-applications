@@ -27,7 +27,7 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final TaskHandlerHelper taskHandlerHelper;
+    private final TaskHandlerHelper taskHelper;
     private final ObjectMapper mapper;
 
     @Override
@@ -46,9 +46,7 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
 
     @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
-
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-
+        taskHelper.updateEventToFailedState(externalTask, getMaxAttempts());
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 

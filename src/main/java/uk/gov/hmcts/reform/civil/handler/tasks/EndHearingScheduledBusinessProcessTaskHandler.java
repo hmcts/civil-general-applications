@@ -27,7 +27,7 @@ public class EndHearingScheduledBusinessProcessTaskHandler implements BaseExtern
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final TaskHandlerHelper taskHandlerHelper;
+    private final TaskHandlerHelper taskHandlHelper;
     private final ObjectMapper mapper;
 
     @Override
@@ -43,11 +43,9 @@ public class EndHearingScheduledBusinessProcessTaskHandler implements BaseExtern
     }
 
     @Override
-    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
-
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-
-        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
+    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskServ, Exception e) {
+        taskHandlHelper.updateEventToFailedState(externalTask, getMaxAttempts());
+        handleFailureToExternalTaskService(externalTask, externalTaskServ, e);
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {
