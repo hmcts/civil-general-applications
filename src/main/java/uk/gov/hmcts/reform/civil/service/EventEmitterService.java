@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 
 import static java.lang.String.format;
 
+import java.util.Objects;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -71,11 +73,15 @@ public class EventEmitterService {
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         boolean nullTenantAttempt = false;
         try {
-            runtimeService.createMessageCorrelation(camundaEvent)
+            String procId = runtimeService.createMessageCorrelation(camundaEvent)
                 .tenantId(TENANT_ID)
                 .setVariable("caseId", caseId)
-                .correlateStartMessage();
-
+                .correlateStartMessage().getProcessInstanceId();
+            if (Objects.nonNull(judgeBusinessProcess.getCamundaEvent())) {
+                runtimeService.createProcessInstanceModification(procId)
+                        .startBeforeActivity(judgeBusinessProcess.getCamundaEvent())
+                        .execute();
+            }
             if (dispatchProcess) {
                 applicationEventPublisher.publishEvent(new DispatchBusinessProcessEvent(caseId, judgeBusinessProcess));
             }
