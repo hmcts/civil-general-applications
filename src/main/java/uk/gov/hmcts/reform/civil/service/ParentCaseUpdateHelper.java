@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
@@ -19,14 +20,15 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
@@ -45,10 +47,11 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
+    private static final String GA_DRAFT_FORM = "gaDraft";
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
         "directionOrder", "hearingNotice",
-        "gaResp"
+        "gaResp", GA_DRAFT_FORM
     };
     private static String[] ROLES = {
         "Claimant", "RespondentSol", "RespondentSolTwo"
@@ -57,7 +60,8 @@ public class ParentCaseUpdateHelper {
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
             AWAITING_WRITTEN_REPRESENTATIONS,
-            AWAITING_DIRECTIONS_ORDER_DOCS
+            AWAITING_DIRECTIONS_ORDER_DOCS,
+            APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
     );
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
@@ -143,6 +147,7 @@ public class ParentCaseUpdateHelper {
         if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
+
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap));
     }
@@ -276,7 +281,9 @@ public class ParentCaseUpdateHelper {
             if (gaDetailsRespondentSolTwo.isEmpty()) {
                 ROLES[2] = null;
             }
+
             updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
+
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
 
@@ -288,7 +295,7 @@ public class ParentCaseUpdateHelper {
     protected void updateCaseDocument(Map<String, Object> updateMap,
                                     CaseData civilCaseData, CaseData generalAppCaseData, String[] roles) {
         for (String role : roles) {
-            if (Objects.nonNull(role)) {
+            if (nonNull(role)) {
                 updateCaseDocumentByRole(updateMap, role,
                         civilCaseData, generalAppCaseData);
             }
@@ -325,22 +332,32 @@ public class ParentCaseUpdateHelper {
         String civilCollectionName = type + "Doc" + role;
         Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(gaCollectionName));
-        List<Element> gaDocs =
-                (List<Element>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
+        List<Element<CaseDocument>> gaDocs =
+                (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
         Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(civilCollectionName));
-        List<Element> civilDocs =
-                (List<Element>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
+        List<Element<CaseDocument>> civilDocs =
+                (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
-        if (gaDocs != null) {
+        if (gaDocs != null && !(type.equals(GA_DRAFT_FORM))) {
             List<UUID> ids = civilDocs.stream().map(Element::getId).toList();
-            for (Element gaDoc : gaDocs) {
+            for (Element<CaseDocument> gaDoc : gaDocs) {
                 if (!ids.contains(gaDoc.getId())) {
                     civilDocs.add(gaDoc);
                 }
             }
+        } else if (gaDocs != null && gaDocs.size() == 1
+            && checkIfDocumentExists(civilDocs, gaDocs) < 1) {
+            civilDocs.addAll(gaDocs);
         }
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
+    }
+
+    protected int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
+                                        List<Element<CaseDocument>> gaCaseDocumentlist) {
+        return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
+            .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
+                .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
     }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
@@ -358,7 +375,7 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if (Objects.nonNull(roles)) {
+                if (nonNull(roles)) {
                     roles[2] = "Claimant";
                 }
             }

@@ -31,6 +31,8 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSU
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1SolicitorOrgId;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
 @Component
@@ -117,12 +119,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     /*
                      * Add the GA in respondent one collection if he/she initiate without notice application.
                      * */
-                    String respondent1OrganisationId = caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        != null ? caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        .getOrganisationID() : caseData.getRespondent1OrganisationIDCopy();
 
                     if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(respondent1OrganisationId)) {
+                        .equals(getRespondent1SolicitorOrgId(caseData))) {
 
                         GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
                                                                                              caseData);
@@ -139,7 +138,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
                         && caseData.getRespondent2SameLegalRepresentative().equals(NO)
                         && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
+                        .equals(getRespondent2SolicitorOrgId(caseData))) {
 
                         GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
                             generalApplication, caseData);

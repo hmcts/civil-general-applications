@@ -165,6 +165,8 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
+    private final String respondent1OrganisationIDCopy;
+    private final String respondent2OrganisationIDCopy;
     private final YesOrNo respondent2SameLegalRepresentative;
     private final GAReferToJudgeGAspec referToJudge;
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
@@ -202,7 +204,15 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> generalOrderDocRespondentSol;
     private final List<Element<CaseDocument>> generalOrderDocRespondentSolTwo;
     @Builder.Default
+    private final List<Element<CaseDocument>> gaDraftDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> gaDraftDocStaff;
+    private final List<Element<CaseDocument>> gaDraftDocClaimant;
+    private final List<Element<CaseDocument>> gaDraftDocRespondentSol;
+    private final List<Element<CaseDocument>> gaDraftDocRespondentSolTwo;
+
+    @Builder.Default
     private final List<Element<CaseDocument>> consentOrderDocument = new ArrayList<>();
+
     @Builder.Default
     private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
     private final List<Element<CaseDocument>> dismissalOrderDocStaff;
@@ -230,7 +240,6 @@ public class CaseData implements MappableObject {
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
-    private final String respondent1OrganisationIDCopy;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
