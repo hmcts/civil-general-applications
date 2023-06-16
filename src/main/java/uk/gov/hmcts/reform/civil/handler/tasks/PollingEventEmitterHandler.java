@@ -59,17 +59,15 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     }
 
     private void startGAEventToUpdateState(CaseData caseData) {
+        String caseId = String.valueOf(caseData.getCcdCaseReference());
+        StartEventResponse startEventResponse = coreCaseDataService
+            .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
 
-            String caseId = String.valueOf(caseData.getCcdCaseReference());
-            StartEventResponse startEventResponse = coreCaseDataService
-                .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
-
-            CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-            BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .status(BusinessProcessStatus.STARTED).build();
-
-            CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+        CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
+            .status(BusinessProcessStatus.STARTED).build();
+        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
 }
