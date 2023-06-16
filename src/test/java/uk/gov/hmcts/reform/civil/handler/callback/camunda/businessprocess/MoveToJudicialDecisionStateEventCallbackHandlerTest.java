@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -48,6 +50,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -110,6 +113,23 @@ class MoveToJudicialDecisionStateEventCallbackHandlerTest extends BaseCallbackHa
             assertThat(response.getErrors()).isNull();
             assertThat(updatedData.getGaDraftDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+            assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString());
+        }
+
+        @Test
+        void shouldRespondWithStateChangedWithNoDocumentGeneration() {
+            CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
+            CaseData updatedCaseData = caseData.toBuilder().judicialDecision(GAJudicialDecision.builder()
+                                                                                 .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                                                                 .build()).build();
+            CallbackParams params = callbackParamsOf(updatedCaseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response.getErrors()).isNull();
+            verifyNoInteractions(generalApplicationDraftGenerator);
             assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString());
         }
     }

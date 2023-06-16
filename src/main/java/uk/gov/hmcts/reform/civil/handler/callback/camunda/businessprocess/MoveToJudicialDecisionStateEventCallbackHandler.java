@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -61,19 +62,21 @@ public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHan
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         log.info("Changing state to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION for caseId: {}", caseId);
         CaseDocument gaDraftDocument;
-        gaDraftDocument = gaDraftGenerator.generate(
-            caseDataBuilder.build(),
-            callbackParams.getParams().get(BEARER_TOKEN).toString()
-        );
+        if (isNull(caseData.getJudicialDecision())) {
+            gaDraftDocument = gaDraftGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
 
-        List<Element<CaseDocument>> draftApplicationList = newArrayList();
+            List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
-        draftApplicationList.addAll(wrapElements(gaDraftDocument));
+            draftApplicationList.addAll(wrapElements(gaDraftDocument));
 
-        assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
-                                                      document -> document.getValue().getDocumentLink(),
-                                                      AssignCategoryId.APPLICATIONS);
-        caseDataBuilder.gaDraftDocument(draftApplicationList);
+            assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                          document -> document.getValue().getDocumentLink(),
+                                                          AssignCategoryId.APPLICATIONS);
+            caseDataBuilder.gaDraftDocument(draftApplicationList);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .state(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString())
