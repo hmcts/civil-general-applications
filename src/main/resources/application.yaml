@@ -84,10 +84,10 @@ payments:
     spec_site_id: AAA6
     callback-url: ${PAY_CALLBACK_URL:}
 
-polling:
+failed:
   event:
     emitter:
-      enabled: ${POLLING_EVENT_EMITTER_ENABLED:false}
+      enabled: ${FAILED_EVENT_EMITTER_ENABLED:true}
 
 idam:
   s2s-auth:
@@ -212,7 +212,7 @@ payments:
     url: http://localhost:8765
     callback-url: http://localhost:4550/service-request-update
 
-polling:
+failed:
   event:
     emitter:
       enabled: true
@@ -282,10 +282,6 @@ payments:
     url: http://fake-payment-register-api
     callback-url: http://fake-payment-register-api
 
-polling:
-  event:
-    emitter:
-      enabled: ${POLLING_EVENT_EMITTER_ENABLED:false}
 idam:
   web:
     url: http://fake-idam-web

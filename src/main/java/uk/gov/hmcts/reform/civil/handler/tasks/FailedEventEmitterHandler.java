@@ -24,8 +24,8 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_BUSINESS_PROCE
 @Slf4j
 @RequiredArgsConstructor
 @Component
-@ConditionalOnExpression("${polling.event.emitter.enabled:true}")
-public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
+@ConditionalOnExpression("${failed.event.emitter.enabled:true}")
+public class FailedEventEmitterHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
     private final CaseDetailsConverter caseDetailsConverter;

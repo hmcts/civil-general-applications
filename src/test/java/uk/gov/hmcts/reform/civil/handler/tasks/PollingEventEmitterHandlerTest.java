@@ -38,7 +38,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
-    PollingEventEmitterHandler.class})
+    FailedEventEmitterHandler.class})
 class PollingEventEmitterHandlerTest {
 
     @MockBean
@@ -58,7 +58,7 @@ class PollingEventEmitterHandlerTest {
     private TaskHandlerHelper taskHandlerHelper;
 
     @Autowired
-    private PollingEventEmitterHandler pollingEventEmitterHandler;
+    private FailedEventEmitterHandler failedEventEmitterHandler;
 
     private CaseDetails caseDetails1;
     private CaseDetails caseDetails2;
@@ -99,7 +99,7 @@ class PollingEventEmitterHandlerTest {
         when(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED))
             .thenReturn(List.of());
 
-        pollingEventEmitterHandler.execute(externalTask, externalTaskService);
+        failedEventEmitterHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
         verifyNoInteractions(eventEmitterService);
@@ -127,7 +127,7 @@ class PollingEventEmitterHandlerTest {
         when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()))
             .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
 
-        pollingEventEmitterHandler.execute(externalTask, externalTaskService);
+        failedEventEmitterHandler.execute(externalTask, externalTaskService);
         verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
         verify(coreCaseDataService).startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE);
 
@@ -174,7 +174,7 @@ class PollingEventEmitterHandlerTest {
         when(taskHandlerHelper.gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()))
             .thenReturn(gaCaseDataContent(getStartEventResponse(caseDetails1), caseData1.getBusinessProcess()));
 
-        pollingEventEmitterHandler.execute(externalTask, externalTaskService);
+        failedEventEmitterHandler.execute(externalTask, externalTaskService);
 
         verify(searchService).getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
         verify(coreCaseDataService, never()).startGaUpdate(String.valueOf(1L), UPDATE_BUSINESS_PROCESS_STATE);
@@ -195,7 +195,7 @@ class PollingEventEmitterHandlerTest {
 
     @Test
     void getMaxAttemptsShouldAlwaysReturn1() {
-        assertThat(pollingEventEmitterHandler.getMaxAttempts()).isEqualTo(1);
+        assertThat(failedEventEmitterHandler.getMaxAttempts()).isEqualTo(1);
     }
 
     private CaseData getCaseData(Long ccdId) {

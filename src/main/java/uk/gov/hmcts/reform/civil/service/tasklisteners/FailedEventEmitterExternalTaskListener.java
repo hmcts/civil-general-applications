@@ -5,18 +5,18 @@ import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.PollingEventEmitterHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.FailedEventEmitterHandler;
 
 @Component
 @ConditionalOnExpression("${polling.event.emitter.enabled:true}")
-public class PollingEventEmitterExternalTaskListener {
+public class FailedEventEmitterExternalTaskListener {
 
-    private static final String TOPIC = "GA_POLLING_EVENT_EMITTER";
+    private static final String TOPIC = "GA_FAILED_EVENT_EMITTER";
 
     @Autowired
-    private PollingEventEmitterExternalTaskListener(PollingEventEmitterHandler pollingEventEmitterHandler,
-                                                    ExternalTaskClient client) {
+    private FailedEventEmitterExternalTaskListener(FailedEventEmitterHandler failedEventEmitterHandler,
+                                                   ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
-        subscriptionBuilder.handler(pollingEventEmitterHandler).open();
+        subscriptionBuilder.handler(failedEventEmitterHandler).open();
     }
 }
