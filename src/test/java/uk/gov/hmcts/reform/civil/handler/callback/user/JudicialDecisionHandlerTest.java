@@ -3529,7 +3529,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     public List<MakeAppAvailableCheckGAspec> getMakeAppVisible() {
         List<MakeAppAvailableCheckGAspec> applMakeVisible = new ArrayList<>();
         applMakeVisible
-            .add(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox);
+            .add(MakeAppAvailableCheckGAspec.CONSENT_AGREEMENT_CHECKBOX);
         return applMakeVisible;
     }
 

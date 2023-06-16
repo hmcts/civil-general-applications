@@ -65,7 +65,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     void shouldRespondWithStateChanged() {
 
         List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = Arrays
-            .asList(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox);
+            .asList(MakeAppAvailableCheckGAspec.CONSENT_AGREEMENT_CHECKBOX);
 
         GAMakeApplicationAvailableCheck gaMakeApplicationAvailableCheck = GAMakeApplicationAvailableCheck.builder()
             .makeAppAvailableCheck(makeAppAvailableCheck).build();
@@ -151,7 +151,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     void shouldThrowExceptionIfSolicitorsAreNull() {
 
         List<MakeAppAvailableCheckGAspec> makeAppAvailableCheck = Arrays
-            .asList(MakeAppAvailableCheckGAspec.ConsentAgreementCheckBox);
+            .asList(MakeAppAvailableCheckGAspec.CONSENT_AGREEMENT_CHECKBOX);
 
         GAMakeApplicationAvailableCheck gaMakeApplicationAvailableCheck = GAMakeApplicationAvailableCheck.builder()
             .makeAppAvailableCheck(makeAppAvailableCheck).build();
