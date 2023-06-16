@@ -84,6 +84,11 @@ payments:
     spec_site_id: AAA6
     callback-url: ${PAY_CALLBACK_URL:}
 
+polling:
+  event:
+    emitter:
+      enabled: ${POLLING_EVENT_EMITTER_ENABLED:false}
+
 idam:
   s2s-auth:
     microservice: civil_general_applications
@@ -277,6 +282,10 @@ payments:
     url: http://fake-payment-register-api
     callback-url: http://fake-payment-register-api
 
+polling:
+  event:
+    emitter:
+      enabled: ${POLLING_EVENT_EMITTER_ENABLED:false}
 idam:
   web:
     url: http://fake-idam-web
