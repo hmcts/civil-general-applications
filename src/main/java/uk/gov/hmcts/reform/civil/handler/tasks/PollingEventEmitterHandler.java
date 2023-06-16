@@ -44,12 +44,13 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     }
 
     private void emitBusinessProcess(CaseData caseData) {
-        log.info("Emitting {} camunda event for case through poller: {}",
-                 caseData.getBusinessProcess().getCamundaEvent(),
-                 caseData.getCcdCaseReference());
-        startGAEventToUpdateState(caseData);
-        eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
-
+        if (!caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION")) {
+            log.info("Emitting {} camunda event for case through poller: {}",
+                     caseData.getBusinessProcess().getCamundaEvent(),
+                     caseData.getCcdCaseReference());
+            startGAEventToUpdateState(caseData);
+            eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, true);
+        }
     }
 
     @Override
@@ -58,7 +59,7 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
     }
 
     private void startGAEventToUpdateState(CaseData caseData) {
-        if (!caseData.getBusinessProcess().getCamundaEvent().equals("INITIATE_GENERAL_APPLICATION")) {
+
             String caseId = String.valueOf(caseData.getCcdCaseReference());
             StartEventResponse startEventResponse = coreCaseDataService
                 .startGaUpdate(caseId, UPDATE_BUSINESS_PROCESS_STATE);
@@ -69,7 +70,6 @@ public class PollingEventEmitterHandler implements BaseExternalTaskHandler {
 
             CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
             coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
-        }
     }
 
 }
