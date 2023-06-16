@@ -9,9 +9,23 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeWrittenRep;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeRequestAdditionalInfo;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.paymentSuccess;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withNoticeApplication;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withOutNoticeApplication;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.DRAFT;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.FLOW_NAME;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_DIRECTIONS;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_WRITTEN_REPRESENTATION;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.LISTED_FOR_HEARING;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PROCEED_GENERAL_APPLICATION;
 
 @Component
 @RequiredArgsConstructor
@@ -20,10 +34,26 @@ public class StateFlowEngine {
     private final CaseDetailsConverter caseDetailsConverter;
 
     public StateFlow build() {
-        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME).initial(DRAFT)
+        return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME)
+            .initial(DRAFT)
             .transitionTo(APPLICATION_SUBMITTED)
+                .onlyIf((withNoticeApplication.or(withOutNoticeApplication)))
+            .state(APPLICATION_SUBMITTED)
+                .transitionTo(PROCEED_GENERAL_APPLICATION)
+                    .onlyIf(paymentSuccess)
+            .state(PROCEED_GENERAL_APPLICATION)
+                .transitionTo(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
+                    .onlyIf(judgeMadeDecision)
+            .state(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
+                .transitionTo(LISTED_FOR_HEARING).onlyIf(judgeMadeListingForHearing)
+                .transitionTo(ADDITIONAL_INFO).onlyIf(judgeRequestAdditionalInfo)
+                .transitionTo(JUDGE_DIRECTIONS).onlyIf(judgeMadeDirections)
+                .transitionTo(JUDGE_WRITTEN_REPRESENTATION).onlyIf(judgeMadeWrittenRep)
+            .state(LISTED_FOR_HEARING)
+            .state(ADDITIONAL_INFO)
+            .state(JUDGE_DIRECTIONS)
+            .state(JUDGE_WRITTEN_REPRESENTATION)
             .build();
-
     }
 
     public StateFlow evaluate(CaseDetails caseDetails) {

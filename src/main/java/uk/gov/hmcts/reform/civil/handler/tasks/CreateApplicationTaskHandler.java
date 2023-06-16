@@ -33,6 +33,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSU
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1SolicitorOrgId;
 import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
@@ -121,12 +122,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     /*
                      * Add the GA in respondent one collection if he/she initiate without notice application.
                      * */
-                    String respondent1OrganisationId = caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        != null ? caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        .getOrganisationID() : caseData.getRespondent1OrganisationIDCopy();
 
                     if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(respondent1OrganisationId)) {
+                        .equals(getRespondent1SolicitorOrgId(caseData))) {
 
                         GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
                                                                                              caseData);
