@@ -17,6 +17,7 @@ public class BusinessProcess {
     private BusinessProcessStatus status;
     private String activityId;
     private String camundaEvent;
+    private String failedExternalTaskId;
 
     public static BusinessProcess ready(CaseEvent caseEvent) {
         return BusinessProcess.builder().status(READY).camundaEvent(caseEvent.name()).build();
@@ -54,6 +55,7 @@ public class BusinessProcess {
     @JsonIgnore
     public BusinessProcess reset() {
         this.activityId = null;
+        this.failedExternalTaskId = null;
         this.processInstanceId = null;
         this.status = BusinessProcessStatus.FINISHED;
 
