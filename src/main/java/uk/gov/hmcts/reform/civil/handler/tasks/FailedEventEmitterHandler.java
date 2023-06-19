@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class FailedEventEmitterHandler implements BaseExternalTaskHandler {
             .map(caseDetailsConverter::toCaseData)
             .map(caseData -> caseData.getBusinessProcess().getFailedExternalTaskId())
             .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .toList();
 
         emitFailedBusinessTask(tasksIdList);
     }
