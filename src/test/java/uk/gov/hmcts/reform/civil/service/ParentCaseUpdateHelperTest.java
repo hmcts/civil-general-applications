@@ -237,7 +237,7 @@ class ParentCaseUpdateHelperTest {
                 getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED), docVisibilityRoles);
         assertThat(updateMap).isNotNull();
         assertThat(updateMap.get("gaEvidenceDocRespondentSolTwo")).isNotNull();
-        assertThat(updateMap.get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(updateMap.get("gaEvidenceDocStaff")).isNull();
         assertThat(updateMap.get("gaEvidenceDocRespondentSol")).isNull();
         assertThat(updateMap.get("gaEvidenceDocClaimant")).isNull();
     }
@@ -281,7 +281,7 @@ class ParentCaseUpdateHelperTest {
         verify(coreCaseDataService, times(1))
                 .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
         assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSolTwo")).isNotNull();
-        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNull();
         assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSol")).isNull();
         assertThat(mapCaptor.getValue().get("gaEvidenceDocClaimant")).isNull();
     }

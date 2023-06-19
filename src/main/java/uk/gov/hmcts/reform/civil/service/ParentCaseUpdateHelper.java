@@ -166,9 +166,8 @@ public class ParentCaseUpdateHelper {
                                   CaseData generalAppCaseData, String[] docVisibilityRoles) {
         String[] evidenceRole = null;
         if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
-            String[] evidenceRoleBefore = new String[2];
-            evidenceRoleBefore[0] = "Staff";
-            evidenceRoleBefore[1] = findGaCreator(civilCaseData, generalAppCaseData);
+            String[] evidenceRoleBefore = new String[1];
+            evidenceRoleBefore[0] = findGaCreator(civilCaseData, generalAppCaseData);
             evidenceRole = evidenceRoleBefore;
         } else if (generalAppCaseData.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)) {
             evidenceRole = docVisibilityRoles;
