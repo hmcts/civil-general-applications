@@ -66,7 +66,6 @@ public class TaskHandlerHelper {
 
             CaseData startEventData = caseDetailsConverter.toCaseData(startEventResp.getCaseDetails());
             BusinessProcess businessProcess = startEventData.getBusinessProcess().toBuilder()
-                .processInstanceId(externalTask.getProcessInstanceId())
                 .failedExternalTaskId(externalTask.getId())
                 .status(BusinessProcessStatus.FAILED)
                 .build();
