@@ -1181,7 +1181,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         if (applicantVulnerabilityResponse == NO) {
             String response = getApplicantVulnerabilityResponseNo(caseData,
-                    hasRespondentVulnerabilityResponded,
+                    //hasRespondentVulnerabilityResponded,
                     hasRespondent1VulnerabilityResponded,
                     hasRespondent2VulnerabilityResponded);
             if (Objects.nonNull(response)) {
@@ -1249,7 +1249,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     }
 
     private String getApplicantVulnerabilityResponseNo(CaseData caseData,
-                                                       boolean hasRespondentVulnerabilityResponded,
+                                                       //boolean hasRespondentVulnerabilityResponded,
                                                        boolean hasRespondent1VulnerabilityResponded,
                                                        boolean hasRespondent2VulnerabilityResponded) {
         if (hasRespondent1VulnerabilityResponded == TRUE
