@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
+
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
