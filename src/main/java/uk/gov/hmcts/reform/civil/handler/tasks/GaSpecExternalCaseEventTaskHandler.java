@@ -39,11 +39,8 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
-            .activityId(externalTask.getActivityId())
-            .failedExternalTaskId(externalTask.getId()).build();
-
-        businessProcess.setFailedExternalTaskId(externalTask.getId());
-
+            .activityId(externalTask.getActivityId()).build();
+        businessProcess.resetFailedBusinessProcessToStarted();
         CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }

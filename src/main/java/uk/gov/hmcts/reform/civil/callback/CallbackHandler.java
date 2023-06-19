@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
-import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 
 import java.util.List;
@@ -50,10 +49,7 @@ public abstract class CallbackHandler {
 
             return false;
         }
-
-        return businessProcess != null
-            && !businessProcess.getStatus().equals(BusinessProcessStatus.STARTED)
-            && camundaActivityId().equals(businessProcess.getActivityId());
+        return businessProcess != null && camundaActivityId().equals(businessProcess.getActivityId());
     }
 
     public void register(Map<String, CallbackHandler> handlers) {

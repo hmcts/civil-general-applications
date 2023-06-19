@@ -40,9 +40,8 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
-            .activityId(externalTask.getActivityId())
-            .failedExternalTaskId(externalTask.getId()).build();
-
+            .activityId(externalTask.getActivityId()).build();
+        businessProcess.resetFailedBusinessProcessToStarted();
         String flowState = externalTask.getVariable(FLOW_STATE);
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
         data = coreCaseDataService.submitUpdate(caseId, caseDataContent);

@@ -43,9 +43,8 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
-            .activityId(externalTask.getActivityId())
-            .failedExternalTaskId(externalTask.getId()).build();
-
+            .activityId(externalTask.getActivityId()).build();
+        businessProcess.resetFailedBusinessProcessToStarted();
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
                                                           variables, startEventData.getGeneralAppParentCaseLink());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);

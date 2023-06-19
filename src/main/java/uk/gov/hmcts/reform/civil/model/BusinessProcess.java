@@ -53,6 +53,15 @@ public class BusinessProcess {
     }
 
     @JsonIgnore
+    public BusinessProcess resetFailedBusinessProcessToStarted() {
+        if (this.status.equals(BusinessProcessStatus.FAILED)) {
+            this.failedExternalTaskId = null;
+            this.status = BusinessProcessStatus.STARTED;
+        }
+        return this;
+    }
+
+    @JsonIgnore
     public BusinessProcess reset() {
         this.activityId = null;
         this.failedExternalTaskId = null;

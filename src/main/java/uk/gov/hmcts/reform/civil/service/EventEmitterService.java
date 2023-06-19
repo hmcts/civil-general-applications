@@ -23,7 +23,6 @@ public class EventEmitterService {
 
     public void emitBusinessProcessCamundaEvent(Long caseId, GeneralApplication application, boolean dispatchProcess) {
         var businessProcess = application.getBusinessProcess();
-
         var camundaEvent = businessProcess.getCamundaEvent();
         log.info(format("Emitting %s camunda event for case: %d", camundaEvent, caseId));
         boolean nullTenantAttempt = false;

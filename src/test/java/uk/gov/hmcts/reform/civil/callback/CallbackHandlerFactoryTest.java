@@ -232,31 +232,6 @@ class CallbackHandlerFactoryTest {
     }
 
     @Test
-    void shouldProcessEventAgain_whenEventIsAlreadyProcessed_withStateStarted() {
-        CallbackRequest callbackRequest = CallbackRequest
-            .builder()
-            .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
-            .caseDetailsBefore(CaseDetails.builder().data(Map.of(
-                "businessProcess",
-                BusinessProcess.builder()
-                    .status(BusinessProcessStatus.STARTED)
-                    .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()
-            )).build())
-            .build();
-
-        CallbackParams params = CallbackParams.builder()
-            .request(callbackRequest)
-            .type(ABOUT_TO_SUBMIT)
-            .version(V_1)
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
-            .build();
-
-        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
-
-        assertEquals(EVENT_HANDLED_RESPONSE, callbackResponse);
-    }
-
-    @Test
     void shouldProcessEvent_whenEventIsNotAlreadyProcessed() {
         CallbackRequest callbackRequest = CallbackRequest
             .builder()
