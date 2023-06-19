@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentMan
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,6 +127,36 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
                                                                   eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(false);
+    }
+
+    @Test
+    void shouldGenerateApplicationDraftDocumentWithNoticeButRespondentNotRespondedOnTime() {
+        CaseData caseData = getSampleGeneralAppCaseDataWithDeadLineReached(NO, YES);
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        generalApplicationDraftGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_APPLICATION_DRAFT)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class), eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
     }
 
     @Test
@@ -300,6 +331,15 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .ccdCaseReference(CHILD_CCD_REF).build();
     }
 
+    private CaseData getSampleGeneralAppCaseDataWithDeadLineReached(YesOrNo isConsented, YesOrNo isTobeNotified) {
+        return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                getGeneralApplicationWithDeadlineReached(isConsented, isTobeNotified))
+            .toBuilder()
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .ccdCaseReference(CHILD_CCD_REF).build();
+    }
+
     private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified) {
         DynamicListElement location1 = DynamicListElement.builder()
             .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
@@ -322,6 +362,51 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .generalAppDetailsOfOrder(STRING_CONSTANT)
             .generalAppReasonsOfOrder(STRING_CONSTANT)
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+            .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+            .generalAppHearingDetails(GAHearingDetails.builder()
+                                          .hearingPreferredLocation(DynamicList.builder()
+                                                                        .listItems(List.of(location1))
+                                                                        .value(location1).build())
+                                          .vulnerabilityQuestionsYesOrNo(YES)
+                                          .vulnerabilityQuestion("dummy2")
+                                          .generalAppUnavailableDates(appUnavailabilityDates)
+                                          .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                          .hearingDuration(GAHearingDuration.MINUTES_30)
+                                          .hearingDetailsEmailID(DUMMY_EMAIL)
+                                          .hearingDetailsTelephoneNumber(DUMMY_TELEPHONE_NUM).build())
+            .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
+                                                             .email("abc@gmail.com").build()))
+            .isMultiParty(NO)
+            .parentClaimantIsApplicant(YES)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                          .caseReference(PARENT_CCD_REF.toString()).build())
+            .build();
+    }
+
+    private GeneralApplication getGeneralApplicationWithDeadlineReached(YesOrNo isConsented, YesOrNo isTobeNotified) {
+        DynamicListElement location1 = DynamicListElement.builder()
+            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+        List<Element<GAUnavailabilityDates>> appUnavailabilityDates = new ArrayList<>();
+        appUnavailabilityDates.add(element(GAUnavailabilityDates.builder()
+                                               .unavailableTrialDateTo(LocalDate.now().plusDays(2))
+                                               .unavailableTrialDateFrom(LocalDate.now()).build()));
+        return GeneralApplication.builder()
+            .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .fee(
+                        Fee.builder()
+                            .code("FE203")
+                            .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                            .version("1")
+                            .build())
+                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+            .generalAppDetailsOfOrder(STRING_CONSTANT)
+            .generalAppReasonsOfOrder(STRING_CONSTANT)
+            .generalAppDateDeadline(LocalDateTime.now().minusDays(2))
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
             .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
             .generalAppHearingDetails(GAHearingDetails.builder()
