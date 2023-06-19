@@ -45,7 +45,7 @@ public class ValidateEmailService {
     see https://github.com/alphagov/notifications-utils/blob/master/notifications_utils/recipients.py#L494-L534
      */
     private boolean isValid(String email) {
-        if(!validateEmail(email)) {
+        if (!validateEmail(email)) {
             return false;
         }
 
@@ -53,7 +53,7 @@ public class ValidateEmailService {
 
         final String username = emailAddress.split("@")[0];
 
-        if(!validateUsername(username)) {
+        if (!validateUsername(username)) {
             return false;
         }
 
@@ -66,7 +66,7 @@ public class ValidateEmailService {
 
         String hostname = emailMatcher.group(1);
 
-        if(!validateHost(hostname)) {
+        if (!validateHost(hostname)) {
             return false;
         }
 
