@@ -1361,15 +1361,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
-            Optional<Element<GARespondentResponse>> response1 = response1(caseData);
-            Optional<Element<GARespondentResponse>> response2 = response2(caseData);
-
-            String respondentOne = retrieveSupportRequirementsFromResponse(response1);
-            String respondentTwo = retrieveSupportRequirementsFromResponse(response2);
-            return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
-                    appSupportReq.isEmpty() ? NO_SUPPORT : appSupportReq,
-                    respondentOne.isEmpty() ? NO_SUPPORT : respondentOne,
-                    respondentTwo.isEmpty() ? NO_SUPPORT : respondentTwo);
+            return createJudicialSupportReqText3(caseData, appSupportReq);
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
@@ -1379,6 +1371,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
 
         return StringUtils.EMPTY;
+    }
+
+    private String createJudicialSupportReqText3(CaseData caseData, String appSupportReq) {
+        Optional<Element<GARespondentResponse>> response1 = response1(caseData);
+        Optional<Element<GARespondentResponse>> response2 = response2(caseData);
+
+        String respondentOne = retrieveSupportRequirementsFromResponse(response1);
+        String respondentTwo = retrieveSupportRequirementsFromResponse(response2);
+        return format(JUDICIAL_SUPPORT_REQ_TEXT_3,
+                appSupportReq.isEmpty() ? NO_SUPPORT : appSupportReq,
+                respondentOne.isEmpty() ? NO_SUPPORT : respondentOne,
+                respondentTwo.isEmpty() ? NO_SUPPORT : respondentTwo);
     }
 
     public String constructApplicantSupportReqText(List<String> applicantSupportReq, String appSupportReq) {
