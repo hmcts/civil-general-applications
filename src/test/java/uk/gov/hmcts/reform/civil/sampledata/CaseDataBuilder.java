@@ -478,6 +478,7 @@ public class CaseDataBuilder {
     public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
         return CaseData.builder()
             .generalAppType(application.getGeneralAppType())
+            .caseLink(application.getCaseLink())
             .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
             .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
             .generalAppPBADetails(application.getGeneralAppPBADetails())
