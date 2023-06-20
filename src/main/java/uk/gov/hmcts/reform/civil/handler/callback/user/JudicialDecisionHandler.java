@@ -1195,7 +1195,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                         boolean hasRespondentVulnerabilityResponded,
                                                         boolean hasRespondent1VulnerabilityResponded,
                                                         boolean hasRespondent2VulnerabilityResponded) {
-        if (hasRespondentVulnerabilityResponded == TRUE) {
+        if (hasRespondentVulnerabilityResponded) {
             return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
                     .concat(caseData.getGeneralAppHearingDetails()
                             .getVulnerabilityQuestion()
@@ -1203,8 +1203,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                             .concat(caseData.getRespondentsResponses().stream().iterator().next().getValue()
                                     .getGaHearingDetails().getVulnerabilityQuestion()));
         }
-        if (hasRespondent1VulnerabilityResponded == TRUE
-                && hasRespondent2VulnerabilityResponded == TRUE) {
+        if (hasRespondent1VulnerabilityResponded
+                && hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional1.isPresent() && responseElementOptional2.isPresent()) {
@@ -1219,8 +1219,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                         .getGaHearingDetails().getVulnerabilityQuestion()));
             }
         }
-        if (hasRespondent1VulnerabilityResponded == TRUE
-                && hasRespondent2VulnerabilityResponded == FALSE) {
+        if (hasRespondent1VulnerabilityResponded
+                && !hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional1.isPresent()) {
@@ -1232,8 +1232,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                         .getGaHearingDetails().getVulnerabilityQuestion()));
             }
         }
-        if (hasRespondent1VulnerabilityResponded == FALSE
-                && hasRespondent2VulnerabilityResponded == TRUE) {
+        if (!hasRespondent1VulnerabilityResponded
+                && hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional2.isPresent()) {
@@ -1252,8 +1252,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                        //boolean hasRespondentVulnerabilityResponded,
                                                        boolean hasRespondent1VulnerabilityResponded,
                                                        boolean hasRespondent2VulnerabilityResponded) {
-        if (hasRespondent1VulnerabilityResponded == TRUE
-                && hasRespondent2VulnerabilityResponded == TRUE) {
+        if (hasRespondent1VulnerabilityResponded
+                && hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional1.isPresent() && responseElementOptional2.isPresent()) {
@@ -1265,8 +1265,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                 .getGaHearingDetails().getVulnerabilityQuestion());
             }
         }
-        if (hasRespondent1VulnerabilityResponded == FALSE
-                && hasRespondent2VulnerabilityResponded == TRUE) {
+        if (!hasRespondent1VulnerabilityResponded
+                && hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional2.isPresent()) {
                 return JUDICIAL_RESPONDENT2_VULNERABILITY_TEXT
@@ -1274,8 +1274,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                 .getGaHearingDetails().getVulnerabilityQuestion());
             }
         }
-        if (hasRespondent1VulnerabilityResponded == TRUE
-                && hasRespondent2VulnerabilityResponded == FALSE) {
+        if (hasRespondent1VulnerabilityResponded
+                && !hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             if (responseElementOptional1.isPresent()) {
                 return JUDICIAL_RESPONDENT1_VULNERABILITY_TEXT
@@ -1315,7 +1315,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return applicantVulnerabilityResponse == YES ? JUDICIAL_APPLICANT_VULNERABILITY_TEXT
                 .concat(caseData.getGeneralAppHearingDetails()
                         .getVulnerabilityQuestion())
-                : hasRespondentVulnerabilityResponded == TRUE
+                : hasRespondentVulnerabilityResponded
                 ? ltrim(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT).concat(caseData.getRespondentsResponses().stream()
                 .iterator().next().getValue()
                 .getGaHearingDetails()

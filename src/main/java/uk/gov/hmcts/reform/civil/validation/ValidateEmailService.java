@@ -66,11 +66,7 @@ public class ValidateEmailService {
 
         String hostname = emailMatcher.group(1);
 
-        if (!validateHost(hostname)) {
-            return false;
-        }
-
-        return true;
+        return validateHost(hostname);
     }
 
     private boolean validateEmail(String email) {
