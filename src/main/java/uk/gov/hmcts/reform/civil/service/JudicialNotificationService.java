@@ -232,26 +232,30 @@ public class JudicialNotificationService implements NotificationData {
             }
         } else {
             // send notification to applicant and respondent if it's with notice application
-            addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
-                                                 .getJudgeRequestMoreInfoByDate());
+            sendToBoth(caseData, solicitorType);
+        }
+        return caseData;
+    }
 
-            if (solicitorType.equals(RESPONDENT) && areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
+    private void sendToBoth(CaseData caseData, String solicitorType) {
+        addCustomPropsForRespondDeadline(caseData.getJudicialDecisionRequestMoreInfo()
+                .getJudgeRequestMoreInfoByDate());
+
+        if (solicitorType.equals(RESPONDENT) && areRespondentSolicitorsPresent(caseData)) {
+            sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
-                );
-            }
+            );
+        }
 
-            if (solicitorType.equals(APPLICANT)) {
-                sendNotificationForJudicialDecision(
+        if (solicitorType.equals(APPLICANT)) {
+            sendNotificationForJudicialDecision(
                     caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
-                );
-            }
-            customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
+            );
         }
-        return caseData;
+        customProps.remove(GA_REQUEST_FOR_INFORMATION_DEADLINE);
     }
 
     private CaseData applicationRequestForInformationCloak(CaseData caseData, String solicitorType) {
