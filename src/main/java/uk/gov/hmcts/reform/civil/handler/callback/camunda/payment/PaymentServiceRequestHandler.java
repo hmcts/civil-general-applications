@@ -67,7 +67,9 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             log.info("calling payment service request " + caseData.getCcdCaseReference());
             String serviceRequestReference = GeneralAppFeesService.FREE_REF;
             boolean freeGa = feeService.isFreeApplication(caseData);
+
             if (!freeGa) {
+
                 serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
                         .getServiceRequestReference();
             }
@@ -96,6 +98,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             }
             caseData = caseData.toBuilder()
                     .generalAppPBADetails(pbaDetailsBuilder.build()).build();
+            throw new RuntimeException("asdf");
         } catch (FeignException e) {
             log.info(String.format("Http Status %s ", e.status()), e);
             errors.add(ERROR_MESSAGE);
