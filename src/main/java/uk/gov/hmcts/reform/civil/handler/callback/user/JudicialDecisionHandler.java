@@ -1312,15 +1312,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .getVulnerabilityQuestionsYesOrNo();
         boolean hasRespondentVulnerabilityResponded =
                 hasRespondentVulnerabilityResponded(responseCount, caseData);
-        return applicantVulnerabilityResponse == YES ? JUDICIAL_APPLICANT_VULNERABILITY_TEXT
-                .concat(caseData.getGeneralAppHearingDetails()
-                        .getVulnerabilityQuestion())
-                : hasRespondentVulnerabilityResponded
-                ? ltrim(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT).concat(caseData.getRespondentsResponses().stream()
-                .iterator().next().getValue()
-                .getGaHearingDetails()
-                .getVulnerabilityQuestion())
-                : "No support required with regards to vulnerability";
+        if (applicantVulnerabilityResponse == YES) {
+            return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
+                    .concat(caseData.getGeneralAppHearingDetails()
+                            .getVulnerabilityQuestion());
+        } else {
+            return hasRespondentVulnerabilityResponded
+                    ? ltrim(JUDICIAL_RESPONDENT_VULNERABILITY_TEXT).concat(caseData.getRespondentsResponses().stream()
+                    .iterator().next().getValue()
+                    .getGaHearingDetails()
+                    .getVulnerabilityQuestion())
+                    : "No support required with regards to vulnerability";
+        }
     }
 
     private String ltrim(String str) {
