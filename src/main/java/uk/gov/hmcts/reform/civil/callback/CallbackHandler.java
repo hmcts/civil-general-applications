@@ -49,6 +49,7 @@ public abstract class CallbackHandler {
 
             return false;
         }
+        
         return businessProcess != null && camundaActivityId().equals(businessProcess.getActivityId());
     }
 
