@@ -2,22 +2,37 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.util.Lists;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +42,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.nonNull;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
@@ -402,6 +418,81 @@ public class ParentCaseUpdateHelper {
         return generalApplications;
     }
 
+    public void removeUnusedFieldsFromCivilCaseData(CaseData generalAppCaseData) {
+
+        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
+                                                                                UPDATE_CASE_WITH_GA_STATE);
+        CaseData civilCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+
+        List<Element<GeneralApplication>> generalApplications = civilCaseData.getGeneralApplications();
+        if (!isEmpty(generalApplications)) {
+
+            List<Element<GeneralApplication>> generalApplicationsList = generalApplications.stream()
+                .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                .toList();
+
+            GeneralApplication.GeneralApplicationBuilder applicationBuilder = GeneralApplication.builder();
+
+            GeneralApplication generalApplication = generalApplications.stream()
+                .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                .findAny().get().getValue();
+
+            generalApplications =
+                addApplication(buildGeneralApplication(generalApplication, applicationBuilder), generalApplicationsList);
+
+            Map<String, Object> updateMap = getUpdatedCaseData(civilCaseData, generalApplications);
+
+            coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
+                startEventResponse, updateMap));
+
+        }
+    }
+
+    private GeneralApplication buildGeneralApplication(GeneralApplication generalApplication,
+                                                       GeneralApplication.GeneralApplicationBuilder
+                                                           applicationBuilder) {
+
+       applicationBuilder = generalApplication.toBuilder();
+       applicationBuilder.generalAppType(GAApplicationType.builder().build())
+           .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().build())
+           .generalAppPBADetails(GAPbaDetails.builder().build())
+           .generalAppDetailsOfOrder(EMPTY)
+           .generalAppReasonsOfOrder(EMPTY)
+           .generalAppInformOtherParty(GAInformOtherParty.builder().build())
+           .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().build())
+           .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+           .generalAppHearingDate(GAHearingDateGAspec.builder().build())
+           .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
+           .generalAppRespondentSolicitors(Collections.emptyList())
+           .generalAppEvidenceDocument(Collections.emptyList())
+           .applicantPartyName(EMPTY)
+           .claimant1PartyName(EMPTY)
+           .claimant2PartyName(EMPTY)
+           .defendant1PartyName(EMPTY)
+           .defendant2PartyName(EMPTY)
+           .generalAppSuperClaimType(EMPTY)
+           .caseManagementCategory(GACaseManagementCategory.builder().build())
+           .locationName(EMPTY)
+           .generalAppN245FormUpload(Document.builder().build())
+           .generalAppHearingDate(GAHearingDateGAspec.builder().build())
+           .applicantPartyName(EMPTY).build();
+
+        return applicationBuilder.build();
+    }
+
+    private List<Element<GeneralApplication>> addApplication(GeneralApplication application,
+                                                             List<Element<GeneralApplication>>
+                                                                 generalApplicationsList) {
+        List<Element<GeneralApplication>> newApplication = newArrayList();
+        newApplication.addAll(generalApplicationsList);
+        newApplication.add(element(application));
+
+        return newApplication;
+    }
+
     private List<Element<GADetailsRespondentSol>> updateGaDetailsRespondentOne(CaseData caseData, String newState,
                                                                                String applicationId) {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
@@ -465,6 +556,13 @@ public class ParentCaseUpdateHelper {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, gaDetailsMasterCollection);
+        return output;
+    }
+
+    private Map<String, Object> getUpdatedCaseData(CaseData caseData,
+                                                   List<Element<GeneralApplication>> generalApplication) {
+        Map<String, Object> output = caseData.toMap(mapper);
+        output.put("generalApplications", generalApplication);
         return output;
     }
 }
