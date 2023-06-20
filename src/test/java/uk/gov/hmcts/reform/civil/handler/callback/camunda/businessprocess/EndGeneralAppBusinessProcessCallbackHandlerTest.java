@@ -110,10 +110,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             handler.handle(getCallbackParams(YES, NO));
 
-            verify(coreCaseDataService, times(2))
+            verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService, times(2)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -168,10 +168,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             handler.handle(getCallbackParams(NO, YES));
 
-            verify(coreCaseDataService, times(2))
+            verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService, times(2)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -225,10 +225,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             handler.handle(getCallbackParams(NO, YES));
 
-            verify(coreCaseDataService, times(2))
+            verify(coreCaseDataService, times(1))
                 .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService, times(2)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -343,10 +343,10 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             handler.handle(getCallbackParams(NO, YES));
 
-            verify(coreCaseDataService, times(2))
+            verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService, times(2)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),

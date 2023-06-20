@@ -64,7 +64,6 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }
         parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
-        parentCaseUpdateHelper.removeUnusedFieldsFromCivilCaseData(data);
         return evaluateReady(callbackParams, newState);
     }
 

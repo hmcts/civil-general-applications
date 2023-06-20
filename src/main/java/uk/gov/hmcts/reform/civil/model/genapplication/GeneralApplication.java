@@ -23,13 +23,13 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class GeneralApplication implements MappableObject {
 
-    private GAApplicationType generalAppType; // remove
-    private GARespondentOrderAgreement generalAppRespondentAgreement; //remove
-    private final YesOrNo generalAppConsentOrder; //remove
+    private GAApplicationType generalAppType;
+    private GARespondentOrderAgreement generalAppRespondentAgreement;
+    private final YesOrNo generalAppConsentOrder;
     private final BusinessProcess businessProcess;
-    private final GAPbaDetails generalAppPBADetails; //remove
-    private String generalAppDetailsOfOrder; //remove
-    private String generalAppReasonsOfOrder; //remove
+    private final GAPbaDetails generalAppPBADetails;
+    private String generalAppDetailsOfOrder;
+    private String generalAppReasonsOfOrder;
     private GAInformOtherParty generalAppInformOtherParty;
     private GAUrgencyRequirement generalAppUrgencyRequirement;
     private GAStatementOfTruth generalAppStatementOfTruth;

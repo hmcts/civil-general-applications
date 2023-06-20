@@ -154,7 +154,24 @@ public class ParentCaseUpdateHelper {
             applicationId
         );
         docVisibilityRoles[3] = "Staff";
-        Map<String, Object> updateMap = getUpdatedCaseData(caseData, generalApplications,
+
+        List<Element<GeneralApplication>> civilGeneralApplications = caseData.getGeneralApplications();
+        if (!isEmpty(civilGeneralApplications)) {
+
+            List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
+                .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                .toList();
+
+            GeneralApplication generalApplication = civilGeneralApplications.stream()
+                .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                .findAny().get().getValue();
+
+            civilGeneralApplications =
+                addApplication(buildGeneralApplication(generalApplication), generalApplicationsList);
+
+        }
+
+        Map<String, Object> updateMap = getUpdatedCaseData(caseData, civilGeneralApplications, generalApplications,
                 respondentSpecficGADetails,
                 respondentSpecficGADetailsTwo,
                 gaDetailsMasterCollection);
@@ -285,10 +302,11 @@ public class ParentCaseUpdateHelper {
                 newState,
                 applicationId
             );
-            Map<String, Object> updateMap = getUpdatedCaseData(caseData, gaDetailsClaimant,
-                                                gaDetailsRespondentSol,
-                                                gaDetailsRespondentSolTwo,
-                                                gaDetailsMasterCollection);
+            Map<String, Object> updateMap = getUpdatedCaseData(caseData, caseData.getGeneralApplications(),
+                                                               gaDetailsClaimant,
+                                                               gaDetailsRespondentSol,
+                                                               gaDetailsRespondentSolTwo,
+                                                               gaDetailsMasterCollection);
             /*
              * update documents
              * */
@@ -415,65 +433,34 @@ public class ParentCaseUpdateHelper {
         return generalApplications;
     }
 
-    public void removeUnusedFieldsFromCivilCaseData(CaseData generalAppCaseData) {
-
-        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
-        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
-
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
-                                                                                UPDATE_CASE_WITH_GA_STATE);
-        CaseData civilCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-
-        List<Element<GeneralApplication>> generalApplications = civilCaseData.getGeneralApplications();
-        if (!isEmpty(generalApplications)) {
-
-            List<Element<GeneralApplication>> generalApplicationsList = generalApplications.stream()
-                .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                .toList();
-
-            GeneralApplication generalApplication = generalApplications.stream()
-                .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                .findAny().get().getValue();
-
-            generalApplications =
-                addApplication(buildGeneralApplication(generalApplication), generalApplicationsList);
-
-            Map<String, Object> updateMap = getUpdatedCaseData(civilCaseData, generalApplications);
-
-            coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-                startEventResponse, updateMap));
-
-        }
-    }
-
     private GeneralApplication buildGeneralApplication(GeneralApplication generalApplication) {
         GeneralApplication.GeneralApplicationBuilder applicationBuilder = generalApplication.toBuilder();
 
         applicationBuilder.generalAppType(GAApplicationType.builder().build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().build())
-           .generalAppPBADetails(GAPbaDetails.builder().build())
-           .generalAppDetailsOfOrder(EMPTY)
-           .generalAppReasonsOfOrder(EMPTY)
-           .generalAppInformOtherParty(GAInformOtherParty.builder().build())
-           .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().build())
-           .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
-           .generalAppHearingDate(GAHearingDateGAspec.builder().build())
-           .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
-           .generalAppHearingDetails(GAHearingDetails.builder().build())
-           .gaApplicantDisplayName(EMPTY)
-           .civilServiceUserRoles(IdamUserDetails.builder().build())
-           .generalAppRespondentSolicitors(Collections.emptyList())
-           .generalAppEvidenceDocument(Collections.emptyList())
-           .applicantPartyName(EMPTY)
-           .claimant1PartyName(EMPTY)
-           .claimant2PartyName(EMPTY)
-           .defendant1PartyName(EMPTY)
-           .defendant2PartyName(EMPTY)
-           .generalAppSuperClaimType(EMPTY)
-           .caseManagementCategory(GACaseManagementCategory.builder().build())
-           .locationName(EMPTY)
-           .generalAppHearingDate(GAHearingDateGAspec.builder().build())
-           .applicantPartyName(EMPTY).build();
+            .generalAppPBADetails(GAPbaDetails.builder().build())
+            .generalAppDetailsOfOrder(EMPTY)
+            .generalAppReasonsOfOrder(EMPTY)
+            .generalAppInformOtherParty(GAInformOtherParty.builder().build())
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().build())
+            .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+            .generalAppHearingDate(GAHearingDateGAspec.builder().build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
+            .generalAppHearingDetails(GAHearingDetails.builder().build())
+            .gaApplicantDisplayName(EMPTY)
+            .civilServiceUserRoles(IdamUserDetails.builder().build())
+            .generalAppRespondentSolicitors(Collections.emptyList())
+            .generalAppEvidenceDocument(Collections.emptyList())
+            .applicantPartyName(EMPTY)
+            .claimant1PartyName(EMPTY)
+            .claimant2PartyName(EMPTY)
+            .defendant1PartyName(EMPTY)
+            .defendant2PartyName(EMPTY)
+            .generalAppSuperClaimType(EMPTY)
+            .caseManagementCategory(GACaseManagementCategory.builder().build())
+            .locationName(EMPTY)
+            .generalAppHearingDate(GAHearingDateGAspec.builder().build())
+            .applicantPartyName(EMPTY).build();
 
         return applicationBuilder.build();
     }
@@ -540,6 +527,7 @@ public class ParentCaseUpdateHelper {
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData caseData,
+                                                   List<Element<GeneralApplication>> civilGeneralApplications,
                                                    List<Element<GeneralApplicationsDetails>> claimantGaAppDetails,
                                                    List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails,
                                                    List<Element<GADetailsRespondentSol>>
@@ -547,6 +535,7 @@ public class ParentCaseUpdateHelper {
                                                    List<Element<GeneralApplicationsDetails>>
                                                        gaDetailsMasterCollection) {
         Map<String, Object> output = caseData.toMap(mapper);
+        output.put("generalApplications", civilGeneralApplications);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT, claimantGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
