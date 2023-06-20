@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.civil.handler.tasks.FailedEventEmitterHandler;
 @ConditionalOnExpression("${polling.event.emitter.enabled:true}")
 public class FailedEventEmitterExternalTaskListener {
 
-    private static final String TOPIC = "GA_FAILED_EVENT_EMITTER";
+    private static final String TOPIC = "GAFailedEventEmitterScheduler";
 
     @Autowired
     private FailedEventEmitterExternalTaskListener(FailedEventEmitterHandler failedEventEmitterHandler,
