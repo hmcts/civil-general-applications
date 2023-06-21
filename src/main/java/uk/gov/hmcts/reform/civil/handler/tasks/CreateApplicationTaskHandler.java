@@ -100,7 +100,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                  * It should not be visible to solicitors
                  * */
                 judgeApplications = addApplication(
-                    buildApplication(generalApplication, caseData), caseData.getGaDetailsMasterCollection());
+                    buildApplication(generalApplication), caseData.getGaDetailsMasterCollection());
 
                 /*
                  * Respondent Agreement is No and without notice application.
@@ -142,7 +142,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
          * */
         if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
             applications = addApplication(
-                    buildApplication(generalApplication, caseData),
+                    buildApplication(generalApplication),
                     caseData.getClaimantGaAppDetails()
             );
         }
@@ -154,8 +154,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                 .equals(getRespondent1SolicitorOrgId(caseData))) {
 
-            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
-                    caseData);
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
 
             if (gaDetailsRespondentSol != null) {
                 respondentSpecficGADetails = addRespApplication(
@@ -172,7 +171,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 .equals(getRespondent2SolicitorOrgId(caseData))) {
 
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                    generalApplication, caseData);
+                    generalApplication);
 
             if (gaDetailsRespondentSolTwo != null) {
                 respondentTwoSpecficGADetails = addRespApplication(
@@ -184,11 +183,11 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private void withNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
         applications = addApplication(
-                buildApplication(generalApplication, caseData),
+                buildApplication(generalApplication),
                 caseData.getClaimantGaAppDetails()
         );
 
-        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, caseData);
+        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
         if (gaDetailsRespondentSol != null) {
             respondentSpecficGADetails = addRespApplication(
                     gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
@@ -197,7 +196,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
                 && caseData.getRespondent2SameLegalRepresentative().equals(NO)) {
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                    generalApplication, caseData);
+                    generalApplication);
 
             if (gaDetailsRespondentSolTwo != null) {
                 respondentTwoSpecficGADetails = addRespApplication(
@@ -206,7 +205,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         }
     }
 
-    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
+    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
@@ -218,7 +217,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
     }
 
-    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication, CaseData caseData) {
+    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));

@@ -52,7 +52,7 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
             .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
                 && now().isAfter(
                 caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override

@@ -740,17 +740,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         String caseId = caseData.getCcdCaseReference().toString();
 
-        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)) {
-            if (caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
-                GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
-                        .hearingPreferredLocation(
-                                populateJudicialHearingLocation(caseData))
-                        .build();
-                CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
-                        .build();
-                caseData = updatedCaseData;
-                dataBuilder = updatedCaseData.toBuilder();
-            }
+        if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)
+            && caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
+            GAJudgesHearingListGAspec gaJudgesHearingListGAspec = caseData.getJudicialListForHearing().toBuilder()
+                    .hearingPreferredLocation(
+                            populateJudicialHearingLocation(caseData))
+                    .build();
+            CaseData updatedCaseData = caseData.toBuilder().judicialListForHearing(gaJudgesHearingListGAspec)
+                    .build();
+            caseData = updatedCaseData;
+            dataBuilder = updatedCaseData.toBuilder();
         }
 
         dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
@@ -929,18 +928,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public List<String> validateCourtsInitiativeDatesForWrittenRep(CaseData caseData) {
         List<String> errors = new ArrayList<>();
         GAByCourtsInitiativeGAspec gaByCourtsInitiativeGAspec = caseData.getJudicialByCourtsInitiativeForWrittenRep();
-        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)) {
-            if (LocalDate.now()
-                    .isAfter(caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate())) {
-                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
-            }
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)
+                && LocalDate.now()
+                .isAfter(caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate())) {
+            errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
-        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)) {
-            if (LocalDate.now()
-                    .isAfter(caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate())) {
-                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
-            }
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)
+            && LocalDate.now()
+                .isAfter(caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate())) {
+            errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
         return errors;
     }
@@ -996,18 +993,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public List<String> validateCourtsInitiativeDatesForHearing(CaseData caseData) {
         List<String> errors = new ArrayList<>();
         GAByCourtsInitiativeGAspec gaByCourtsInitiativeGAspec = caseData.getJudicialByCourtsInitiativeListForHearing();
-        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)) {
-            if (LocalDate.now()
-                    .isAfter(caseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate())) {
-                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
-            }
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_1)
+            && LocalDate.now()
+                .isAfter(caseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate())) {
+            errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
-        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)) {
-            if (LocalDate.now()
-                    .isAfter(caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate())) {
+        if (gaByCourtsInitiativeGAspec.equals(OPTION_2)
+            && LocalDate.now()
+                .isAfter(caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate())) {
                 errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
-            }
         }
         return errors;
     }
@@ -1222,7 +1217,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (hasRespondent1VulnerabilityResponded
                 && !hasRespondent2VulnerabilityResponded) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
-            Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional1.isPresent()) {
                 return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
                         .concat(caseData.getGeneralAppHearingDetails()
@@ -1234,7 +1228,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
         }
         if (!hasRespondent1VulnerabilityResponded
                 && hasRespondent2VulnerabilityResponded) {
-            Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
             if (responseElementOptional2.isPresent()) {
                 return JUDICIAL_APPLICANT_VULNERABILITY_TEXT
@@ -1337,7 +1330,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppHearingDetails().getSupportRequirement() != null) {
             applicantSupportReq = caseData.getGeneralAppHearingDetails().getSupportRequirement().stream()
-                    .map(GAHearingSupportRequirements::getDisplayedValue).collect(Collectors.toList());
+                    .map(GAHearingSupportRequirements::getDisplayedValue).toList();
 
             appSupportReq = String.join(", ", applicantSupportReq);
         }
@@ -1352,7 +1345,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         = caseData.getRespondentsResponses().stream().iterator().next().getValue()
                         .getGaHearingDetails().getSupportRequirement().stream()
                         .map(GAHearingSupportRequirements::getDisplayedValue)
-                        .collect(Collectors.toList());
+                        .toList();
 
                 resSupportReq = String.join(", ", respondentSupportReq);
             }
@@ -1446,10 +1439,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     public List<String> validateCourtsInitiativeDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
         List<String> errors = new ArrayList<>();
 
-        if (judicialDecisionMakeOrder.getJudicialByCourtsInitiative().equals(OPTION_1)) {
-            if (LocalDate.now().isAfter(judicialDecisionMakeOrder.getOrderCourtOwnInitiativeDate())) {
-                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
-            }
+        if (judicialDecisionMakeOrder.getJudicialByCourtsInitiative().equals(OPTION_1)
+            && LocalDate.now().isAfter(judicialDecisionMakeOrder.getOrderCourtOwnInitiativeDate())) {
+            errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
         if (judicialDecisionMakeOrder.getJudicialByCourtsInitiative().equals(OPTION_2)) {
             {

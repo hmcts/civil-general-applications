@@ -23,7 +23,7 @@ public class ElementUtils {
         return Stream.of(elements)
             .filter(Objects::nonNull)
             .map(element -> Element.<T>builder().value(element).build())
-            .collect(toList());
+            .toList();
     }
 
     public static <T> List<T> unwrapElements(List<Element<T>> elements) {
@@ -31,7 +31,7 @@ public class ElementUtils {
             .stream()
             .map(Element::getValue)
             .filter(Objects::nonNull)
-            .collect(toUnmodifiableList());
+            .toList();
     }
 
     public static <T> Element<T> element(T element) {

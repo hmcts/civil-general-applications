@@ -40,8 +40,7 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
         BusinessProcess businessProcess = startEventData.getBusinessProcess()
             .updateActivityId(externalTask.getActivityId());
 
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
-            variables, startEventData.getGeneralAppParentCaseLink());
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
@@ -56,8 +55,7 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess, ExternalTaskInput variables,
-                                            GeneralAppParentCaseLink generalAppParentCaseLink) {
+                                            BusinessProcess businessProcess) {
         Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
         updatedData.put("businessProcess", businessProcess);
 

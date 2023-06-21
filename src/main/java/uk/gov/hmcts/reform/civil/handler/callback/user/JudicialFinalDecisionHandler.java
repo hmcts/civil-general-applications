@@ -237,6 +237,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
                 .append(" - ").append(location.getCourtAddress())
                 .append(" - ").append(location.getPostcode()).toString())
-                            .collect(Collectors.toList()));
+                            .toList());
     }
 }

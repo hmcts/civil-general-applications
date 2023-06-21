@@ -60,6 +60,6 @@ public class StateFlowListener extends StateMachineListenerAdapter<String, Strin
     private List<String> toPermittedStates(Collection<Transition<String, String>> permittedTransitions) {
         return permittedTransitions.stream()
             .map(transition -> transition.getTarget().getId())
-            .collect(Collectors.toList());
+            .toList();
     }
 }

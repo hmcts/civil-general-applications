@@ -35,7 +35,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -101,7 +101,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         }
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return HEARING_ORDER;
     }
 }

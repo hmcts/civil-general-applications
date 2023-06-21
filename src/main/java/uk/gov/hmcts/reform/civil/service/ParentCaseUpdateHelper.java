@@ -366,19 +366,17 @@ public class ParentCaseUpdateHelper {
         List<Element<GeneralApplicationsDetails>> generalApplications = ofNullable(
             caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
-        if (!isEmpty(generalApplications)) {
-
-            if (generalApplications.stream()
+        if (!isEmpty(generalApplications)
+            && generalApplications.stream()
                 .anyMatch(applicant -> applicationFilterCriteria(applicant, applicationId))) {
 
-                generalApplications.stream()
+            generalApplications.stream()
                     .filter(application -> applicationFilterCriteria(application, applicationId))
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if (nonNull(roles)) {
-                    roles[2] = "Claimant";
-                }
+            if (nonNull(roles)) {
+                roles[2] = "Claimant";
             }
         }
         return generalApplications;
@@ -387,17 +385,15 @@ public class ParentCaseUpdateHelper {
     private List<Element<GeneralApplicationsDetails>> updateJudgeGaApplicationState(CaseData caseData, String newState,
                                                                                String applicationId) {
         List<Element<GeneralApplicationsDetails>> generalApplications = caseData.getGaDetailsMasterCollection();
-        if (!isEmpty(generalApplications)) {
-
-            if (generalApplications.stream()
+        if (!isEmpty(generalApplications)
+            && generalApplications.stream()
                 .anyMatch(applicant -> applicationFilterCriteria(applicant, applicationId))) {
 
-                generalApplications.stream()
+            generalApplications.stream()
                     .filter(application -> applicationFilterCriteria(application, applicationId))
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-            }
         }
         return generalApplications;
     }
@@ -406,17 +402,15 @@ public class ParentCaseUpdateHelper {
                                                                                String applicationId) {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
             caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
-        if (!isEmpty(gaDetailsRespondentSol)) {
-
-            if (gaDetailsRespondentSol.stream()
+        if (!isEmpty(gaDetailsRespondentSol)
+            && gaDetailsRespondentSol.stream()
                 .anyMatch(respondentOne -> gaRespSolAppFilterCriteria(respondentOne, applicationId))) {
 
-                gaDetailsRespondentSol.stream()
+            gaDetailsRespondentSol.stream()
                     .filter(respondentOne -> gaRespSolAppFilterCriteria(respondentOne, applicationId))
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-            }
         }
         return gaDetailsRespondentSol;
     }
@@ -426,17 +420,15 @@ public class ParentCaseUpdateHelper {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolTwo = ofNullable(
             caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
-        if (!isEmpty(gaDetailsRespondentSolTwo)) {
-
-            if (gaDetailsRespondentSolTwo.stream()
+        if (!isEmpty(gaDetailsRespondentSolTwo)
+            && gaDetailsRespondentSolTwo.stream()
                 .anyMatch(respondentTwo -> gaRespSolAppFilterCriteria(respondentTwo, applicationId))) {
 
-                gaDetailsRespondentSolTwo.stream()
+            gaDetailsRespondentSolTwo.stream()
                     .filter(respondentTwo -> gaRespSolAppFilterCriteria(respondentTwo, applicationId))
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-            }
         }
         return gaDetailsRespondentSolTwo;
     }

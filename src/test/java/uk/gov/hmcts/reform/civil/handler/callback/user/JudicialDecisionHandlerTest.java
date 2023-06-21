@@ -1653,7 +1653,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CallbackParams params = callbackParamsOf(updateData, MID, "populate-hearing-order-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
@@ -1672,7 +1672,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CallbackParams params = callbackParamsOf(updateData, MID, "populate-hearing-order-doc");
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
@@ -1745,7 +1745,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
@@ -1767,7 +1767,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
 
         }
@@ -2622,7 +2622,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 
@@ -2638,7 +2638,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertEquals(response.getErrors().size(), 1);
+            assertEquals(1, response.getErrors().size());
             assertThat(response.getErrors().get(0)).isEqualTo(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
 

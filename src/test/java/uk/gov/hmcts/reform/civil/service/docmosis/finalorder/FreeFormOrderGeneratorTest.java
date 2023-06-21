@@ -148,7 +148,7 @@ class FreeFormOrderGeneratorTest {
 
     @Test
     void test_getFileName() {
-        String name = generator.getFileName(null, DocmosisTemplates.FREE_FORM_ORDER);
+        String name = generator.getFileName(DocmosisTemplates.FREE_FORM_ORDER);
         assertThat(name).startsWith("General_order_for_application_");
         assertThat(name).endsWith(".pdf");
     }
@@ -175,6 +175,6 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate(caseData)).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
+        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
     }
 }

@@ -134,13 +134,11 @@ public class JudicialNotificationService implements NotificationData {
                     ), DATE) : null
         );
 
-        if (solicitorType.equals(RESPONDENT)) {
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
+        if (solicitorType.equals(RESPONDENT) && areRespondentSolicitorsPresent(caseData)) {
+            sendEmailToRespondent(
                     caseData,
                     notificationProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate()
-                );
-            }
+            );
         }
 
         if (solicitorType.equals(APPLICANT)) {
@@ -171,13 +169,12 @@ public class JudicialNotificationService implements NotificationData {
                     ), DATE) : null
         );
 
-        if (solicitorType.equals(RESPONDENT)) {
-            if (areRespondentSolicitorsPresent(caseData)) {
-                sendEmailToRespondent(
+        if (solicitorType.equals(RESPONDENT)
+            && areRespondentSolicitorsPresent(caseData)) {
+            sendEmailToRespondent(
                     caseData,
                     notificationProperties.getWrittenRepSequentialRepresentationRespondentEmailTemplate()
-                );
-            }
+            );
         }
 
         if (solicitorType.equals(APPLICANT)) {
@@ -356,13 +353,12 @@ public class JudicialNotificationService implements NotificationData {
 
     private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
 
-        if (solicitorType.equals(RESPONDENT)) {
-            if (isSendEmailToDefendant(caseData)) {
-                sendEmailToRespondent(
+        if (solicitorType.equals(RESPONDENT)
+            && isSendEmailToDefendant(caseData)) {
+            sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate()
-                );
-            }
+            );
         }
 
         if (solicitorType.equals(APPLICANT)) {
@@ -377,13 +373,12 @@ public class JudicialNotificationService implements NotificationData {
     }
 
     private void applicationDirectionOrder(CaseData caseData, String solicitorType) {
-        if (solicitorType.equals(RESPONDENT)) {
-            if (isSendEmailToDefendant(caseData)) {
-                sendEmailToRespondent(
+        if (solicitorType.equals(RESPONDENT)
+            && isSendEmailToDefendant(caseData)) {
+            sendEmailToRespondent(
                     caseData,
                     notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate()
-                );
-            }
+            );
         }
 
         if (solicitorType.equals(APPLICANT)) {

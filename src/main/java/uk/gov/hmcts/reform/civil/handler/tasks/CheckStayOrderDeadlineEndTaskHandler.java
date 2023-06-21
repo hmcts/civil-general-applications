@@ -53,7 +53,7 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
         return orderMadeCases.stream()
             .map(caseDetailsConverter::toCaseData)
             .filter(isJudgeOrderStayDeadlineExpired.or(isConsentOrderStayDeadlineExpired))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private void fireEventForStateChange(CaseData caseData) {

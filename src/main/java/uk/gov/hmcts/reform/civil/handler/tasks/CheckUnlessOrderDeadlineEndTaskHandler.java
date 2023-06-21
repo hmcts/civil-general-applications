@@ -55,7 +55,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
                 && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByUnlessScheduler().equals(YesOrNo.NO)
                 && (!now().isBefore(caseData.getJudicialDecisionMakeOrder()
                                         .getJudgeApproveEditOptionDateForUnlessOrder()))
-            ).collect(Collectors.toList());
+            ).toList();
     }
 
     private void fireEventForStateChange(CaseData caseData) {

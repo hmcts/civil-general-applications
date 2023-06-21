@@ -47,7 +47,7 @@ public class StateFlow {
     @SuppressWarnings("unchecked")
     public List<State> getStateHistory() {
         List<String> historyList = stateMachine.getExtendedState().get(EXTENDED_STATE_HISTORY_KEY, ArrayList.class);
-        return historyList.stream().map(State::from).collect(Collectors.toList());
+        return historyList.stream().map(State::from).toList();
     }
 
     @SuppressWarnings("unchecked")

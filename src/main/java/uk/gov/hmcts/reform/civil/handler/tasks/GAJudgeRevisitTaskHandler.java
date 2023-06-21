@@ -75,7 +75,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                                .getSequentialApplicantMustRespondWithin()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     private List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
@@ -88,7 +88,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeOrder()
                                                .getDirectionsResponseByDate()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
@@ -102,7 +102,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionRequestMoreInfo()
                                                .getJudgeRequestMoreInfoByDate())))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override

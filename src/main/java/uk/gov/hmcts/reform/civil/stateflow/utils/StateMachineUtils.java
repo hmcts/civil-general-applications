@@ -40,6 +40,6 @@ public class StateMachineUtils {
         return stateMachine.getTransitions().stream()
             .filter(isTransitionSourceEqualTo(state.getId()))
             .filter(isTransitionPermitted(stateContext))
-            .collect(Collectors.toList());
+            .toList();
     }
 }
