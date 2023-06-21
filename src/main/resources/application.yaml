@@ -87,7 +87,7 @@ payments:
 failed:
   event:
     emitter:
-      enabled: ${FAILED_EVENT_EMITTER_ENABLED:failed}
+      enabled: ${FAILED_EVENT_EMITTER_ENABLED:false}
 
 idam:
   s2s-auth:
@@ -215,7 +215,7 @@ payments:
 failed:
   event:
     emitter:
-      enabled: failed
+      enabled: false
 
 idam:
   web:

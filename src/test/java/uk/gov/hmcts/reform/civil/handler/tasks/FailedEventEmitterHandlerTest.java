@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.controllers.testingsupport.CamundaRestEngineClient;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -32,9 +31,9 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
-    FailedEventEmitterHandler.class})
-@TestPropertySource(properties =
-    {"failed.event.emitter.enabled = true"})
+    FailedEventEmitterHandler.class},
+    properties =
+        {"failed.event.emitter.enabled = true"})
 class FailedEventEmitterHandlerTest {
 
     @MockBean
