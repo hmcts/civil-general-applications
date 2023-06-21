@@ -1002,7 +1002,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (gaByCourtsInitiativeGAspec.equals(OPTION_2)
             && LocalDate.now()
                 .isAfter(caseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate())) {
-                errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
+            errors.add(MAKE_DECISION_APPROVE_BY_DATE_IN_PAST);
         }
         return errors;
     }

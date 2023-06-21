@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
 import static java.util.Objects.nonNull;

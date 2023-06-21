@@ -440,9 +440,8 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if (Objects.nonNull(roles)) {
-                    roles[2] = CLAIMANT_ROLE;
-                }
+            if (Objects.nonNull(roles)) {
+                roles[2] = CLAIMANT_ROLE;
             }
         }
         return generalApplications;

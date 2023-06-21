@@ -7,7 +7,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * Representation of a CCD Dynamic List which is then converted to a select dropdown list.
