@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
+
 public class ElementUtils {
 
     private ElementUtils() {
@@ -20,7 +23,7 @@ public class ElementUtils {
         return Stream.of(elements)
             .filter(Objects::nonNull)
             .map(element -> Element.<T>builder().value(element).build())
-            .toList();
+            .collect(toList());
     }
 
     public static <T> List<T> unwrapElements(List<Element<T>> elements) {
@@ -28,7 +31,7 @@ public class ElementUtils {
             .stream()
             .map(Element::getValue)
             .filter(Objects::nonNull)
-            .toList();
+            .collect(toUnmodifiableList());
     }
 
     public static <T> Element<T> element(T element) {
