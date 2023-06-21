@@ -20,19 +20,22 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Objects.nonNull;
-
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.log;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -54,9 +57,12 @@ public class ParentCaseUpdateHelper {
         "directionOrder", "hearingNotice",
         "gaResp", GA_DRAFT_FORM
     };
-    private static String[] ROLES = {
-        "Claimant", "RespondentSol", "RespondentSolTwo"
-    };
+    private static final String CLAIMANT_ROLE = "Claimant";
+    private static final String RESPONDENTSOL_ROLE = "RespondentSol";
+    private static final String RESPONDENTSOL_TWO_ROLE = "RespondentSolTwo";
+    private String[] roles = {CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE};
+    private static final String GA_EVIDENCE = "gaEvidence";
+    private static final String CIVIL_GA_EVIDENCE = "generalAppEvidence";
 
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
@@ -91,7 +97,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetails.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                docVisibilityRoles[0] = "RespondentSol";
+                docVisibilityRoles[0] = RESPONDENTSOL_ROLE;
             }
         }
 
@@ -112,7 +118,7 @@ public class ParentCaseUpdateHelper {
                 respondentSpecficGADetailsTwo.stream()
                     .filter(gaRespondentApp -> gaRespSolAppFilterCriteria(gaRespondentApp, applicationId))
                     .findAny().orElseThrow(IllegalArgumentException::new).getValue().setCaseState(newState);
-                docVisibilityRoles[1] = "RespondentSolTwo";
+                docVisibilityRoles[1] = RESPONDENTSOL_TWO_ROLE;
             }
         }
 
@@ -148,9 +154,63 @@ public class ParentCaseUpdateHelper {
         if (DOCUMENT_STATES.contains(generalAppCaseData.getCcdState())) {
             updateCaseDocument(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
-
+        if (Objects.nonNull(generalAppCaseData.getGeneralAppEvidenceDocument())
+            && !generalAppCaseData.getGeneralAppEvidenceDocument().isEmpty()) {
+            updateEvidence(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
+        }
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap));
+    }
+
+    protected void updateEvidence(Map<String, Object> updateMap, CaseData civilCaseData,
+                                  CaseData generalAppCaseData, String[] docVisibilityRoles) {
+        String[] evidenceRole = null;
+        if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
+            String[] evidenceRoleBefore = new String[1];
+            evidenceRoleBefore[0] = findGaCreator(civilCaseData, generalAppCaseData);
+            evidenceRole = evidenceRoleBefore;
+        } else if (generalAppCaseData.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)) {
+            evidenceRole = docVisibilityRoles;
+        }
+        if (Objects.nonNull(evidenceRole)) {
+            updateSingleTypeByRoles(updateMap, GA_EVIDENCE, evidenceRole,
+                    civilCaseData, generalAppCaseData);
+        }
+    }
+
+    protected void updateSingleTypeByRoles(Map<String, Object> updateMap, String type, String[] roles,
+                                         CaseData civilCaseData, CaseData generalAppCaseData) {
+        for (String role : roles) {
+            try {
+                updateCaseDocumentByType(updateMap, type, role, civilCaseData, generalAppCaseData);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    protected String findGaCreator(CaseData civilCaseData, CaseData generalAppCaseData) {
+        if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
+            return CLAIMANT_ROLE;
+        }
+        String creatorId = generalAppCaseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
+        String respondent1OrganisationId = civilCaseData.getRespondent1OrganisationPolicy().getOrganisation()
+                != null ? civilCaseData.getRespondent1OrganisationPolicy().getOrganisation()
+                .getOrganisationID() : civilCaseData.getRespondent1OrganisationIDCopy();
+        if (creatorId
+                .equals(respondent1OrganisationId)) {
+            return RESPONDENTSOL_ROLE;
+        }
+        String respondent2OrganisationId = civilCaseData.getRespondent2OrganisationPolicy().getOrganisation()
+                != null ? civilCaseData.getRespondent2OrganisationPolicy().getOrganisation()
+                .getOrganisationID() : civilCaseData.getRespondent2OrganisationIDCopy();
+        if (generalAppCaseData.getIsMultiParty().equals(YES) && civilCaseData.getAddApplicant2().equals(NO)
+                && civilCaseData.getRespondent2SameLegalRepresentative().equals(NO)
+                && creatorId
+                .equals(respondent2OrganisationId)) {
+            return RESPONDENTSOL_TWO_ROLE;
+        }
+        return null;
     }
 
     public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
@@ -280,11 +340,9 @@ public class ParentCaseUpdateHelper {
              * update documents
              * */
             if (gaDetailsRespondentSolTwo.isEmpty()) {
-                ROLES[2] = null;
+                roles[2] = null;
             }
-
-            updateCaseDocument(updateMap, caseData, generalAppCaseData, ROLES);
-
+            updateCaseDocument(updateMap, caseData, generalAppCaseData, roles);
             CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
                 startEventResponse, updateMap);
 
@@ -296,7 +354,7 @@ public class ParentCaseUpdateHelper {
     protected void updateCaseDocument(Map<String, Object> updateMap,
                                     CaseData civilCaseData, CaseData generalAppCaseData, String[] roles) {
         for (String role : roles) {
-            if (nonNull(role)) {
+            if (Objects.nonNull(role)) {
                 updateCaseDocumentByRole(updateMap, role,
                         civilCaseData, generalAppCaseData);
             }
@@ -329,7 +387,14 @@ public class ParentCaseUpdateHelper {
     @SuppressWarnings("unchecked")
     protected void updateCaseDocumentByType(Map<String, Object> updateMap, String type, String role,
                                     CaseData civilCaseData, CaseData generalAppCaseData) throws Exception {
+        if (Objects.isNull(role)) {
+            return;
+        }
         String gaCollectionName = type + "Document";
+        if (type.equals(GA_EVIDENCE)) {
+            gaCollectionName = CIVIL_GA_EVIDENCE + "Document";
+        }
+
         String civilCollectionName = type + "Doc" + role;
         Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(gaCollectionName));
@@ -376,8 +441,8 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-                if (nonNull(roles)) {
-                    roles[2] = "Claimant";
+                if (Objects.nonNull(roles)) {
+                    roles[2] = CLAIMANT_ROLE;
                 }
             }
         }
