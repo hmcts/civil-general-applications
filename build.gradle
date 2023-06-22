@@ -252,7 +252,7 @@ task functional(description: 'Runs the functional tests.') {
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, pullTestAsset, runCrossBrowserTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runCrossBrowserTests))
 }
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
