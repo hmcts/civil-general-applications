@@ -222,6 +222,9 @@ task runSmokeTests(type: Exec, description: 'Runs smoke tests.') {
 }
 
 task runCrossBrowserTests(type: Exec, description: 'Runs cross browser tests.') {
+ onlyIf {
+    return System.env.CROSS_BROWSER == 'true'
+  }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:crossbrowser'
 }
 
@@ -233,12 +236,15 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
+ onlyIf {
+    return System.env.NIGHTLY_BUILD == 'false'
+  }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
 }
 
 task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
-    return System.env.NIGHTLY_BUILD == 'true'
+    return System.env.CROSS_BROWSER == 'false'
   }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:nightly-api-tests'
 }
@@ -248,11 +254,7 @@ task smoke(description: 'Runs the smoke tests.') {
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests, runNightlyAPITests))
-}
-
-task crossbrowser(description: 'Runs the crossbrowser tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, runCrossBrowserTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests, runNightlyAPITests, runCrossBrowserTests))
 }
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport

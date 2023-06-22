@@ -52,6 +52,7 @@ def secrets = [
 withNightlyPipeline(type, product, component) {
   enableFortifyScan()
   env.NIGHTLY_BUILD = true
+  env.CROSS_BROWSER = true
   env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
   env.TEST_URL = params.CIVIL_SERVICE_URL
   env.URL = params.FRONTEND_URL
