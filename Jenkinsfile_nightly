@@ -70,7 +70,7 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableFullFunctionalTest(200)
 
-  before('fullFunctionalTest') {
+  before('crossBrowserTest') {
     sh """
       ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
     """
