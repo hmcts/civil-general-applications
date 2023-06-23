@@ -420,6 +420,7 @@ public class ParentCaseUpdateHelper {
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
     }
 
+    @SuppressWarnings("unchecked")
     protected int checkIfDocumentExists(List<Element<?>> civilCaseDocumentList,
                                         List<Element<?>> gaCaseDocumentlist) {
 
