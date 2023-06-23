@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 
@@ -398,16 +399,16 @@ public class ParentCaseUpdateHelper {
         String civilCollectionName = type + "Doc" + role;
         Method gaGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(gaCollectionName));
-        List<Element<CaseDocument>> gaDocs =
-                (List<Element<CaseDocument>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
+        List<Element<?>> gaDocs =
+                (List<Element<?>>) (gaGetter != null ? gaGetter.invoke(generalAppCaseData) : null);
         Method civilGetter = ReflectionUtils.findMethod(CaseData.class,
                 "get" + StringUtils.capitalize(civilCollectionName));
-        List<Element<CaseDocument>> civilDocs =
-                (List<Element<CaseDocument>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
+        List<Element<?>> civilDocs =
+                (List<Element<?>>) ofNullable(civilGetter != null ? civilGetter.invoke(civilCaseData) : null)
                         .orElse(newArrayList());
         if (gaDocs != null && !(type.equals(GA_DRAFT_FORM))) {
             List<UUID> ids = civilDocs.stream().map(Element::getId).toList();
-            for (Element<CaseDocument> gaDoc : gaDocs) {
+            for (Element<?> gaDoc : gaDocs) {
                 if (!ids.contains(gaDoc.getId())) {
                     civilDocs.add(gaDoc);
                 }
@@ -419,12 +420,34 @@ public class ParentCaseUpdateHelper {
         updateMap.put(civilCollectionName, civilDocs.isEmpty() ? null : civilDocs);
     }
 
-    protected int checkIfDocumentExists(List<Element<CaseDocument>> civilCaseDocumentList,
-                                        List<Element<CaseDocument>> gaCaseDocumentlist) {
-        return civilCaseDocumentList.stream().filter(civilDocument -> gaCaseDocumentlist
-            .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
-                .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
-    }
+    protected int checkIfDocumentExists(List<Element<?>> civilCaseDocumentList,
+                                        List<Element<?>> gaCaseDocumentlist) {
+
+       if (gaCaseDocumentlist.get(0).getValue().getClass().equals(CaseDocument.class)) {
+           List<Element<CaseDocument>> civilCaseList = civilCaseDocumentList.stream()
+               .map(element->(Element<CaseDocument>) element)
+               .toList();
+           List<Element<CaseDocument>> gaCaseList = gaCaseDocumentlist.stream()
+               .map(element->(Element<CaseDocument>) element)
+               .toList();
+
+           return civilCaseList.stream().filter(civilDocument -> gaCaseList
+               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
+                   .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
+       } else {
+               List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
+                   .map(element -> (Element<Document>) element)
+                   .toList();
+
+               List<Element<Document>> gaCaseList = gaCaseDocumentlist.stream()
+                   .map(element -> (Element<Document>) element)
+                   .toList();
+
+               return civilCaseList.stream().filter(civilDocument -> gaCaseList
+                   .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentUrl()
+                       .equals(civilDocument.getValue().getDocumentUrl()))).toList().size();
+           }
+       }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
                                                                                String applicationId, String[] roles) {
