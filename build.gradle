@@ -1,4 +1,11 @@
 import org.gradle.api.tasks.Exec
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+  }
+}
 
 plugins {
   id 'application'
