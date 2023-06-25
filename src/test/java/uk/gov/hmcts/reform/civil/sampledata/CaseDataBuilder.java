@@ -57,6 +57,7 @@ import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
@@ -477,6 +478,7 @@ public class CaseDataBuilder {
 
     public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
         return CaseData.builder()
+            .ccdState(PENDING_APPLICATION_ISSUED)
             .generalAppType(application.getGeneralAppType())
             .caseLink(application.getCaseLink())
             .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
