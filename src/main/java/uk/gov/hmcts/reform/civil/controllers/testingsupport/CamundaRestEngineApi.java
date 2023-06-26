@@ -1,11 +1,16 @@
 package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
+import org.camunda.bpm.engine.rest.dto.externaltask.SetRetriesForExternalTasksDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
 import org.camunda.bpm.engine.rest.dto.runtime.IncidentDto;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient(name = "camunda-rest-engine-api", url = "${feign.client.config.remoteRuntimeService.url}")
 public interface CamundaRestEngineApi {
@@ -28,4 +33,13 @@ public interface CamundaRestEngineApi {
         @RequestHeader("ServiceAuthorization") String serviceAuthorization
     );
 
+    @PutMapping (
+        value = "/external-task/retries",
+        consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ResponseBody
+    String setExternalTaskRetries(
+        @RequestBody SetRetriesForExternalTasksDto setRetriesForExternalTasksDto,
+        @RequestHeader("ServiceAuthorization") String serviceAuthorization
+    );
 }

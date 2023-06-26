@@ -92,6 +92,7 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
             startEventResponse(caseDetails,
                                END_JUDGE_BUSINESS_PROCESS_GASPEC));
+
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
