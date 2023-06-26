@@ -424,31 +424,31 @@ public class ParentCaseUpdateHelper {
     protected int checkIfDocumentExists(List<Element<?>> civilCaseDocumentList,
                                         List<Element<?>> gaCaseDocumentlist) {
 
-       if (gaCaseDocumentlist.get(0).getValue().getClass().equals(CaseDocument.class)) {
-           List<Element<CaseDocument>> civilCaseList = civilCaseDocumentList.stream()
-               .map(element->(Element<CaseDocument>) element)
-               .toList();
-           List<Element<CaseDocument>> gaCaseList = gaCaseDocumentlist.stream()
-               .map(element->(Element<CaseDocument>) element)
-               .toList();
+        if (gaCaseDocumentlist.get(0).getValue().getClass().equals(CaseDocument.class)) {
+            List<Element<CaseDocument>> civilCaseList = civilCaseDocumentList.stream()
+                .map(element -> (Element<CaseDocument>) element)
+                .toList();
+            List<Element<CaseDocument>> gaCaseList = gaCaseDocumentlist.stream()
+                .map(element -> (Element<CaseDocument>) element)
+                .toList();
 
-           return civilCaseList.stream().filter(civilDocument -> gaCaseList
+            return civilCaseList.stream().filter(civilDocument -> gaCaseList
                .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
                    .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
-       } else {
-               List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
+        } else {
+            List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
                    .map(element -> (Element<Document>) element)
                    .toList();
 
-               List<Element<Document>> gaCaseList = gaCaseDocumentlist.stream()
+            List<Element<Document>> gaCaseList = gaCaseDocumentlist.stream()
                    .map(element -> (Element<Document>) element)
                    .toList();
 
-               return civilCaseList.stream().filter(civilDocument -> gaCaseList
+            return civilCaseList.stream().filter(civilDocument -> gaCaseList
                    .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentUrl()
                        .equals(civilDocument.getValue().getDocumentUrl()))).toList().size();
-           }
-       }
+        }
+    }
 
     private List<Element<GeneralApplicationsDetails>> updateGaApplicationState(CaseData caseData, String newState,
                                                                                String applicationId, String[] roles) {

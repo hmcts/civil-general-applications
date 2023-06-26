@@ -169,11 +169,24 @@ class ParentCaseUpdateHelperTest {
             .id(UUID.randomUUID())
             .value(CaseDocument.builder().documentLink(Document.builder().documentUrl("string").build())
                        .build()).build();
-        List<Element<?>> civilCaseDocumentList = new ArrayList<>();
-        civilCaseDocumentList.add(same);
         List<Element<?>> gaDocumentList = new ArrayList<>();
-        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isNotPositive();
+        List<Element<?>> civilCaseDocumentList = new ArrayList<>();
         gaDocumentList.add(same);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(0);
+        civilCaseDocumentList.add(same);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(1);
+    }
+
+    @Test
+    void checkIfDocumentExists_whenDocumentTypeIsDocumentClass() {
+        Element<Document> documentElement = Element.<Document>builder()
+            .id(UUID.randomUUID())
+            .value(Document.builder().documentUrl("string").build()).build();
+        List<Element<?>> gaDocumentList = new ArrayList<>();
+        List<Element<?>> civilCaseDocumentList = new ArrayList<>();
+        gaDocumentList.add(documentElement);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(0);
+        civilCaseDocumentList.add(documentElement);
         assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(1);
     }
 
