@@ -310,75 +310,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         } else {
             if (nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
                 .getRepresentationType().equals(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT)) {
-                //Both Attended
-                if (!caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                    && !caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    judgeHeardFromBuilder.append(String.format(
-                        CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT,
-                        caseData.getAssistedOrderRepresentation()
-                                                               .getClaimantDefendantRepresentation()
-                                                               .getClaimantRepresentation().getDisplayedValue()
-                            .toLowerCase(),
-                        caseData.getAssistedOrderRepresentation()
-                            .getClaimantDefendantRepresentation()
-                            .getDefendantRepresentation()
-                            .getDisplayedValue().toLowerCase()));
-
-                } else if (caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                    && !caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    //Claimant Attended Defendant Not ATTENDED
-                    judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
-                                                            caseData.getAssistedOrderRepresentation()
-                                                                .getClaimantDefendantRepresentation()
-                                                                .getClaimantRepresentation().getDisplayedValue()));
-                    judgeHeardFromBuilder.append(LINE_BREAKER);
-                    judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
-                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                                                                        .getClaimantDefendantRepresentation()
-                                                                        .getHeardFromDefendantNotAttend()
-                                                                        .getListDef()));
-
-                } else if (!caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                    && caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    //Claimant Not ATTENDED, Defendant Attended
-                    judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
-                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                                                                        .getClaimantDefendantRepresentation()
-                                                                        .getHeardFromClaimantNotAttend()
-                                                                        .getListClaim()));
-                    judgeHeardFromBuilder.append(LINE_BREAKER);
-                    judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
-                                                            caseData.getAssistedOrderRepresentation()
-                                                                .getClaimantDefendantRepresentation()
-                                                                .getDefendantRepresentation()
-                                                                .getDisplayedValue()));
-                } else if (caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                    && caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-                    //Both Not Attended
-                    judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
-                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                                                                        .getClaimantDefendantRepresentation()
-                                                                        .getHeardFromClaimantNotAttend()
-                                                                        .getListClaim()));
-                    judgeHeardFromBuilder.append(LINE_BREAKER);
-                    judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
-                    judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                                                                        .getClaimantDefendantRepresentation()
-                                                                        .getHeardFromDefendantNotAttend()
-                                                                        .getListDef()));
-                }
+                presentationAttended(judgeHeardFromBuilder, caseData);
             } else if (nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
                 .getRepresentationType().equals(HeardFromRepresentationTypes.OTHER_REPRESENTATION)) {
                 judgeHeardFromBuilder.append(String.format(
@@ -396,6 +328,79 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
         }
         return judgeHeardFromBuilder.toString();
+    }
+
+    private void presentationAttended(StringBuilder judgeHeardFromBuilder, CaseData caseData) {
+
+        //Both Attended
+        if (!caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                && !caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+            judgeHeardFromBuilder.append(String.format(
+                    CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT,
+                    caseData.getAssistedOrderRepresentation()
+                            .getClaimantDefendantRepresentation()
+                            .getClaimantRepresentation().getDisplayedValue()
+                            .toLowerCase(),
+                    caseData.getAssistedOrderRepresentation()
+                            .getClaimantDefendantRepresentation()
+                            .getDefendantRepresentation()
+                            .getDisplayedValue().toLowerCase()));
+
+        } else if (caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                && !caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+            //Claimant Attended Defendant Not ATTENDED
+            judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
+                    caseData.getAssistedOrderRepresentation()
+                            .getClaimantDefendantRepresentation()
+                            .getClaimantRepresentation().getDisplayedValue()));
+            judgeHeardFromBuilder.append(LINE_BREAKER);
+            judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
+            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation()
+                    .getHeardFromDefendantNotAttend()
+                    .getListDef()));
+
+        } else if (!caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                && caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+            //Claimant Not ATTENDED, Defendant Attended
+            judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
+            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation()
+                    .getHeardFromClaimantNotAttend()
+                    .getListClaim()));
+            judgeHeardFromBuilder.append(LINE_BREAKER);
+            judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
+                    caseData.getAssistedOrderRepresentation()
+                            .getClaimantDefendantRepresentation()
+                            .getDefendantRepresentation()
+                            .getDisplayedValue()));
+        } else if (caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
+                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
+                && caseData.getAssistedOrderRepresentation()
+                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
+            //Both Not Attended
+            judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
+            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation()
+                    .getHeardFromClaimantNotAttend()
+                    .getListClaim()));
+            judgeHeardFromBuilder.append(LINE_BREAKER);
+            judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
+            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
+                    .getClaimantDefendantRepresentation()
+                    .getHeardFromDefendantNotAttend()
+                    .getListDef()));
+        }
     }
 
     protected String getOrderMadeOnText(CaseData caseData) {

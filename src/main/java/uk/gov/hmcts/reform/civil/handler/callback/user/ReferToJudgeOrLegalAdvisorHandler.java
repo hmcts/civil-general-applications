@@ -43,7 +43,6 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
     }
 
     private AboutToStartOrSubmitCallbackResponse courtValidation(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(courtAssignedValidation(callbackParams))

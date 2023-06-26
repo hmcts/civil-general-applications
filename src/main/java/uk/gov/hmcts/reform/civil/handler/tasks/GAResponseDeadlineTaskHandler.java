@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
@@ -52,7 +51,7 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
             .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
                 && now().isAfter(
                 caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate()))
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override

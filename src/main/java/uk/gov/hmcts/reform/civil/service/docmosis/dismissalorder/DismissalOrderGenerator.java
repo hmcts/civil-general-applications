@@ -35,7 +35,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -106,7 +106,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
         }
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return DISMISSAL_ORDER;
     }
 }
