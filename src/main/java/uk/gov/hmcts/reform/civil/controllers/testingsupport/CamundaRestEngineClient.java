@@ -2,11 +2,13 @@ package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.ArrayUtils;
+import org.camunda.bpm.engine.rest.dto.externaltask.SetRetriesForExternalTasksDto;
 import org.camunda.bpm.engine.rest.dto.runtime.ActivityInstanceDto;
 import org.camunda.bpm.engine.rest.dto.runtime.IncidentDto;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -33,5 +35,13 @@ public class CamundaRestEngineClient {
         String externalTaskId = incidentDto.getConfiguration();
 
         return camundaRestEngineApi.getErrorDetailsByExternalTaskId(externalTaskId, authTokenGenerator.generate());
+    }
+
+    public String reTriggerFailedTask(List<String> externalTasksIds) {
+        SetRetriesForExternalTasksDto setRetriesForExternalTasksDto = new SetRetriesForExternalTasksDto();
+        setRetriesForExternalTasksDto.setExternalTaskIds(externalTasksIds);
+        setRetriesForExternalTasksDto.setRetries(1);
+        return camundaRestEngineApi
+            .setExternalTaskRetries(setRetriesForExternalTasksDto, authTokenGenerator.generate());
     }
 }

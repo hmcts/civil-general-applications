@@ -71,8 +71,8 @@ public enum CaseEvent {
     INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT(USER),
     migrateCase(CAMUNDA),
     APPROVE_CONSENT_ORDER(USER),
-    TRIGGER_LOCATION_UPDATE(USER);
-
+    TRIGGER_LOCATION_UPDATE(USER),
+    UPDATE_BUSINESS_PROCESS_STATE(CAMUNDA);
     private final UserType userType;
 
     public boolean isCamundaEvent() {

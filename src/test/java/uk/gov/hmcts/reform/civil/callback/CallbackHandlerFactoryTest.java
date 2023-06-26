@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 
@@ -188,7 +189,33 @@ class CallbackHandlerFactoryTest {
             .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
             .caseDetailsBefore(CaseDetails.builder().data(Map.of(
                 "businessProcess",
-                BusinessProcess.builder().activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()
+                BusinessProcess.builder().activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1")
+                    .status(BusinessProcessStatus.READY).build()
+            )).build())
+            .build();
+
+        CallbackParams params = CallbackParams.builder()
+            .request(callbackRequest)
+            .type(ABOUT_TO_SUBMIT)
+            .version(V_1)
+            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, BEARER_TOKEN))
+            .build();
+
+        CallbackResponse callbackResponse = callbackHandlerFactory.dispatch(params);
+
+        assertEquals(ALREADY_HANDLED_EVENT_RESPONSE, callbackResponse);
+    }
+
+    @Test
+    void shouldNotProcessEventAgain_whenEventIsAlreadyProcessed_FinishedState() {
+        CallbackRequest callbackRequest = CallbackRequest
+            .builder()
+            .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
+            .caseDetailsBefore(CaseDetails.builder().data(Map.of(
+                "businessProcess",
+                BusinessProcess.builder()
+                    .status(BusinessProcessStatus.FINISHED)
+                    .activityId("CreateClaimPaymentSuccessfulNotifyRespondentSolicitor1").build()
             )).build())
             .build();
 
@@ -211,7 +238,7 @@ class CallbackHandlerFactoryTest {
             .eventId(LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE.name())
             .caseDetailsBefore(CaseDetails.builder().data(Map.of(
                 "businessProcess",
-                BusinessProcess.builder().activityId("unProcessedTask").build()
+                BusinessProcess.builder().activityId("unProcessedTask").status(BusinessProcessStatus.STARTED).build()
             )).build())
             .build();
 
