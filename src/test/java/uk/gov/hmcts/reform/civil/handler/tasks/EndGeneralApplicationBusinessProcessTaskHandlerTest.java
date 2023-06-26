@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
@@ -50,6 +52,9 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
 
     @Autowired
     private EndGeneralApplicationBusinessProcessTaskHandler handler;
@@ -78,6 +83,8 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         StartEventResponse startEventResponse = startEventResponse(caseDetails);
 
         when(coreCaseDataService.startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC)).thenReturn(startEventResponse);
+        when(taskHandlerHelper.gaCaseDataContent(any(), any()))
+            .thenReturn(getCaseDataContent(caseDetails, startEventResponse));
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);
@@ -87,6 +94,20 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
+    }
+
+    @Test
+    void shouldTrigger_HandleFailure_whenThereIsException() {
+
+        when(coreCaseDataService.startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC))
+            .thenAnswer(invocation -> {
+                throw new Exception("errorMessage");
+            });
+
+        handler.execute(mockExternalTask, externalTaskService);
+
+        verify(taskHandlerHelper, times(1))
+            .updateEventToFailedState(mockExternalTask, 3);
     }
 
     @Test
@@ -105,6 +126,8 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
         StartEventResponse startEventResponse = startEventResponse(caseDetails);
 
         when(coreCaseDataService.startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC)).thenReturn(startEventResponse);
+        when(taskHandlerHelper.gaCaseDataContent(any(), any()))
+            .thenReturn(getCaseDataContent(caseDetails, startEventResponse));
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);
