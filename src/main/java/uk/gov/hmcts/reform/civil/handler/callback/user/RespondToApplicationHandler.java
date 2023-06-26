@@ -151,8 +151,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
         return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
                 .append(" - ").append(location.getCourtAddress())
-                .append(" - ").append(location.getPostcode()).toString())
-                            .collect(Collectors.toList()));
+                .append(" - ").append(location.getPostcode()).toString()).toList());
     }
 
     @Override
@@ -280,10 +279,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
 
         CaseData updatedCaseData = caseDataBuilder.build();
-
-        CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
-            ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
-            : AWAITING_RESPONDENT_RESPONSE;
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
