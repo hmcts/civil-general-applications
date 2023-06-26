@@ -60,7 +60,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
                 newState = ORDER_MADE;
             }
         } else {
-            newState = isNotificationCriteriaSatisfied(data) || isRespondentsResponseSatisfied(data, data.toBuilder().build())
+            newState = isNotificationCriteriaSatisfied(data) || !isRespondentsResponseSatisfied(data, data.toBuilder().build())
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }
