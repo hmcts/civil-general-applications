@@ -59,8 +59,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             } else {
                 newState = ORDER_MADE;
             }
+        } else if (Objects.nonNull(data.getRespondentsResponses())) {
+            newState = isRespondentsResponseSatisfied(data, data.toBuilder().build())
+                ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+                : AWAITING_RESPONDENT_RESPONSE;
         } else {
-            newState = isNotificationCriteriaSatisfied(data) || !isRespondentsResponseSatisfied(data, data.toBuilder().build())
+            newState = isNotificationCriteriaSatisfied(data)
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }
