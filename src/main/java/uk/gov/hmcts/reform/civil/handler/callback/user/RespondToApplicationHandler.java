@@ -14,20 +14,17 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
-import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
-import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
-import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -43,7 +40,6 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.time.LocalDate.now;
-import static java.util.Objects.isNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -61,7 +57,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
-import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Service
@@ -70,10 +65,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
     private final IdamClient idamClient;
-    private final GeneralApplicationDraftGenerator gaDraftGenerator;
-    private final AssignCategoryId assignCategoryId;
     private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
@@ -285,34 +277,15 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.respondentsResponses(respondentsResponses);
         caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
+        caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
 
-        CaseDocument gaDraftDocument;
-        if (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
-            && isNull(caseData.getJudicialDecision())) {
-
-            gaDraftDocument = gaDraftGenerator.generate(
-                caseDataBuilder.build(),
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-            );
-
-            List<Element<CaseDocument>> draftApplicationList = newArrayList();
-
-            draftApplicationList.addAll(wrapElements(gaDraftDocument));
-
-            assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS);
-            caseDataBuilder.gaDraftDocument(draftApplicationList);
-        }
         CaseData updatedCaseData = caseDataBuilder.build();
 
         CaseState newState = isRespondentsResponseSatisfied(caseData, updatedCaseData)
             ? APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
             : AWAITING_RESPONDENT_RESPONSE;
-        parentCaseUpdateHelper.updateParentWithGAState(updatedCaseData, newState.getDisplayedValue());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .state(newState.toString())
             .data(updatedCaseData.toMap(objectMapper))
             .build();
     }

@@ -40,10 +40,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAs
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
-import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
-import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -60,9 +58,6 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
@@ -94,8 +89,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
-    @MockBean
-    private GeneralApplicationDraftGenerator generalApplicationDraftGenerator;
     @MockBean
     private FeatureToggleService featureToggleService;
     @MockBean
@@ -470,14 +463,13 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        verifyNoInteractions(generalApplicationDraftGenerator);
+
         assertThat(response).isNotNull();
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -498,14 +490,12 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                                              .generalAppRespondent1Representative(YES).build()));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
-        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
-            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
 
         assertThat(response).isNotNull();
 
@@ -514,9 +504,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(2);
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
-        assertThat(responseCaseData.getGaDraftDocument().get(0).getValue())
-            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+
     }
 
     @Test
@@ -534,14 +522,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
-            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
-        assertThat(responseData.getGaDraftDocument().get(0).getValue())
-            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
     }
 
     @Test
@@ -561,9 +544,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        verifyNoInteractions(generalApplicationDraftGenerator);
+
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
     }
 
     @Test
@@ -588,13 +570,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
-        verifyNoInteractions(generalApplicationDraftGenerator);
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -607,9 +587,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        verifyNoInteractions(generalApplicationDraftGenerator);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -710,7 +688,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
     }
 
     private CaseData getResponseCaseData(AboutToStartOrSubmitCallbackResponse response) {

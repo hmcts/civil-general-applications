@@ -29,7 +29,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -68,8 +67,7 @@ public class ParentCaseUpdateHelper {
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
             AWAITING_WRITTEN_REPRESENTATIONS,
-            AWAITING_DIRECTIONS_ORDER_DOCS,
-            APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            AWAITING_DIRECTIONS_ORDER_DOCS
     );
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
