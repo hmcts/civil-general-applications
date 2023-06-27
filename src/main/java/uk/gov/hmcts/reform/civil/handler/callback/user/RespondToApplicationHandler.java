@@ -300,7 +300,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         CaseDocument gaDraftDocument;
         if ((caseData.getGeneralAppRespondentSolicitors() != null
-            || caseDataBuilder.build().getRespondentsResponses() != null)
+            && caseDataBuilder.build().getRespondentsResponses() != null)
             && isNull(caseData.getJudicialDecision())) {
 
             gaDraftDocument = gaDraftGenerator.generate(

@@ -335,6 +335,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                 getGeneralApplicationWithDeadlineReached(isConsented, isTobeNotified))
             .toBuilder()
+            .respondentsResponses(new ArrayList<>())
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF).build();

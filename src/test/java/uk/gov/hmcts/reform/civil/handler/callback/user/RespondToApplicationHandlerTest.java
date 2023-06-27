@@ -470,7 +470,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        verifyNoInteractions(generalApplicationDraftGenerator);
+        verify(generalApplicationDraftGenerator).generate(any(), anyString());
         assertThat(response).isNotNull();
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
@@ -588,7 +588,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
-        verifyNoInteractions(generalApplicationDraftGenerator);
+        verify(generalApplicationDraftGenerator).generate(any(), anyString());
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);

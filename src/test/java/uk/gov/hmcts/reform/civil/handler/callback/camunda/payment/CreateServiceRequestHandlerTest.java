@@ -16,15 +16,19 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +62,13 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
+
+    @MockBean
+    private AssignCategoryId assignCategoryId;
+
+    @MockBean
+    private GeneralApplicationDraftGenerator generalApplicationDraftGenerator;
+
     private CaseData caseData;
     private CallbackParams params;
 
@@ -81,6 +92,8 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
             when(paymentsService.createServiceRequest(any(), any()))
                 .thenReturn(paymentServiceResponse.builder()
                                 .serviceRequestReference(SUCCESSFUL_PAYMENT_REFERENCE).build());
+            when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
