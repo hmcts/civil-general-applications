@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
@@ -25,16 +27,19 @@ import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_APPLICATION_DRAFT;
 
 @SpringBootTest(classes = {
     PaymentServiceRequestHandler.class,
@@ -95,11 +100,13 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
             when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
                 .isEqualTo(SUCCESSFUL_PAYMENT_REFERENCE);
+            verifyNoInteractions(generalApplicationDraftGenerator);
         }
 
         @Test
@@ -123,6 +130,35 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldCallDraftDocGenerator_ForFreeUrgentAppln() throws Exception {
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenReturn(paymentServiceResponse.builder()
+                                .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(true);
+            when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
+                .isEqualTo(FREE_PAYMENT_REFERENCE);
+            PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
+            assertThat(paymentDetails).isNotNull();
+            assertThat(paymentDetails.getStatus()).isEqualTo(SUCCESS);
+            assertThat(paymentDetails.getCustomerReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
+            assertThat(paymentDetails.getReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
+            assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate())
+                .isNotNull();
+            verify(generalApplicationDraftGenerator).generate(any(), anyString());
+            assertThat(extractDraftDocument(response).size()).isEqualTo(1);
+            assertThat(extractDraftDocument(response).get(0).getValue().getDocumentName())
+                .isEqualTo("document name");
+            assertThat(extractDraftDocument(response).get(0).getValue().getDocumentType())
+                .isEqualTo(GENERAL_APPLICATION_DRAFT);
+        }
+
+        @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.camundaActivityId()).isEqualTo("GeneralApplicationPaymentServiceReq");
@@ -137,6 +173,11 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
     private GAPbaDetails extractPaymentDetailsFromResponse(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData.getGeneralAppPBADetails();
+    }
+
+    private List<Element<CaseDocument>> extractDraftDocument(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getGaDraftDocument();
     }
 
 }
