@@ -287,7 +287,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
 
         CaseDocument gaDraftDocument;
-        if (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
+        if ((caseData.getGeneralAppRespondentSolicitors() != null
+            || caseDataBuilder.build().getRespondentsResponses() != null)
             && isNull(caseData.getJudicialDecision())) {
 
             gaDraftDocument = gaDraftGenerator.generate(

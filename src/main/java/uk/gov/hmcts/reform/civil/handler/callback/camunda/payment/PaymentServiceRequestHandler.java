@@ -11,22 +11,30 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Slf4j
 @Service
@@ -41,6 +49,9 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
     private final GeneralAppFeesService feeService;
     private final ObjectMapper objectMapper;
     private final Time time;
+
+    private final GeneralApplicationDraftGenerator gaDraftGenerator;
+    private final AssignCategoryId assignCategoryId;
 
     @Override
     public String camundaActivityId() {
@@ -63,6 +74,10 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
+
+        CaseDocument gaDraftDocument;
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+
         try {
             log.info("calling payment service request " + caseData.getCcdCaseReference());
             String serviceRequestReference = GeneralAppFeesService.FREE_REF;
@@ -93,8 +108,26 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
                         .build();
                 pbaDetailsBuilder.paymentDetails(paymentDetails)
                                 .paymentSuccessfulDate(time.now()).build();
+
+                if (caseData.getGeneralAppUrgencyRequirement() != null
+                    && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES) {
+
+                    gaDraftDocument = gaDraftGenerator.generate(
+                        caseDataBuilder.build(),
+                        callbackParams.getParams().get(BEARER_TOKEN).toString()
+                    );
+
+                    List<Element<CaseDocument>> draftApplicationList = newArrayList();
+
+                    draftApplicationList.addAll(wrapElements(gaDraftDocument));
+
+                    assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                                  document -> document.getValue().getDocumentLink(),
+                                                                  AssignCategoryId.APPLICATIONS);
+                    caseDataBuilder.gaDraftDocument(draftApplicationList);
+                }
             }
-            caseData = caseData.toBuilder()
+            caseData = caseDataBuilder
                     .generalAppPBADetails(pbaDetailsBuilder.build()).build();
         } catch (FeignException e) {
             log.info(String.format("Http Status %s ", e.status()), e);
