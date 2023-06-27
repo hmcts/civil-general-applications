@@ -206,7 +206,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), StringUtils.EMPTY),
+                () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
             );

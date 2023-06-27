@@ -18,6 +18,7 @@ import static java.lang.String.format;
 public class EventEmitterService {
 
     public static final String TENANT_ID = "civil";
+    public static final String CASE_ID = "caseId";
     private final ApplicationEventPublisher applicationEventPublisher;
     private final RuntimeService runtimeService;
 
@@ -29,7 +30,7 @@ public class EventEmitterService {
         try {
             runtimeService.createMessageCorrelation(camundaEvent)
                 .tenantId(TENANT_ID)
-                .setVariable("caseId", caseId)
+                .setVariable(CASE_ID, caseId)
                 .correlateStartMessage();
 
             if (dispatchProcess) {
@@ -47,7 +48,7 @@ public class EventEmitterService {
         if (nullTenantAttempt) {
             try {
                 runtimeService.createMessageCorrelation(camundaEvent)
-                    .setVariable("caseId", caseId)
+                    .setVariable(CASE_ID, caseId)
                     .withoutTenantId()
                     .correlateStartMessage();
 
@@ -72,7 +73,7 @@ public class EventEmitterService {
         try {
             runtimeService.createMessageCorrelation(camundaEvent)
                 .tenantId(TENANT_ID)
-                .setVariable("caseId", caseId)
+                .setVariable(CASE_ID, caseId)
                 .correlateStartMessage();
 
             if (dispatchProcess) {
@@ -90,7 +91,7 @@ public class EventEmitterService {
         if (nullTenantAttempt) {
             try {
                 runtimeService.createMessageCorrelation(camundaEvent)
-                    .setVariable("caseId", caseId)
+                    .setVariable(CASE_ID, caseId)
                     .withoutTenantId()
                     .correlateStartMessage();
 

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
+import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -26,7 +28,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-
+    private final TaskHandlerHelper taskHandlerHelper;
     private CaseData data;
 
     @Override
@@ -36,9 +38,10 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
                                                                                 variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = startEventData.getBusinessProcess()
-            .updateActivityId(externalTask.getActivityId());
-
+        BusinessProcess businessProcess = startEventData
+            .getBusinessProcess().toBuilder()
+            .activityId(externalTask.getActivityId()).build();
+        businessProcess.resetFailedBusinessProcessToStarted();
         String flowState = externalTask.getVariable(FLOW_STATE);
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
         data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
@@ -56,25 +59,32 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
                                             BusinessProcess businessProcess,
                                             String flowState) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
-        data.put("businessProcess", businessProcess);
+        Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
+        updatedData.put("businessProcess", businessProcess);
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId())
-                       .summary(getSummary(startEventResponse.getEventId(), flowState))
-                       .description(getDescription(startEventResponse.getEventId(), data))
+                       .summary(getSummary())
+                       .description(getDescription())
                        .build())
-            .data(data)
+            .data(updatedData)
             .build();
     }
 
-    private String getSummary(String eventId, String state) {
+    @Override
+    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+
+        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
+        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
+    }
+
+    private String getSummary() {
 
         return null;
     }
 
-    private String getDescription(String eventId, Map data) {
+    private String getDescription() {
 
         return null;
     }

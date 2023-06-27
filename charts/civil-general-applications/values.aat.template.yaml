@@ -19,7 +19,7 @@ java:
     CMC_DB_PORT: 5432
     REFERENCE_DATABASE_MIGRATION: false
     TESTING_SUPPORT_ENABLED: true
-    POLLING_EVENT_EMITTER_ENABLED: false
+    FAILED_EVENT_EMITTER_ENABLED: false
     RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false
     CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
     DOCUMENT_MANAGEMENT_SECURED: true
