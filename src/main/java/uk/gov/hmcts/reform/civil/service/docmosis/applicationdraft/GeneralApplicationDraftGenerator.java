@@ -186,7 +186,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     private Boolean validateCasePastDueDate(CaseData caseData) {
         return caseData.getGeneralAppNotificationDeadlineDate() != null
             && now().isAfter(caseData.getGeneralAppNotificationDeadlineDate())
-            && caseData.getRespondentsResponses() != null;
+            && caseData.getRespondentsResponses() == null;
     }
 
     private LocalDate getAppUnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {

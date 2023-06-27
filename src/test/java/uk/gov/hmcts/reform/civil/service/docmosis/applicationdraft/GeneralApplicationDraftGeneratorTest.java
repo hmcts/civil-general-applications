@@ -160,6 +160,35 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldGenerateDraftDocumentWithNoticeButRespondentNotRespondedOnTime_WithRespondenResponse() {
+        CaseData caseData = getSampleGeneralAppCaseDataWithDeadLineReached(NO, YES)
+            .toBuilder().respondentsResponses(new ArrayList<>()).build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        generalApplicationDraftGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_APPLICATION_DRAFT)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class), eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(false);
+    }
+
+    @Test
     void shouldGenerateDocumentWithApplicantAndRespondent1Response_1v1_test() {
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
         GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -335,7 +364,6 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                 getGeneralApplicationWithDeadlineReached(isConsented, isTobeNotified))
             .toBuilder()
-            .respondentsResponses(new ArrayList<>())
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF).build();
