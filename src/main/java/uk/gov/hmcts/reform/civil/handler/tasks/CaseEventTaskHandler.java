@@ -42,8 +42,7 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
             .getBusinessProcess().toBuilder()
             .activityId(externalTask.getActivityId()).build();
         businessProcess.resetFailedBusinessProcessToStarted();
-        String flowState = externalTask.getVariable(FLOW_STATE);
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
     }
 
@@ -57,18 +56,17 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess,
-                                            String flowState) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
-        data.put("businessProcess", businessProcess);
+                                            BusinessProcess businessProcess) {
+        Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
+        updatedData.put("businessProcess", businessProcess);
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId())
-                       .summary(getSummary(startEventResponse.getEventId(), flowState))
-                       .description(getDescription(startEventResponse.getEventId(), data))
+                       .summary(getSummary())
+                       .description(getDescription())
                        .build())
-            .data(data)
+            .data(updatedData)
             .build();
     }
 
@@ -79,12 +77,12 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
         handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 
-    private String getSummary(String eventId, String state) {
+    private String getSummary() {
 
         return null;
     }
 
-    private String getDescription(String eventId, Map data) {
+    private String getDescription() {
 
         return null;
     }

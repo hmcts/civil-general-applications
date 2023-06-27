@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
@@ -42,8 +41,7 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
         BusinessProcess businessProcess = startEventData.getBusinessProcess();
         businessProcess.updateActivityId(externalTask.getActivityId());
         businessProcess.resetFailedBusinessProcessToStarted();
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
-            variables, startEventData.getGeneralAppParentCaseLink());
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
     }
 
@@ -65,8 +63,7 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess, ExternalTaskInput variables,
-                                            GeneralAppParentCaseLink generalAppParentCaseLink) {
+                                            BusinessProcess businessProcess) {
         Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
         updatedData.put("businessProcess", businessProcess);
 

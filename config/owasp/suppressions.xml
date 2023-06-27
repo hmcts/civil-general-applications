@@ -12,4 +12,8 @@
     <cve>CVE-2008-7271</cve>
     <cve>CVE-2010-4647</cve>
   </suppress>
+  <suppress>
+    <notes>suppressing jackson databind cve as most of the latest dependencies has got vulnerability jackson jar</notes>
+    <cve>CVE-2023-35116</cve>
+  </suppress>
 </suppressions>

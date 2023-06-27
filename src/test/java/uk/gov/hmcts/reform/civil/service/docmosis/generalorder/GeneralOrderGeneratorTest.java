@@ -202,7 +202,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), StringUtils.EMPTY),
+                () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
             );
