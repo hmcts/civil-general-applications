@@ -35,7 +35,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -98,7 +98,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
         }
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return WRITTEN_REPRESENTATION_CONCURRENT;
     }
 }

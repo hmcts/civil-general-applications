@@ -144,11 +144,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         ArrayList<String> errors = new ArrayList<>();
         if (ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
-            && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(DECLINE)) {
-            if (caseData.getGaRespondentDebtorOffer().getPaymentPlan().equals(PAYFULL)
-                && !now().isBefore(caseData.getGaRespondentDebtorOffer().getPaymentSetDate())) {
-                errors.add(PAYMENT_DATE_CANNOT_BE_IN_PAST);
-            }
+            && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(DECLINE)
+            && caseData.getGaRespondentDebtorOffer().getPaymentPlan().equals(PAYFULL)
+            && !now().isBefore(caseData.getGaRespondentDebtorOffer().getPaymentSetDate())) {
+            errors.add(PAYMENT_DATE_CANNOT_BE_IN_PAST);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -160,7 +159,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
                 .append(" - ").append(location.getCourtAddress())
                 .append(" - ").append(location.getPostcode()).toString())
-                            .collect(Collectors.toList()));
+                            .toList());
     }
 
     @Override
@@ -232,31 +231,44 @@ public class RespondToApplicationHandler extends CallbackHandler {
                                     List<Element<GAUnavailabilityDates>> datesUnavailableList) {
 
         if (YES.equals(isTrialScheduled)) {
-            if (trialDateFrom != null) {
-                if (trialDateTo != null && trialDateTo.isBefore(trialDateFrom)) {
-                    errors.add(INVALID_TRIAL_DATE_RANGE);
-                } else if (trialDateFrom.isBefore(LocalDate.now())) {
-                    errors.add(INVALID_TRAIL_DATE_FROM_BEFORE_TODAY);
-                }
-            } else {
-                errors.add(TRIAL_DATE_FROM_REQUIRED);
-            }
+            checkTrialScheduled(errors,
+                    trialDateFrom,
+                    trialDateTo);
         }
 
         if (YES.equals(isUnavailable)) {
-            if (isEmpty(datesUnavailableList)) {
-                errors.add(UNAVAILABLE_DATE_RANGE_MISSING);
-            } else {
-                for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                    LocalDate dateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                    LocalDate dateTo = dateRange.getValue().getUnavailableTrialDateTo();
-                    if (dateFrom == null) {
-                        errors.add(UNAVAILABLE_FROM_MUST_BE_PROVIDED);
-                    } else if (dateTo != null && dateTo.isBefore(dateFrom)) {
-                        errors.add(INVALID_UNAVAILABILITY_RANGE);
-                    } else if (dateFrom.isBefore(LocalDate.now())) {
-                        errors.add(INVALID_UNAVAILABLE_DATE_FROM_BEFORE_TODAY);
-                    }
+            checkUnavailable(errors, datesUnavailableList);
+        }
+    }
+
+    private void checkTrialScheduled(List<String> errors,
+                                     LocalDate trialDateFrom,
+                                     LocalDate trialDateTo) {
+        if (trialDateFrom != null) {
+            if (trialDateTo != null && trialDateTo.isBefore(trialDateFrom)) {
+                errors.add(INVALID_TRIAL_DATE_RANGE);
+            } else if (trialDateFrom.isBefore(LocalDate.now())) {
+                errors.add(INVALID_TRAIL_DATE_FROM_BEFORE_TODAY);
+            }
+        } else {
+            errors.add(TRIAL_DATE_FROM_REQUIRED);
+        }
+    }
+
+    private void checkUnavailable(List<String> errors,
+                                  List<Element<GAUnavailabilityDates>> datesUnavailableList) {
+        if (isEmpty(datesUnavailableList)) {
+            errors.add(UNAVAILABLE_DATE_RANGE_MISSING);
+        } else {
+            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
+                LocalDate dateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
+                LocalDate dateTo = dateRange.getValue().getUnavailableTrialDateTo();
+                if (dateFrom == null) {
+                    errors.add(UNAVAILABLE_FROM_MUST_BE_PROVIDED);
+                } else if (dateTo != null && dateTo.isBefore(dateFrom)) {
+                    errors.add(INVALID_UNAVAILABILITY_RANGE);
+                } else if (dateFrom.isBefore(LocalDate.now())) {
+                    errors.add(INVALID_UNAVAILABLE_DATE_FROM_BEFORE_TODAY);
                 }
             }
         }
@@ -355,12 +367,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
         if (Objects.nonNull(caseData.getGeneralAppConsentOrder())) {
             generalOther = caseData.getGaRespondentConsent();
         } else if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
-            && caseData.getParentClaimantIsApplicant().equals(NO)) {
-
-            if (ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
-                && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(ACCEPT)) {
-                generalOther = YES;
-            }
+            && caseData.getParentClaimantIsApplicant().equals(NO)
+            && ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
+            && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(ACCEPT)) {
+            generalOther = YES;
         }
 
         GARespondentResponse.GARespondentResponseBuilder gaRespondentResponseBuilder = GARespondentResponse.builder();
