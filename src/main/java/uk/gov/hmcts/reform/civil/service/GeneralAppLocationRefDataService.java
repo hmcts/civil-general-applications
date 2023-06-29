@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.logging.log4j.util.Strings.concat;
 
@@ -42,7 +41,7 @@ public class GeneralAppLocationRefDataService {
                 }
             );
             return onlyEnglandAndWalesLocations(responseEntity.getBody())
-                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).collect(Collectors.toList());
+                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).toList();
         } catch (Exception e) {
             log.error("Location Reference Data Lookup Failed - " + e.getMessage(), e);
         }
@@ -70,7 +69,7 @@ public class GeneralAppLocationRefDataService {
         return locationRefData == null
                 ? new ArrayList<>()
                 : locationRefData.stream().filter(location -> !"Scotland".equals(location.getRegion()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private String getDisplayEntry(LocationRefData location) {

@@ -195,7 +195,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                                    caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                        .getWrittenConcurrentRepresentationsBy()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), StringUtils.EMPTY),
+                () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
             );

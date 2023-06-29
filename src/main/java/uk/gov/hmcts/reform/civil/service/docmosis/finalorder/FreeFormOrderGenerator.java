@@ -43,13 +43,13 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         FreeFormOrder templateData = getTemplateData(caseData);
-        DocmosisTemplates template = getTemplate(caseData);
+        DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
         return documentManagementService.uploadDocument(
                 authorisation,
                 new PDF(
-                        getFileName(caseData, template),
+                        getFileName(template),
                         document.getBytes(),
                         DocumentType.GENERAL_ORDER
                 )
@@ -92,7 +92,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         return orderValueBuilder.toString();
     }
 
-    protected String getFileName(CaseData caseData, DocmosisTemplates template) {
+    protected String getFileName(DocmosisTemplates template) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(FILE_TIMESTAMP_FORMAT);
         return String.format(template.getDocumentTitle(),
                 LocalDateTime.now().format(formatter));
@@ -118,7 +118,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
-    protected DocmosisTemplates getTemplate(CaseData caseData) {
+    protected DocmosisTemplates getTemplate() {
         return FREE_FORM_ORDER;
     }
 }

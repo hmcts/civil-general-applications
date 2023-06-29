@@ -7,7 +7,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 
 /**
  * Representation of a CCD Dynamic List which is then converted to a select dropdown list.
@@ -31,7 +30,7 @@ public class DynamicList {
     public static DynamicList fromList(List<String> list) {
         List<DynamicListElement> items = list.stream()
             .map(DynamicListElement::dynamicElement)
-            .collect(toList());
+            .toList();
 
         return DynamicList.builder().listItems(items).value(DynamicListElement.EMPTY).build();
     }

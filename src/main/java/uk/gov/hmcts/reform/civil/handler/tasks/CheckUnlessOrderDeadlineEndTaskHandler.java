@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE;
@@ -55,7 +54,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
                 && caseData.getJudicialDecisionMakeOrder().getIsOrderProcessedByUnlessScheduler().equals(YesOrNo.NO)
                 && (!now().isBefore(caseData.getJudicialDecisionMakeOrder()
                                         .getJudgeApproveEditOptionDateForUnlessOrder()))
-            ).collect(Collectors.toList());
+            ).toList();
     }
 
     private void fireEventForStateChange(CaseData caseData) {
