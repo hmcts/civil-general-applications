@@ -70,7 +70,7 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableFullFunctionalTest(200)
 
-  before('fullFunctionalTest') {
+  before('crossBrowserTest') {
     sh """
       ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
     """
@@ -80,6 +80,12 @@ withNightlyPipeline(type, product, component) {
 
   afterAlways('fullFunctionalTest') {
     archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+  }
+
+  enableCrossBrowserTest()
+
+  afterAlways('crossBrowserTest') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
   }
 
   afterAlways('fortify-scan') {
