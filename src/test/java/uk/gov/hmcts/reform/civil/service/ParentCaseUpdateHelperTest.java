@@ -44,7 +44,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -165,25 +164,37 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void checkIfDocumentExists() {
-        Element<CaseDocument> same = Element.<CaseDocument>builder()
+        Element<?> same = Element.<CaseDocument>builder()
             .id(UUID.randomUUID())
             .value(CaseDocument.builder().documentLink(Document.builder().documentUrl("string").build())
                        .build()).build();
-        List<Element<CaseDocument>> civilCaseDocumentList = new ArrayList<>();
-        civilCaseDocumentList.add(same);
-        List<Element<CaseDocument>> gaDocumentList = new ArrayList<>();
-        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isNotPositive();
+        List<Element<?>> gaDocumentList = new ArrayList<>();
+        List<Element<?>> civilCaseDocumentList = new ArrayList<>();
         gaDocumentList.add(same);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(0);
+        civilCaseDocumentList.add(same);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(1);
+    }
+
+    @Test
+    void checkIfDocumentExists_whenDocumentTypeIsDocumentClass() {
+        Element<Document> documentElement = Element.<Document>builder()
+            .id(UUID.randomUUID())
+            .value(Document.builder().documentUrl("string").build()).build();
+        List<Element<?>> gaDocumentList = new ArrayList<>();
+        List<Element<?>> civilCaseDocumentList = new ArrayList<>();
+        gaDocumentList.add(documentElement);
+        assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(0);
+        civilCaseDocumentList.add(documentElement);
         assertThat(parentCaseUpdateHelper.checkIfDocumentExists(civilCaseDocumentList, gaDocumentList)).isEqualTo(1);
     }
 
     @Test
     void updateParentWithGAState_Respond_Doc() {
-        assertThat(DOCUMENT_STATES.size()).isEqualTo(4);
+        assertThat(DOCUMENT_STATES.size()).isEqualTo(3);
         assertThat(DOCUMENT_STATES.contains(AWAITING_ADDITIONAL_INFORMATION)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_WRITTEN_REPRESENTATIONS)).isTrue();
         assertThat(DOCUMENT_STATES.contains(AWAITING_DIRECTIONS_ORDER_DOCS)).isTrue();
-        assertThat(DOCUMENT_STATES.contains(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)).isTrue();
     }
 
     @Test

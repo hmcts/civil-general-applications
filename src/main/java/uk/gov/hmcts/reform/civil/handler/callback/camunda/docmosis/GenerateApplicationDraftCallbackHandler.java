@@ -20,12 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DRAFT_DOCUMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
+import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +65,9 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
             ||
             (caseData.getGeneralAppUrgencyRequirement() != null
             && YES.equals(caseData.getGeneralAppUrgencyRequirement()
-                              .getGeneralAppUrgency()))) {
+                              .getGeneralAppUrgency()))
+            || (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
+            && isNull(caseData.getJudicialDecision()))) {
 
             gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),

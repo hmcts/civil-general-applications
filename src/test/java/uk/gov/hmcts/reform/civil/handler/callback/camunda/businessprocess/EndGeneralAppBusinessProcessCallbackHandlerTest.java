@@ -18,11 +18,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
@@ -31,11 +34,15 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
@@ -44,10 +51,13 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,7 +72,9 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
+import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
@@ -93,6 +105,8 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
     private static final Long PARENT_CCD_REF = 1645779506193000L;
+    private static final String DUMMY_EMAIL = "test@gmail.com";
+    List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
 
     @Nested
     class AboutToSubmitCallback {
@@ -212,6 +226,27 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 new TypeReference<>() {});
             assertThat(gaDetailsMasterColl.getCaseState())
                 .isEqualTo("Awaiting Respondent Response");
+        }
+
+        @Test
+        void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, YES));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(NO, YES).getRequest().getCaseDetails()))
+                .thenReturn(getCase(respondentSols, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, YES).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, YES));
+
+            var response = handler.handle(getCallbackParams(NO, YES));
+            assertThat(response).isNotNull();
         }
 
         @Test
@@ -533,6 +568,43 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                               .caseState("General Application Issue Pending")
                               .build()))
                     .build();
+        }
+
+        private CaseData getCase(List<Element<GASolicitorDetailsGAspec>> respondentSols,
+                                 List<Element<GARespondentResponse>> respondentsResponses) {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            DynamicList dynamicListTest = fromList(getSampleCourLocations());
+            Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+            first.ifPresent(dynamicListTest::setValue);
+
+            return CaseData.builder()
+                .ccdCaseReference(CHILD_CCD_REF)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(PARENT_CCD_REF.toString()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
+                                                                                .customerReference("1336546")
+                                                                                .build()).build())
+                .generalAppRespondentSolicitors(respondentSols)
+                .hearingDetailsResp(GAHearingDetails.builder()
+                                        .hearingPreferredLocation(
+                                            dynamicListTest)
+                                        .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                        .build())
+                .respondentsResponses(respondentsResponses)
+                .generalAppRespondent1Representative(
+                    GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(YES)
+                        .build())
+                .generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(types).build())
+                .build();
+        }
+
+        protected List<String> getSampleCourLocations() {
+            return new ArrayList<>(Arrays.asList("ABCD - RG0 0AL", "PQRS - GU0 0EE", "WXYZ - EW0 0HE", "LMNO - NE0 0BH"));
         }
     }
 
