@@ -68,6 +68,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -580,6 +581,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             return CaseData.builder()
                 .ccdCaseReference(CHILD_CCD_REF)
+                .ccdState(PENDING_APPLICATION_ISSUED)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(PARENT_CCD_REF.toString()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
