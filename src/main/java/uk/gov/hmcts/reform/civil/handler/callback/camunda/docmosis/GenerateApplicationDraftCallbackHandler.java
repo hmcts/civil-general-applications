@@ -65,25 +65,27 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
             && YES.equals(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency());
     }
 
-    // Generate Draft Document if it's Urgent application and fee is paid
+    // Generate Draft Document if it's Urgent application and after fee is paid
     // Initiate General application after payment camunda task started
     private boolean isApplicationUrgentAndFeePaid(CaseData caseData) {
-        return (caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
-            && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
-            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)
-            && caseData.getGeneralAppUrgencyRequirement() != null
+        return isFeePaid(caseData) && caseData.getGeneralAppUrgencyRequirement() != null
             && YES.equals(caseData.getGeneralAppUrgencyRequirement()
-                              .getGeneralAppUrgency()));
+                              .getGeneralAppUrgency());
 
     }
 
-    // Generate Draft Document if it's without notice and fee is paid
+    // Generate Draft Document if it's without notice and after fee is paid
     private boolean isGANonUrgent_WithOutNotice_FeePaid(CaseData caseData) {
-        return caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
-            && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
-            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)
-            && caseData.getGeneralAppInformOtherParty() != null
+        return isFeePaid(caseData) && caseData.getGeneralAppInformOtherParty() != null
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+    }
+
+    private boolean isFeePaid(CaseData caseData) {
+        return caseData.getGeneralAppPBADetails() != null
+            && caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
+            && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
+            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS);
+
     }
 
     private CallbackResponse createPDFdocument(CallbackParams callbackParams) {
