@@ -26,8 +26,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
 
-    private static final int MAX_WAIT = 10;
-    private static final int WAIT_GAP = 6;
+    protected static int maxWait = 10;
+    protected static int waitGap = 6;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final TaskHandlerHelper taskHandlerHelper;
@@ -44,11 +44,11 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
                 .toCaseData(coreCaseDataService.getCase(Long.valueOf(caseId)));
 
         boolean civilUpdated = updated(gaCaseData);
-        int wait = MAX_WAIT;
+        int wait = maxWait;
         log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
         while (!civilUpdated && wait > 0) {
             wait--;
-            TimeUnit.SECONDS.sleep(WAIT_GAP);
+            TimeUnit.SECONDS.sleep(waitGap);
             civilUpdated = updated(gaCaseData);
             log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
         }

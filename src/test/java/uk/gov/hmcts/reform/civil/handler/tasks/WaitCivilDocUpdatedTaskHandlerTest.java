@@ -92,10 +92,10 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
         CaseDetails ga = CaseDetails.builder().id(1L).build();
         when(coreCaseDataService.getCase(1L)).thenReturn(ga);
-        when(caseDetailsConverter.toCaseData(eq(ga))).thenReturn(gaCaseData);
+        when(caseDetailsConverter.toCaseData(ga)).thenReturn(gaCaseData);
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
-        when(caseDetailsConverter.toCaseData(eq(civil))).thenReturn(civilCaseDataNow);
+        when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataNow);
 
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
 
@@ -103,19 +103,22 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     }
 
     @Test
-    @Disabled
     void should_handle_task_fail() {
         ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
                 .caseEvent(WAIT_GA_DRAFT).build();
         when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
         CaseDetails ga = CaseDetails.builder().id(1L).build();
         when(coreCaseDataService.getCase(1L)).thenReturn(ga);
-        when(caseDetailsConverter.toCaseData(eq(ga))).thenReturn(gaCaseData);
+        when(caseDetailsConverter.toCaseData(ga)).thenReturn(gaCaseData);
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
-        when(caseDetailsConverter.toCaseData(eq(civil))).thenReturn(civilCaseDataOld);
+        when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataOld);
+        WaitCivilDocUpdatedTaskHandler.maxWait = 1;
+        WaitCivilDocUpdatedTaskHandler.waitGap = 1;
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
-        verify(coreCaseDataService, times(12)).getCase(any());
+        WaitCivilDocUpdatedTaskHandler.maxWait = 10;
+        WaitCivilDocUpdatedTaskHandler.waitGap = 6;
+        verify(coreCaseDataService, times(3)).getCase(any());
     }
 
     @Test
