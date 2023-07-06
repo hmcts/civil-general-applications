@@ -68,6 +68,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -127,7 +128,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -185,7 +186,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -263,7 +264,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             verify(coreCaseDataService, times(1))
                 .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -381,7 +382,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             verify(coreCaseDataService, times(1))
                     .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
 
-            verify(coreCaseDataService).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
             List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
@@ -431,6 +432,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
         private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified) {
             return GeneralApplication.builder()
+                .caseLink(CaseLink.builder().caseReference("1646003133062762").build())
                     .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
@@ -464,6 +466,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
         private GeneralApplication getGeneralApplicationBeforePayment(YesOrNo isConsented, YesOrNo isTobeNotified) {
             return GeneralApplication.builder()
+                .caseLink(CaseLink.builder().caseReference("1646003133062762L").build())
                 .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
@@ -578,6 +581,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             return CaseData.builder()
                 .ccdCaseReference(CHILD_CCD_REF)
+                .ccdState(PENDING_APPLICATION_ISSUED)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(PARENT_CCD_REF.toString()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()

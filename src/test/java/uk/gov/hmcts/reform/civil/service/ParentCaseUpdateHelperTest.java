@@ -388,9 +388,10 @@ class ParentCaseUpdateHelperTest {
                         .build())
                 .build();
         return getCaseWithApplicationData(false)
-                .toBuilder().directionOrderDocument(singletonList(Element.<CaseDocument>builder()
-                        .id(UUID.fromString(uid))
-                        .value(pdfDocument).build())).build();
+            .toBuilder().ccdState(PENDING_APPLICATION_ISSUED)
+            .directionOrderDocument(singletonList(Element.<CaseDocument>builder()
+                                                      .id(UUID.fromString(uid))
+                                                      .value(pdfDocument).build())).build();
     }
 
     private CaseData getGaVaryCaseData(String role, CaseState state) {
