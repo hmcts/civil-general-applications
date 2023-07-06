@@ -9,9 +9,11 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
@@ -39,6 +41,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
     private final GeneralApplicationDraftGenerator gaDraftGenerator;
     private final AssignCategoryId assignCategoryId;
 
+    private final GeneralAppFeesService generalAppFeesService;
+
     @Override
     public String camundaActivityId() {
         return TASK_ID;
@@ -54,18 +58,44 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
+    // Generate Draft Document if it's Urgent application and fee is FREE
+    private boolean isApplicationUrgentAndFreeFee(CaseData caseData) {
+        return generalAppFeesService.isFreeApplication(caseData)
+            && caseData.getGeneralAppUrgencyRequirement() != null
+            && YES.equals(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency());
+    }
+
+    // Generate Draft Document if it's Urgent application and fee is paid
+    // Initiate General application after payment camunda task started
+    private boolean isApplicationUrgentAndFeePaid(CaseData caseData) {
+        return (caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
+            && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
+            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)
+            && caseData.getGeneralAppUrgencyRequirement() != null
+            && YES.equals(caseData.getGeneralAppUrgencyRequirement()
+                              .getGeneralAppUrgency()));
+
+    }
+
+    // Generate Draft Document if it's without notice and fee is paid
+    private boolean isGANonUrgent_WithOutNotice_FeePaid(CaseData caseData) {
+        return caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
+            && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
+            && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)
+            && caseData.getGeneralAppInformOtherParty() != null
+            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+    }
+
     private CallbackResponse createPDFdocument(CallbackParams callbackParams) {
 
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument gaDraftDocument;
-        if ((caseData.getGeneralAppInformOtherParty() != null
-            && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-            ||
-            (caseData.getGeneralAppUrgencyRequirement() != null
-            && YES.equals(caseData.getGeneralAppUrgencyRequirement()
-                              .getGeneralAppUrgency()))
+
+        if (isApplicationUrgentAndFreeFee(caseData)
+            || isGANonUrgent_WithOutNotice_FeePaid(caseData)
+            || isApplicationUrgentAndFeePaid(caseData)
             || (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
             && isNull(caseData.getJudicialDecision()))) {
 
