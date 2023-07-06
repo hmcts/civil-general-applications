@@ -25,6 +25,7 @@ import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,6 +51,8 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     private ObjectMapper mapper;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
+    @Mock
+    private ExternalTask mockTask;
     @Autowired
     private WaitCivilDocUpdatedTaskHandler waitCivilDocUpdatedTaskHandler;
 
@@ -136,5 +139,21 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     void updated_should_success_civil_doc_is_updated() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataNow);
         assertThat(waitCivilDocUpdatedTaskHandler.updated(gaCaseData)).isTrue();
+    }
+
+    @Test
+    void shouldHandleFailure() {
+
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
+                .caseEvent(WAIT_GA_DRAFT).build();
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        CaseDetails ga = CaseDetails.builder().id(1L).build();
+        when(coreCaseDataService.getCase(1L)).thenAnswer(invocation -> {
+            throw new Exception("there was an error");
+        });
+
+        waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
+
+        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
     }
 }
