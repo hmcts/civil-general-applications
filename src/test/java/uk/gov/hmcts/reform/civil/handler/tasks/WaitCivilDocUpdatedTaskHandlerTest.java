@@ -2,8 +2,13 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.WAIT_GA_DRAFT;
 
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -12,8 +17,10 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +46,8 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
     @MockBean
     private TaskHandlerHelper taskHandlerHelper;
+    @MockBean
+    private ObjectMapper mapper;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
     @Autowired
@@ -73,6 +82,38 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         civilCaseDataNow = CaseData.builder()
                 .gaDraftDocStaff(ElementUtils.wrapElements(caseDocumentNow))
                 .build();
+    }
+
+    @Test
+    void should_handle_task_pass() {
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
+                .caseEvent(WAIT_GA_DRAFT).build();
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        CaseDetails ga = CaseDetails.builder().id(1L).build();
+        when(coreCaseDataService.getCase(1L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(eq(ga))).thenReturn(gaCaseData);
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(eq(civil))).thenReturn(civilCaseDataNow);
+
+        waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(coreCaseDataService, times(2)).getCase(any());
+    }
+
+    //@Test
+    void should_handle_task_fail() {
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
+                .caseEvent(WAIT_GA_DRAFT).build();
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        CaseDetails ga = CaseDetails.builder().id(1L).build();
+        when(coreCaseDataService.getCase(1L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(eq(ga))).thenReturn(gaCaseData);
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(eq(civil))).thenReturn(civilCaseDataOld);
+        waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
+        verify(coreCaseDataService, times(12)).getCase(any());
     }
 
     @Test
