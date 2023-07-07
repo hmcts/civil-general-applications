@@ -127,6 +127,12 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     }
 
     @Test
+    void updated_should_success_ga_has_no_doc() {
+        CaseData emptyCaseData = CaseData.builder().build();
+        assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(emptyCaseData)).isTrue();
+    }
+
+    @Test
     void updated_should_fail_civil_doc_is_empty() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataEmpty);
         assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(gaCaseData)).isFalse();
@@ -157,12 +163,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
 
-        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 5);
-    }
-
-    @Test
-    void shouldRetryMore() {
-        assertThat(waitCivilDocUpdatedTaskHandler.getMaxAttempts()).isEqualTo(5);
+        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
     }
 
     @Test
@@ -199,8 +200,8 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
                 eq(mockTask),
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
-                eq(4),
-                eq(2000L)
+                eq(2),
+                eq(1000L)
         );
     }
 }

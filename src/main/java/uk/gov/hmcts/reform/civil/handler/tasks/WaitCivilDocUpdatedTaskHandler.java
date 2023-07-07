@@ -45,32 +45,16 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
     }
 
     @Override
-    public void handleFailureToExternalTaskService(ExternalTask externalTask, ExternalTaskService externalTaskService,
-                                                    Exception e) {
-        int maxRetries = getMaxAttempts();
-        int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
-        log.info("Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
-        externalTaskService.handleFailure(
-                externalTask,
-                e.getMessage(),
-                getStackTrace(e),
-                remainingRetries - 1,
-                calculateExponentialRetryTimeout(2000, maxRetries, remainingRetries)
-        );
-    }
-
-    @Override
     public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskServ, Exception e) {
         taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
         handleFailureToExternalTaskService(externalTask, externalTaskServ, e);
     }
 
-    @Override
-    public int getMaxAttempts() {
-        return 5;
-    }
-
     protected boolean checkCivilDocUpdated(CaseData gaCaseData) {
+        if (Objects.isNull(gaCaseData.getGaDraftDocument())
+                || gaCaseData.getGaDraftDocument().isEmpty()) {
+            return true;
+        }
         CaseData civilCaseData = caseDetailsConverter.toCaseData(
                 coreCaseDataService.getCase(
                         Long.valueOf(gaCaseData.getGeneralAppParentCaseLink().getCaseReference())));
