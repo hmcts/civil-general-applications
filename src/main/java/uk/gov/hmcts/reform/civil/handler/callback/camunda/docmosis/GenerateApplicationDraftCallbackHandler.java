@@ -95,11 +95,17 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument gaDraftDocument;
 
-        if (isApplicationUrgentAndFreeFee(caseData)
+        /**
+         * 1. Draft document should not be generated if judge had made the decision on application
+         * 2. Draft document should be generated only if all the respondents responded in Multiparty
+         * 3. Draft document should be generated only if Free fee application
+         * 4. Draft document should be generated only after payment is made for urgent application and without notice
+         */
+        if ((isApplicationUrgentAndFreeFee(caseData)
             || isGANonUrgent_WithOutNotice_FeePaid(caseData)
             || isApplicationUrgentAndFeePaid(caseData)
-            || (isRespondentsResponseSatisfied(caseData, caseDataBuilder.build())
-            && isNull(caseData.getJudicialDecision()))) {
+            || isRespondentsResponseSatisfied(caseData, caseDataBuilder.build()))
+            && isNull(caseData.getJudicialDecision())) {
 
             gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),
