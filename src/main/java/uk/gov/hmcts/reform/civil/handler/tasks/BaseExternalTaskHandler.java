@@ -90,7 +90,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
             e.getMessage(),
             getStackTrace(e),
             remainingRetries - 1,
-            calculateExponentialRetryTimeout(500, maxRetries, remainingRetries)
+            calculateExponentialRetryTimeout(1000, maxRetries, remainingRetries)
         );
     }
     /**

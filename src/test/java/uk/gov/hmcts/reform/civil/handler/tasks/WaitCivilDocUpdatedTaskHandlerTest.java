@@ -115,30 +115,26 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataOld);
-        WaitCivilDocUpdatedTaskHandler.maxWait = 1;
-        WaitCivilDocUpdatedTaskHandler.waitGap = 1;
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
-        WaitCivilDocUpdatedTaskHandler.maxWait = 10;
-        WaitCivilDocUpdatedTaskHandler.waitGap = 6;
         verify(coreCaseDataService, times(3)).getCase(any());
     }
 
     @Test
     void updated_should_fail_civil_doc_is_empty() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataEmpty);
-        assertThat(waitCivilDocUpdatedTaskHandler.updated(gaCaseData)).isFalse();
+        assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(gaCaseData)).isFalse();
     }
 
     @Test
     void updated_should_fail_civil_doc_is_old() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataOld);
-        assertThat(waitCivilDocUpdatedTaskHandler.updated(gaCaseData)).isFalse();
+        assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(gaCaseData)).isFalse();
     }
 
     @Test
     void updated_should_success_civil_doc_is_updated() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataNow);
-        assertThat(waitCivilDocUpdatedTaskHandler.updated(gaCaseData)).isTrue();
+        assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(gaCaseData)).isTrue();
     }
 
     @Test
@@ -155,5 +151,10 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
 
         verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
+    }
+
+    @Test
+    void shouldRetryMore() {
+        assertThat(waitCivilDocUpdatedTaskHandler.getMaxAttempts()).isEqualTo(5);
     }
 }

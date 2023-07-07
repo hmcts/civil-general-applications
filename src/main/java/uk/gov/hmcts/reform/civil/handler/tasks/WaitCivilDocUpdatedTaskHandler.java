@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
+
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
@@ -10,11 +12,9 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
@@ -26,14 +26,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
 
-    protected static int maxWait = 10;
-    protected static int waitGap = 6;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final TaskHandlerHelper taskHandlerHelper;
     private final ObjectMapper mapper;
 
-    @SneakyThrows
     @Override
     public void handleTask(ExternalTask externalTask) {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
@@ -42,20 +39,25 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
         CaseEvent eventType = externalTaskInput.getCaseEvent();
         CaseData gaCaseData = caseDetailsConverter
                 .toCaseData(coreCaseDataService.getCase(Long.valueOf(caseId)));
-
-        boolean civilUpdated = updated(gaCaseData);
-        int wait = maxWait;
-        log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
-        while (!civilUpdated && wait > 0) {
-            wait--;
-            TimeUnit.SECONDS.sleep(waitGap);
-            civilUpdated = updated(gaCaseData);
-            log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
-        }
-        if (!civilUpdated) {
-            log.error("Civil draft document update wait time out");
+        if (!checkCivilDocUpdated(gaCaseData)) {
+            log.error("Civil draft document update wait time out, event {}", eventType.name());
             throw new BpmnError("ABORT");
         }
+    }
+
+    @Override
+    public void handleFailureToExternalTaskService(ExternalTask externalTask, ExternalTaskService externalTaskService,
+                                                    Exception e) {
+        int maxRetries = getMaxAttempts();
+        int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
+        log.info("Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
+        externalTaskService.handleFailure(
+                externalTask,
+                e.getMessage(),
+                getStackTrace(e),
+                remainingRetries - 1,
+                calculateExponentialRetryTimeout(2000, maxRetries, remainingRetries)
+        );
     }
 
     @Override
@@ -64,7 +66,12 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
         handleFailureToExternalTaskService(externalTask, externalTaskServ, e);
     }
 
-    protected boolean updated(CaseData gaCaseData) {
+    @Override
+    public int getMaxAttempts() {
+        return 5;
+    }
+
+    protected boolean checkCivilDocUpdated(CaseData gaCaseData) {
         CaseData civilCaseData = caseDetailsConverter.toCaseData(
                 coreCaseDataService.getCase(
                         Long.valueOf(gaCaseData.getGeneralAppParentCaseLink().getCaseReference())));
