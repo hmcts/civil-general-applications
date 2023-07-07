@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
-import org.camunda.bpm.engine.delegate.BpmnError;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -32,7 +31,7 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public void handleTask(ExternalTask externalTask) throws Exception {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                 ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
@@ -40,8 +39,8 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
         CaseData gaCaseData = caseDetailsConverter
                 .toCaseData(coreCaseDataService.getCase(Long.valueOf(caseId)));
         if (!checkCivilDocUpdated(gaCaseData)) {
-            log.error("Civil draft document update wait time out, event {}", eventType.name());
-            throw new BpmnError("ABORT");
+            log.error("Civil draft document update not complete, event {}", eventType.name());
+            throw new Exception("Civil draft document update not complete");
         }
     }
 

@@ -118,5 +118,5 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      *
      * @param externalTask the external task to be handled.
      */
-    void handleTask(ExternalTask externalTask);
+    void handleTask(ExternalTask externalTask) throws Exception;
 }
