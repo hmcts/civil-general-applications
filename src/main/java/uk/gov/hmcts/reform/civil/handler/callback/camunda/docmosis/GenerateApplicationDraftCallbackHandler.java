@@ -75,14 +75,14 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
     }
 
     // Generate Draft Document if it's without notice and after fee is paid
-    private boolean isGANonUrgent_WithOutNotice_FeePaid(CaseData caseData) {
+    private boolean isGANonUrgentWithOutNoticeFeePaid(CaseData caseData) {
         return isFeePaid(caseData) && caseData.getGeneralAppInformOtherParty() != null
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 
     private boolean isFeePaid(CaseData caseData) {
         return caseData.getGeneralAppPBADetails() != null
-            && caseData.getGeneralAppPBADetails().getFee().getCode() != "FREE"
+            && !caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE")
             && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
             && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS);
 
@@ -95,14 +95,14 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument gaDraftDocument;
 
-        /**
-         * 1. Draft document should not be generated if judge had made the decision on application
-         * 2. Draft document should be generated only if all the respondents responded in Multiparty
-         * 3. Draft document should be generated only if Free fee application
-         * 4. Draft document should be generated only after payment is made for urgent application and without notice
+        /*
+          1. Draft document should not be generated if judge had made the decision on application
+          2. Draft document should be generated only if all the respondents responded in Multiparty
+          3. Draft document should be generated only if Free fee application
+          4. Draft document should be generated only after payment is made for urgent application and without notice
          */
         if ((isApplicationUrgentAndFreeFee(caseData)
-            || isGANonUrgent_WithOutNotice_FeePaid(caseData)
+            || isGANonUrgentWithOutNoticeFeePaid(caseData)
             || isApplicationUrgentAndFeePaid(caseData)
             || isRespondentsResponseSatisfied(caseData, caseDataBuilder.build()))
             && isNull(caseData.getJudicialDecision())) {
