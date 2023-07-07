@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.controllers.testingsupport.CamundaRestEngineClient;
@@ -29,7 +28,7 @@ public class FailedEventEmitterHandler implements BaseExternalTaskHandler {
 
     @Override
     public void handleTask(ExternalTask externalTask) {
-        if(isFailedEventEmitterEnabled) {
+        if (isFailedEventEmitterEnabled) {
             List<CaseDetails> cases = caseSearchService
                 .getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.FAILED);
             log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
