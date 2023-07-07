@@ -2,7 +2,9 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,7 +22,12 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 
+import java.util.HashMap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -116,7 +123,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataOld);
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
-        verify(coreCaseDataService, times(3)).getCase(any());
+        verify(coreCaseDataService, times(2)).getCase(any());
     }
 
     @Test
@@ -150,11 +157,50 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
 
-        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
+        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 5);
     }
 
     @Test
     void shouldRetryMore() {
         assertThat(waitCivilDocUpdatedTaskHandler.getMaxAttempts()).isEqualTo(5);
+    }
+
+    @Test
+    void shouldCallHandleFailureMethod_whenFeignExceptionFromBusinessLogic() {
+        String errorMessage = "there was an error";
+        int status = 422;
+        Request.HttpMethod requestType = Request.HttpMethod.POST;
+        String exampleUrl = "example url";
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
+                .caseEvent(WAIT_GA_DRAFT).build();
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        CaseDetails ga = CaseDetails.builder().id(1L).build();
+        when(mockTask.getRetries()).thenReturn(null);
+        when(coreCaseDataService.getCase(1L))
+                .thenAnswer(invocation -> {
+                    throw FeignException.errorStatus(errorMessage, Response.builder()
+                            .request(
+                                    Request.create(
+                                            requestType,
+                                            exampleUrl,
+                                            new HashMap<>(), //this field is required for construtor//
+                                            null,
+                                            null,
+                                            null
+                                    ))
+                            .status(status)
+                            .build());
+                });
+
+        waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
+
+        verify(externalTaskService, never()).complete(mockTask);
+        verify(externalTaskService).handleFailure(
+                eq(mockTask),
+                eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
+                anyString(),
+                eq(4),
+                eq(2000L)
+        );
     }
 }
