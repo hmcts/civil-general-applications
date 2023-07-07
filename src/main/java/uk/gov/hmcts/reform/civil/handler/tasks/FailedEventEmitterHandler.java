@@ -24,7 +24,7 @@ public class FailedEventEmitterHandler implements BaseExternalTaskHandler {
     private final CamundaRestEngineClient camundaRestEngineClient;
 
     @Value("${failed.event.emitter.enabled}")
-    boolean isFailedEventEmitterEnabled;
+    private boolean isFailedEventEmitterEnabled;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
