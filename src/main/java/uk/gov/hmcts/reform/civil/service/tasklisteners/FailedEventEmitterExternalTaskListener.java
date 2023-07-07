@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.handler.tasks.FailedEventEmitterHandler;
 
 @Component
-@ConditionalOnExpression("${failed.event.emitter.enabled:true}")
 public class FailedEventEmitterExternalTaskListener {
 
     private static final String TOPIC = "GAFailedEventEmitterScheduler";
