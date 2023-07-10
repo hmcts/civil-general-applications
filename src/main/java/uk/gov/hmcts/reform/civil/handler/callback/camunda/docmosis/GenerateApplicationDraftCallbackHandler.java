@@ -74,7 +74,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
     }
 
-    // Generate Draft Document if it's without notice and after fee is paid
+    // Generate Draft Document if it's non-urgent, without notice and after fee is paid
     private boolean isGANonUrgentWithOutNoticeFeePaid(CaseData caseData) {
         return isFeePaid(caseData) && caseData.getGeneralAppInformOtherParty() != null
             && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
@@ -85,7 +85,6 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
             && !caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE")
             && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
             && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS);
-
     }
 
     private CallbackResponse createPDFdocument(CallbackParams callbackParams) {

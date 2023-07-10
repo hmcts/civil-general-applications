@@ -175,7 +175,9 @@ public class ParentCaseUpdateHelper {
 
                 GeneralApplication generalApplication = civilGeneralApplications.stream()
                     .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                    .findAny().get().getValue();
+                    .findAny()
+                    .orElseThrow(IllegalArgumentException::new)
+                    .getValue();
 
                 civilGeneralApplications =
                     addApplication(buildGeneralApplication(generalApplication), generalApplicationsList);
