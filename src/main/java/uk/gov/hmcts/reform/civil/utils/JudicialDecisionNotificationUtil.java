@@ -262,8 +262,11 @@ public class JudicialDecisionNotificationUtil {
     }
 
     public static boolean isWithNotice(CaseData caseData) {
-        return caseData.getGeneralAppInformOtherParty() != null
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+        // Check if the judge uncloaks the application, in addition
+        return (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES))
+            || (caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())); //false
     }
 
     public static boolean isNonUrgent(CaseData caseData) {
