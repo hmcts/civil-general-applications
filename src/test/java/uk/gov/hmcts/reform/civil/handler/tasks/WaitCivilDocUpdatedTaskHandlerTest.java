@@ -110,6 +110,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         verify(coreCaseDataService, times(2)).getCase(any());
     }
+
     @Test
     void should_handle_task_fail() {
         ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
