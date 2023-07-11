@@ -103,7 +103,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
 
     @Test
-    void shouldGenerateApplicationDraftDocument() {
+    void shouldNotGenerateApplicationDraftDocument() {
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
@@ -128,7 +128,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
                                                                   eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
-        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(false);
+        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
     }
 
     @Test

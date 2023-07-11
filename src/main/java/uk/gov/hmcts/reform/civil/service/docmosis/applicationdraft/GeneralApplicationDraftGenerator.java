@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.time.LocalDateTime.now;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.LANGUAGE_INTERPRETER;
@@ -184,8 +183,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     }
 
     private Boolean validateCasePastDueDate(CaseData caseData) {
-        return caseData.getGeneralAppNotificationDeadlineDate() != null
-            && now().isAfter(caseData.getGeneralAppNotificationDeadlineDate());
+        return caseData.getRespondentsResponses() == null;
     }
 
     private LocalDate getAppUnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
