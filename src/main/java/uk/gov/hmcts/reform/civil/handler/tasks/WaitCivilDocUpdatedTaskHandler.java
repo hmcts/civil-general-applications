@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
-import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
-
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
@@ -12,12 +10,14 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
+import org.camunda.bpm.engine.delegate.BpmnError;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
 
+    protected static int maxWait = 10;
+    protected static int waitGap = 3;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final TaskHandlerHelper taskHandlerHelper;
@@ -38,9 +40,18 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
         CaseEvent eventType = externalTaskInput.getCaseEvent();
         CaseData gaCaseData = caseDetailsConverter
                 .toCaseData(coreCaseDataService.getCase(Long.valueOf(caseId)));
-        if (!checkCivilDocUpdated(gaCaseData)) {
-            log.error("Civil draft document update not complete, event {}", eventType.name());
-            throw new Exception("Civil draft document update not complete");
+        boolean civilUpdated = checkCivilDocUpdated(gaCaseData);
+        int wait = maxWait;
+        log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
+        while (!civilUpdated && wait > 0) {
+            wait--;
+            TimeUnit.SECONDS.sleep(waitGap);
+            civilUpdated = checkCivilDocUpdated(gaCaseData);
+            log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
+        }
+        if (!civilUpdated) {
+            log.error("Civil draft document update wait time out");
+            throw new BpmnError("ABORT");
         }
     }
 

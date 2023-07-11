@@ -110,7 +110,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         verify(coreCaseDataService, times(2)).getCase(any());
     }
-
     @Test
     void should_handle_task_fail() {
         ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
@@ -122,8 +121,12 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataOld);
+        WaitCivilDocUpdatedTaskHandler.maxWait = 1;
+        WaitCivilDocUpdatedTaskHandler.waitGap = 1;
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
-        verify(coreCaseDataService, times(2)).getCase(any());
+        WaitCivilDocUpdatedTaskHandler.maxWait = 10;
+        WaitCivilDocUpdatedTaskHandler.waitGap = 6;
+        verify(coreCaseDataService, times(3)).getCase(any());
     }
 
     @Test
