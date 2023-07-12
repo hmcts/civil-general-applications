@@ -226,6 +226,9 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
+ onlyIf {
+    return (System.env.ENVIRONMENT == 'preview' || System.env.ENVIRONMENT == 'aat')
+  }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
 }
 

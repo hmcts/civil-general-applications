@@ -26,6 +26,7 @@
 ./bin/utils/ccd-add-role.sh "caseflags-viewer"
 ./bin/utils/ccd-add-role.sh "caseworker-wa-task-configuration"
 ./bin/utils/ccd-add-role.sh "CITIZEN-DEFENDANT-PROFILE"
+./bin/utils/ccd-add-role.sh "CITIZEN-CLAIMANT-PROFILE"
 ./bin/utils/ccd-add-role.sh "cui-admin-profile"
 ./bin/utils/ccd-add-role.sh "cui-nbc-profile"
 
