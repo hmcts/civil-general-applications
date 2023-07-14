@@ -3,11 +3,13 @@ package uk.gov.hmcts.reform.civil.controllers;
 import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestUpdateDto;
+import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 
 import java.math.BigDecimal;
@@ -26,6 +28,9 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     private static final String authToken = "Bearer TestAuthToken";
     private static final String s2sToken = "s2s AuthToken";
 
+    @MockBean
+    private PaymentRequestUpdateCallbackService requestUpdateCallbackService;
+
     @Test
     public void whenInvalidTypeOfRequestMade_ReturnMethodNotAllowed() throws Exception {
         doPost(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
@@ -38,6 +43,12 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
             () -> doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
         );
         assertThat(e.getMessage()).contains("PaymentException");
+    }
+
+    @Test
+    public void whenValidPaymentCallbackIsReceivedReturnSuccess() throws Exception {
+        doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
+            .andExpect(status().isOk());
     }
 
     private ServiceRequestUpdateDto buildServiceDto() {
