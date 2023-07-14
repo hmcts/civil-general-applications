@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
@@ -39,6 +40,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
 
     @Test
     public void whenServiceRequestUpdateRequest() {
+        doThrow(new RuntimeException("Payment failure")).when(requestUpdateCallbackService).processCallback(buildServiceDto());
         Exception e = assertThrows(ServletException.class,
             () -> doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
         );
