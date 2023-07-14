@@ -69,7 +69,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .applicantPartyName(caseData.getApplicantPartyName())
                 .isCasePastDueDate(validateCasePastDueDate(caseData))
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+                .isWithNotice(caseData.getGeneralAppConsentOrder())
                 .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
                                              .getReasonsForWithoutNotice() : null)
                 .generalAppUrgency(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())
