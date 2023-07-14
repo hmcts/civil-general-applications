@@ -37,7 +37,7 @@ public class AuthorisationService {
             }
         } catch (Exception ex) {
             //do nothing
-            log.error("S2S token is not authorised");
+            log.error("S2S token is not authorised" + ex);
         }
         return false;
     }
