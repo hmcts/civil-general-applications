@@ -59,6 +59,8 @@ public abstract class BaseIntegrationTest {
         .roles(of("caseworker-civil-solicitor"))
         .build();
 
+    private static final String s2sToken = "s2s AuthToken";
+
     @Autowired
     protected ObjectMapper objectMapper;
 
@@ -111,6 +113,7 @@ public abstract class BaseIntegrationTest {
         return mockMvc.perform(
             MockMvcRequestBuilders.post(urlTemplate, uriVars)
                 .header(HttpHeaders.AUTHORIZATION, auth)
+                .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }
