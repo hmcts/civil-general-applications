@@ -132,6 +132,95 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void withNoticeShouldBeYes_WhenGeneralAppConsentOrderIsNull() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        generalApplicationDraftGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_APPLICATION_DRAFT)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
+                                                                  eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsWithNotice()).isEqualTo(YES);
+    }
+
+    @Test
+    void withNoticeShouldBeYes() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder().generalAppConsentOrder(YES);
+        caseData = caseDataBuilder.build();
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        generalApplicationDraftGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_APPLICATION_DRAFT)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
+                                                                  eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsWithNotice()).isEqualTo(YES);
+    }
+
+    @Test
+    void withNoticeShouldBeNO() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(YES, null);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder().generalAppConsentOrder(NO);
+        caseData = caseDataBuilder.build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        generalApplicationDraftGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_APPLICATION_DRAFT)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
+                                                                  eq(GENERAL_APPLICATION_DRAFT));
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsWithNotice()).isEqualTo(NO);
+    }
+
+    @Test
     void shouldGenerateApplicationDraftDocumentWithNoticeButRespondentNotRespondedOnTime() {
         CaseData caseData = getSampleGeneralAppCaseDataWithDeadLineReached(NO, YES);
 
