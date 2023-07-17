@@ -128,11 +128,11 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
                                                                   eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
-        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
+        assertThat(templateData.getIsCasePastDueDate()).isTrue();
     }
 
     @Test
-    void withNoticeShouldBeYes_WhenGeneralAppConsentOrderIsNull() {
+    void isConsentOrderShouldBeYes_WhenGeneralAppConsentOrderIsNull() {
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
             .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
@@ -157,10 +157,11 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                                                                   eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
         assertThat(templateData.getIsWithNotice()).isEqualTo(YES);
+        assertThat(templateData.getIsConsentOrder()).isEqualTo(YES);
     }
 
     @Test
-    void withNoticeShouldBeYes() {
+    void isConsentOrderShouldBeYes() {
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder().generalAppConsentOrder(YES);
         caseData = caseDataBuilder.build();
@@ -187,10 +188,11 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                                                                   eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
         assertThat(templateData.getIsWithNotice()).isEqualTo(YES);
+        assertThat(templateData.getIsConsentOrder()).isEqualTo(YES);
     }
 
     @Test
-    void withNoticeShouldBeNO() {
+    void isConsentOrderShouldBeNO() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, null);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder().generalAppConsentOrder(NO);
         caseData = caseDataBuilder.build();
@@ -217,7 +219,8 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class),
                                                                   eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
-        assertThat(templateData.getIsWithNotice()).isEqualTo(NO);
+        assertThat(templateData.getIsWithNotice()).isNull();
+        assertThat(templateData.getIsConsentOrder()).isEqualTo(NO);
     }
 
     @Test
@@ -245,7 +248,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class), eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
-        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
+        assertThat(templateData.getIsCasePastDueDate()).isTrue();
     }
 
     @Test

@@ -21,6 +21,7 @@ public class GADraftForm implements MappableObject {
     private final String date;
     private final String applicantPartyName;
     private final YesOrNo hasAgreed;
+    private final YesOrNo isConsentOrder;
     private final YesOrNo isWithNotice;
     private final String reasonsForWithoutNotice;
     private final YesOrNo generalAppUrgency;
