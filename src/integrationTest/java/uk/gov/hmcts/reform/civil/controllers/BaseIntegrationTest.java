@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
+import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
 import uk.gov.hmcts.reform.civil.Application;
 import uk.gov.hmcts.reform.civil.TestIdamConfiguration;
 import uk.gov.hmcts.reform.civil.service.UserService;
@@ -33,7 +36,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.of;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("integration-test")
@@ -76,12 +81,16 @@ public abstract class BaseIntegrationTest {
     @MockBean
     protected JwtDecoder jwtDecoder;
 
+    @MockBean
+    private ServiceAuthorisationApi serviceAuthorisationApi;
+
     @BeforeEach
     public void setUpBase() {
         when(userService.getUserInfo(anyString())).thenReturn(USER_INFO);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
         setSecurityAuthorities(authentication);
+        when(serviceAuthorisationApi.getServiceName(any())).thenReturn("payment_app");
         when(jwtDecoder.decode(anyString())).thenReturn(getJwt());
     }
 

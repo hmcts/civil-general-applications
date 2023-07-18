@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
@@ -15,7 +14,6 @@ public class CallbackControllerTest extends BaseIntegrationTest {
 
     @Test
     @SneakyThrows
-    @Disabled
     public void shouldReturnNotFoundWhenCallbackHandlerIsNotImplemented() {
         CallbackRequest callbackRequest = CallbackRequest.builder()
             .eventId(CREATE_GENERAL_APPLICATION_CASE.name())

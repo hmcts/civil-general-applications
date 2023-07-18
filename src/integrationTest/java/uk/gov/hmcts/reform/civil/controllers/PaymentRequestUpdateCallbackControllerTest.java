@@ -67,6 +67,8 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPost(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.post(urlTemplate, uriVars)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
+                .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }
