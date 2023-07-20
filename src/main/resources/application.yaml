@@ -93,7 +93,7 @@ idam:
   s2s-auth:
     microservice: civil_general_applications
   s2s-authorised:
-    services: ${GA_S2S_AUTHORISED_SERVICES:payment_app}
+    services: ${GA_S2S_AUTHORISED_SERVICES:payment_app,ccd_data,civil_service}
 
 document_management:
   userRoles: "caseworker-civil,caseworker-civil-solicitor"
