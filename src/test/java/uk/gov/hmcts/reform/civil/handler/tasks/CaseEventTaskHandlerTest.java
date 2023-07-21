@@ -133,7 +133,7 @@ class CaseEventTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 
@@ -169,7 +169,7 @@ class CaseEventTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 

@@ -92,7 +92,7 @@ civil-service:
     releaseNameOverride: ${SERVICE_NAME}-civil-service
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
-    ingressHost: civil-ga-civil-service-staging-aat.service.core-compute-aat.internal
+    ingressHost: civil-ga-civil-service-staging.aat.platform.hmcts.net
     keyVaults:
       civil:
         resourceGroup: civil
@@ -219,7 +219,7 @@ ccd:
         IDAM_SERVICE_KEY: ${CCD_API_GATEWAY_S2S_SECRET}
         IDAM_OAUTH2_CLIENT_SECRET: ${CCD_API_GATEWAY_IDAM_CLIENT_SECRET}
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
-      ingressHost: civil-ga-gateway-staging-aat.service.core-compute-aat.internal
+      ingressHost: civil-ga-gateway-staging.aat.platform.hmcts.net
       ingressIP: ${INGRESS_IP}
       keyVaults: []
   ccd-data-store-api:
@@ -244,7 +244,7 @@ ccd:
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
-      ingressHost: civil-ga-data-store-staging-aat.service.core-compute-aat.internal
+      ingressHost: civil-ga-data-store-staging.aat.platform.hmcts.net
 
   ccd-definition-store-api:
     java:
@@ -258,7 +258,7 @@ ccd:
         DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
       keyVaults: []
-      ingressHost: civil-ga-definition-store-staging-aat.service.core-compute-aat.internal
+      ingressHost: civil-ga-definition-store-staging.aat.platform.hmcts.net
 
   postgresql:
     persistence:
@@ -268,7 +268,7 @@ camunda-bpm:
   java:
     disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
-    ingressHost: civil-ga-camunda-staging-aat.service.core-compute-aat.internal
+    ingressHost: civil-ga-camunda-staging.aat.platform.hmcts.net
     environment:
       CAMUNDA_API_AUTH_ENABLED: false
       CAMUNDA_DB_HOST: ${SERVICE_NAME}-postgresql
