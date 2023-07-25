@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
 import uk.gov.hmcts.reform.civil.security.JwtGrantedAuthoritiesConverter;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -45,7 +47,6 @@ public class SecurityConfiguration {
         "/health/liveness",
         "/health/readiness",
         "/status/health",
-        "/service-request-update",
         "/",
         "/loggers/**"
     };
@@ -58,10 +59,14 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
+    private final ServiceAuthFilter serviceAuthFilter;
+
     @Autowired
-    public SecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
+    public SecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter,
+                                 ServiceAuthFilter serviceAuthFiler) {
         jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        this.serviceAuthFilter = serviceAuthFiler;
     }
 
     @Bean
@@ -72,6 +77,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                 .addFilterBefore(serviceAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
                 .sessionManagement().sessionCreationPolicy(STATELESS).and()
                 .formLogin().disable()
                 .logout().disable()
