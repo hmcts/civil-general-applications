@@ -32,7 +32,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -74,7 +74,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return REQUEST_FOR_INFORMATION;
     }
 }

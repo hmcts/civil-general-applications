@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +33,8 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final AssignCategoryId assignCategoryId;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
 
@@ -46,13 +50,21 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
-        caseDataBuilder.gaWrittenRepDocList(addWrittenRepresentationResponse(caseData));
-
+        List<Element<Document>> addWrittenResponseList = addWrittenRepresentationResponse(caseData);
+        assignCategoryId.assignCategoryIdToCollection(addWrittenResponseList, Element::getValue,
+                AssignCategoryId.APPLICATIONS
+        );
+        caseDataBuilder.gaWrittenRepDocList(addWrittenResponseList);
+        if (!addWrittenResponseList.isEmpty()) {
+            caseDataBuilder.gaRespDocument(addWrittenResponseList);
+        }
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
 
         CaseData updatedCaseData = caseDataBuilder.build();
-
+        parentCaseUpdateHelper.updateParentWithGAState(
+                updatedCaseData,
+                updatedCaseData.getCcdState().getDisplayedValue()
+        );
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();

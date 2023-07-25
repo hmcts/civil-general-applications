@@ -52,39 +52,74 @@ public class JudicialDecisionNotificationUtil {
         if (isListForHearing(caseData)) {
             return LIST_FOR_HEARING;
         }
-        if (isJudicialDismissal(caseData)
-            && !isApplicationCloaked(caseData)) {
+        if (isJudicialDismissalUncloak(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
         }
-        if (isApplicationCloaked(caseData)
-            && isJudicialDismissal(caseData)) {
+        if (isJudicialDismissalCloak(caseData)) {
             return JUDGE_DISMISSED_APPLICATION_CLOAK;
         }
-        if (isJudicialApproval(caseData)
-            && !isApplicationCloaked(caseData)) {
+        if (isJudicialApprovalUncloak(caseData)) {
             return JUDGE_APPROVED_THE_ORDER;
         }
-        if (isApplicationCloaked(caseData)
-            && isJudicialApproval(caseData)) {
+        if (isJudicialApprovalCloak(caseData)) {
             return JUDGE_APPROVED_THE_ORDER_CLOAK;
         }
-        if (isDirectionOrder(caseData)
-            && !isApplicationCloaked(caseData)) {
+        if (isDirectionOrderUncloak(caseData)) {
             return JUDGE_DIRECTION_ORDER;
         }
-        if (isDirectionOrder(caseData)
-            && isApplicationCloaked(caseData)) {
+        if (isDirectionOrderCloak(caseData)) {
             return JUDGE_DIRECTION_ORDER_CLOAK;
         }
-        if (isRequestForInformation(caseData)
-            && !isApplicationCloaked(caseData)) {
+        if (isRequestForInformationUnCloak(caseData)) {
             return REQUEST_FOR_INFORMATION;
         }
-        if (isRequestForInformation(caseData)
-            && isApplicationCloaked(caseData)) {
+        if (isRequestForInformationCloak(caseData)) {
             return REQUEST_FOR_INFORMATION_CLOAK;
         }
+        if (Objects.nonNull(caseData.getApproveConsentOrder())) {
+            return JUDGE_APPROVED_THE_ORDER;
+        }
         return NON_CRITERION;
+    }
+
+    private static boolean isRequestForInformationCloak(CaseData caseData) {
+        return isRequestForInformation(caseData)
+                && isApplicationCloaked(caseData);
+    }
+
+    private static boolean isRequestForInformationUnCloak(CaseData caseData) {
+        return isRequestForInformation(caseData)
+                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
+    }
+
+    private static boolean isDirectionOrderCloak(CaseData caseData) {
+        return isDirectionOrder(caseData)
+                && isApplicationCloaked(caseData);
+    }
+
+    private static boolean isDirectionOrderUncloak(CaseData caseData) {
+        return isDirectionOrder(caseData)
+                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
+    }
+
+    private static boolean isJudicialApprovalCloak(CaseData caseData) {
+        return isApplicationCloaked(caseData)
+                && isJudicialApproval(caseData);
+    }
+
+    private static boolean isJudicialApprovalUncloak(CaseData caseData) {
+        return isJudicialApproval(caseData)
+                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
+    }
+
+    private static boolean isJudicialDismissalCloak(CaseData caseData) {
+        return isApplicationCloaked(caseData)
+                && isJudicialDismissal(caseData);
+    }
+
+    private static boolean isJudicialDismissalUncloak(CaseData caseData) {
+        return isJudicialDismissal(caseData)
+                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
     }
 
     public static String requiredGAType(CaseData caseData) {
@@ -136,6 +171,10 @@ public class JudicialDecisionNotificationUtil {
         return isJudicialDecisionEvent(caseData)
             && Objects.nonNull(decision)
             && (Objects.isNull(caseData.getApplicationIsCloaked()) || caseData.getApplicationIsCloaked().equals(YES));
+    }
+
+    public static boolean isGeneralAppConsentOrder(CaseData caseData) {
+        return Objects.nonNull(caseData.getGeneralAppConsentOrder());
     }
 
     private static boolean isListForHearing(CaseData caseData) {
@@ -205,12 +244,9 @@ public class JudicialDecisionNotificationUtil {
                                                                  GAJudgeWrittenRepresentationsOptions
                                                                              gaJudgeWrittenRepresentationsOptions) {
 
-        if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+        return caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
             && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-            .getWrittenOption().equals(gaJudgeWrittenRepresentationsOptions)) {
-            return true;
-        }
-        return false;
+            .getWrittenOption().equals(gaJudgeWrittenRepresentationsOptions);
     }
 
     public static boolean isNotificationCriteriaSatisfied(CaseData caseData) {
@@ -219,24 +255,18 @@ public class JudicialDecisionNotificationUtil {
 
             var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
             return isWithNotice(caseData)
-                && isNonConsent(caseData)
                 && isNonUrgent(caseData)
                 && !(StringUtils.isEmpty(recipient));
         }
         return false;
     }
 
-    public static boolean isNonConsent(CaseData caseData) {
-        return caseData
-                .getGeneralAppRespondentAgreement()
-                .getHasAgreed() == NO;
-    }
-
     public static boolean isWithNotice(CaseData caseData) {
-        return caseData.getGeneralAppRespondentAgreement() != null
-                && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppInformOtherParty() != null
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+        // Check if the judge uncloaks the application, in addition
+        return (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES))
+            || (caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())); //false
     }
 
     public static boolean isNonUrgent(CaseData caseData) {

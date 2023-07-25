@@ -46,13 +46,13 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         HearingForm templateData = getTemplateData(caseData);
-        DocmosisTemplates template = getTemplate(caseData);
+        DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
         return documentManagementService.uploadDocument(
                 authorisation,
                 new PDF(
-                        getFileName(caseData, template),
+                        getFileName(template),
                         document.getBytes(),
                         DocumentType.HEARING_NOTICE
                 )
@@ -102,7 +102,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         return String.join("-", parts);
     }
 
-    protected String getFileName(CaseData caseData, DocmosisTemplates template) {
+    protected String getFileName(DocmosisTemplates template) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return String.format(template.getDocumentTitle(),
                 LocalDateTime.now().format(formatter));
@@ -112,7 +112,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         if (isNull(date)) {
             return null;
         }
-        return DateFormatHelper.formatLocalDate(date, "dd/MMM/yyyy");
+        return DateFormatHelper.formatLocalDate(date, "d MMMM yyyy");
     }
 
     @SuppressWarnings("unchecked")
@@ -165,7 +165,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                         .equals(parseLong(civilGaData.getValue().getCaseLink().getCaseReference())));
     }
 
-    protected DocmosisTemplates getTemplate(CaseData caseData) {
+    protected DocmosisTemplates getTemplate() {
         return HEARING_APPLICATION;
     }
 }

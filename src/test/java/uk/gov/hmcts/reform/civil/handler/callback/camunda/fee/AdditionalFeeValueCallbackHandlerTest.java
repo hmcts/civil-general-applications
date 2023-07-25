@@ -15,12 +15,14 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
 import java.math.BigDecimal;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SET_ASIDE_JUDGEMENT;
 
 @SpringBootTest(classes = {
     AdditionalFeeValueCallbackHandler.class,
@@ -61,8 +64,6 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     void setup() {
         when(generalAppFeesConfiguration.getApplicationUncloakAdditionalFee())
             .thenReturn(TEST_FEE_CODE);
-        //TODO set to actual ga free keyword
-        when(generalAppFeesConfiguration.getFreeKeyword()).thenReturn("CopyPagesUpTo10");
     }
 
     @Test
@@ -81,15 +82,9 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void shouldReturnAdditionalFeeValue_WhenApplicationUncloaked() {
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
-
-        Fee expectedFeeDto = Fee.builder()
-            .calculatedAmountInPence(TEST_FEE_AMOUNT_POUNDS_167)
-            .code(TEST_FEE_CODE)
-            .version(VERSION)
-            .build();
 
         var caseData = CaseDataBuilder.builder()
             .judicialDecisionWithUncloakRequestForInformationApplication(
@@ -98,15 +93,47 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+        when(judicialDecisionHelper
+                .containsTypesNeedNoAdditionalFee(caseData)).thenReturn(false);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        Fee expectedFeeDto = Fee.builder()
+                .calculatedAmountInPence(TEST_FEE_AMOUNT_POUNDS_167)
+                .code(TEST_FEE_CODE)
+                .version(VERSION)
+                .build();
+
         assertThat(extractAdditionalUncloakFee(response)).isEqualTo(expectedFeeDto);
     }
 
     @Test
+    void shouldNotReturnAdditionalFeeValue_WhenApplicationUncloaked_ContainsTypesNeedNoAdditionalFee() {
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
+                .thenReturn(Fee.builder().calculatedAmountInPence(
+                        TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
+
+        var caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(
+                        REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
+                .generalAppType(GAApplicationType.builder()
+                        .types(singletonList(SET_ASIDE_JUDGEMENT))
+                        .build())
+                .build();
+
+        when(judicialDecisionHelper
+                .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+        when(judicialDecisionHelper
+                .containsTypesNeedNoAdditionalFee(caseData)).thenReturn(true);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        verify(generalAppFeesService, never()).getFeeForGA(any(), any(), any());
+    }
+
+    @Test
     void shouldNotGetAdditionalFeeValue_WhenApplicationIsNotUncloaked() {
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenReturn(Fee.builder().calculatedAmountInPence(
                 BigDecimal.valueOf(16700)).code("").version(VERSION).build());
 
@@ -116,13 +143,13 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        verify(generalAppFeesService, never()).getFeeForGA(any());
+        verify(generalAppFeesService, never()).getFeeForGA(any(), any(), any());
     }
 
     @Test
     void shouldThrowError_whenRunTimeExceptionHappens() {
 
-        when(generalAppFeesService.getFeeForGA(any()))
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
             .thenThrow(new RuntimeException(SOME_EXCEPTION));
 
         var caseData = CaseDataBuilder.builder()
@@ -132,6 +159,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
 
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+        when(judicialDecisionHelper
+                .containsTypesNeedNoAdditionalFee(caseData)).thenReturn(false);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 

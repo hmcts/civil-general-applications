@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseManagementCategory;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
@@ -78,6 +79,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo addApplicant2;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
+    private final YesOrNo generalAppConsentOrder;
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
     private final String generalAppReasonsOfOrder;
@@ -100,6 +102,10 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final IdamUserDetails civilServiceUserRoles;
     private final List<Element<Document>> generalAppEvidenceDocument;
+    private final List<Element<Document>> gaEvidenceDocStaff;
+    private final List<Element<Document>> gaEvidenceDocClaimant;
+    private final List<Element<Document>> gaEvidenceDocRespondentSol;
+    private final List<Element<Document>> gaEvidenceDocRespondentSolTwo;
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
     private final List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
@@ -116,7 +122,9 @@ public class CaseData implements MappableObject {
     private final Document judicialListHearingDocPreview;
     private final Document judicialWrittenRepDocPreview;
     private final Document judicialRequestMoreInfoDocPreview;
+    private final Document consentOrderDocPreview;
     private final GAJudicialRequestMoreInfo judicialDecisionRequestMoreInfo;
+    private final GAApproveConsentOrder approveConsentOrder;
     private final GAJudicialWrittenRepresentations judicialDecisionMakeAnOrderForWrittenRepresentations;
     private final String judgeRecitalText;
     private final String directionInRelationToHearingText;
@@ -144,6 +152,14 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaDirectionDocList;
     private final List<Element<Document>> generalAppAddlnInfoUpload;
     private final List<Element<Document>> gaAddlnInfoList;
+
+    private final List<Element<Document>> gaRespDocument;
+
+    private final List<Element<Document>> gaRespDocStaff;
+    private final List<Element<Document>> gaRespDocClaimant;
+    private final List<Element<Document>> gaRespDocRespondentSol;
+    private final List<Element<Document>> gaRespDocRespondentSolTwo;
+
     private final String gaRespondentDetails;
     private final LocalDate issueDate;
     private final String generalAppSuperClaimType;
@@ -153,6 +169,8 @@ public class CaseData implements MappableObject {
     private final OrganisationPolicy applicant1OrganisationPolicy;
     private final OrganisationPolicy respondent1OrganisationPolicy;
     private final OrganisationPolicy respondent2OrganisationPolicy;
+    private final String respondent1OrganisationIDCopy;
+    private final String respondent2OrganisationIDCopy;
     private final YesOrNo respondent2SameLegalRepresentative;
     private final GAReferToJudgeGAspec referToJudge;
     private final GAReferToLegalAdvisorGAspec referToLegalAdvisor;
@@ -190,6 +208,16 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> generalOrderDocRespondentSol;
     private final List<Element<CaseDocument>> generalOrderDocRespondentSolTwo;
     @Builder.Default
+    private final List<Element<CaseDocument>> gaDraftDocument = new ArrayList<>();
+    private final List<Element<CaseDocument>> gaDraftDocStaff;
+    private final List<Element<CaseDocument>> gaDraftDocClaimant;
+    private final List<Element<CaseDocument>> gaDraftDocRespondentSol;
+    private final List<Element<CaseDocument>> gaDraftDocRespondentSolTwo;
+
+    @Builder.Default
+    private final List<Element<CaseDocument>> consentOrderDocument = new ArrayList<>();
+
+    @Builder.Default
     private final List<Element<CaseDocument>> dismissalOrderDocument = new ArrayList<>();
     private final List<Element<CaseDocument>> dismissalOrderDocStaff;
     private final List<Element<CaseDocument>> dismissalOrderDocClaimant;
@@ -216,7 +244,6 @@ public class CaseData implements MappableObject {
     @Builder.Default
     private final List<Element<CaseDocument>> writtenRepConcurrentDocument = new ArrayList<>();
     private final BusinessProcess businessProcess;
-    private final String respondent1OrganisationIDCopy;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeListForHearing;
     private final GAOrderWithoutNoticeGAspec orderWithoutNoticeListForHearing;
     private final GAOrderCourtOwnInitiativeGAspec orderCourtOwnInitiativeForWrittenRep;
@@ -246,6 +273,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo assistedOrderGiveReasonsYesNo;
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
+    private final YesOrNo gaRespondentConsent;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null

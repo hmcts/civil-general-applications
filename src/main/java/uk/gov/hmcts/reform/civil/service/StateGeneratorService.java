@@ -7,8 +7,11 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import static java.util.Objects.nonNull;
+
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
@@ -60,6 +63,8 @@ public class StateGeneratorService {
             } else {
                 return ORDER_MADE;
             }
+        } else if (data.getApproveConsentOrder() != null) {
+            return ORDER_MADE;
         }
         return data.getCcdState();
     }
@@ -81,8 +86,12 @@ public class StateGeneratorService {
 
     private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
+                && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 return APPLICATION_ADD_PAYMENT;
+            } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
+                && nonNull(caseData.getGeneralAppConsentOrder())) {
+                return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
             }

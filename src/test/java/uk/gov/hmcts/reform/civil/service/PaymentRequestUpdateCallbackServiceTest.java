@@ -39,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAY
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.FAILED;
+import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @SpringBootTest(classes = {
     PaymentRequestUpdateCallbackService.class,
@@ -91,6 +92,7 @@ class PaymentRequestUpdateCallbackServiceTest {
         when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
             startEventResponse(caseDetails,
                                END_JUDGE_BUSINESS_PROCESS_GASPEC));
+
         when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
 
         paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
@@ -157,6 +159,7 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
+        verify(judicialNotificationService, times(1)).sendNotification(any(), any());
     }
 
     @Test
@@ -193,6 +196,39 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, never()).startGaUpdate(any(), any());
         verify(coreCaseDataService, never()).submitGaUpdate(any(), any());
         verify(coreCaseDataService, never()).triggerEvent(any(), any());
+    }
+
+    @Test
+    public void shouldNotSendEmailToRespondent_When_ConsentOrder() {
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YesOrNo.NO).build();
+        caseData = caseData.toBuilder().ccdState(APPLICATION_ADD_PAYMENT)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .status(SUCCESS)
+                                                                    .customerReference(null)
+                                                                    .reference(REFERENCE)
+                                                                    .errorCode(null)
+                                                                    .errorMessage(null)
+                                                                    .build())
+                                      .build())
+            .generalAppConsentOrder(YesOrNo.NO)
+            .build();
+        CaseDetails caseDetails = buildCaseDetails(caseData);
+
+        when(coreCaseDataService.getCase(Long.valueOf(CASE_ID))).thenReturn(caseDetails);
+        when(caseDetailsConverter.toCaseData(caseDetails))
+            .thenReturn(caseData);
+        when(coreCaseDataService.startGaUpdate(any(), any())).thenReturn(
+            startEventResponse(caseDetails,
+                               END_JUDGE_BUSINESS_PROCESS_GASPEC));
+        when(coreCaseDataService.submitGaUpdate(any(), any())).thenReturn(caseData);
+
+        paymentRequestUpdateCallbackService.processCallback(buildServiceDto(PAID));
+
+        verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
+        verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
+        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
+        verify(judicialNotificationService, never()).sendNotification(any(), any());
     }
 
     @Test

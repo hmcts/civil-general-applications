@@ -33,6 +33,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+def generalappCCDBranch = "master"
 
 static Map<String, Object> secret(String secretName, String envVariable) {
   [$class     : 'AzureKeyVaultSecret',
@@ -69,13 +70,22 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableFullFunctionalTest(200)
 
-  before('fullFunctionalTest') {
+  before('crossBrowserTest') {
+    sh """
+      ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
+    """
     yarnBuilder.yarn('yarn-update')
     yarnBuilder.yarn('install-dependencies')
   }
 
   afterAlways('fullFunctionalTest') {
     archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+  }
+
+  enableCrossBrowserTest()
+
+  afterAlways('crossBrowserTest') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
   }
 
   afterAlways('fortify-scan') {

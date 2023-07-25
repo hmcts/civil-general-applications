@@ -72,7 +72,6 @@ genApp:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
-      free: CopyPagesUpTo10
       appnToVaryOrSuspend: AppnToVaryOrSuspend
   lrd:
     endpoint: /refdata/location/court-venues
@@ -85,9 +84,16 @@ payments:
     spec_site_id: AAA6
     callback-url: ${PAY_CALLBACK_URL:}
 
+failed:
+  event:
+    emitter:
+      enabled: ${FAILED_EVENT_EMITTER_ENABLED:false}
+
 idam:
   s2s-auth:
     microservice: civil_general_applications
+  s2s-authorised:
+    services: ${GA_S2S_AUTHORISED_SERVICES:payment_app,ccd_data,civil_service}
 
 document_management:
   userRoles: "caseworker-civil,caseworker-civil-solicitor"
@@ -207,6 +213,11 @@ payments:
   api:
     url: http://localhost:8765
     callback-url: http://localhost:4550/service-request-update
+
+failed:
+  event:
+    emitter:
+      enabled: false
 
 idam:
   web:

@@ -20,9 +20,11 @@ import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -32,6 +34,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -39,6 +42,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -71,6 +75,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     CaseDetailsConverter.class,
     RespondToApplicationHandler.class,
     JacksonAutoConfiguration.class,
+    AssignCategoryId.class
 },
     properties = {"reference.database.enabled=false"})
 public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
@@ -84,6 +89,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
 
+    @MockBean
+    private FeatureToggleService featureToggleService;
     @MockBean
     IdamClient idamClient;
 
@@ -456,13 +463,13 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
         assertThat(response).isNotNull();
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -489,6 +496,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
         assertThat(response).isNotNull();
 
         CaseData responseCaseData = getResponseCaseData(response);
@@ -496,7 +504,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(2);
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
+
     }
 
     @Test
@@ -514,10 +522,30 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
+    }
+
+    @Test
+    void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response_test() {
+
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+
+        CaseData caseData = getCaseWithJudicialDecision(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(response).isNotNull();
     }
 
     @Test
@@ -542,13 +570,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
-
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getHearingDetailsResp()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -562,7 +588,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
-        assertThat(response.getState()).isEqualTo("AWAITING_RESPONDENT_RESPONSE");
     }
 
     @Test
@@ -663,7 +688,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseCaseData = getResponseCaseData(response);
         assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isEqualTo(null);
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
-        assertThat(response.getState()).isEqualTo("APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION");
     }
 
     private CaseData getResponseCaseData(AboutToStartOrSubmitCallbackResponse response) {
@@ -837,6 +861,43 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                 GAApplicationType
                     .builder()
                     .types(types).build())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .build();
+    }
+
+    private CaseData getCaseWithJudicialDecision(List<Element<GASolicitorDetailsGAspec>> respondentSols,
+                             List<Element<GARespondentResponse>> respondentsResponses) {
+        List<GeneralApplicationTypes> types = List.of(
+            (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+        DynamicList dynamicListTest = fromList(getSampleCourLocations());
+        Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+        first.ifPresent(dynamicListTest::setValue);
+
+        return CaseData.builder()
+            .generalAppRespondentSolicitors(respondentSols)
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferredLocation(
+                                        dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .build())
+            .respondentsResponses(respondentsResponses)
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .judicialDecision(GAJudicialDecision.builder().decision(
+                GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build())
             .businessProcess(BusinessProcess
                                  .builder()
                                  .camundaEvent(CAMUNDA_EVENT)

@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.GeneralApplicationCreationNotificationService;
 
 import java.util.List;
@@ -29,6 +31,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private final ObjectMapper objectMapper;
 
     private final GeneralApplicationCreationNotificationService gaCreationNotificationService;
+    private final GeneralAppFeesService generalAppFeesService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -45,9 +48,10 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
 
         CaseData caseData = callbackParams.getCaseData();
-
-        caseData = gaCreationNotificationService.sendNotification(caseData);
-
+        if (generalAppFeesService.isFreeApplication(caseData)
+                || !caseData.getCcdState().equals(CaseState.PENDING_APPLICATION_ISSUED)) {
+            caseData = gaCreationNotificationService.sendNotification(caseData);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))
             .build();

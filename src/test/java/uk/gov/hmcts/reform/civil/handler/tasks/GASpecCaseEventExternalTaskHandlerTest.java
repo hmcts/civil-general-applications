@@ -20,9 +20,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -65,6 +67,9 @@ class GASpecCaseEventExternalTaskHandlerTest {
     @MockBean
     private CoreCaseDataService coreCaseDataService;
 
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
+
     @Autowired
     private GaSpecExternalCaseEventTaskHandler gaSpecCaseEventTaskHandler;
 
@@ -102,6 +107,9 @@ class GASpecCaseEventExternalTaskHandlerTest {
             when(coreCaseDataService.startGaUpdate(CASE_ID, INITIATE_GENERAL_APPLICATION))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
 
+            when(taskHandlerHelper.gaCaseDataContent(any(), any()))
+                .thenReturn(gaCaseDataContent(caseDetails, caseData));
+
             when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
             gaSpecCaseEventTaskHandler.execute(mockTask, externalTaskService);
@@ -129,7 +137,7 @@ class GASpecCaseEventExternalTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 
@@ -165,7 +173,7 @@ class GASpecCaseEventExternalTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 
@@ -190,6 +198,18 @@ class GASpecCaseEventExternalTaskHandlerTest {
                 anyInt(),
                 anyLong()
             );
+        }
+
+        private CaseDataContent gaCaseDataContent(CaseDetails caseDetails,
+                                                  CaseData caseData) {
+            Map<String, Object> objectDataMap = caseDetails.getData();
+            objectDataMap.put("businessProcess", caseData.getBusinessProcess());
+            return CaseDataContent.builder()
+                .eventToken("tempToken")
+                .event(Event.builder().id("TempId")
+                           .build())
+                .data(objectDataMap)
+                .build();
         }
     }
 }

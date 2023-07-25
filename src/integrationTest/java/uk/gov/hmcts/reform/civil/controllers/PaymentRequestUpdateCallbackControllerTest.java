@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.controllers;
 
 import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -22,6 +23,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     private static final String PAID = "Paid";
     private static final String REFERENCE = "reference";
     private static final String ACCOUNT_NUMBER = "123445555";
+    private static final String s2sToken = "s2s AuthToken";
 
     @Test
     public void whenInvalidTypeOfRequestMade_ReturnMethodNotAllowed() throws Exception {
@@ -55,6 +57,8 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPut(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.put(urlTemplate, uriVars)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
+                .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }
@@ -63,6 +67,8 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPost(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.post(urlTemplate, uriVars)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
+                .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }

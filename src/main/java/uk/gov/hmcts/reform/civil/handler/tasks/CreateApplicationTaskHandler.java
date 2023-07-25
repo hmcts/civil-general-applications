@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
+import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -22,6 +24,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -30,6 +33,8 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSU
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1SolicitorOrgId;
+import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
 @Component
@@ -45,8 +50,14 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
+    private final TaskHandlerHelper taskHandlerHelper;
     private CaseData data;
     private CaseData generalAppCaseData;
+    private List<Element<GeneralApplication>> generalApplications;
+    private List<Element<GeneralApplicationsDetails>> judgeApplications;
+    private List<Element<GeneralApplicationsDetails>> applications;
+    private List<Element<GADetailsRespondentSol>> respondentSpecficGADetails;
+    private List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
@@ -57,18 +68,18 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
-        List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
+        generalApplications = caseData.getGeneralApplications();
 
-        List<Element<GeneralApplicationsDetails>> judgeApplications =
+        judgeApplications =
             ofNullable(caseData.getGaDetailsMasterCollection()).orElse(newArrayList());
 
-        List<Element<GeneralApplicationsDetails>> applications =
+        applications =
             ofNullable(caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
-        List<Element<GADetailsRespondentSol>> respondentSpecficGADetails =
+        respondentSpecficGADetails =
             ofNullable(caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
 
-        List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails =
+        respondentTwoSpecficGADetails =
             ofNullable(caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (generalApplications != null && !generalApplications.isEmpty()) {
@@ -92,7 +103,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                  * It should not be visible to solicitors
                  * */
                 judgeApplications = addApplication(
-                    buildApplication(generalApplication, caseData), caseData.getGaDetailsMasterCollection());
+                    buildApplication(generalApplication), caseData.getGaDetailsMasterCollection());
 
                 /*
                  * Respondent Agreement is No and without notice application.
@@ -100,87 +111,20 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                  * */
                 if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
                     && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
-                    || (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
-
-                    /*
-                     * Add the case to applicant solicitor collection if parent claimant is applicant
-                     * Hide the case if parent claimant isn't GA applicant and initiate without notice application
-                     * */
-                    if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
-                        applications = addApplication(
-                            buildApplication(generalApplication, caseData),
-                            caseData.getClaimantGaAppDetails()
-                        );
-                    }
-
-                    /*
-                     * Add the GA in respondent one collection if he/she initiate without notice application.
-                     * */
-                    String respondent1OrganisationId = caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        != null ? caseData.getRespondent1OrganisationPolicy().getOrganisation()
-                        .getOrganisationID() : caseData.getRespondent1OrganisationIDCopy();
-
-                    if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(respondent1OrganisationId)) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication,
-                                                                                             caseData);
-
-                        if (gaDetailsRespondentSol != null) {
-                            respondentSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
-                        }
-                    }
-
-                    /*
-                     * Add the GA in respondent two collection if he/she initiate without notice application.
-                     * */
-                    if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
-                        && caseData.getRespondent2SameLegalRepresentative().equals(NO)
-                        && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                        .equals(caseData.getRespondent2OrganisationPolicy().getOrganisation().getOrganisationID())) {
-
-                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                            generalApplication, caseData);
-
-                        if (gaDetailsRespondentSolTwo != null) {
-                            respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
-                        }
-                    }
-
+                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))) {
+                    withoutNoticeNoConsent(generalApplication, caseData);
                 }
 
                 /*
                  * Respondent Agreement is NO and with notice.
                  * Application should be visible to all solicitors
+                 * Consent order should be visible to all solicitors
                  * */
-                if (generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+                if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
                     && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice())) {
-
-                    applications = addApplication(
-                        buildApplication(generalApplication, caseData),
-                        caseData.getClaimantGaAppDetails()
-                    );
-
-                    GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, caseData);
-                    if (gaDetailsRespondentSol != null) {
-                        respondentSpecficGADetails = addRespApplication(
-                            gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
-                    }
-
-                    if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
-                        && caseData.getRespondent2SameLegalRepresentative().equals(NO)) {
-                        GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                            generalApplication, caseData);
-
-                        if (gaDetailsRespondentSolTwo != null) {
-                            respondentTwoSpecficGADetails = addRespApplication(
-                                gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
-                        }
-                    }
+                    && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
+                    || generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+                    withNoticeNoConsent(generalApplication, caseData);
                 }
             }
         }
@@ -193,7 +137,78 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                    judgeApplications)));
     }
 
-    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication, CaseData caseData) {
+    private void withoutNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
+
+        /*
+         * Add the case to applicant solicitor collection if parent claimant is applicant
+         * Hide the case if parent claimant isn't GA applicant and initiate without notice application
+         * */
+        if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
+            applications = addApplication(
+                    buildApplication(generalApplication),
+                    caseData.getClaimantGaAppDetails()
+            );
+        }
+
+        /*
+         * Add the GA in respondent one collection if he/she initiate without notice application.
+         * */
+
+        if (generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
+                .equals(getRespondent1SolicitorOrgId(caseData))) {
+
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
+
+            if (gaDetailsRespondentSol != null) {
+                respondentSpecficGADetails = addRespApplication(
+                        gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
+            }
+        }
+
+        /*
+         * Add the GA in respondent two collection if he/she initiate without notice application.
+         * */
+        if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
+                && caseData.getRespondent2SameLegalRepresentative().equals(NO)
+                && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
+                .equals(getRespondent2SolicitorOrgId(caseData))) {
+
+            GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                    generalApplication);
+
+            if (gaDetailsRespondentSolTwo != null) {
+                respondentTwoSpecficGADetails = addRespApplication(
+                        gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
+            }
+        }
+
+    }
+
+    private void withNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
+        applications = addApplication(
+                buildApplication(generalApplication),
+                caseData.getClaimantGaAppDetails()
+        );
+
+        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
+        if (gaDetailsRespondentSol != null) {
+            respondentSpecficGADetails = addRespApplication(
+                    gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
+        }
+
+        if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
+                && caseData.getRespondent2SameLegalRepresentative().equals(NO)) {
+            GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
+                    generalApplication);
+
+            if (gaDetailsRespondentSolTwo != null) {
+                respondentTwoSpecficGADetails = addRespApplication(
+                        gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
+            }
+        }
+    }
+
+    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
@@ -205,7 +220,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
     }
 
-    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication, CaseData caseData) {
+    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
@@ -240,6 +255,10 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private void updateParentCaseGeneralApplication(ExternalTaskInput variables,
                                                     GeneralApplication generalApplication) {
         generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
+        if (Objects.nonNull(generalApplication.getGeneralAppEvidenceDocument())) {
+            generalApplication.getGeneralAppEvidenceDocument().clear();
+        }
+        generalApplication.setGeneralAppN245FormUpload(null);
         generalApplication.getBusinessProcess().setCamundaEvent(variables.getCaseEvent().name());
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             generalApplication.addCaseLink(CaseLink.builder().caseReference(String.valueOf(
@@ -283,5 +302,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
         return output;
+    }
+
+    @Override
+    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+
+        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
+
+        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 }

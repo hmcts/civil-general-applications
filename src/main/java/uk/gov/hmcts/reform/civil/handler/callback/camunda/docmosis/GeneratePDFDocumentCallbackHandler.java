@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -60,6 +61,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     private final FreeFormOrderGenerator freeFormOrderGenerator;
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
+    private final ConsentOrderGenerator consentOrderGenerator;
     private final ObjectMapper objectMapper;
 
     private final AssignCategoryId assignCategoryId;
@@ -91,16 +93,30 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        CaseDocument decision = null;
+        if (Objects.nonNull(caseData.getApproveConsentOrder())) {
+            decision = consentOrderGenerator.generate(
+                caseDataBuilder.build(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            );
 
-        CaseDocument judgeDecision = null;
-        if (Objects.nonNull(caseData.getFinalOrderSelection())) {
+            List<Element<CaseDocument>> consentOrderDocumentList =
+                ofNullable(caseData.getConsentOrderDocument()).orElse(newArrayList());
+
+            consentOrderDocumentList.addAll(wrapElements(decision));
+
+            assignCategoryId.assignCategoryIdToCollection(consentOrderDocumentList,
+                                                          document -> document.getValue().getDocumentLink(),
+                                                          AssignCategoryId.ORDER_DOCUMENTS);
+            caseDataBuilder.consentOrderDocument(consentOrderDocumentList);
+        } else if (Objects.nonNull(caseData.getFinalOrderSelection())) {
             if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
-                judgeDecision = freeFormOrderGenerator.generate(
+                decision = freeFormOrderGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
-                judgeDecision = assistedOrderFormGenerator.generate(
+                decision = assistedOrderFormGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
@@ -108,28 +124,24 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newGeneralOrderDocumentList =
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
-            newGeneralOrderDocumentList.addAll(wrapElements(judgeDecision));
+            newGeneralOrderDocumentList.addAll(wrapElements(decision));
 
-            /*assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
+            assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
+                                                          AssignCategoryId.ORDER_DOCUMENTS);
             caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
-            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT)) {
-            judgeDecision = generalOrderGenerator.generate(
+        } else if (isGeneralOrder(caseData)) {
+            decision = generalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);
 
-            caseDataBuilder.generalOrderDocument(wrapElements(judgeDecision));
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
-            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
-            judgeDecision = directionOrderGenerator.generate(
+            caseDataBuilder.generalOrderDocument(wrapElements(decision));
+        } else if (isDirectionOrder(caseData)) {
+            decision = directionOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -137,41 +149,35 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newDirectionOrderDocumentList =
                 ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
 
-            newDirectionOrderDocumentList.addAll(wrapElements(judgeDecision));
+            newDirectionOrderDocumentList.addAll(wrapElements(decision));
 
-            /*assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
+            assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
+                                                          AssignCategoryId.ORDER_DOCUMENTS);
             caseDataBuilder.directionOrderDocument(newDirectionOrderDocumentList);
 
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
-            judgeDecision = dismissalOrderGenerator.generate(
+        } else if (isDismissalOrder(caseData)) {
+            decision = dismissalOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
+                                                            AssignCategoryId.ORDER_DOCUMENTS);
 
-            caseDataBuilder.dismissalOrderDocument(wrapElements(judgeDecision));
-        } else if (caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
-            && caseData.getJudicialListForHearing() != null) {
-            judgeDecision = hearingOrderGenerator.generate(
+            caseDataBuilder.dismissalOrderDocument(wrapElements(decision));
+        } else if (isHearingOrder(caseData)) {
+            decision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            /*assignCategoryId.assignCategoryIdToCaseDocument(judgeDecision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);*/
+            assignCategoryId.assignCategoryIdToCaseDocument(decision,
+                                                            AssignCategoryId.APPLICATIONS);
 
-            caseDataBuilder.hearingOrderDocument(wrapElements(judgeDecision));
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
-                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-            .getWrittenSequentailRepresentationsBy() != null
-                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-            .getSequentialApplicantMustRespondWithin() != null) {
-            judgeDecision = writtenRepresentationSequentailOrderGenerator.generate(
+            caseDataBuilder.hearingOrderDocument(wrapElements(decision));
+        } else if (isWrittenRepSeqOrder(caseData)) {
+            decision = writtenRepresentationSequentailOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
@@ -179,17 +185,15 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
                 ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
 
-            newWrittenRepSequentialDocumentList.addAll(wrapElements(judgeDecision));
+            newWrittenRepSequentialDocumentList.addAll(wrapElements(decision));
 
-            /*assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
+            assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
+                                                          AssignCategoryId.APPLICATIONS);
             caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
 
-        } else if (caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
-            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-            .getWrittenConcurrentRepresentationsBy() != null) {
-            judgeDecision = writtenRepresentationConcurrentOrderGenerator.generate(
+        } else if (isWrittenRepConOrder(caseData)) {
+            decision = writtenRepresentationConcurrentOrderGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -197,17 +201,15 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
                 ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
 
-            newWrittenRepConcurrentDocumentList.addAll(wrapElements(judgeDecision));
-            /*assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
+            newWrittenRepConcurrentDocumentList.addAll(wrapElements(decision));
+            assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);*/
+                                                          AssignCategoryId.APPLICATIONS);
 
             caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
 
-        } else if (caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
-            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null) {
-            judgeDecision = requestForInformationGenerator.generate(
+        } else if (isRequestMoreInfo(caseData)) {
+            decision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
@@ -215,12 +217,12 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             List<Element<CaseDocument>> newRequestForInfoDocumentList =
                 ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
 
-            newRequestForInfoDocumentList.addAll(wrapElements(judgeDecision));
+            newRequestForInfoDocumentList.addAll(wrapElements(decision));
 
-            /*assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
+            assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
                                                           document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS
-            );*/
+                                                          AssignCategoryId.APPLICATIONS
+            );
 
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         }
@@ -228,5 +230,47 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private boolean isRequestMoreInfo(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
+                && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
+                && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null;
+    }
+
+    private boolean isWrittenRepConOrder(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenConcurrentRepresentationsBy() != null;
+    }
+
+    private boolean isWrittenRepSeqOrder(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenSequentailRepresentationsBy() != null
+                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getSequentialApplicantMustRespondWithin() != null;
+    }
+
+    private boolean isHearingOrder(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(LIST_FOR_A_HEARING)
+                && caseData.getJudicialListForHearing() != null;
+    }
+
+    private boolean isDismissalOrder(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION);
+    }
+
+    private boolean isDirectionOrder(final CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+                && caseData.getJudicialDecisionMakeOrder().getDirectionsText() != null
+                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING);
+    }
+
+    private boolean isGeneralOrder(CaseData caseData) {
+        return caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+                && caseData.getJudicialDecisionMakeOrder().getOrderText() != null
+                && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT);
     }
 }

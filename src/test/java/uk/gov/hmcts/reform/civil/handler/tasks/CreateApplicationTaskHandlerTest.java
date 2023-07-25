@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -103,6 +104,9 @@ public class CreateApplicationTaskHandlerTest {
     @MockBean
     private CoreCaseDataService coreCaseDataService;
 
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
+
     @Autowired
     private CreateApplicationTaskHandler createApplicationTaskHandler;
 
@@ -144,7 +148,7 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
         }
@@ -156,7 +160,7 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
         }
@@ -179,7 +183,7 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent1", NO, NO, YES);
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
@@ -203,8 +207,8 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, YES, YES);
             CaseData data = buildDataWithExistingCollection(generalApplication, NO, NO);
 
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
         }
@@ -386,8 +390,8 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
         }
@@ -399,8 +403,8 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
         }
@@ -411,8 +415,8 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("applicant", YES, YES, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
@@ -462,8 +466,8 @@ public class CreateApplicationTaskHandlerTest {
 
             CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
@@ -475,9 +479,9 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, YES, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
         }
@@ -488,9 +492,9 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, NO, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
 
         }
@@ -575,6 +579,40 @@ public class CreateApplicationTaskHandlerTest {
             verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
             verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
             verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
+        }
+
+        @Test
+        void shouldHandleFailure() {
+            CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+                .businessProcess(BusinessProcess.builder().status(STARTED)
+                                     .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+
+            VariableMap variables = Variables.createVariables();
+            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_FLAGS, Map.of());
+            variables.putValue("generalApplicationCaseId", GA_ID);
+
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+            StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+            CaseDataContent caseDataContent = CaseDataContent.builder().build();
+
+            when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails()))
+                .thenAnswer(invocation -> {
+                    throw new Exception("there was an error");
+                });
+
+            when(coreCaseDataService.startUpdate(anyString(), any(CaseEvent.class)))
+                .thenReturn(startEventResponse);
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(
+                any(StartEventResponse.class),
+                anyMap()
+            )).thenReturn(caseDataContent);
+
+            createApplicationTaskHandler.execute(mockTask, externalTaskService);
+
+            verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
+            verify(coreCaseDataService, never()).submitUpdate(CASE_ID, caseDataContent);
         }
 
         @Test

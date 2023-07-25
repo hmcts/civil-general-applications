@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -66,6 +67,8 @@ class ApplicationProcessCaseEventTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private TaskHandlerHelper taskHandlerHelper;
 
     @Autowired
     private ApplicationProcessCaseEventTaskHandler applicationProcessCaseEventTaskHandler;
@@ -133,7 +136,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 
@@ -169,7 +172,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(500L)
+                eq(1000L)
             );
         }
 

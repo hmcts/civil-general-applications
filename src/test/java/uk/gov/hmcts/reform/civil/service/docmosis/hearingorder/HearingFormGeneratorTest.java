@@ -113,7 +113,7 @@ class HearingFormGeneratorTest {
 
     @Test
     void test_getFileName() {
-        String name = generator.getFileName(null, HEARING_APPLICATION);
+        String name = generator.getFileName(HEARING_APPLICATION);
         assertThat(name).startsWith("Application_Hearing_Notice_");
         assertThat(name).endsWith(".pdf");
     }
@@ -121,7 +121,7 @@ class HearingFormGeneratorTest {
     @Test
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo("01/Jan/1970");
+        assertThat(dateString).isEqualTo("1 January 1970");
     }
 
     @Test
@@ -231,6 +231,6 @@ class HearingFormGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate(caseData)).isEqualTo(HEARING_APPLICATION);
+        assertThat(generator.getTemplate()).isEqualTo(HEARING_APPLICATION);
     }
 }
