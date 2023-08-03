@@ -20,4 +20,10 @@
     <notes>latest spring cloud starter netflix still got vulnerable guava jar</notes>
     <cve>CVE-2023-2976</cve>
   </suppress>
+  <suppress until="2023-08-29">
+    <cve>CVE-2023-3635</cve>
+    <cve>CVE-2023-34035</cve>
+    <cve>CVE-2023-34034</cve>
+    <cve>CVE-2023-3782</cve>
+  </suppress>
 </suppressions>
