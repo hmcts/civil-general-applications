@@ -95,6 +95,9 @@ public class CaseData implements MappableObject {
     private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
     private final GAHearingDetails hearingDetailsResp;
     private final GARespondentRepresentative generalAppRespondent1Representative;
+    private final String generalAppRespondReason;
+    private final List<Element<Document>> generalAppRespondDocument;
+    private final List<Element<CaseDocument>> gaRespondDoc;
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
     private final CaseLink caseLink;

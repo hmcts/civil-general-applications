@@ -21,14 +21,18 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -285,6 +289,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.respondentsResponses(respondentsResponses);
         caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
+        caseDataBuilder.generalAppRespondReason(null);
+        addResponseDoc(caseDataBuilder, caseData);
+        caseDataBuilder.generalAppRespondDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
 
         CaseData updatedCaseData = caseDataBuilder.build();
@@ -292,6 +299,23 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    private void addResponseDoc(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData) {
+        if (Objects.nonNull(caseData.getGeneralAppRespondDocument())) {
+            List<Element<CaseDocument>> newList = caseData.getGaRespondDoc();
+            if (Objects.isNull(newList)) {
+                newList = new ArrayList<>();
+            }
+            newList.addAll(
+                    caseData.getGeneralAppRespondDocument().stream()
+                            .map(doc -> ElementUtils.element(CaseDocument.builder()
+                                    .documentLink(doc.getValue())
+                                    .documentName(doc.getValue().getDocumentFileName())
+                                    .createdDatetime(LocalDateTime.now()).build()))
+                            .toList());
+            caseDataBuilder.gaRespondDoc(newList);
+        }
     }
 
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
@@ -345,6 +369,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
                                                      : caseData.getGeneralAppRespondent1Representative()
                 .getGeneralAppRespondent1Representative())
             .gaHearingDetails(populateHearingDetailsResp(caseData))
+            .gaRespondentResponseReason(caseData.getGeneralAppRespondReason())
             .gaRespondentDetails(userDetails.getId()).build();
 
         return gaRespondentResponseBuilder.build();
