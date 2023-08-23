@@ -23,10 +23,12 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -310,7 +312,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
             newList.addAll(
                     caseData.getGeneralAppRespondDocument().stream()
                             .map(doc -> ElementUtils.element(CaseDocument.builder()
-                                    .documentLink(doc.getValue())
+                                    .documentLink(doc.getValue()
+                                            .toBuilder().categoryID( AssignCategoryId.APPLICATIONS)
+                                            .build())
                                     .documentName(doc.getValue().getDocumentFileName())
                                     .createdDatetime(LocalDateTime.now()).build()))
                             .toList());
