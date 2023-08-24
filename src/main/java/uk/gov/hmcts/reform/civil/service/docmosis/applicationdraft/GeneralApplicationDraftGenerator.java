@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -124,6 +125,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp1DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer()
                                           .getDisplayedValue() : null)
+                .resp1DeclineReason(resp1Response.getGaRespondentResponseReason())
                 .resp1HearingYesOrNo(gaResp1HearingDetails.getHearingYesorNo())
                 .resp1HearingPreferredType(gaResp1HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
@@ -156,6 +158,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp2DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer()
                                     .getRespondentDebtorOffer().getDisplayedValue() : null)
+                .resp2DeclineReason(resp2Response.getGaRespondentResponseReason())
                 .resp2HearingYesOrNo(gaResp2HearingDetails.getHearingYesorNo())
                 .resp2HearingPreferredType(gaResp2HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
