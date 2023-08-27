@@ -130,7 +130,7 @@ allprojects {
       }
     }
     imports {
-      mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.5'
+      mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.8'
     }
   }
 
@@ -337,9 +337,9 @@ dependencies {
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.10.RELEASE'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-context', version: '4.0.1'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.1'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '4.0.1'
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-context', version: '4.0.4'
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.4'
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '4.0.4'
   implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '12.1'
   implementation group: 'org.springframework.retry', name: 'spring-retry'
  // hmcts libraries
