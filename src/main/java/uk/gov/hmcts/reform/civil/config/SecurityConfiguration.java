@@ -46,6 +46,7 @@ public class SecurityConfiguration {
         "/env",
         "/health/liveness",
         "/health/readiness",
+        "/service-request-update",
         "/status/health",
         "/",
         "/loggers/**"
