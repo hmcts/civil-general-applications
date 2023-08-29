@@ -323,7 +323,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
                     documents.stream()
                             .map(doc -> ElementUtils.element(CaseDocument.builder()
                                     .documentLink(doc.getValue()
-                                            .toBuilder().categoryID( AssignCategoryId.APPLICATIONS)
+                                            .toBuilder().categoryID(AssignCategoryId.APPLICATIONS)
                                             .build())
                                     .documentName(doc.getValue().getDocumentFileName())
                                     .createdDatetime(LocalDateTime.now()).build()))
