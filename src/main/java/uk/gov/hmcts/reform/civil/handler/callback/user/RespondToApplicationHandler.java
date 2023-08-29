@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
@@ -297,6 +296,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         addResponseDoc(caseDataBuilder, caseData);
         caseDataBuilder.generalAppRespondDocument(null);
         caseDataBuilder.generalAppRespondConsentDocument(null);
+        caseDataBuilder.generalAppRespondDebtorDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
 
         CaseData updatedCaseData = caseDataBuilder.build();
@@ -310,6 +310,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
         List<Element<Document>> documents = caseData.getGeneralAppRespondDocument();
         if (Objects.isNull(documents)) {
             documents = caseData.getGeneralAppRespondConsentDocument();
+        }
+        if (Objects.isNull(documents)) {
+            documents = caseData.getGeneralAppRespondDebtorDocument();
         }
         if (Objects.nonNull(documents)) {
             List<Element<CaseDocument>> newList = caseData.getGaRespondDoc();
