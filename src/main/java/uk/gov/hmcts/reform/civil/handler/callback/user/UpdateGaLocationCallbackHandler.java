@@ -58,9 +58,8 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
                     .status(BusinessProcessStatus.FINISHED)
                     .build())
             .isCcmccLocation(YesOrNo.NO)
-            .caseManagementLocation(GACaseLocation.builder().baseLocation(civilCaseData.getCaseManagementLocation()
-                                                                              .getBaseLocation())
-                                        .region(civilCaseData.getCaseManagementLocation().getRegion())
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("4")
+                                        .region("192280")
                                         .siteName(civilCaseData.getLocationName())
                                         .build())
             .locationName(civilCaseData.getLocationName());
