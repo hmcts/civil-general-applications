@@ -109,8 +109,8 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
             assertThat(response.getData()).containsEntry(
                     "caseManagementLocation",
                     Map.of(
-                        "region", "2",
-                        "baseLocation", "00000",
+                        "region", "4",
+                        "baseLocation", "192280",
                         "siteName", "locationForRegion2"
                     ));
         }
