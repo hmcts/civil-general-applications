@@ -7,20 +7,27 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -38,6 +45,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -47,6 +55,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SET_ASIDE_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes =
     StateGeneratorService.class
@@ -231,8 +240,8 @@ public class StateGeneratorServiceTest {
     @Test
     void shouldReturnAdditionalAddPayment_WhenJudgeUncloakTheApplication_RequestMoreInformation() {
         CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
-                        NO, YesOrNo.NO).build();
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY,
+                                                                         NO, YesOrNo.NO).build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
         when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(true);
@@ -262,6 +271,7 @@ public class StateGeneratorServiceTest {
     @Test
     void shouldAwaitingJudicialDecision__WhenAdditionalPaymentReceived_RequestMoreInformation_ConsentOrder() {
         CaseData caseData = CaseDataBuilder.builder()
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
             .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .additionalPaymentDetails(PaymentDetails.builder()
@@ -270,6 +280,8 @@ public class StateGeneratorServiceTest {
                                                                     .build())
                                       .build())
             .generalAppConsentOrder(NO)
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .respondentsResponses(getRespondentResponse())
             .build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
@@ -277,10 +289,55 @@ public class StateGeneratorServiceTest {
         assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
     }
 
+    @Test
+    void shouldRespondentResponse_WhenAdditionalPaymentReceived_ConsentOrder_withoutRespondentResponse() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .reference("123456")
+                                                                    .status(PaymentStatus.SUCCESS)
+                                                                    .build())
+                                      .build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppConsentOrder(NO)
+            .build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
+    }
+
     private List<GeneralApplicationTypes> applicationTypeJudgement() {
         return List.of(
             GeneralApplicationTypes.STRIKE_OUT
         );
+    }
+
+    private List<Element<GASolicitorDetailsGAspec>> getRespondentSolicitors() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email("test@gmail.com").organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+
+        return respondentSols;
+    }
+
+    private List<Element<GARespondentResponse>> getRespondentResponse() {
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+        respondentsResponses
+            .add(element(GARespondentResponse.builder()
+                             .gaHearingDetails(GAHearingDetails.builder()
+                                                   .vulnerabilityQuestionsYesOrNo(YES)
+                                                   .vulnerabilityQuestion("dummy")
+                                                   .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                                   .hearingDuration(GAHearingDuration.HOUR_1)
+                                                   .build())
+                             .build()));
+
+        return respondentsResponses;
     }
 }
 
