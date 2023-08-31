@@ -27,6 +27,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROV
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +91,8 @@ public class StateGeneratorService {
                 && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 return APPLICATION_ADD_PAYMENT;
             } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
-                && nonNull(caseData.getGeneralAppConsentOrder())) {
+                && nonNull(caseData.getGeneralAppConsentOrder())
+                && isRespondentsResponseSatisfied(caseData, caseData.toBuilder().build())) {
                 return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
