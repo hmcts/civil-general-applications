@@ -49,6 +49,9 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        if (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)) {
+            parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
+        }
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;

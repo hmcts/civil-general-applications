@@ -253,6 +253,130 @@ public class ParentCaseUpdateHelper {
         return null;
     }
 
+    public void updateJudgeAndRespondentCollectionAfterPayment(CaseData generalAppCaseData) {
+        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
+                                                                                UPDATE_CASE_WITH_GA_STATE);
+        CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+
+        List<Element<GeneralApplicationsDetails>> gaMasterDetails = ofNullable(
+            caseData.getGaDetailsMasterCollection()).orElse(newArrayList());
+
+        List<Element<GeneralApplicationsDetails>> gaClaimantDetails = ofNullable(
+            caseData.getClaimantGaAppDetails()).orElse(newArrayList());
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+            caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol2 = ofNullable(
+            caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
+
+        if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
+            Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
+                .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
+            claimantCollection.ifPresent(generalApplicationsDetailsElement -> gaMasterDetails.add(
+                element(
+                    GeneralApplicationsDetails.builder()
+                        .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build()).build())));
+        } else if (generalAppCaseData.getIsMultiParty().equals(NO)) {
+            updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol);
+        } else {
+            updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol2);
+        }
+        /**
+         * Respondent Agreement is NO and with notice.
+         * Application should be visible to all solicitor
+         * Consent order should be visible to all solicitors
+         */
+        if ((generalAppCaseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && ofNullable(generalAppCaseData.getGeneralAppInformOtherParty()).isPresent()
+            && YES.equals(generalAppCaseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            || generalAppCaseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+
+            if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
+                updateRespCollectionFromClaimant(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaClaimantDetails);
+                if (generalAppCaseData.getIsMultiParty().equals(YES)) {
+                    updateRespCollectionFromClaimant(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaClaimantDetails);
+                }
+            } else {
+                if (generalAppCaseData.getIsMultiParty().equals(NO)) {
+                    updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
+                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && gaDetailsRespondentSol.isEmpty()) {
+                    updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol2);
+                    updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaDetailsRespondentSol2);
+                } else {
+                    updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
+                    updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaDetailsRespondentSol);
+                }
+            }
+
+        }
+
+        Map<String, Object> updateMap = getUpdatedCaseData(caseData, caseData.getGeneralApplications(),
+                                                           gaClaimantDetails,
+                                                           gaDetailsRespondentSol,
+                                                           gaDetailsRespondentSol2,
+                                                           gaMasterDetails);
+        CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
+            startEventResponse, updateMap);
+
+        coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
+    }
+
+    private void updateRespCollectionForMultiParty(CaseData generalAppCaseData, String applicationId,
+                                                  List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol,
+                                                  List<Element<GADetailsRespondentSol>> gaRespondentSol) {
+        Optional<Element<GADetailsRespondentSol>> respCollection = gaRespondentSol
+            .stream().filter(respCollectionApp -> applicationRespFilterCriteria(respCollectionApp, applicationId)).findAny();
+        respCollection.ifPresent(generalApplicationsDetailsElement -> gaDetailsRespondentSol.add(
+            element(
+                GADetailsRespondentSol.builder()
+                    .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                    .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                       .getGeneralAppSubmittedDateGAspec())
+                    .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                        generalAppCaseData.getCcdCaseReference())).build()).build())));
+
+    }
+
+    private void updateRespCollectionFromClaimant(CaseData generalAppCaseData, String applicationId,
+                                                  List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol,
+                                                  List<Element<GeneralApplicationsDetails>> gaClaimantDetails) {
+
+        Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
+            .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
+        claimantCollection.ifPresent(generalApplicationsDetailsElement -> gaDetailsRespondentSol.add(
+            element(
+                GADetailsRespondentSol.builder()
+                    .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                    .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                       .getGeneralAppSubmittedDateGAspec())
+                    .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                        generalAppCaseData.getCcdCaseReference())).build()).build())));
+
+    }
+
+    private void updateJudgeOrClaimantFromRespCollection(CaseData generalAppCaseData, String applicationId,
+                                                         List<Element<GeneralApplicationsDetails>> gaMasterDetails,
+                                                         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol) {
+        if (!gaDetailsRespondentSol.isEmpty()) {
+            Optional<Element<GADetailsRespondentSol>> respondentSolCollection = gaDetailsRespondentSol
+                .stream().filter(respondentSolElement2 -> gaRespSolAppFilterCriteria(respondentSolElement2, applicationId)).findAny();
+            respondentSolCollection.ifPresent(respondentSolElement -> gaMasterDetails.add(
+                element(
+                    GeneralApplicationsDetails.builder()
+                        .generalApplicationType(respondentSolElement.getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(respondentSolElement.getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build()).build())));
+        }
+    }
+
     public void updateParentApplicationVisibilityWithNewState(CaseData generalAppCaseData, String newState) {
 
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -614,7 +738,14 @@ public class ParentCaseUpdateHelper {
             && applicationId.equals(gaDetails.getValue().getCaseLink().getCaseReference());
     }
 
+    private boolean applicationRespFilterCriteria(Element<GADetailsRespondentSol> gaDetails, String applicationId) {
+        return gaDetails.getValue() != null
+            && gaDetails.getValue().getCaseLink() != null
+            && applicationId.equals(gaDetails.getValue().getCaseLink().getCaseReference());
+    }
+
     private boolean gaRespSolAppFilterCriteria(Element<GADetailsRespondentSol> gaDetails, String applicationId) {
+
         return gaDetails.getValue() != null
             && gaDetails.getValue().getCaseLink() != null
             && applicationId.equals(gaDetails.getValue().getCaseLink().getCaseReference());
