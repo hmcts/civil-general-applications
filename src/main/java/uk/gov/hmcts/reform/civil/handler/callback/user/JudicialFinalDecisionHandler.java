@@ -152,7 +152,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
                 .withoutNoticeSelectionDate(LocalDate.now())
                 .build());
-        caseDataBuilder.freeFormOrderedText(caseData.getGeneralAppDetailsOfOrder());
 
         caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
                                                      .date(LocalDate.now()).build());

@@ -68,7 +68,6 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
                 .claimantReference(getReference(parentCase, "applicantSolicitor1Reference"))
                 .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
                 .freeFormRecitalText(caseData.getFreeFormRecitalText())
-                .freeFormRecordedText(caseData.getFreeFormRecordedText())
                 .freeFormOrderedText(caseData.getFreeFormOrderedText())
                 .freeFormOrderValue(getFreeFormOrderValue(caseData))
                 .build();

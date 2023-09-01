@@ -97,8 +97,6 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(LocalDate.now().toString());
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
                 .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
-        assertThat(response.getData()).extracting("freeFormOrderedText")
-                .isEqualTo(ORDERED_TEXT);
         assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
                 .isEqualTo(LocalDate.now().toString());
 
