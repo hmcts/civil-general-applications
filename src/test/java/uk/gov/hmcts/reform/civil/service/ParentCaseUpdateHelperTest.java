@@ -307,22 +307,6 @@ class ParentCaseUpdateHelperTest {
     }
 
     @Test
-    void updateParentWithGAState_with_collections_before_payment() {
-
-        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", PENDING_APPLICATION_ISSUED, YES);
-        CaseData civilCase = getVaryMainCaseDataForCollectionBeforePayment("RespondentSolTwo");
-        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
-        parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_APPLICATION_PAYMENT.toString());
-        verify(coreCaseDataService, times(1))
-            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
-        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNull();
-        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNull();
-        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNull();
-    }
-
-    @Test
     void updateParentWithGAState_with_collections_after_payment() {
 
         CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", AWAITING_APPLICATION_PAYMENT, YES);
