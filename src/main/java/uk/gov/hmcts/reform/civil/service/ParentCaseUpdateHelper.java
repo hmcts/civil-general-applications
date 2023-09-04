@@ -78,6 +78,7 @@ public class ParentCaseUpdateHelper {
     private String[] roles = {CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE};
     private static final String GA_EVIDENCE = "gaEvidence";
     private static final String CIVIL_GA_EVIDENCE = "generalAppEvidence";
+    private static final String FREE_KEYWORD = "FREE";
 
     protected static List<CaseState> DOCUMENT_STATES = Arrays.asList(
             AWAITING_ADDITIONAL_INFORMATION,
@@ -88,6 +89,7 @@ public class ParentCaseUpdateHelper {
     );
 
     public void updateParentWithGAState(CaseData generalAppCaseData, String newState) {
+
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
         String[] docVisibilityRoles = new String[4];
@@ -254,22 +256,22 @@ public class ParentCaseUpdateHelper {
     }
 
     public void updateJudgeAndRespondentCollectionAfterPayment(CaseData generalAppCaseData) {
+
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
                                                                                 UPDATE_CASE_WITH_GA_STATE);
-        CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-
+        CaseData parentCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         List<Element<GeneralApplicationsDetails>> gaMasterDetails = ofNullable(
-            caseData.getGaDetailsMasterCollection()).orElse(newArrayList());
+            parentCaseData.getGaDetailsMasterCollection()).orElse(newArrayList());
 
         List<Element<GeneralApplicationsDetails>> gaClaimantDetails = ofNullable(
-            caseData.getClaimantGaAppDetails()).orElse(newArrayList());
+            parentCaseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
-            caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
+            parentCaseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol2 = ofNullable(
-            caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
+            parentCaseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
             Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
@@ -316,11 +318,12 @@ public class ParentCaseUpdateHelper {
 
         }
 
-        Map<String, Object> updateMap = getUpdatedCaseData(caseData, caseData.getGeneralApplications(),
+        Map<String, Object> updateMap = getUpdatedCaseData(parentCaseData, parentCaseData.getGeneralApplications(),
                                                            gaClaimantDetails,
                                                            gaDetailsRespondentSol,
                                                            gaDetailsRespondentSol2,
                                                            gaMasterDetails);
+
         CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap);
 
