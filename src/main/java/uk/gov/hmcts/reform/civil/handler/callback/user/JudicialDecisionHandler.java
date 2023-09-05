@@ -33,7 +33,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
@@ -660,8 +659,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
          *  */
         caseDataBuilder.showRequestInfoPreviewDoc(NO);
 
-        caseDataBuilder = caseData.toBuilder()
-            .caseNameHmctsInternal(getAllPartyNames(caseData));
+        caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
@@ -671,11 +669,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
                                                .withoutNoticeSelectionDate(LocalDate.now())
                                                .build());
-
-        caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
-                                                     .date(LocalDate.now()).build());
-        caseDataBuilder.orderMadeOnWithOutNotice(DetailTextWithDate.builder().detailText(WITHOUT_NOTICE_SELECTION_TEXT)
-                                                     .date(LocalDate.now()).build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))

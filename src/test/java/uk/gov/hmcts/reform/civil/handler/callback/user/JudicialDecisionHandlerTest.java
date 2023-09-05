@@ -62,6 +62,7 @@ import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
@@ -97,6 +98,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_1;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_2;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_3;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -172,6 +174,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
+    @MockBean
+    private FreeFormOrderGenerator gaFreeFormOrderGenerator;
+
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
@@ -185,6 +190,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + "provided by the parties, the court requests more information from the applicant.";
 
     public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
+
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
+        + "any party affected by the order may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
+    private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
+        + "this order was made, you may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -2066,6 +2078,39 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void setup() {
             when(idamClient.getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("test").surname("judge").build());
+        }
+
+        @Test
+        void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM));
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.applicationIsUncloakedOnce(NO);
+
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(FREE_FORM_ORDER).build())
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader");
+
+            caseDataBuilder.claimant1PartyName("Mr. John Rambo").defendant1PartyName("Mr. Sole Trader");
+
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+
+            assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionTextArea")
+                .isEqualTo(ON_INITIATIVE_SELECTION_TEST);
+            assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionDate")
+                .isEqualTo(LocalDate.now().toString());
+            assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
+                .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
+            assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
+                .isEqualTo(LocalDate.now().toString());
+            assertThat(response.getData().get("caseNameHmctsInternal")
+                           .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
         }
 
         @Test
