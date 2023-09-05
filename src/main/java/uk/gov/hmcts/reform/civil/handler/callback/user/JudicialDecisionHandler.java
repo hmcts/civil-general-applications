@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -407,12 +408,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     .orderCourtOwnInitiative(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative());
         } else {
             makeAnOrderBuilder = GAJudicialMakeAnOrder.builder();
+
             makeAnOrderBuilder.orderText(caseData.getGeneralAppDetailsOfOrder())
                     .judgeRecitalText(getJudgeRecitalPrepopulatedText(caseData, judgeNameTitle))
                     .dismissalOrderText(DISMISSAL_ORDER_TEXT)
                     .isOrderProcessedByStayScheduler(NO)
                     .isOrderProcessedByUnlessScheduler(NO).orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
-                    .orderWithoutNotice(ORDER_WITHOUT_NOTICE);
+                    .orderWithoutNotice(ORDER_WITHOUT_NOTICE)
+                    .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW));
         }
 
         GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
