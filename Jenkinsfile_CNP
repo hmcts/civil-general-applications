@@ -9,7 +9,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "CIV-9933"
 def ccddefbranch = "master"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 
