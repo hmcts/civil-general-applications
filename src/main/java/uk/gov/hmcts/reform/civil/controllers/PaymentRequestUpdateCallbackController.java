@@ -1,14 +1,12 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -37,12 +35,11 @@ public class PaymentRequestUpdateCallbackController {
                         schema = @Schema(implementation = CallbackResponse.class)) }),
         @ApiResponse(responseCode = "400", description  = "Bad Request")})
     public void serviceRequestUpdate(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String authorisation,
         @RequestHeader("ServiceAuthorization") String s2sToken,
         @RequestBody ServiceRequestUpdateDto serviceRequestUpdateDto)
         throws PaymentException {
         try {
-            if (authorisationService.isAuthorized(authorisation, s2sToken)) {
+            if (authorisationService.isServiceAuthorized(s2sToken)) {
                 requestUpdateCallbackService.processCallback(serviceRequestUpdateDto);
             } else {
                 throw (new RuntimeException("Invalid Client"));

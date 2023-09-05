@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -54,6 +53,14 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
             .andExpect(status().isOk());
     }
 
+    @Test
+    public void whenPaymentCallbackIsReceivedWithoutServiceAuthorisationReturn400() throws Exception {
+        mockMvc.perform(
+            MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(buildServiceDto()))).andExpect(status().isBadRequest());
+    }
+
     private ServiceRequestUpdateDto buildServiceDto() {
         return ServiceRequestUpdateDto.builder()
             .ccdCaseNumber(CCD_CASE_NUMBER)
@@ -71,7 +78,6 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPut(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.put(urlTemplate, uriVars)
-                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
                 .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));

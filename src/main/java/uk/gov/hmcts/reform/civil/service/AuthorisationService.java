@@ -60,8 +60,12 @@ public class AuthorisationService {
         return this.userInfo;
     }
 
-    public boolean isAuthorized(String authorisation, String s2sToken) {
+    public boolean isServiceAndUserAuthorized(String authorisation, String s2sToken) {
         return Boolean.TRUE.equals(authoriseUser(authorisation))
             && Boolean.TRUE.equals(authoriseService(s2sToken));
+    }
+
+    public boolean isServiceAuthorized(String s2sToken) {
+        return Boolean.TRUE.equals(authoriseService(s2sToken));
     }
 }

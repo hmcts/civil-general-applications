@@ -86,7 +86,7 @@ public abstract class BaseIntegrationTest {
 
     @BeforeEach
     public void setUpBase() {
-        when(authorisationService.isAuthorized(any(), any())).thenReturn(true);
+        when(authorisationService.isServiceAuthorized(any())).thenReturn(true);
         when(userService.getUserInfo(anyString())).thenReturn(USER_INFO);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
