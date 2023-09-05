@@ -100,7 +100,6 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
-        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
 
     }
 
@@ -125,7 +124,6 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
-        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
     }
 
     @Test
@@ -158,7 +156,6 @@ class PaymentRequestUpdateCallbackServiceTest {
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
-        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
         verify(judicialNotificationService, times(1)).sendNotification(any(), any());
     }
 
@@ -227,7 +224,6 @@ class PaymentRequestUpdateCallbackServiceTest {
 
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verify(coreCaseDataService, times(1)).submitGaUpdate(any(), any());
-        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
         verify(judicialNotificationService, never()).sendNotification(any(), any());
     }
 

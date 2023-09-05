@@ -23,8 +23,8 @@ java:
   aadIdentityName: civil
   environment:
     LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
-    IDAM_CLIENT_ID: civil-service
-    IDAM_CLIENT_REDIRECT_URI: https://civil-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
+    IDAM_CLIENT_ID: civil-general-applications
+    IDAM_CLIENT_REDIRECT_URI: https://civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
     IDAM_API_URL: https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net
     IDAM_WEB_URL: https://idam-web-public.{{ .Values.global.environment }}.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
@@ -57,7 +57,7 @@ java:
     RD_PROFESSIONAL_API_URL: http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     SOME_ENV_VARIABLE: true
     DOCUMENT_MANAGEMENT_SECURED: false
-    GA_S2S_AUTHORISED_SERVICES: payment_app
+    GA_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service
 
   keyVaults:
     civil:

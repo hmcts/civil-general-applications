@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.controllers;
 
 import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
@@ -70,7 +71,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPut(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.put(urlTemplate, uriVars)
-                .header(HttpHeaders.AUTHORIZATION, authToken)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
                 .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
@@ -80,6 +81,8 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     protected <T> ResultActions doPost(T content, String urlTemplate, Object... uriVars) {
         return mockMvc.perform(
             MockMvcRequestBuilders.post(urlTemplate, uriVars)
+                .header(HttpHeaders.AUTHORIZATION, BEARER_TOKEN)
+                .header("ServiceAuthorization", s2sToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(content)));
     }

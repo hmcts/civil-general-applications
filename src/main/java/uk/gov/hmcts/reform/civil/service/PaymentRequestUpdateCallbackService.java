@@ -99,8 +99,6 @@ public class PaymentRequestUpdateCallbackService {
 
             createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                         serviceRequestUpdateDto.getCcdCaseNumber());
-            coreCaseDataService.triggerEvent(caseData.getCcdCaseReference(),
-                                             MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
 
         } catch (NotificationException e) {
             log.info("processing callback failed at Judicial Notification service, "
