@@ -58,7 +58,6 @@ public class SecurityConfiguration {
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
-
     @Autowired
     public SecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
         jwtAuthenticationConverter = new JwtAuthenticationConverter();
