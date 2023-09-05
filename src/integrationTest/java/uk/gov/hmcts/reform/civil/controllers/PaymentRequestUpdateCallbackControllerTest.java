@@ -2,9 +2,9 @@ package uk.gov.hmcts.reform.civil.controllers;
 
 import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
-import org.apache.hc.core5.http.HttpHeaders;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
