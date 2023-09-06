@@ -28,7 +28,10 @@ public class AuthorisationService {
     public Boolean authoriseService(String serviceAuthHeader) {
         String callingService;
         try {
-            callingService = serviceAuthorisationApi.getServiceName(serviceAuthHeader);
+            log.info("service auth token header... {}", serviceAuthHeader);
+            String bearerJwt = serviceAuthHeader.startsWith("Bearer ") ? serviceAuthHeader : "Bearer " + serviceAuthHeader;
+            log.info("bearer token header... {}", bearerJwt);
+            callingService = serviceAuthorisationApi.getServiceName(bearerJwt);
             log.info("Calling Service... {}", callingService);
             if (callingService != null && Arrays.asList(s2sAuthorisedServices.split(","))
                 .contains(callingService)) {
