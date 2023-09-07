@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -52,6 +53,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
     public static final String DATE_HEARD_VALIDATION = "The date entered cannot be in the future";
+
+    public static final String DATE_RANGE_NOT_ALLOWED = "The date range cannot have a 'from date' after the 'date to'";
     private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
@@ -160,7 +163,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                      .date(LocalDate.now()).build());
 
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
-                                                              .date(LocalDate.now()).build()).build();
+                                                              .singleDateSelection(AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build())
+                                                             .build()).build();
 
         LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
         caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
@@ -205,10 +209,22 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
         if (caseData.getAssistedOrderMadeSelection() != null
             && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-            && caseData.getAssistedOrderMadeDateHeardDetails().getDate().isAfter(LocalDate.now())) {
+            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())
+            && caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate().isAfter(LocalDate.now())) {
             errors.add(DATE_HEARD_VALIDATION);
+        } else if (caseData.getAssistedOrderMadeSelection() != null
+            && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
+            && (caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom().isAfter(LocalDate.now())
+            || caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo().isAfter(LocalDate.now()))) {
+            errors.add(DATE_HEARD_VALIDATION);
+        } else if (caseData.getAssistedOrderMadeSelection() != null
+            && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
+            && caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()
+            .isAfter(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo())) {
+            errors.add(DATE_RANGE_NOT_ALLOWED);
         }
-
         return errors;
     }
 

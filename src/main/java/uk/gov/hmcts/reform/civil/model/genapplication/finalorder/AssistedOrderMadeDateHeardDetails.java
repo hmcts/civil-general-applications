@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
+import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 
 import java.time.LocalDate;
 
@@ -13,10 +17,13 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class AssistedOrderMadeDateHeardDetails {
 
-    private final LocalDate date;
-
+    private AssistedOrderDateHeard singleDateSelection;
+    private AssistedOrderDateHeard dateRangeSelection;
     @JsonCreator
-    AssistedOrderMadeDateHeardDetails(@JsonProperty("date") LocalDate date) {
-        this.date = date;
+    AssistedOrderMadeDateHeardDetails(@JsonProperty("singleDateSelection") AssistedOrderDateHeard singleDateSelection,
+                                       @JsonProperty("dateRangeSelection") AssistedOrderDateHeard dateRangeSelection) {
+
+        this.singleDateSelection = singleDateSelection;
+        this.dateRangeSelection = dateRangeSelection;
     }
 }
