@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.model.genapplication.finalorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,9 +17,8 @@ public class AssistedOrderDateHeard {
     private LocalDate dateRangeFrom;
     private LocalDate dateRangeTo;
 
-
     @JsonCreator
-    AssistedOrderDateHeard (@JsonProperty("singleDateHeard") LocalDate singleDate,
+    AssistedOrderDateHeard(@JsonProperty("singleDateHeard") LocalDate singleDate,
                             @JsonProperty("dateRangeFrom") LocalDate dateRangeFrom,
                             @JsonProperty("dateRangeTo") LocalDate dateRangeTo) {
 

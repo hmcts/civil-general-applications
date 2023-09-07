@@ -54,7 +54,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DIRECTIONS_ORDER);
     public static final String DATE_HEARD_VALIDATION = "The date entered cannot be in the future";
 
-    public static final String DATE_RANGE_NOT_ALLOWED = "The date range cannot have a 'from date' after the 'date to'";
+    public static final String DATE_RANGE_NOT_ALLOWED = "The date range in %s should not have a 'from date', that is after the 'date to'";
     private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
@@ -113,8 +113,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private CallbackResponse gaPopulateFinalOrderPreviewDoc(final CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        List<String> errors = validAssistedOrderForm(caseData);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        List<String> errors = validAssistedOrderForm(caseData);
         if (caseData.getFinalOrderSelection().equals(FREE_FORM_ORDER)) {
             CaseDocument freeform = gaFreeFormOrderGenerator.generate(
                     caseData,
@@ -223,9 +223,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
             && caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()
             .isAfter(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo())) {
-            errors.add(DATE_RANGE_NOT_ALLOWED);
+            errors.add(String.format(DATE_RANGE_NOT_ALLOWED, "Order Made"));
         }
-        return errors;
+        return  errors;
     }
 
     @Override
