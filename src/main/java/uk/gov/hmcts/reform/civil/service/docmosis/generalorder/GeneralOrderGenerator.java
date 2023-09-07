@@ -66,11 +66,6 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         String defendantName = listGeneratorService.defendantsName(caseData);
 
         String collect = listGeneratorService.applicationType(caseData);
-        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
-        boolean showRecital = Objects.nonNull(judicialDecisionMakeOrder)
-                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText())
-                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0))
-                && judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0).equals(FinalOrderShowToggle.SHOW);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -79,7 +74,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .applicationDate(caseData.getCreatedDate().toLocalDate())
-                .judgeRecital(showRecital ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
+                .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .submittedOn(getFormattedDate(new Date()))
                 .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
@@ -116,5 +111,13 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     private DocmosisTemplates getDocmosisTemplate() {
         return GENERAL_ORDER;
+    }
+
+    public static boolean showRecital(CaseData caseData) {
+        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
+        return Objects.nonNull(judicialDecisionMakeOrder)
+                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText())
+                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0))
+                && judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0).equals(FinalOrderShowToggle.SHOW);
     }
 }

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
-import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
@@ -22,10 +20,10 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -66,11 +64,6 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
         String defendantName = listGeneratorService.defendantsName(caseData);
 
         String collect = listGeneratorService.applicationType(caseData);
-        GAJudicialMakeAnOrder judicialDecisionMakeOrder = caseData.getJudicialDecisionMakeOrder();
-        boolean showRecital = Objects.nonNull(judicialDecisionMakeOrder)
-                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText())
-                && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0))
-                && judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0).equals(FinalOrderShowToggle.SHOW);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -78,7 +71,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
-                    .judgeRecital(showRecital ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
+                    .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(getFormattedDate(new Date()))
