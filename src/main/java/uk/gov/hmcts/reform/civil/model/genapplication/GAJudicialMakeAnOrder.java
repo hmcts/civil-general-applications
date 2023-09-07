@@ -18,6 +18,7 @@ import java.util.List;
 @Data
 @Builder(toBuilder = true)
 public class GAJudicialMakeAnOrder {
+
     private List<FinalOrderShowToggle> showJudgeRecitalText;
     private String judgeRecitalText;
     private GAJudgeMakeAnOrderOption makeAnOrder;

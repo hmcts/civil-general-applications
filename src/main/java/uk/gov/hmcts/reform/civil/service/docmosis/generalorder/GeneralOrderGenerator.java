@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
 
-import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
