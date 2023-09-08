@@ -195,6 +195,122 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldNotShowError_When_OrderDateIsSingleSelection() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().singleDateSelection(
+                AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData updatedData = objMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getGaFinalOrderDocPreview()).isNotNull();
+
+    }
+
+    @Test
+    void shouldShowError_When_OrderDateIsSingleSelectionAfterTodayDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().singleDateSelection(
+                AssistedOrderDateHeard.builder().singleDate(LocalDate.now().plusDays(1)).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isNotNull();
+
+    }
+
+    @Test
+    void shouldNotShowError_When_OrderDateIsDateRange_FromIsAfter() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().dateRangeSelection(
+                AssistedOrderDateHeard.builder().dateRangeFrom(LocalDate.now().plusDays(1))
+                    .dateRangeTo(LocalDate.now()).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isNotNull();
+
+    }
+
+    @Test
+    void shouldNotShowError_When_OrderDateIsDateRange_ToIsAfter() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().dateRangeSelection(
+                AssistedOrderDateHeard.builder().dateRangeFrom(LocalDate.now())
+                    .dateRangeTo(LocalDate.now().plusDays(1)).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isNotNull();
+    }
+
+    @Test
+    void shouldShowError_When_OrderDateIsDateRange_FromIsAfterDateTo() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().dateRangeSelection(
+                AssistedOrderDateHeard.builder().dateRangeFrom(LocalDate.now().minusDays(2))
+                    .dateRangeTo(LocalDate.now().minusDays(3)).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isNotNull();
+    }
+
+    @Test
+    void shouldNotShowError_When_OrderDateIsDateRange_FromIsAfterDateTo() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().dateRangeSelection(
+                AssistedOrderDateHeard.builder().dateRangeFrom(LocalDate.now().minusDays(2))
+                    .dateRangeTo(LocalDate.now()).build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
     void shouldNotShowError_When_AssistedOrderNotMade_FinalOrderPreviewDoc_onMidEventCallback() {
 
         // Given
