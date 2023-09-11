@@ -28,9 +28,7 @@ public class AuthorisationService {
     public Boolean authoriseService(String serviceAuthHeader) {
         String callingService;
         try {
-            log.info("service auth token header... {}", serviceAuthHeader);
             String bearerJwt = serviceAuthHeader.startsWith("Bearer ") ? serviceAuthHeader : "Bearer " + serviceAuthHeader;
-            log.info("bearer token header... {}", bearerJwt);
             callingService = serviceAuthorisationApi.getServiceName(bearerJwt);
             log.info("Calling Service... {}", callingService);
             if (callingService != null && Arrays.asList(s2sAuthorisedServices.split(","))
@@ -48,7 +46,6 @@ public class AuthorisationService {
     public Boolean authoriseUser(String authorisation) {
         try {
             userInfo = idamClient.getUserInfo(authorisation);
-            log.info("Userinfo {}", userInfo);
             if (null != userInfo) {
                 return true;
             }
