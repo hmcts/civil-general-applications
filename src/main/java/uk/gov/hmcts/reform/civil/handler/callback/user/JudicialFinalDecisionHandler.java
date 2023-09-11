@@ -146,11 +146,11 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                 .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                .onInitiativeSelectionDate(LocalDate.now())
+                .onInitiativeSelectionDate(LocalDate.now().plusDays(7))
                 .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                 .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                .withoutNoticeSelectionDate(LocalDate.now())
+                .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
                 .build());
 
         caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
