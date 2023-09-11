@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
 import java.time.LocalDateTime;
@@ -74,17 +75,11 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(getFormattedDate(new Date()))
-                .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
+                .reasonForDecision(GeneralOrderGenerator.populateJudgeReasonForDecisionText(caseData))
                 .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData))
                 .locationName(caseData.getLocationName());
 
         return judgeDecisionPdfDocumentBuilder.build();
-    }
-
-    private String populateJudgeReasonForDecisionText(CaseData caseData) {
-        return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
-            ? "Reasons for decision: \n" + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
-            : "";
     }
 
     private String populateJudicialByCourtsInitiative(CaseData caseData) {
