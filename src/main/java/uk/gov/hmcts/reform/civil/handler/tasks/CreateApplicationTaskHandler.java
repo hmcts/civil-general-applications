@@ -96,36 +96,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                 createGeneralApplicationCase(generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
-
-                /*
-                 * Applications under the collection gaDetailsMasterCollection should be visible Only to Judge,
-                 * legal advisor etc.
-                 * It should not be visible to solicitors
-                 * */
-                judgeApplications = addApplication(
-                    buildApplication(generalApplication), caseData.getGaDetailsMasterCollection());
-
                 /*
                  * Respondent Agreement is No and without notice application.
                  * Application should be visible to solicitor who initiates the ga
                  * */
-                if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-                    && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))) {
-                    withoutNoticeNoConsent(generalApplication, caseData);
-                }
 
-                /*
-                 * Respondent Agreement is NO and with notice.
-                 * Application should be visible to all solicitors
-                 * Consent order should be visible to all solicitors
-                 * */
-                if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
-                    && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
-                    && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
-                    || generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
-                    withNoticeNoConsent(generalApplication, caseData);
-                }
+                withoutNoticeNoConsent(generalApplication, caseData);
+
             }
         }
 
@@ -182,30 +159,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             }
         }
 
-    }
-
-    private void withNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
-        applications = addApplication(
-                buildApplication(generalApplication),
-                caseData.getClaimantGaAppDetails()
-        );
-
-        GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
-        if (gaDetailsRespondentSol != null) {
-            respondentSpecficGADetails = addRespApplication(
-                    gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
-        }
-
-        if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
-                && caseData.getRespondent2SameLegalRepresentative().equals(NO)) {
-            GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                    generalApplication);
-
-            if (gaDetailsRespondentSolTwo != null) {
-                respondentTwoSpecficGADetails = addRespApplication(
-                        gaDetailsRespondentSolTwo, caseData.getRespondentSolTwoGaAppDetails());
-            }
-        }
     }
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication) {
