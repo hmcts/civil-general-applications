@@ -52,6 +52,7 @@ public class GADraftForm implements MappableObject {
     private final YesOrNo resp1HasAgreed;
     private final YesOrNo gaResp1Consent;
     private final String resp1DebtorOffer;
+    private final String resp1DeclineReason;
     private final YesOrNo resp1HearingYesOrNo;
     private final String resp1Hearingdate;
     private final String resp1HearingPreferredType;
@@ -78,6 +79,7 @@ public class GADraftForm implements MappableObject {
     private final YesOrNo gaResp2Consent;
     private final String resp2DebtorOffer;
     private final YesOrNo resp2HearingYesOrNo;
+    private final String resp2DeclineReason;
     private final String resp2Hearingdate;
     private final String resp2HearingPreferredType;
     private final String resp2ReasonForPreferredType;

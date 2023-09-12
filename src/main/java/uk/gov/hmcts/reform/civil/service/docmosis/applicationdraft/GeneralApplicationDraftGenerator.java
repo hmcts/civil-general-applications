@@ -120,10 +120,11 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isConsentOrderApp(checkAppIsConsentOrder(caseData))
                 .isOneVTwoApp(caseData.getRespondentsResponses().size() >= ONE_V_TWO ? YesOrNo.YES : YesOrNo.NO)
                 .resp1HasAgreed(resp1Response.getGeneralAppRespondent1Representative())
-                .gaResp1Consent(caseData.getGaRespondentConsent())
+                .gaResp1Consent(resp1Response.getGeneralAppRespondent1Representative())
                 .resp1DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer()
                                           .getDisplayedValue() : null)
+                .resp1DeclineReason(resp1Response.getGaRespondentResponseReason())
                 .resp1HearingYesOrNo(gaResp1HearingDetails.getHearingYesorNo())
                 .resp1HearingPreferredType(gaResp1HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
@@ -152,10 +153,11 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
             GARespondentResponse resp2Response = caseData.getRespondentsResponses().get(1).getValue();
             gaDraftFormBuilder = gaDraftFormBuilder.build().toBuilder()
                 .resp2HasAgreed(resp2Response.getGeneralAppRespondent1Representative())
-                .gaResp2Consent(caseData.getGaRespondentConsent())
+                .gaResp2Consent(resp2Response.getGeneralAppRespondent1Representative())
                 .resp2DebtorOffer(caseData.getGaRespondentDebtorOffer() != null
                                       ? caseData.getGaRespondentDebtorOffer()
                                     .getRespondentDebtorOffer().getDisplayedValue() : null)
+                .resp2DeclineReason(resp2Response.getGaRespondentResponseReason())
                 .resp2HearingYesOrNo(gaResp2HearingDetails.getHearingYesorNo())
                 .resp2HearingPreferredType(gaResp2HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
