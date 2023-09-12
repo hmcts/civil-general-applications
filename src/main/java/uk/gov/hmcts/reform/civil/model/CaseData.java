@@ -193,7 +193,6 @@ public class CaseData implements MappableObject {
     private final String caseNameHmctsInternal;
     private final FinalOrderSelection finalOrderSelection;
     private final String freeFormRecitalText;
-    private final String freeFormRecordedText;
     private final String freeFormOrderedText;
     private final OrderOnCourts orderOnCourtsList;
     private final FreeFormOrderValues orderOnCourtInitiative;
