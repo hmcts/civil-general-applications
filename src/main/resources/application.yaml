@@ -61,6 +61,7 @@ fees:
     event: issue
 
 genApp:
+  authorised-services: ${GA_S2S_AUTHORISED_SERVICES:payment_app,ccd_data,civil_service}
   fee:
     endpoint: /fees-register/fees/lookup
     service: general
