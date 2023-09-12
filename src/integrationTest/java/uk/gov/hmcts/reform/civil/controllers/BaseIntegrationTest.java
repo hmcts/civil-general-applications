@@ -79,7 +79,7 @@ public abstract class BaseIntegrationTest {
     @MockBean
     protected JwtDecoder jwtDecoder;
     @MockBean
-    private AuthorisationService authorisationService;
+    public AuthorisationService authorisationService;
 
     @MockBean
     private ServiceAuthorisationApi serviceAuthorisationApi;

@@ -16,7 +16,9 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
@@ -59,6 +61,19 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
             MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(buildServiceDto()))).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void whenPaymentCallbackIsReceivedWithServiceAuthorisationButreturnsfalseReturn400() throws Exception {
+        when(authorisationService.isServiceAuthorized(any())).thenReturn(false);
+        Exception e = assertThrows(
+            ServletException.class,
+            () -> mockMvc.perform(
+                                       MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
+                                           .header("ServiceAuthorization", s2sToken)
+                                           .contentType(MediaType.APPLICATION_JSON)
+                                           .content(toJson(buildServiceDto()))).andExpect(status().isBadRequest()));
+
     }
 
     private ServiceRequestUpdateDto buildServiceDto() {
