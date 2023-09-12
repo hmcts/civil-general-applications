@@ -170,8 +170,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public static final String JUDICIAL_DECISION_LIST_FOR_HEARING = "LIST_FOR_A_HEARING";
 
-    private static final String ORDER_COURT_OWN_INITIATIVE = "As this order was made on the court's own initiative any "
-            + "party affected by the order may apply to set aside, vary or stay the order. "
+    private static final String ORDER_COURT_OWN_INITIATIVE = "As this order was made on the court's own initiative, any "
+            + "party affected by the order may apply to set aside, vary, or stay the order. "
             + "Any such application must be made by 4pm on \n\n";
 
     private static final String ORDER_WITHOUT_NOTICE = "If you were not notified of the application before this "
@@ -379,7 +379,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
                                                                                  CallbackParams callbackParams) {
-
+        LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
         if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
@@ -399,6 +399,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     .isOrderProcessedByStayScheduler(NO)
                     .isOrderProcessedByUnlessScheduler(NO).orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
                     .orderWithoutNotice(ORDER_WITHOUT_NOTICE)
+                    .orderWithoutNoticeDate(localDatePlus7days)
+                    .orderCourtOwnInitiativeDate(localDatePlus7days)
                     .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW));
         }
 
