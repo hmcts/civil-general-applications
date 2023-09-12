@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -68,6 +69,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -102,6 +104,8 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
@@ -227,6 +231,33 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 new TypeReference<>() {});
             assertThat(gaDetailsMasterColl.getCaseState())
                 .isEqualTo("Awaiting Respondent Response");
+        }
+
+        @Test
+        void theEndOfProcessShouldUpdateTheStateOfGAAndAlsoUpdateStateOnParentCaseGADetailsAndCollection_ToBeNotified() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponseForCollection(NO, YES));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(NO, YES).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataForCollection(NO, YES));
+            when(caseDetailsConverter.toCaseData(getStartEventResponseForCollection(NO, YES).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdateCollection(NO, YES));
+
+            handler.handle(getCallbackParams(NO, YES));
+
+            verify(coreCaseDataService, times(2))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService, times(2))
+                .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+            verify(coreCaseDataService, times(2)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                                                                    new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
         }
 
         @Test
@@ -499,6 +530,12 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
         }
 
+        private CaseData getSampleGeneralApplicationCaseDataForCollection(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGaForCollection(
+                    getGeneralApplication(isConsented, isTobeNotified))
+                .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
+        }
+
         private CaseData getSampleGeneralApplicationCaseDataBeforePayment(YesOrNo isConsented, YesOrNo isTobeNotified) {
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplicationBeforePayment(isConsented, isTobeNotified))
@@ -547,6 +584,20 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             return startEventResponseBuilder.build();
         }
 
+        private StartEventResponse getStartEventResponseForCollection(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            CaseDetails caseDetails = CaseDetailsBuilder.builder().data(
+                    getParentCaseDataBeforeUpdate(isConsented, isTobeNotified))
+                .id(1645779506193000L)
+                .state(AWAITING_APPLICATION_PAYMENT)
+                .build();
+            StartEventResponse.StartEventResponseBuilder startEventResponseBuilder = StartEventResponse.builder();
+            startEventResponseBuilder.eventId(UPDATE_CASE_WITH_GA_STATE.toString())
+                .token("BEARER_TOKEN")
+                .caseDetails(caseDetails);
+
+            return startEventResponseBuilder.build();
+        }
+
         private CaseData getParentCaseDataBeforeUpdate(YesOrNo isConsented, YesOrNo isTobeNotified) {
             return CaseData.builder()
                     .generalApplications(wrapElements(getGeneralApplication(isConsented, isTobeNotified)))
@@ -569,6 +620,16 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                               .caseState("General Application Issue Pending")
                               .build()))
                     .build();
+        }
+
+        private CaseData getParentCaseDataBeforeUpdateCollection(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            return CaseData.builder()
+                .generalApplications(wrapElements(getGeneralApplication(isConsented, isTobeNotified)))
+                .claimantGaAppDetails(wrapElements(GeneralApplicationsDetails.builder()
+                                                       .caseLink(CaseLink.builder().caseReference(CHILD_CCD_REF.toString()).build())
+                                                       .caseState("Awaiting Application Payment")
+                                                       .build()))
+                .build();
         }
 
         private CaseData getCase(List<Element<GASolicitorDetailsGAspec>> respondentSols,
