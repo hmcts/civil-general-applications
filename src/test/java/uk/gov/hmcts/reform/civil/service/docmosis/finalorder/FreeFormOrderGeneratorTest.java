@@ -103,9 +103,8 @@ class FreeFormOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES).build()
                 .toBuilder()
                 .freeFormRecitalText("RecitalText")
-                .freeFormRecordedText("RecordedText")
                 .freeFormOrderedText("OrderedText")
-                .orderOnCourtsList(OrderOnCourts.NONE)
+                .orderOnCourtsList(OrderOnCourts.NOT_APPLICABLE)
                 .build();
         CaseDocument caseDocuments = generator.generate(caseData, BEARER_TOKEN);
 

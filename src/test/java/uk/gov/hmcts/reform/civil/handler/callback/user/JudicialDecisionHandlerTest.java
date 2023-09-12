@@ -36,6 +36,8 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -62,6 +64,7 @@ import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
@@ -95,6 +98,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_1;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_2;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec.OPTION_3;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -164,6 +168,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
+    @MockBean
+    private FreeFormOrderGenerator gaFreeFormOrderGenerator;
+
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
@@ -176,6 +183,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + "provided by the parties, the court requests more information from the applicant.";
 
     public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
+
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
+        + "any party affected by the order may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
+    private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
+        + "this order was made, you may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -2039,6 +2053,51 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
 
         @Test
+        void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
+            List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STAY_THE_CLAIM));
+            when(helper.isApplicationCreatedWithoutNoticeByApplicant(any())).thenReturn(YES);
+
+            CaseData caseData = getHearingOrderApplnAndResp(types, NO, NO);
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.applicationIsUncloakedOnce(NO);
+
+            caseDataBuilder.judicialDecision(GAJudicialDecision.builder().decision(FREE_FORM_ORDER).build())
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader");
+
+            caseDataBuilder.claimant1PartyName("Mr. John Rambo").defendant1PartyName("Mr. Sole Trader");
+
+            CallbackParams params = callbackParamsOf(caseDataBuilder.build(), MID, VALIDATE_MAKE_AN_ORDER);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+
+            assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionTextArea")
+                .isEqualTo(ON_INITIATIVE_SELECTION_TEST);
+            assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionDate")
+                .isEqualTo(LocalDate.now().plusDays(7).toString());
+            assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
+                .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
+            assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
+                .isEqualTo(LocalDate.now().plusDays(7).toString());
+            assertThat(response.getData().get("caseNameHmctsInternal")
+                           .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
+        }
+
+        @Test
+        void shouldGenerateFinalOrderPreviewDocumentWhenPopulateFinalOrderPreviewDocIsCalled() {
+            when(gaFreeFormOrderGenerator.generate(any(), any())).thenReturn(CaseDocument
+                                                                               .builder().documentLink(Document.builder().build()).build());
+            CaseData caseData = CaseDataBuilder.builder().build();
+            CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(updatedData.getGaFinalOrderDocPreview()).isNotNull();
+        }
+
+        @Test
         void shouldReturnErrorForWrittenRepresentationWithOutNoticeApplnForJudgeRevisit() {
             List<GeneralApplicationTypes> types = List.of((GeneralApplicationTypes.STRIKE_OUT));
 
@@ -2903,6 +2962,51 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                      .deadlineForMoreInfoSubmission(LocalDateTime.now().plusDays(5))
                                                      .build())
                 .build();
+        }
+    }
+
+    @Nested
+    class GetAllPartyNames {
+        @Test
+        void oneVOne() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .build().toBuilder()
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .build();
+            String title = handler.getAllPartyNames(caseData);
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
+        }
+
+        @Test
+        void oneVTwoSameSol() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(YesOrNo.YES)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .defendant2PartyName("Mr. John Rambo")
+                .build();
+
+            String title = handler.getAllPartyNames(caseData);
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
+        }
+
+        @Test
+        void oneVTwo() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .defendant2PartyName("Mr. John Rambo")
+                .build();
+
+            String title = handler.getAllPartyNames(caseData);
+            assertThat(title).isEqualTo("Mr. John Rambo v Mr. Sole Trader, Mr. John Rambo");
         }
     }
 
