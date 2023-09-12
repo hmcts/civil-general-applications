@@ -138,7 +138,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -148,9 +148,9 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -160,9 +160,9 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -174,7 +174,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -183,10 +183,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent1", NO, NO, YES);
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
 
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -196,9 +196,9 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildDataWithExistingCollection(generalApplication, NO, NO);
 
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -207,10 +207,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, YES, YES);
             CaseData data = buildDataWithExistingCollection(generalApplication, NO, NO);
 
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         @Test
@@ -222,7 +222,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(2);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(3);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
         }
 
         private GeneralApplication getGeneralApplication(String organisationIdentifier,
@@ -276,7 +276,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
         }
 
         @Test
@@ -288,7 +288,20 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
+
+        }
+
+        @Test
+        void shouldAddRespondentSolListForWithoutNoticeApplnMultiParty() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("respondent1", NO, NO, YES, NO);
+            CaseData data = buildData(generalApplication, NO, NO);
+
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -301,7 +314,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -315,10 +328,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("applicant", YES, YES, NO, NO);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -328,10 +341,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("applicant", YES, YES, YES, NO);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
         }
 
         @Test
@@ -343,7 +356,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
         }
 
         @Test
@@ -355,7 +368,7 @@ public class CreateApplicationTaskHandlerTest {
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
         }
 
         @Test
@@ -365,21 +378,21 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
         }
 
         @Test
         void shouldAddRespondentTwoSolListForWithNoticeApplnVisibleToAllCollections() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", YES, YES, YES, NO);
+                getGeneralApplication("respondent2", NO, YES, YES, NO);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -390,9 +403,9 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -403,9 +416,9 @@ public class CreateApplicationTaskHandlerTest {
             CaseData data = buildData(generalApplication, NO, NO);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -415,10 +428,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("applicant", YES, YES, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -466,10 +479,10 @@ public class CreateApplicationTaskHandlerTest {
 
             CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -479,10 +492,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, YES, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -492,10 +505,10 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("respondent2", NO, NO, YES, YES);
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
 
         }
 
@@ -543,7 +556,7 @@ public class CreateApplicationTaskHandlerTest {
             GeneralApplication generalApplication = getGeneralApplication();
             CaseData data = buildData(generalApplication, NO, NO);
 
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
         }
 
@@ -680,6 +693,7 @@ public class CreateApplicationTaskHandlerTest {
                                                   .urgentAppConsiderationDate(APP_DATE_EPOCH)
                                                   .build())
                 .isMultiParty(NO)
+                .parentClaimantIsApplicant(YES)
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
@@ -851,8 +865,6 @@ public class CreateApplicationTaskHandlerTest {
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
         verify(coreCaseDataService).createGeneralAppCase(map);
-
-        verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 

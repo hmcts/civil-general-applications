@@ -57,6 +57,7 @@ import java.util.UUID;
 import static java.time.LocalDate.now;
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -480,6 +481,30 @@ public class CaseDataBuilder {
     public CaseData buildCaseDateBaseOnGeneralApplication(GeneralApplication application) {
         return CaseData.builder()
             .ccdState(PENDING_APPLICATION_ISSUED)
+            .generalAppType(application.getGeneralAppType())
+            .caseLink(application.getCaseLink())
+            .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+            .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+            .generalAppPBADetails(application.getGeneralAppPBADetails())
+            .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+            .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+            .generalAppNotificationDeadlineDate(application.getGeneralAppDateDeadline())
+            .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+            .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+            .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+            .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+            .isMultiParty(application.getIsMultiParty())
+            .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
+            .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+            .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
+            .isCcmccLocation(application.getIsCcmccLocation())
+            .caseManagementLocation(application.getCaseManagementLocation())
+            .build();
+    }
+
+    public CaseData buildCaseDateBaseOnGaForCollection(GeneralApplication application) {
+        return CaseData.builder()
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .generalAppType(application.getGeneralAppType())
             .caseLink(application.getCaseLink())
             .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())

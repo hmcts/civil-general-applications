@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -38,6 +40,7 @@ import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
@@ -204,6 +207,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
         Respondent 2 requires support with regards to vulnerability
         """;
 
+    private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
+
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
+        + "any party affected by the order may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
+    private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
+        + "this order was made, you may apply to set aside, vary or stay the order."
+        + " Any such application must be made by 4pm on";
+
     private final ObjectMapper objectMapper;
 
     private final GeneralOrderGenerator generalOrderGenerator;
@@ -213,22 +225,22 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final HearingOrderGenerator hearingOrderGenerator;
     private final WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
+    private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return Map.of(
-                callbackKey(ABOUT_TO_START), this::checkInputForNextPage,
-                callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder,
-                callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen,
-                callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen,
-                callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate,
-                callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder,
-                callbackKey(MID, POPULATE_HEARING_ORDER_DOC), this::gaPopulateHearingOrderDoc,
-                callbackKey(MID, POPULATE_WRITTEN_REP_PREVIEW_DOC), this::gaPopulateWrittenRepPreviewDoc,
-                callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess,
-                callbackKey(SUBMITTED), this::buildConfirmation
-        );
-
+        return new ImmutableMap.Builder<String, Callback>()
+            .put(callbackKey(ABOUT_TO_START), this::checkInputForNextPage)
+            .put(callbackKey(MID, VALIDATE_MAKE_AN_ORDER), this::gaValidateMakeAnOrder)
+            .put(callbackKey(MID, VALIDATE_MAKE_DECISION_SCREEN), this::gaValidateMakeDecisionScreen)
+            .put(callbackKey(MID, VALIDATE_REQUEST_MORE_INFO_SCREEN), this::gaValidateRequestMoreInfoScreen)
+            .put(callbackKey(MID, VALIDATE_WRITTEN_REPRESENTATION_DATE), this::gaValidateWrittenRepresentationsDate)
+            .put(callbackKey(MID, VALIDATE_HEARING_ORDER_SCREEN), this::gaValidateHearingOrder)
+            .put(callbackKey(MID, POPULATE_HEARING_ORDER_DOC), this::gaPopulateHearingOrderDoc)
+            .put(callbackKey(MID, POPULATE_WRITTEN_REP_PREVIEW_DOC), this::gaPopulateWrittenRepPreviewDoc)
+            .put(callbackKey(MID, POPULATE_FINAL_ORDER_PREVIEW_DOC), this::gaPopulateFinalOrderPreviewDoc)
+            .put(callbackKey(ABOUT_TO_SUBMIT), this::setJudgeBusinessProcess)
+            .put(callbackKey(SUBMITTED), this::buildConfirmation).build();
     }
 
     private CallbackResponse checkInputForNextPage(CallbackParams callbackParams) {
@@ -309,6 +321,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+    public static String getAllPartyNames(CaseData caseData) {
+        return format("%s v %s%s",
+                      caseData.getClaimant1PartyName(),
+                      caseData.getDefendant1PartyName(),
+                      Objects.nonNull(caseData.getDefendant2PartyName())
+                          && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
+                          || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
+                          ? ", " + caseData.getDefendant2PartyName() : "");
     }
 
     private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
@@ -619,6 +641,17 @@ public class JudicialDecisionHandler extends CallbackHandler {
          *  */
         caseDataBuilder.showRequestInfoPreviewDoc(NO);
 
+        caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
+
+        caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
+                                                   .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
+                                                   .onInitiativeSelectionDate(LocalDate.now().plusDays(7))
+                                                   .build());
+        caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
+                                               .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
+                                               .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
+                                               .build());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
@@ -715,6 +748,19 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         // second idam call is workaround for null pointer when hiding field in getIdamEmail callback
         return caseData.toBuilder();
+    }
+
+    private CallbackResponse gaPopulateFinalOrderPreviewDoc(final CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        CaseDocument freeform = gaFreeFormOrderGenerator
+            .generate(caseData,
+                      callbackParams.getParams().get(BEARER_TOKEN).toString());
+        caseDataBuilder.gaFinalOrderDocPreview(freeform.getDocumentLink());
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
     }
 
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
