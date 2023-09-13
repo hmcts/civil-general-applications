@@ -7,16 +7,19 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudgeOrderClaimantOrDefenseFixedList;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class GAJudicialMakeAnOrder {
 
+    private List<FinalOrderShowToggle> showJudgeRecitalText;
     private String judgeRecitalText;
     private GAJudgeMakeAnOrderOption makeAnOrder;
     private String orderText;
@@ -39,7 +42,8 @@ public class GAJudicialMakeAnOrder {
     private LocalDate orderWithoutNoticeDate;
 
     @JsonCreator
-    GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
+    GAJudicialMakeAnOrder(@JsonProperty("showJudgeRecitalText") List<FinalOrderShowToggle> showJudgeRecitalText,
+                          @JsonProperty("judgeRecitalText") String judgeRecitalText,
                           @JsonProperty("makeAnOrder") GAJudgeMakeAnOrderOption makeAnOrder,
                           @JsonProperty("orderText") String orderText,
                           @JsonProperty("dismissalOrderText") String dismissalOrderText,
@@ -66,6 +70,7 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("orderCourtOwnInitiativeDate") LocalDate orderCourtOwnInitiativeDate,
                           @JsonProperty("orderWithoutNotice") String orderWithoutNotice,
                           @JsonProperty("orderWithoutNoticeDate") LocalDate orderWithoutNoticeDate) {
+        this.showJudgeRecitalText = showJudgeRecitalText;
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
