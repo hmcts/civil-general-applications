@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
@@ -604,6 +605,7 @@ public class CaseDataBuilder {
                                            .judicialByCourtsInitiative(GAByCourtsInitiativeGAspec.OPTION_1)
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
+                                           .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW))
                                            .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
@@ -630,6 +632,7 @@ public class CaseDataBuilder {
                                            .reasonForDecisionText("Test Reason")
                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                            .directionsResponseByDate(LocalDate.now())
+                                           .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW))
                                            .judgeRecitalText("Test Judge's recital")
                                            .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);

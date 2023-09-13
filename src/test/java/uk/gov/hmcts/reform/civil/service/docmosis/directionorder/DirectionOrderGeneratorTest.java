@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -132,6 +135,7 @@ class DirectionOrderGeneratorTest {
                                                            .reasonForDecisionText("Test Reason")
                                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                                            .directionsResponseByDate(LocalDate.now())
+                                                           .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW))
                                                            .judgeRecitalText("Test Judge's recital")
                                                            .build()).build();
             CaseData updateCaseData = caseDataBuilder.build();
@@ -179,6 +183,7 @@ class DirectionOrderGeneratorTest {
                                                           .reasonForDecisionText("Test Reason")
                                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                                           .directionsResponseByDate(LocalDate.now())
+                                                          .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW))
                                                           .judgeRecitalText("Test Judge's recital")
                                                           .build()).build();
 
@@ -210,6 +215,35 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
             );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldHideRecital_whileUnchecked() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                    .build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                    .directionsText("Test Direction")
+                    .judicialByCourtsInitiative(
+                            GAByCourtsInitiativeGAspec.OPTION_3)
+                    .reasonForDecisionText("Test Reason")
+                    .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
+                    .directionsResponseByDate(LocalDate.now())
+                    .judgeRecitalText("Test Judge's recital")
+                    .build()).build();
+
+            CaseData updateCaseData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateCaseData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateCaseData))
+                    .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateCaseData))
+                    .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
+
+            assertNull(templateData.getJudgeRecital());
         }
 
         private String getClaimats(CaseData caseData) {
