@@ -10,7 +10,10 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -31,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -49,6 +53,7 @@ class DismissalOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -125,6 +130,7 @@ class DismissalOrderGeneratorTest {
             caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                            .dismissalOrderText("Test Dismissal")
                                                            .reasonForDecisionText("Test Reason")
+                                                           .showReasonForDecision(YesOrNo.YES)
                                                            .orderWithoutNotice("abcdef")
                                                            .orderWithoutNoticeDate(LocalDate.now())
                                                            .judicialByCourtsInitiative(
@@ -158,7 +164,9 @@ class DismissalOrderGeneratorTest {
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getDismissalOrder(),
-                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                    REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
         }
 
         @Test
@@ -169,6 +177,7 @@ class DismissalOrderGeneratorTest {
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                                           .dismissalOrderText("Test Dismissal")
+                                                          .showReasonForDecision(YesOrNo.YES)
                                                           .reasonForDecisionText("Test Reason")
                                                           .judicialByCourtsInitiative(
                                                               GAByCourtsInitiativeGAspec.OPTION_3)
@@ -199,7 +208,35 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getDismissalOrder(),
-                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldHideText_whileUnchecked() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
+                    .build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                    .dismissalOrderText("Test Dismissal")
+                    .showReasonForDecision(YesOrNo.NO)
+                    .reasonForDecisionText("Test Reason")
+                    .judicialByCourtsInitiative(
+                            GAByCourtsInitiativeGAspec.OPTION_3)
+                    .makeAnOrder(DISMISS_THE_APPLICATION)
+                    .build()).build();
+            CaseData updateData = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
+            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
+            when(listGeneratorService.defendantsName(updateData))
+                    .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            var templateData = dismissalOrderGenerator.getTemplateData(updateData);
+
+            assertEquals("",templateData.getReasonForDecision());
         }
 
         private String getClaimats(CaseData caseData) {
