@@ -42,6 +42,9 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
+        if (caseData.getGeneralAppParentCaseLink() != null) {
+            variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
+        }
     }
 
     @Override
