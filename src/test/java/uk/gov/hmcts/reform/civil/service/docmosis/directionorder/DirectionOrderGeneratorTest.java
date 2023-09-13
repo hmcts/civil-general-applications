@@ -253,7 +253,7 @@ class DirectionOrderGeneratorTest {
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
             assertNull(templateData.getJudgeRecital());
-            assertEquals("",templateData.getReasonForDecision());
+            assertEquals("", templateData.getReasonForDecision());
         }
 
         private String getClaimats(CaseData caseData) {

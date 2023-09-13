@@ -247,7 +247,7 @@ class GeneralOrderGeneratorTest {
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
             assertNull(templateData.getJudgeRecital());
-            assertEquals("",templateData.getReasonForDecision());
+            assertEquals("", templateData.getReasonForDecision());
         }
 
         private String getClaimats(CaseData caseData) {
