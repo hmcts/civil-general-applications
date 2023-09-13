@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum OrderOnCourts {
     ORDER_ON_COURT_INITIATIVE("Order on court's own initiative"),
     ORDER_WITHOUT_NOTICE("Order without notice"),
-    NONE("None");
+    NOT_APPLICABLE("Not applicable");
 
     private final String displayedValue;
 }

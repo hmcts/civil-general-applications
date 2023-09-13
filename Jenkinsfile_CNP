@@ -9,7 +9,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "feature/CIV-10102"
 def ccddefbranch = "master"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 
@@ -73,9 +73,6 @@ withPipeline(type, product, component) {
         env.ENVIRONMENT = "preview"
         env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
         loadVaultSecrets(secrets)
-       if (!checkForEnableHelmLabel(env.BRANCH_NAME)) {
-        enableCleanupOfHelmReleaseAlways();
-      }
     }
     onMaster {
         env.ENVIRONMENT = "aat"
