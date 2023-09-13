@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAY
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
@@ -36,6 +37,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private static final String FREE_KEYWORD = "FREE";
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -49,6 +51,15 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+
+        if (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
+            || (data.getCcdState().equals(PENDING_APPLICATION_ISSUED)
+            && Objects.nonNull(data.getGeneralAppPBADetails())
+            && Objects.nonNull(data.getGeneralAppPBADetails().getFee())
+            && (data.getGeneralAppPBADetails().getFee().getCode().equalsIgnoreCase(FREE_KEYWORD)))) {
+
+            parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
+        }
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;

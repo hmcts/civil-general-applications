@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
@@ -43,6 +44,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
+import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -99,13 +101,15 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     protected GeneralAppLocationRefDataService locationRefDataService;
-
+    List<Element<Document>> documents = new ArrayList<>();
     @BeforeEach
         public void setUp() throws IOException {
 
         when(idamClient.getUserDetails(anyString())).thenReturn(UserDetails.builder()
                                                                     .id(STRING_CONSTANT)
                                                                     .build());
+        Document document = Document.builder().documentUrl("url").documentFileName("file").build();
+        documents.add(ElementUtils.element(document));
     }
 
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
@@ -609,6 +613,80 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldReturn_No_WhenRespondIsNotAcceptedByRespondent() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+                .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build())
+                .generalAppRespondReason("reason")
+                .generalAppRespondent1Representative(GARespondentRepresentative.builder()
+                .generalAppRespondent1Representative(NO).build())
+                .generalAppRespondDocument(documents);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+        assertThat(responseCaseData.getRespondentsResponses().get(0)
+                .getValue().getGaRespondentResponseReason()).isEqualTo("reason");
+        assertThat(responseCaseData.getGeneralAppRespondDocument()).isNull();
+        assertThat(responseCaseData.getGeneralAppRespondReason()).isNull();
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative()).isNull();
+        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getCategoryID())
+                .isEqualTo(AssignCategoryId.APPLICATIONS);
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentUrl())
+                .isEqualTo("url");
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentFileName())
+                .isEqualTo("file");
+    }
+
+    @Test
+    void shouldReturn_No_WhenConsentRespondIsNotAcceptedByRespondent() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+                .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build())
+                .generalAppConsentOrder(YES)
+                .generalAppRespondConsentReason("reason")
+                .gaRespondentConsent(NO)
+                .generalAppRespondConsentDocument(documents);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+        assertThat(responseCaseData.getRespondentsResponses().get(0)
+                .getValue().getGaRespondentResponseReason()).isEqualTo("reason");
+        assertThat(responseCaseData.getGeneralAppRespondConsentDocument()).isNull();
+        assertThat(responseCaseData.getGeneralAppRespondConsentReason()).isNull();
+        assertThat(responseCaseData.getGaRespondentConsent()).isNull();
+        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getCategoryID())
+                .isEqualTo(AssignCategoryId.APPLICATIONS);
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentUrl())
+                .isEqualTo("url");
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentFileName())
+                .isEqualTo("file");
+    }
+
+    @Test
     void shouldReturn_No_WhenDebtorIsAcceptedByRespondent() {
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -618,7 +696,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
                     GARespondentDebtorOfferOptionsGAspec.DECLINE)
                 .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
-                .paymentSetDate(LocalDate.now().minusDays(2)).build());
+                .paymentSetDate(LocalDate.now().minusDays(2)).build())
+            .generalAppRespondDebtorDocument(documents);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
         });
@@ -630,6 +709,17 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
         assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
                        .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+        assertThat(responseCaseData.getGeneralAppRespondDebtorDocument()).isNull();
+        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getCategoryID())
+                .isEqualTo(AssignCategoryId.APPLICATIONS);
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentUrl())
+                .isEqualTo("url");
+        assertThat(responseCaseData.getGaRespondDoc()
+                .get(0).getValue().getDocumentLink().getDocumentFileName())
+                .isEqualTo("file");
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import uk.gov.hmcts.reform.civil.Application;
 import uk.gov.hmcts.reform.civil.TestIdamConfiguration;
+import uk.gov.hmcts.reform.civil.service.AuthorisationService;
 import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -77,12 +78,15 @@ public abstract class BaseIntegrationTest {
     protected SecurityContext securityContext;
     @MockBean
     protected JwtDecoder jwtDecoder;
+    @MockBean
+    public AuthorisationService authorisationService;
 
     @MockBean
     private ServiceAuthorisationApi serviceAuthorisationApi;
 
     @BeforeEach
     public void setUpBase() {
+        when(authorisationService.isServiceAuthorized(any())).thenReturn(true);
         when(userService.getUserInfo(anyString())).thenReturn(USER_INFO);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
