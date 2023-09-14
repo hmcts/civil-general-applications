@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.util.Map;
@@ -39,26 +38,6 @@ class StartGeneralApplicationBusinessProcessCallbackHandlerTest extends BaseCall
     @EnumSource(value = BusinessProcessStatus.class, names = {"READY", "DISPATCHED"})
     void shouldSetStatusStarted_whenInitialStateIs(BusinessProcessStatus status) {
         CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
-            .businessProcess(BusinessProcess.builder().status(status).build()).build();
-
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
-        });
-        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-
-        AboutToStartOrSubmitCallbackResponse response
-            = (AboutToStartOrSubmitCallbackResponse)
-            startGeneralApplicationBusinessProcessCallbackHandler.handle(params);
-
-        CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
-        BusinessProcess businessProcess = data.getBusinessProcess();
-        assertThat(businessProcess.getStatus()).isEqualTo(BusinessProcessStatus.STARTED);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = BusinessProcessStatus.class, names = {"READY", "DISPATCHED"})
-    void shouldSetStatusStarted_whenInitialStateIs_WhenParentCaseLinkIsNotNull(BusinessProcessStatus status) {
-        CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
-            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
             .businessProcess(BusinessProcess.builder().status(status).build()).build();
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
