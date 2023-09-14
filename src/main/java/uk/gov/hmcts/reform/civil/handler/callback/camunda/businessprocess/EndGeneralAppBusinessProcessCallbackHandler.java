@@ -20,8 +20,11 @@ import java.util.Objects;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
@@ -75,7 +78,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }
-        parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+
+        if (!(data.getCcdState().equals(AWAITING_DIRECTIONS_ORDER_DOCS)
+            || data.getCcdState().equals(AWAITING_ADDITIONAL_INFORMATION)
+            || data.getCcdState().equals(AWAITING_WRITTEN_REPRESENTATIONS))) {
+            parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+        }
         return evaluateReady(callbackParams, newState);
     }
 
