@@ -444,12 +444,11 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected String getOrderMadeDate(CaseData caseData) {
-
-        if (isNull(caseData.getAssistedOrderMadeDateHeardDetails())
-            || isNull(caseData.getAssistedOrderMadeDateHeardDetails().getDate())) {
-            return null;
+        if (nonNull(caseData.getAssistedOrderMadeDateHeardDetails())
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())) {
+            return getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate());
         }
-        return getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDate());
+        return null;
     }
 
     protected String getReasonText(CaseData caseData) {

@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGiveReasonsDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
@@ -55,6 +56,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -844,7 +846,9 @@ class AssistedOrderFormGeneratorTest {
             CaseData caseData = CaseData.builder()
                 .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails
                                                        .builder()
-                                                       .date(LocalDate.now())
+                                                       .singleDateSelection(AssistedOrderDateHeard
+                                                                                .builder().singleDate(LocalDate.now())
+                                                                                .build())
                                                        .build())
                 .build();
             String assistedOrderString = generator.getOrderMadeDate(caseData);
@@ -860,7 +864,7 @@ class AssistedOrderFormGeneratorTest {
             CaseData caseData = CaseData.builder()
                 .assistedOrderGiveReasonsYesNo(null)
                 .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
+            String assistedOrderString = generator.getReasonText(caseData);
             assertNull(assistedOrderString);
         }
 
@@ -869,7 +873,7 @@ class AssistedOrderFormGeneratorTest {
             CaseData caseData = CaseData.builder()
                 .assistedOrderGiveReasonsYesNo(YesOrNo.NO)
                 .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
+            String assistedOrderString = generator.getReasonText(caseData);
             assertNull(assistedOrderString);
         }
 
@@ -879,7 +883,7 @@ class AssistedOrderFormGeneratorTest {
                 .assistedOrderGiveReasonsYesNo(YesOrNo.YES)
                 .assistedOrderGiveReasonsDetails(AssistedOrderGiveReasonsDetails.builder().build())
                 .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
+            String assistedOrderString = generator.getReasonText(caseData);
             assertNull(assistedOrderString);
         }
 
@@ -892,28 +896,20 @@ class AssistedOrderFormGeneratorTest {
                                                      .reasonsText(TEST_TEXT)
                                                      .build())
                 .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
-            assertNull(assistedOrderString);
-        }
-
-        @Test
-        void shouldReturnNull_When_OrderMadeHeard_Date_Null() {
-            CaseData caseData = CaseData.builder()
-                .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().build())
-                .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
-            assertNull(assistedOrderString);
+            String assistedOrderString = generator.getReasonText(caseData);
+            assertNotNull(assistedOrderString);
         }
 
         @Test
         void shouldReturnText_When_OrderMadeHeard() {
             CaseData caseData = CaseData.builder()
                 .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails
-                                                       .builder()
-                                                       .date(LocalDate.now())
+                                                       .builder().singleDateSelection(AssistedOrderDateHeard.builder()
+                                                                                          .singleDate(LocalDate.now()).build())
                                                        .build())
                 .build();
-            String assistedOrderString = generator.getOrderMadeDate(caseData);
+            String assistedOrderString = generator.getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails()
+                                                                        .getSingleDateSelection().getSingleDate());
             assertThat(assistedOrderString).contains(DateFormatHelper
                                                          .formatLocalDate(LocalDate.now(), " d MMMM yyyy"));
         }
