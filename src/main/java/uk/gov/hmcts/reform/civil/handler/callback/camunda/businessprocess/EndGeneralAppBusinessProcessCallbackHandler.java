@@ -83,6 +83,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             || data.getCcdState().equals(AWAITING_ADDITIONAL_INFORMATION)
             || data.getCcdState().equals(AWAITING_WRITTEN_REPRESENTATIONS))) {
             parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+        } else {
+            newState = data.getCcdState();
         }
         return evaluateReady(callbackParams, newState);
     }
