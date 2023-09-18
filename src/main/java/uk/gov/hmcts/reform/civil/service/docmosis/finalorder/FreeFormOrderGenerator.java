@@ -86,11 +86,13 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
                     .getOrderOnCourtInitiative().getOnInitiativeSelectionTextArea());
             orderValueBuilder.append(DATE_FORMATTER.format(caseData
                     .getOrderOnCourtInitiative().getOnInitiativeSelectionDate()));
+            orderValueBuilder.append(".");
         } else if (caseData.getOrderOnCourtsList().equals(ORDER_WITHOUT_NOTICE)) {
             orderValueBuilder.append(caseData
                     .getOrderWithoutNotice().getWithoutNoticeSelectionTextArea());
             orderValueBuilder.append(DATE_FORMATTER.format(caseData
                     .getOrderWithoutNotice().getWithoutNoticeSelectionDate()));
+            orderValueBuilder.append(".");
         }
         return orderValueBuilder.toString();
     }
