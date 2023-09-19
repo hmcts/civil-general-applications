@@ -166,8 +166,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .singleDateSelection(AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build())
                                                              .build()).build();
-
-        LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
+        caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                               .datesToAvoid(NO).build());
+                                                           LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
         caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
                                                      .costPaymentDeadLine(localDatePlus14days)
                                                      .build());
