@@ -6,17 +6,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class AssistedOrderMadeDateHeardDetails {
 
-    private final LocalDate date;
+    private AssistedOrderDateHeard singleDateSelection;
+    private AssistedOrderDateHeard dateRangeSelection;
 
     @JsonCreator
-    AssistedOrderMadeDateHeardDetails(@JsonProperty("date") LocalDate date) {
-        this.date = date;
+    AssistedOrderMadeDateHeardDetails(@JsonProperty("singleDateSelection") AssistedOrderDateHeard singleDateSelection,
+                                       @JsonProperty("dateRangeSelection") AssistedOrderDateHeard dateRangeSelection) {
+
+        this.singleDateSelection = singleDateSelection;
+        this.dateRangeSelection = dateRangeSelection;
     }
 }
