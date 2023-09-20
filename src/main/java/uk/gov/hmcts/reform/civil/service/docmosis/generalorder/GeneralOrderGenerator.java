@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -84,7 +85,11 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private String populateJudgeReasonForDecisionText(CaseData caseData) {
+    public static String populateJudgeReasonForDecisionText(CaseData caseData) {
+        if (Objects.nonNull(caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision())
+            && caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision().equals(YesOrNo.NO)) {
+            return "";
+        }
         return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
             ? "Reasons for decision: \n" + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
             : "";

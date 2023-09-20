@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
@@ -52,6 +53,7 @@ class GeneralOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -131,6 +133,7 @@ class GeneralOrderGeneratorTest {
                                                           .orderWithoutNoticeDate(LocalDate.now())
                                                           .judicialByCourtsInitiative(
                                                               GAByCourtsInitiativeGAspec.OPTION_2)
+                                                          .showReasonForDecision(YesOrNo.YES)
                                                           .reasonForDecisionText("Test Reason")
                                                           .makeAnOrder(
                                                               GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
@@ -164,7 +167,9 @@ class GeneralOrderGeneratorTest {
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(),
-                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -178,6 +183,7 @@ class GeneralOrderGeneratorTest {
                                                           .orderText("Test Order")
                                                           .judicialByCourtsInitiative(
                                                               GAByCourtsInitiativeGAspec.OPTION_3)
+                                                          .showReasonForDecision(YesOrNo.YES)
                                                           .reasonForDecisionText("Test Reason")
                                                           .makeAnOrder(
                                                               GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
@@ -209,12 +215,14 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
-                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
         @Test
-        void whenJudgeMakeDecision_ShouldHideRecital_whileUnchecked() {
+        void whenJudgeMakeDecision_ShouldHideText_whileUnchecked() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
                     .build();
 
@@ -224,6 +232,7 @@ class GeneralOrderGeneratorTest {
                     .judicialByCourtsInitiative(
                             GAByCourtsInitiativeGAspec.OPTION_3)
                     .reasonForDecisionText("Test Reason")
+                    .showReasonForDecision(YesOrNo.NO)
                     .makeAnOrder(
                             GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
                     .judgeRecitalText("Test Judge's recital")
@@ -238,6 +247,7 @@ class GeneralOrderGeneratorTest {
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
             assertNull(templateData.getJudgeRecital());
+            assertEquals("", templateData.getReasonForDecision());
         }
 
         private String getClaimats(CaseData caseData) {

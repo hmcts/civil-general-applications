@@ -11,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -52,6 +53,7 @@ class DirectionOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -133,6 +135,7 @@ class DirectionOrderGeneratorTest {
                                                            .orderWithoutNotice("abcdef")
                                                            .orderWithoutNoticeDate(LocalDate.now())
                                                            .reasonForDecisionText("Test Reason")
+                                                           .showReasonForDecision(YesOrNo.YES)
                                                            .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                                            .directionsResponseByDate(LocalDate.now())
                                                            .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW))
@@ -166,7 +169,9 @@ class DirectionOrderGeneratorTest {
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(),
-                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -180,6 +185,7 @@ class DirectionOrderGeneratorTest {
                                                           .directionsText("Test Direction")
                                                           .judicialByCourtsInitiative(
                                                               GAByCourtsInitiativeGAspec.OPTION_3)
+                                                          .showReasonForDecision(YesOrNo.YES)
                                                           .reasonForDecisionText("Test Reason")
                                                           .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                                                           .directionsResponseByDate(LocalDate.now())
@@ -213,7 +219,9 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
-                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
+                () -> assertEquals(templateData.getReasonForDecision(),
+                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -227,6 +235,7 @@ class DirectionOrderGeneratorTest {
                     .directionsText("Test Direction")
                     .judicialByCourtsInitiative(
                             GAByCourtsInitiativeGAspec.OPTION_3)
+                    .showReasonForDecision(YesOrNo.NO)
                     .reasonForDecisionText("Test Reason")
                     .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
                     .directionsResponseByDate(LocalDate.now())
@@ -244,6 +253,7 @@ class DirectionOrderGeneratorTest {
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
             assertNull(templateData.getJudgeRecital());
+            assertEquals("", templateData.getReasonForDecision());
         }
 
         private String getClaimats(CaseData caseData) {

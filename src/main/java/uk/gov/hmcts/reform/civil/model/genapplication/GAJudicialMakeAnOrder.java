@@ -40,6 +40,7 @@ public class GAJudicialMakeAnOrder {
     private LocalDate orderCourtOwnInitiativeDate;
     private String orderWithoutNotice;
     private LocalDate orderWithoutNoticeDate;
+    private YesOrNo showReasonForDecision;
 
     @JsonCreator
     GAJudicialMakeAnOrder(@JsonProperty("showJudgeRecitalText") List<FinalOrderShowToggle> showJudgeRecitalText,
@@ -69,7 +70,8 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("orderCourtOwnInitiative") String orderCourtOwnInitiative,
                           @JsonProperty("orderCourtOwnInitiativeDate") LocalDate orderCourtOwnInitiativeDate,
                           @JsonProperty("orderWithoutNotice") String orderWithoutNotice,
-                          @JsonProperty("orderWithoutNoticeDate") LocalDate orderWithoutNoticeDate) {
+                          @JsonProperty("orderWithoutNoticeDate") LocalDate orderWithoutNoticeDate,
+                          @JsonProperty("showReasonForDecision") YesOrNo showReasonForDecision) {
         this.showJudgeRecitalText = showJudgeRecitalText;
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
@@ -91,5 +93,6 @@ public class GAJudicialMakeAnOrder {
         this.orderCourtOwnInitiativeDate = orderCourtOwnInitiativeDate;
         this.orderWithoutNotice = orderWithoutNotice;
         this.orderWithoutNoticeDate = orderWithoutNoticeDate;
+        this.showReasonForDecision = showReasonForDecision;
     }
 }
