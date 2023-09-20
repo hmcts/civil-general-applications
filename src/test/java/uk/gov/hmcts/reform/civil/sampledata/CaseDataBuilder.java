@@ -1024,13 +1024,13 @@ public class CaseDataBuilder {
 
     public DynamicList getLocationDynamicList() {
         DynamicListElement location1 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("ABCD - RG0 0AL").build();
+                .code(String.valueOf(UUID.randomUUID())).label("ABCD - RG0 0AL").build();
         DynamicListElement location2 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("PQRS - GU0 0EE").build();
+                .code(String.valueOf(UUID.randomUUID())).label("PQRS - GU0 0EE").build();
         DynamicListElement location3 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("WXYZ - EW0 0HE").build();
+                .code(String.valueOf(UUID.randomUUID())).label("WXYZ - EW0 0HE").build();
         DynamicListElement location4 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("LMNO - NE0 0BH").build();
+                .code(String.valueOf(UUID.randomUUID())).label("LMNO - NE0 0BH").build();
 
         return DynamicList.builder()
                 .listItems(List.of(location1, location2, location3, location4))

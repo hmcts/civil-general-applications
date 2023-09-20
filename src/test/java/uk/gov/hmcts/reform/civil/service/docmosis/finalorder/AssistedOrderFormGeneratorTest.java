@@ -387,7 +387,7 @@ class AssistedOrderFormGeneratorTest {
         @Test
         void shouldReturnOtherText_When_LengthOfHearingOther() {
             DynamicListElement location1 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+                .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
             DynamicList alternateDirection = DynamicList.builder().listItems(List.of(location1)).build();
             CaseData caseData = CaseData.builder()
                 .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
@@ -406,7 +406,7 @@ class AssistedOrderFormGeneratorTest {
         @Test
         void shouldReturnOtherText_When_AlternativeLocation_and_HearingMethodVideo() {
             DynamicListElement location1 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+                .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
             DynamicList alternateDirection = DynamicList.builder()
                 .listItems(List.of(location1))
                 .value(location1)

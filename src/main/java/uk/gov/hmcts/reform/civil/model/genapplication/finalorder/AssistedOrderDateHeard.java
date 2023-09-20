@@ -18,12 +18,11 @@ public class AssistedOrderDateHeard {
     private LocalDate dateRangeTo;
     private LocalDate datesToAvoidDates;
 
-
     @JsonCreator
     AssistedOrderDateHeard(@JsonProperty("singleDateHeard") LocalDate singleDate,
                             @JsonProperty("dateRangeFrom") LocalDate dateRangeFrom,
                             @JsonProperty("dateRangeTo") LocalDate dateRangeTo,
-                           @JsonProperty("datesToAvoidDates") LocalDate datesToAvoidDates ) {
+                           @JsonProperty("datesToAvoidDates") LocalDate datesToAvoidDates) {
 
         this.singleDate = singleDate;
         this.dateRangeFrom = dateRangeFrom;

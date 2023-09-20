@@ -168,7 +168,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                              .build()).build();
         caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
                                                                .datesToAvoid(NO).build());
-                                                           LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
+        LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
         caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
                                                      .costPaymentDeadLine(localDatePlus14days)
                                                      .build());
@@ -249,9 +249,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         }
 
         if (caseData.getAssistedOrderFurtherHearingDetails() != null
-        && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown())
-        && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates())
-        && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates().isBefore(LocalDate.now())) {
+            && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown())
+            && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates())
+            && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates().isBefore(LocalDate.now())) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Further Hearing"));
         }
         return  errors;

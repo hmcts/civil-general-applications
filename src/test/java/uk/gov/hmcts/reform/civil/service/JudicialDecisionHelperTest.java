@@ -214,7 +214,7 @@ public class JudicialDecisionHelperTest {
 
         private DynamicListElement getDynamicLocation(String label) {
             return DynamicListElement.builder()
-                .code(UUID.randomUUID()).label(label).build();
+                .code(String.valueOf(UUID.randomUUID())).label(label).build();
         }
 
         private DynamicList getDynamicLocationsList(String chosenValue, DynamicListElement... elements) {
