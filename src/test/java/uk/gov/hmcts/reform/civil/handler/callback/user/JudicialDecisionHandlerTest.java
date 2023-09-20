@@ -1049,13 +1049,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnCorrectDirectionOrderText_whenJudgeMakeDecisionGiveDirection() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-
+            LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
             CallbackParams params = callbackParamsOf(getDirectionOrderApplnAndResp(types, NO, NO), ABOUT_TO_START);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             GAJudicialMakeAnOrder makeAnOrder = getJudicialMakeAnOrder(response);
 
-            assertThat(makeAnOrder.getDirectionsText()).isEqualTo(null);
+            assertThat(makeAnOrder.getDirectionsText()).isNull();
+            assertThat(makeAnOrder.getOrderWithoutNoticeDate()).isEqualTo(localDatePlus7days);
+            assertThat(makeAnOrder.getOrderCourtOwnInitiativeDate()).isEqualTo(localDatePlus7days);
         }
 
         @Test
