@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
@@ -69,7 +70,11 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -174,6 +179,68 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 new TypeReference<>() {});
             assertThat(generalAppRespTwo.getCaseState())
                 .isEqualTo("Application Submitted - Awaiting Judicial Decision");
+        }
+
+        @Test
+        void theEndOfProcessShouldNotUpdateTheStateOfGAAndAlsoOnParentCaseGADetailsForDirectionOrder() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(YES, NO).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataByState(YES, NO, AWAITING_DIRECTIONS_ORDER_DOCS));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+
+            handler.handle(getCallbackParams(YES, NO));
+
+            verify(coreCaseDataService, times(0))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+        }
+
+        @Test
+        void theEndOfProcessShouldNotUpdateTheStateOfGAAndAlsoOnParentCaseGADetailsForWrittenRep() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(YES, NO).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataByState(YES, NO, AWAITING_WRITTEN_REPRESENTATIONS));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+
+            handler.handle(getCallbackParams(YES, NO));
+
+            verify(coreCaseDataService, times(0))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+        }
+
+        @Test
+        void theEndOfProcessShouldNotUpdateTheStateOfGAAndAlsoOnParentCaseGADetailsForAddlInfo() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(YES, NO).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataByState(YES, NO, AWAITING_ADDITIONAL_INFORMATION));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+
+            handler.handle(getCallbackParams(YES, NO));
+
+            verify(coreCaseDataService, times(0))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+        }
+
+        @Test
+        void theEndOfProcessShouldUpdateTheStateOfGAAndAlsoOnParentCaseGADetailsForRespondResponseState() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(YES, NO).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataByState(YES, NO, AWAITING_RESPONDENT_RESPONSE));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+
+            handler.handle(getCallbackParams(YES, NO));
+
+            verify(coreCaseDataService, times(1))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
         }
 
         @Test
@@ -410,9 +477,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
             handler.handle(getCallbackParams(NO, YES));
 
-            verify(coreCaseDataService, times(1))
-                    .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
-
             verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
             HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
 
@@ -528,6 +592,12 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication(isConsented, isTobeNotified))
                     .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
+        }
+
+        private CaseData getSampleGeneralApplicationCaseDataByState(YesOrNo isConsented, YesOrNo isTobeNotified, CaseState caseState) {
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplicationByState(
+                    getGeneralApplication(isConsented, isTobeNotified), caseState)
+                .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
         }
 
         private CaseData getSampleGeneralApplicationCaseDataForCollection(YesOrNo isConsented, YesOrNo isTobeNotified) {
