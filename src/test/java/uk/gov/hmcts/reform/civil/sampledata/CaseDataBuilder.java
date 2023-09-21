@@ -502,6 +502,30 @@ public class CaseDataBuilder {
             .build();
     }
 
+    public CaseData buildCaseDateBaseOnGeneralApplicationByState(GeneralApplication application, CaseState state) {
+        return CaseData.builder()
+            .ccdState(state)
+            .generalAppType(application.getGeneralAppType())
+            .caseLink(application.getCaseLink())
+            .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+            .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+            .generalAppPBADetails(application.getGeneralAppPBADetails())
+            .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+            .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+            .generalAppNotificationDeadlineDate(application.getGeneralAppDateDeadline())
+            .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+            .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+            .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+            .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+            .isMultiParty(application.getIsMultiParty())
+            .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
+            .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+            .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
+            .isCcmccLocation(application.getIsCcmccLocation())
+            .caseManagementLocation(application.getCaseManagementLocation())
+            .build();
+    }
+
     public CaseData buildCaseDateBaseOnGaForCollection(GeneralApplication application) {
         return CaseData.builder()
             .ccdState(AWAITING_APPLICATION_PAYMENT)
