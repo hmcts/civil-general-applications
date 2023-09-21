@@ -9,7 +9,7 @@ public enum GAByCourtsInitiativeGAspec {
 
     OPTION_1("Order on court's own initiative"),
     OPTION_2("Order without notice"),
-    OPTION_3("None");
+    OPTION_3("Not applicable");
 
     private final String displayedValue;
 }
