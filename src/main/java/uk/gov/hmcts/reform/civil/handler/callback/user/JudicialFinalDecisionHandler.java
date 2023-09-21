@@ -57,11 +57,11 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     public static final String DATE_RANGE_NOT_ALLOWED = "The date range in %s should not have a 'from date', that is after the 'date to'";
     private final GeneralAppLocationRefDataService locationRefDataService;
 
-    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
-            + "any party affected by the order may apply to set aside, vary or stay the order."
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
+            + "any party affected by the order may apply to set aside, vary, or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
-            + "this order was made, you may apply to set aside, vary or stay the order."
+            + "this order was made, you may apply to set aside, vary, or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String ORDER_ISSUED = "# Your order has been issued %n%n ## Case number %n%n # %s";
     private static final String ORDER_1_CLAI = "<br/><p>The order has been sent to: </p>"
