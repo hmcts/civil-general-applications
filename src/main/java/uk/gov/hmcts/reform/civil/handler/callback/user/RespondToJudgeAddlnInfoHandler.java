@@ -10,10 +10,10 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
@@ -34,7 +34,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
     private final AssignCategoryId assignCategoryId;
-    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -59,13 +58,9 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
             caseDataBuilder.gaRespDocument(addAddInfoResponseList);
         }
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
-
+        caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
 
-        parentCaseUpdateHelper.updateParentWithGAState(
-                updatedCaseData,
-                updatedCaseData.getCcdState().getDisplayedValue()
-        );
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
