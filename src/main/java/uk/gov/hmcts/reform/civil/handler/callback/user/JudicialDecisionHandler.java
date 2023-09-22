@@ -653,7 +653,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
                                                .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
                                                .build());
-
+        caseDataBuilder.judicialDecisionMakeAnOrderForWrittenRepresentations(
+                GAJudicialWrittenRepresentations.builder()
+                        .writtenSequentailRepresentationsBy(LocalDate.now().plusDays(14))
+                        .sequentialApplicantMustRespondWithin(LocalDate.now().plusDays(21)).build());
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
