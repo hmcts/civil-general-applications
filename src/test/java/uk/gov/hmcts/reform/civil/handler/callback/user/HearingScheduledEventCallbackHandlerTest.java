@@ -83,7 +83,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
                     .build());
             DynamicListElement location1 = DynamicListElement.builder()
-                    .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+                    .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
 
             when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
             GAJudgesHearingListGAspec gaJudgesHearingListGAspec =
@@ -155,7 +155,7 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
             locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
                     .build());
             DynamicListElement location1 = DynamicListElement.builder()
-                    .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+                    .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
             CaseData caseData = CaseDataBuilder.builder().build().toBuilder()
                     .gaHearingNoticeDetail(GAHearingNoticeDetail.builder()
                             .hearingLocation(DynamicList.builder()
