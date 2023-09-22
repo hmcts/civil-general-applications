@@ -202,7 +202,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return DynamicList.builder().listItems(List.of(
                 DynamicListElement.builder()
                     .code("LOCATION_LIST")
-                    .label(caseData.getCaseManagementLocation().getSiteName())
+                    .label(caseData.getLocationName())
                     .build(),
                 DynamicListElement.builder()
                     .code("OTHER_LOCATION")
@@ -210,7 +210,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                     .build()))
             .value(DynamicListElement.builder()
                        .code("LOCATION_LIST")
-                       .label(caseData.getCaseManagementLocation().getSiteName())
+                       .label(caseData.getLocationName())
                        .build())
             .build();
     }

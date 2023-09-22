@@ -90,6 +90,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         // Given
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
                 .build().toBuilder().generalAppDetailsOfOrder("order test")
+            .locationName("County Court Money Centre")
             .caseManagementLocation(GACaseLocation.builder()
                                         .baseLocation("Ccmcc")
                                         .region("4")
@@ -120,8 +121,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                           .build());
         when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-            .build().toBuilder().caseManagementLocation(GACaseLocation.builder()
-                                                            .baseLocation("Ccmcc")
+            .build().toBuilder().locationName("County Court Money Centre")
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("Ccmcc")
                                                             .region("4")
                                                             .siteName("County Court Money Centre").build())
             .generalAppDetailsOfOrder("order test").build();
