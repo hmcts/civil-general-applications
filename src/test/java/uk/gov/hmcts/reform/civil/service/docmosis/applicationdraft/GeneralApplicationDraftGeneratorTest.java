@@ -100,7 +100,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     GeneralApplicationDraftGenerator generalApplicationDraftGenerator;
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
     DynamicListElement location1 = DynamicListElement.builder()
-        .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+        .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
 
     @Test
     void shouldNotGenerateApplicationDraftDocument() {
@@ -277,7 +277,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         DynamicListElement location1 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
         return CaseData.builder()
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -342,7 +342,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
 
     private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified) {
         DynamicListElement location1 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
         List<Element<GAUnavailabilityDates>> appUnavailabilityDates = new ArrayList<>();
         appUnavailabilityDates.add(element(GAUnavailabilityDates.builder()
                                                  .unavailableTrialDateTo(LocalDate.now().plusDays(2))
@@ -386,7 +386,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
 
     private GeneralApplication getGeneralApplicationWithDeadlineReached(YesOrNo isConsented, YesOrNo isTobeNotified) {
         DynamicListElement location1 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
         List<Element<GAUnavailabilityDates>> appUnavailabilityDates = new ArrayList<>();
         appUnavailabilityDates.add(element(GAUnavailabilityDates.builder()
                                                .unavailableTrialDateTo(LocalDate.now().plusDays(2))

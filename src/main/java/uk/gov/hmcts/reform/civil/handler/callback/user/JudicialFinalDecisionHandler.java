@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
@@ -55,13 +56,14 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     public static final String DATE_HEARD_VALIDATION = "The date entered cannot be in the future";
 
     public static final String DATE_RANGE_NOT_ALLOWED = "The date range in %s should not have a 'from date', that is after the 'date to'";
+    public static final String PAST_DATE_NOT_ALLOWED = "The date in %s may not be before the established date";
     private final GeneralAppLocationRefDataService locationRefDataService;
 
-    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
-            + "any party affected by the order may apply to set aside, vary or stay the order."
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
+            + "any party affected by the order may apply to set aside, vary, or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
-            + "this order was made, you may apply to set aside, vary or stay the order."
+            + "this order was made, you may apply to set aside, vary, or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String ORDER_ISSUED = "# Your order has been issued %n%n ## Case number %n%n # %s";
     private static final String ORDER_1_CLAI = "<br/><p>The order has been sent to: </p>"
@@ -164,7 +166,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .singleDateSelection(AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build())
                                                              .build()).build();
-
+        caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                               .datesToAvoid(NO).build());
         LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
         caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
                                                      .costPaymentDeadLine(localDatePlus14days)
@@ -183,13 +186,33 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
         caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails
                                                                .builder()
+                                                               .hearingLocationList(populateHearingLocation(caseData))
                                                                .alternativeHearingLocation(dynamicLocationList)
-                                                               .build());
+                                                               .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                             .datesToAvoidDates(LocalDate.now().plusDays(7))
+                                                                                             .build()).build());
         caseDataBuilder.assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
+    }
+
+    private DynamicList populateHearingLocation(CaseData caseData) {
+        return DynamicList.builder().listItems(List.of(
+                DynamicListElement.builder()
+                    .code("LOCATION_LIST")
+                    .label(caseData.getLocationName())
+                    .build(),
+                DynamicListElement.builder()
+                    .code("OTHER_LOCATION")
+                    .label("Other location")
+                    .build()))
+            .value(DynamicListElement.builder()
+                       .code("LOCATION_LIST")
+                       .label(caseData.getLocationName())
+                       .build())
+            .build();
     }
 
     private CallbackResponse setFinalDecisionBusinessProcess(CallbackParams callbackParams) {
@@ -223,6 +246,13 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             && caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()
             .isAfter(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo())) {
             errors.add(String.format(DATE_RANGE_NOT_ALLOWED, "Order Made"));
+        }
+
+        if (caseData.getAssistedOrderFurtherHearingDetails() != null
+            && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown())
+            && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates())
+            && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates().isBefore(LocalDate.now())) {
+            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Further Hearing"));
         }
         return  errors;
     }
