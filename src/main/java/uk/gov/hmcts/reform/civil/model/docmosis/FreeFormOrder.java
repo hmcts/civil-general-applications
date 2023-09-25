@@ -15,9 +15,11 @@ public class FreeFormOrder implements MappableObject {
     private final String caseNumber;
     private final String caseName;
     private final String receivedDate;
-    private final String claimantReference;
-    private final String defendantReference;
     private final String freeFormRecitalText;
     private final String freeFormOrderedText;
     private final String freeFormOrderValue;
+    private final String courtName;
+    private final String judgeNameTitle;
+    private final String claimantName;
+    private final String defendantName;
 }
