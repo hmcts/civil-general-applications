@@ -21,16 +21,25 @@ public class AssistedOrderCost {
     private BigDecimal costAmount;
     private final LocalDate costPaymentDeadLine;
     private YesOrNo isPartyCostProtection;
+    private LocalDate assistedOrderCostsFirstDropdownDate;
+    private LocalDate assistedOrderAssessmentThirdDropdownDate;
+    private YesOrNo makeAnOrderForCostsYesOrNo;
 
     @JsonCreator
     AssistedOrderCost(@JsonProperty("costAmount") BigDecimal costAmount,
                                @JsonProperty("costPaymentDeadLine") LocalDate costPaymentDeadLine,
-                               @JsonProperty("isPartyCostProtection") YesOrNo isPartyCostProtection
+                               @JsonProperty("isPartyCostProtection") YesOrNo isPartyCostProtection,
+                      @JsonProperty("assistedOrderCostsFirstDropdownDate") LocalDate assistedOrderCostsFirstDropdownDate,
+                      @JsonProperty("assistedOrderAssessmentThirdDropdownDate") LocalDate assistedOrderAssessmentThirdDropdownDate,
+                      @JsonProperty("makeAnOrderForCostsQOCSYesOrNo") YesOrNo makeAnOrderForCostsYesOrNo
     ) {
 
         this.costAmount = costAmount;
         this.costPaymentDeadLine = costPaymentDeadLine;
         this.isPartyCostProtection = isPartyCostProtection;
+        this.makeAnOrderForCostsYesOrNo = makeAnOrderForCostsYesOrNo;
+        this.assistedOrderCostsFirstDropdownDate = assistedOrderCostsFirstDropdownDate;
+        this.assistedOrderAssessmentThirdDropdownDate = assistedOrderAssessmentThirdDropdownDate;
     }
 
     private BigDecimal toPounds() {

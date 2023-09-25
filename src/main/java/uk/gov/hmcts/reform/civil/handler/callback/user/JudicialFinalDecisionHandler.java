@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -96,7 +97,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     }
 
     private String getBody(final CaseData caseData) {
-        if (Objects.nonNull(caseData.getDefendant2PartyName())
+        if (nonNull(caseData.getDefendant2PartyName())
                 && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                 || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))) {
             return format(ORDER_1_CLAI, caseData.getClaimant1PartyName())
@@ -169,18 +170,11 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
                                                                .datesToAvoid(NO).build());
         LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
-        caseDataBuilder.claimantCostStandardBase(AssistedOrderCost.builder()
-                                                     .costPaymentDeadLine(localDatePlus14days)
-                                                     .build());
-        caseDataBuilder.claimantCostSummarilyBase(AssistedOrderCost.builder()
-                                                      .costPaymentDeadLine(localDatePlus14days)
-                                                      .build());
-        caseDataBuilder.defendantCostStandardBase(AssistedOrderCost.builder()
-                                                      .costPaymentDeadLine(localDatePlus14days)
-                                                      .build());
-        caseDataBuilder.defendantCostSummarilyBase(AssistedOrderCost.builder()
-                                                       .costPaymentDeadLine(localDatePlus14days)
-                                                       .build());
+        caseDataBuilder.assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                             .assistedOrderAssessmentThirdDropdownDate(localDatePlus14days)
+                                                             .assistedOrderCostsFirstDropdownDate(localDatePlus14days)
+                                                             .makeAnOrderForCostsYesOrNo(NO).build())
+            .publicFundingCostsProtection(NO);
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
@@ -219,7 +213,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();
-        if (Objects.nonNull(caseData.getGaFinalOrderDocPreview())) {
+        if (nonNull(caseData.getGaFinalOrderDocPreview())) {
             caseDataBuilder.gaFinalOrderDocPreview(null);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -231,18 +225,18 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         List<String> errors = new ArrayList<>();
         if (caseData.getAssistedOrderMadeSelection() != null
             && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())
             && caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate().isAfter(LocalDate.now())) {
             errors.add(DATE_HEARD_VALIDATION);
         } else if (caseData.getAssistedOrderMadeSelection() != null
             && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
             && (caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom().isAfter(LocalDate.now())
             || caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo().isAfter(LocalDate.now()))) {
             errors.add(DATE_HEARD_VALIDATION);
         } else if (caseData.getAssistedOrderMadeSelection() != null
             && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-            && Objects.nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection())
             && caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()
             .isAfter(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo())) {
             errors.add(String.format(DATE_RANGE_NOT_ALLOWED, "Order Made"));
@@ -253,6 +247,13 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             && Objects.nonNull(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates())
             && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates().isBefore(LocalDate.now())) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Further Hearing"));
+        }
+        if (nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && ((nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownDate())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownDate().isBefore(LocalDate.now()))
+            || (nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate().isBefore(LocalDate.now())))) {
+            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Make an order for detailed/summary costs"));
         }
         return  errors;
     }
@@ -266,7 +267,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         return format("%s v %s%s",
                       caseData.getClaimant1PartyName(),
                       caseData.getDefendant1PartyName(),
-                      Objects.nonNull(caseData.getDefendant2PartyName())
+                      nonNull(caseData.getDefendant2PartyName())
                         && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                             || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                         ? ", " + caseData.getDefendant2PartyName() : "");
