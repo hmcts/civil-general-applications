@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
@@ -24,6 +25,9 @@ public class AssistedOrderFurtherHearingDetails {
     private DynamicList alternativeHearingLocation;
     private GAJudicialHearingType hearingMethods;
     private String hearingNotesText;
+    private DynamicList hearingLocationList;
+    private AssistedOrderDateHeard datesToAvoidDateDropdown;
+    private YesOrNo datesToAvoid;
 
     @JsonCreator
     AssistedOrderFurtherHearingDetails(@JsonProperty("listFromDate") LocalDate listFromDate,
@@ -33,7 +37,10 @@ public class AssistedOrderFurtherHearingDetails {
                                        @JsonProperty("alternativeHearingLocation")
                                        DynamicList alternativeHearingLocation,
                                        @JsonProperty("hearingMethods") GAJudicialHearingType hearingMethods,
-                                       @JsonProperty("hearingNotesText") String hearingNotesText) {
+                                       @JsonProperty("hearingNotesText") String hearingNotesText,
+                                       @JsonProperty("hearingLocationList") DynamicList hearingLocationList,
+                                       @JsonProperty("datesToAvoidDateDropdown") AssistedOrderDateHeard datesToAvoidDateDropdown,
+                                       @JsonProperty("datesToAvoidYesNo") YesOrNo datesToAvoid) {
         this.listFromDate = listFromDate;
         this.listToDate = listToDate;
         this.lengthOfNewHearing = lengthOfNewHearing;
@@ -41,5 +48,8 @@ public class AssistedOrderFurtherHearingDetails {
         this.alternativeHearingLocation = alternativeHearingLocation;
         this.hearingMethods = hearingMethods;
         this.hearingNotesText = hearingNotesText;
+        this.datesToAvoidDateDropdown = datesToAvoidDateDropdown;
+        this.hearingLocationList = hearingLocationList;
+        this.datesToAvoid = datesToAvoid;
     }
 }

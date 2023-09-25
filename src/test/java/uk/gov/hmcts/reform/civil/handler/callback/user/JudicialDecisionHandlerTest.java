@@ -184,11 +184,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     public static final String MAKE_DECISION_APPROVE_BY_DATE_IN_PAST = "The date entered cannot be in the past.";
 
-    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative "
-        + "any party affected by the order may apply to set aside, vary or stay the order."
+    private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
+        + "any party affected by the order may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
-        + "this order was made, you may apply to set aside, vary or stay the order."
+        + "this order was made, you may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
 
     @Test
@@ -3677,13 +3677,13 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     public DynamicList getLocationDynamicList() {
         DynamicListElement location1 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("ABCD - RG0 0AL").build();
+            .code(String.valueOf(UUID.randomUUID())).label("ABCD - RG0 0AL").build();
         DynamicListElement location2 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("PQRS - GU0 0EE").build();
+            .code(String.valueOf(UUID.randomUUID())).label("PQRS - GU0 0EE").build();
         DynamicListElement location3 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("WXYZ - EW0 0HE").build();
+            .code(String.valueOf(UUID.randomUUID())).label("WXYZ - EW0 0HE").build();
         DynamicListElement location4 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("LMNO - NE0 0BH").build();
+            .code(String.valueOf(UUID.randomUUID())).label("LMNO - NE0 0BH").build();
 
         return DynamicList.builder()
             .listItems(List.of(location1, location2, location3, location4))
