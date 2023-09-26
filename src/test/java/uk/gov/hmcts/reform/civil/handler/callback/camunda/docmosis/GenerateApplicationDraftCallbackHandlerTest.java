@@ -256,7 +256,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified,
                                                      YesOrNo isUrgent) {
         DynamicListElement location1 = DynamicListElement.builder()
-            .code(UUID.randomUUID()).label("Site Name 2 - Address2 - 28000").build();
+            .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
         return GeneralApplication.builder()
             .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())

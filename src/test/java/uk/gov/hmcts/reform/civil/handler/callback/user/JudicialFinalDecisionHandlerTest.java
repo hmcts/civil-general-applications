@@ -17,7 +17,9 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -87,7 +89,12 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
         // Given
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-                .build().toBuilder().generalAppDetailsOfOrder("order test").build();
+                .build().toBuilder().generalAppDetailsOfOrder("order test")
+            .locationName("County Court Money Centre")
+            .caseManagementLocation(GACaseLocation.builder()
+                                        .baseLocation("Ccmcc")
+                                        .region("4")
+                                        .siteName("County Court Money Centre").build()).build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-finalOrder-form-values");
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -114,7 +121,11 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                           .build());
         when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-            .build().toBuilder().generalAppDetailsOfOrder("order test").build();
+            .build().toBuilder().locationName("County Court Money Centre")
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("Ccmcc")
+                                                            .region("4")
+                                                            .siteName("County Court Money Centre").build())
+            .generalAppDetailsOfOrder("order test").build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-finalOrder-form-values");
         // When
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -140,7 +151,12 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
             .get("alternativeHearingLocation")).get("list_items")).get(0))
                        .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
-
+        assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
+            .get("hearingLocationList")).get("list_items")).get(0))
+                       .get("label")).isEqualTo("County Court Money Centre");
+        assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
+            .get("hearingLocationList")).get("list_items")).get(1))
+                       .get("label")).isEqualTo("Other location");
         assertThat(response.getData()).extracting("assistedOrderOrderedThatText")
             .isEqualTo(ORDERED_TEXT);
 
@@ -263,11 +279,57 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .assistedOrderMadeSelection(YesOrNo.YES)
             .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().dateRangeSelection(
                 AssistedOrderDateHeard.builder().dateRangeFrom(LocalDate.now())
-                    .dateRangeTo(LocalDate.now().plusDays(1)).build()).build()).build();
+                    .dateRangeTo(LocalDate.now().plusDays(2)).build()).build()).build();
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getErrors()).isNotNull();
+    }
+
+    @Test
+    void shouldShowError_When_DatesToAvoidIsBeforeTodayDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().minusDays(2))
+                                                                                  .build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("The date in Further Hearing may not be before the established date")).isTrue();
+    }
+
+    @Test
+    void shouldNotShowError_When_DatesToAvoidIsAfterTodayDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(YesOrNo.NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().plusDays(2))
+                                                                                  .build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isEmpty();
     }
 
     @Test
