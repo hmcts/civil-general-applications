@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
-import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 
 @Setter
