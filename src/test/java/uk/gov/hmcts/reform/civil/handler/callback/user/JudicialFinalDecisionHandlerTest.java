@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoiceList;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
@@ -141,10 +144,17 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .isNotNull();
 
         LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
+        LocalDate localDatePlus21days = LocalDate.now().plusDays(21);
         assertThat(response.getData()).extracting("assistedOrderMakeAnOrderForCosts").extracting("assistedOrderAssessmentThirdDropdownDate")
             .isEqualTo(localDatePlus14days.toString());
         assertThat(response.getData()).extracting("assistedOrderMakeAnOrderForCosts").extracting("assistedOrderCostsFirstDropdownDate")
             .isEqualTo(localDatePlus14days.toString());
+        assertThat(response.getData()).extracting("assistedOrderMakeAnOrderForCosts").extracting("assistedOrderCostsFirstDropdownDate")
+            .isEqualTo(localDatePlus14days.toString());
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdown").extracting("assistedOrderAppealFirstOption")
+            .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdown").extracting("assistedOrderAppealSecondOption")
+            .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
 
         assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
             .get("alternativeHearingLocation")).get("list_items")).get(0))
@@ -444,6 +454,108 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getErrors().contains("The date in Make an order for detailed/summary costs may not be before the established date")).isTrue();
+    }
+
+    @Test
+    void shouldShowError_When_assistedOrderAppealFirstDropdownDateIsPreviousDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().plusDays(2))
+                                                                                  .build()).build())
+            .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                  .assistedOrderAssessmentThirdDropdownDate(LocalDate.now().plusDays(2))
+                                                  .assistedOrderCostsFirstDropdownDate(LocalDate.now().plusDays(2))
+                                                  .makeAnOrderForCostsYesOrNo(NO).build()
+
+            )
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+                                                                                                   .appealChoiceOptionA(
+                                                                                                       AppealTypeChoiceList.builder()
+                                                                                                           .appealGrantedRefusedDate(LocalDate.now().minusDays(2))
+                                                                                                           .build()).build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("The date in Appeal notice date may not be before the established date")).isTrue();
+    }
+
+    @Test
+    void shouldShowError_When_assistedOrderAppealSecondDropdownDateIsPreviousDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().plusDays(2))
+                                                                                  .build()).build())
+            .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                  .assistedOrderAssessmentThirdDropdownDate(LocalDate.now().plusDays(2))
+                                                  .assistedOrderCostsFirstDropdownDate(LocalDate.now().plusDays(2))
+                                                  .makeAnOrderForCostsYesOrNo(NO).build()
+
+            )
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+                                                                                                   .appealChoiceOptionB(
+                                                                                                       AppealTypeChoiceList.builder()
+                                                                                                           .appealGrantedRefusedDate(LocalDate.now().minusDays(2))
+                                                                                                           .build()).build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("The date in Appeal notice date may not be before the established date")).isTrue();
+    }
+
+    @Test
+    void shouldNotShowError_When_assistedOrderAppealSecondDropdownDateIsAfterDate() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().plusDays(2))
+                                                                                  .build()).build())
+            .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                  .assistedOrderAssessmentThirdDropdownDate(LocalDate.now().plusDays(2))
+                                                  .assistedOrderCostsFirstDropdownDate(LocalDate.now().plusDays(2))
+                                                  .makeAnOrderForCostsYesOrNo(NO).build()
+
+            )
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+                                                                                                   .appealChoiceOptionB(
+                                                                                                       AppealTypeChoiceList.builder()
+                                                                                                           .appealGrantedRefusedDate(LocalDate.now().plusDays(2))
+                                                                                                           .build()).build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isEmpty();
     }
 
     @Test

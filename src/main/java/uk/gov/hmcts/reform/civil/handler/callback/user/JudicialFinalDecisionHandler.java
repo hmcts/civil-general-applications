@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoiceList;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
@@ -176,6 +179,14 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                              .makeAnOrderForCostsYesOrNo(NO).build())
             .publicFundingCostsProtection(NO);
 
+        caseDataBuilder.assistedOrderAppealDetails(AssistedOrderAppealDetails.builder()
+                                                       .appealTypeChoices(AppealTypeChoices.builder()
+                                                                              .appealChoiceOptionA(AppealTypeChoiceList.builder()
+                                                                                                       .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
+                                                                              .appealChoiceOptionB(AppealTypeChoiceList.builder()
+                                                                                                       .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
+                                                                              .build()).build());
+
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
         caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails
@@ -254,6 +265,15 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             || (nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate())
             && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate().isBefore(LocalDate.now())))) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Make an order for detailed/summary costs"));
+        }
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+            && ((nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))
+            || (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now())))) {
+            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
         }
         return  errors;
     }

@@ -689,22 +689,6 @@ class AssistedOrderFormGeneratorTest {
             assertThat(assistedOrderString).contains("The application for permission to");
         }
 
-        @Test
-        void shouldReturnNull_When_AppealDetails_WithReasonText() {
-            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
-            recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
-            CaseData caseData = CaseData.builder()
-                .assistedOrderAppealToggle(recitalsOrderShowOption)
-                .assistedOrderAppealDetails(AssistedOrderAppealDetails
-                                                .builder()
-                                                .permissionToAppeal(PermissionToAppealTypes.GRANTED)
-                                                .appealOrigin(AppealOriginTypes.CLAIMANT)
-                                                .reasonsText(TEST_TEXT)
-                                                .build())
-                .build();
-            String assistedOrderString = generator.getPermissionToAppealText(caseData);
-            assertThat(assistedOrderString).contains(TEST_TEXT);
-        }
     }
 
     @Nested

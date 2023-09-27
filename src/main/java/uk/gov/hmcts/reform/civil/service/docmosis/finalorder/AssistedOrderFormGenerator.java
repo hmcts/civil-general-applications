@@ -382,14 +382,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                         .getAppealOrigin().getDisplayedValue(),
                     caseData.getAssistedOrderAppealDetails()
                         .getPermissionToAppeal().getDisplayedValue()));
-
-                if (nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())) {
-                    permissionToAppealBuilder.append(LINE_BREAKER);
-                    permissionToAppealBuilder.append(String.format(
-                        PERMISSION_TO_APPEAL_REASONS_TEXT,
-                        caseData.getAssistedOrderAppealDetails()
-                                                                       .getReasonsText()));
-                }
             }
             return permissionToAppealBuilder.toString();
         }

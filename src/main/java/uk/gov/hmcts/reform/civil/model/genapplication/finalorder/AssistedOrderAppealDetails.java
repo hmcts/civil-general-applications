@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 
 @Setter
@@ -16,18 +17,18 @@ public class AssistedOrderAppealDetails {
     private final AppealOriginTypes appealOrigin;
     private final String otherOriginText;
     private final PermissionToAppealTypes permissionToAppeal;
-    private final String reasonsText;
+    private final AppealTypeChoices appealTypeChoices;
 
     @JsonCreator
     AssistedOrderAppealDetails(@JsonProperty("appealOrigin") AppealOriginTypes appealOrigin,
                                @JsonProperty("otherOriginText") String otherOriginText,
                                @JsonProperty("permissionToAppeal") PermissionToAppealTypes permissionToAppeal,
-                               @JsonProperty("reasonsText") String reasonsText
+                               @JsonProperty("assistedOrderAppealDropdown") AppealTypeChoices appealTypeChoices
                                ) {
 
         this.appealOrigin = appealOrigin;
         this.otherOriginText = otherOriginText;
         this.permissionToAppeal = permissionToAppeal;
-        this.reasonsText = reasonsText;
+        this.appealTypeChoices = appealTypeChoices;
     }
 }
