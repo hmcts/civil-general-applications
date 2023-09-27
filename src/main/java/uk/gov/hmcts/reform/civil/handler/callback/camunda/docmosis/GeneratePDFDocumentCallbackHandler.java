@@ -244,7 +244,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenConcurrentRepresentationsBy() != null
-                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS)
                 ;
     }
@@ -253,8 +253,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenSequentailRepresentationsBy() != null
-                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                .getSequentialApplicantMustRespondWithin() != null&& caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getSequentialApplicantMustRespondWithin() != null
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS);
     }
 
