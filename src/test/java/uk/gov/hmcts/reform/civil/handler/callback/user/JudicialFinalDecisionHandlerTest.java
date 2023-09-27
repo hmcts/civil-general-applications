@@ -559,6 +559,37 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldNotShowError_When_assistedOrderAppealChoicesAreEmpty() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .datesToAvoid(YesOrNo.YES)
+                                                    .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
+                                                                                  .datesToAvoidDates(LocalDate.now().plusDays(2))
+                                                                                  .build()).build())
+            .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                  .assistedOrderAssessmentThirdDropdownDate(LocalDate.now().plusDays(2))
+                                                  .assistedOrderCostsFirstDropdownDate(LocalDate.now().plusDays(2))
+                                                  .makeAnOrderForCostsYesOrNo(NO).build()
+
+            )
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+                                                                                                  .build()).build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
     void shouldShowError_When_OrderDateIsDateRange_FromIsAfterDateTo() {
 
         when(assistedOrderFormGenerator.generate(any(), any()))
