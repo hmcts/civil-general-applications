@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
-import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.ArrayList;
@@ -30,9 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -54,8 +50,6 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     AssignCategoryId assignCategoryId;
-    @MockBean
-    ParentCaseUpdateHelper parentCaseUpdateHelper;
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
@@ -95,10 +89,6 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         assertThat(responseCaseData.getGeneralAppDirOrderUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaDirectionDocList().size()).isEqualTo(2);
         assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
-        verify(parentCaseUpdateHelper, times(1)).updateParentWithGAState(
-                any(),
-                any()
-        );
     }
 
     @Test

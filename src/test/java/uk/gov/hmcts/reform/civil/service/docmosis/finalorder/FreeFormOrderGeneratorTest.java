@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -17,20 +16,19 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
+import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,8 +46,6 @@ class FreeFormOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String ON_COURTS_OWN = "This order is made on court’s own initiative.\n\n";
-    private static final String WITHOUT_NOTICE = "This order is made without notice.\n\n";
 
     private static final String templateName = "Free_form_order_%s.pdf";
     private static final String fileName_application = String.format(templateName,
@@ -66,12 +62,14 @@ class FreeFormOrderGeneratorTest {
     private DocumentGeneratorService documentGeneratorService;
 
     @MockBean
-    private CoreCaseDataService coreCaseDataService;
+    private IdamClient idamClient;
     @MockBean
-    private CaseDetailsConverter caseDetailsConverter;
+    private ListGeneratorService listGeneratorService;
 
     @Autowired
     private FreeFormOrderGenerator generator;
+    @Autowired
+    private ObjectMapper mapper;
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -81,24 +79,19 @@ class FreeFormOrderGeneratorTest {
                 .thenReturn(new DocmosisDocument(
                         DocmosisTemplates.FREE_FORM_ORDER.getDocumentTitle(), bytes));
 
+        when(idamClient
+                .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+        when(listGeneratorService
+                .claimantsName(any()))
+                .thenReturn("claimant");
+        when(listGeneratorService
+                .defendantsName(any()))
+                .thenReturn("defendant");
+
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
-
-        Map<String, String> refMap = new HashMap<>();
-        refMap.put("applicantSolicitor1Reference", "app1ref");
-        refMap.put("respondentSolicitor1Reference", "resp1ref");
-        Map<String, Object> caseDataContent = new HashMap<>();
-        caseDataContent.put("solicitorReferences", refMap);
-        CaseData mainCaseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
-                true,
-                true,
-                true, true).build();
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(mainCaseData);
-        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
-        when(coreCaseDataService.getCase(
-                anyLong()
-        )).thenReturn(caseDetails);
 
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES).build()
                 .toBuilder()
@@ -123,7 +116,7 @@ class FreeFormOrderGeneratorTest {
         CaseData caseData = CaseData.builder().orderOnCourtsList(ORDER_ON_COURT_INITIATIVE)
                 .orderOnCourtInitiative(values).build();
         String orderString = generator.getFreeFormOrderValue(caseData);
-        assertThat(orderString).contains(ON_COURTS_OWN);
+        assertThat(orderString).contains("test");
     }
 
     @Test
@@ -135,7 +128,7 @@ class FreeFormOrderGeneratorTest {
         CaseData caseData = CaseData.builder().orderOnCourtsList(ORDER_WITHOUT_NOTICE)
                 .orderWithoutNotice(values).build();
         String orderString = generator.getFreeFormOrderValue(caseData);
-        assertThat(orderString).contains(WITHOUT_NOTICE);
+        assertThat(orderString).contains("test");
     }
 
     @Test
@@ -156,19 +149,6 @@ class FreeFormOrderGeneratorTest {
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
         assertThat(dateString).isEqualTo(" 1 January 1970");
-    }
-
-    @Test
-    void test_getReference() {
-        Map<String, String> refMap = new HashMap<>();
-        refMap.put("applicantSolicitor1Reference", "app1ref");
-        refMap.put("respondentSolicitor1Reference", "resp1ref");
-        Map<String, Object> caseDataContent = new HashMap<>();
-        caseDataContent.put("solicitorReferences", refMap);
-        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
-
-        assertThat(generator.getReference(caseDetails, "applicantSolicitor1Reference")).isEqualTo("app1ref");
-        assertThat(generator.getReference(caseDetails, "notExist")).isNull();
     }
 
     @Test

@@ -502,6 +502,30 @@ public class CaseDataBuilder {
             .build();
     }
 
+    public CaseData buildCaseDateBaseOnGeneralApplicationByState(GeneralApplication application, CaseState state) {
+        return CaseData.builder()
+            .ccdState(state)
+            .generalAppType(application.getGeneralAppType())
+            .caseLink(application.getCaseLink())
+            .generalAppRespondentAgreement(application.getGeneralAppRespondentAgreement())
+            .generalAppInformOtherParty(application.getGeneralAppInformOtherParty())
+            .generalAppPBADetails(application.getGeneralAppPBADetails())
+            .generalAppDetailsOfOrder(application.getGeneralAppDetailsOfOrder())
+            .generalAppReasonsOfOrder(application.getGeneralAppReasonsOfOrder())
+            .generalAppNotificationDeadlineDate(application.getGeneralAppDateDeadline())
+            .generalAppUrgencyRequirement(application.getGeneralAppUrgencyRequirement())
+            .generalAppStatementOfTruth(application.getGeneralAppStatementOfTruth())
+            .generalAppHearingDetails(application.getGeneralAppHearingDetails())
+            .generalAppEvidenceDocument(application.getGeneralAppEvidenceDocument())
+            .isMultiParty(application.getIsMultiParty())
+            .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
+            .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
+            .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
+            .isCcmccLocation(application.getIsCcmccLocation())
+            .caseManagementLocation(application.getCaseManagementLocation())
+            .build();
+    }
+
     public CaseData buildCaseDateBaseOnGaForCollection(GeneralApplication application) {
         return CaseData.builder()
             .ccdState(AWAITING_APPLICATION_PAYMENT)
@@ -1024,13 +1048,13 @@ public class CaseDataBuilder {
 
     public DynamicList getLocationDynamicList() {
         DynamicListElement location1 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("ABCD - RG0 0AL").build();
+                .code(String.valueOf(UUID.randomUUID())).label("ABCD - RG0 0AL").build();
         DynamicListElement location2 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("PQRS - GU0 0EE").build();
+                .code(String.valueOf(UUID.randomUUID())).label("PQRS - GU0 0EE").build();
         DynamicListElement location3 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("WXYZ - EW0 0HE").build();
+                .code(String.valueOf(UUID.randomUUID())).label("WXYZ - EW0 0HE").build();
         DynamicListElement location4 = DynamicListElement.builder()
-                .code(UUID.randomUUID()).label("LMNO - NE0 0BH").build();
+                .code(String.valueOf(UUID.randomUUID())).label("LMNO - NE0 0BH").build();
 
         return DynamicList.builder()
                 .listItems(List.of(location1, location2, location3, location4))

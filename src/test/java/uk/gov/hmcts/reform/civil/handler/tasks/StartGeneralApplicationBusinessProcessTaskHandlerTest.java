@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -99,6 +100,29 @@ class StartGeneralApplicationBusinessProcessTaskHandlerTest {
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
         StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
 
+        when(coreCaseDataService.startUpdate(CASE_ID, START_GA_BUSINESS_PROCESS))
+            .thenReturn(startEventResponse);
+        when(taskHandlerHelper.gaCaseDataContent(any(), any()))
+            .thenReturn(content(startEventResponse, businessProcess));
+        when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
+
+        handler.execute(mockTask, externalTaskService);
+
+        verify(coreCaseDataService).startUpdate(CASE_ID, START_GA_BUSINESS_PROCESS);
+        verify(coreCaseDataService).submitGaUpdate(CASE_ID, content(startEventResponse, businessProcess.start()));
+        verify(externalTaskService).complete(mockTask, variables);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = BusinessProcessStatus.class, names = {"READY", "DISPATCHED"})
+    void shouldStartBusinessProcess_whenValidBusinessProcessStatus_whenCaseLinkIsNotNull(BusinessProcessStatus status) {
+        BusinessProcess businessProcess = BusinessProcess.builder().status(status).build();
+        CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+            .businessProcess(businessProcess).build();
+        CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+        variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
         when(coreCaseDataService.startUpdate(CASE_ID, START_GA_BUSINESS_PROCESS))
             .thenReturn(startEventResponse);
         when(taskHandlerHelper.gaCaseDataContent(any(), any()))
