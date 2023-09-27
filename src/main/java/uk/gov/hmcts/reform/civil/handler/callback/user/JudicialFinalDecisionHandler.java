@@ -275,7 +275,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         if (nonNull(caseData.getAssistedOrderAppealDetails())
             && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
             && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB()))
-            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))) {
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
         }
         return  errors;
