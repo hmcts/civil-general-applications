@@ -28,11 +28,12 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 @RequiredArgsConstructor
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
-    private static final String CONFIRMATION_BODY = "<br/> <p> Your application fee of £%s"
-        + " is now due for payment. Your application will not be reviewed by the"
-        + " court until this fee has been paid."
-        + "%n%n To pay this fee, you will need to open your application from the"
-        + " Applications tab of this case listing."
+    private static final String CONFIRMATION_BODY = "<br/>"
+        + "<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+        + " is now due for payment. Your application will not be processed further"
+        + " until this fee is paid.</p>"
+        + "%n%n To pay this fee, click the link below, or else open your application from the"
+        + " Applications tab of this case listing and then click on the service request tab."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
@@ -71,7 +72,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         }
 
         return SubmittedCallbackResponse.builder()
-            .confirmationHeader("# You have made an application")
+            .confirmationHeader("# You have submitted an application")
             .confirmationBody(body)
             .build();
     }
