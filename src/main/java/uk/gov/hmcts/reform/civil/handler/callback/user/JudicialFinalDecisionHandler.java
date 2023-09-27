@@ -266,19 +266,20 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate().isBefore(LocalDate.now())))) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Make an order for detailed/summary costs"));
         }
-        if (nonNull(caseData.getAssistedOrderAppealDetails())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA()))
-            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))) {
-            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
-        }
-        if (nonNull(caseData.getAssistedOrderAppealDetails())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB()))
-            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))) {
-            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
-        }
+        validateAssertedOrderDatesForAppeal(caseData, errors);
         return  errors;
+    }
+
+    private void validateAssertedOrderDatesForAppeal(CaseData caseData, List<String> errors) {
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+            && ((nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))
+            || (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now())))) {
+            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
+        }
     }
 
     @Override
