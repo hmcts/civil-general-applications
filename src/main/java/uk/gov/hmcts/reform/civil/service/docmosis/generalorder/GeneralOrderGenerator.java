@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,13 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
@@ -36,10 +40,18 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
+    private final IdamClient idamClient;
+    private final ObjectMapper mapper;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        String judgeNameTitle = userDetails.getFullName();
+
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
+        Map<String, Object> map = templateData.toMap(mapper);
+        map.put("judgeNameTitle", judgeNameTitle);
+        templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
@@ -66,21 +78,18 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
         String defendantName = listGeneratorService.defendantsName(caseData);
 
-        String collect = listGeneratorService.applicationType(caseData);
-
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .applicationType(collect)
                 .claimantName(claimantName)
+                .courtName(caseData.getLocationName())
                 .defendantName(defendantName)
-                .applicationDate(caseData.getCreatedDate().toLocalDate())
                 .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .submittedOn(getFormattedDate(new Date()))
+                .reasonAvailable(reasonAvailable(caseData))
                 .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
-                .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData))
-                .locationName(caseData.getLocationName());
+                .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
     }
@@ -91,7 +100,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
             return "";
         }
         return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
-            ? "Reasons for decision: \n" + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
+            ? caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
             : "";
     }
 
@@ -124,5 +133,13 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText())
                 && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0))
                 && judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0).equals(FinalOrderShowToggle.SHOW);
+    }
+
+    private YesOrNo reasonAvailable(CaseData caseData) {
+        if (Objects.nonNull(caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision())
+            && caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision().equals(YesOrNo.NO)) {
+            return YesOrNo.NO;
+        }
+        return YesOrNo.YES;
     }
 }

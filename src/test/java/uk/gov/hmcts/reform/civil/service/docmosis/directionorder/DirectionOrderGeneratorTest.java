@@ -53,7 +53,6 @@ class DirectionOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -171,7 +170,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                            caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -221,7 +220,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                            caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
