@@ -54,15 +54,10 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
         String claimantName = listGeneratorService.claimantsName(caseData);
-
         String defendantName = listGeneratorService.defendantsName(caseData);
-
-        String collect = listGeneratorService.applicationType(caseData);
-
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .applicationType(collect)
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
