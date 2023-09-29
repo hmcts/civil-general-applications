@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -10,10 +11,8 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -26,11 +25,12 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +51,6 @@ class DismissalOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -61,6 +60,10 @@ class DismissalOrderGeneratorTest {
     private ListGeneratorService listGeneratorService;
     @Autowired
     private DismissalOrderGenerator dismissalOrderGenerator;
+    @Autowired
+    private ObjectMapper mapper;
+    @MockBean
+    private IdamClient idamClient;
 
     @Test
     void shouldGenerateDismissalOrderDocument() {
@@ -69,7 +72,10 @@ class DismissalOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DISMISSAL_ORDER)))
             .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
 
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -91,10 +97,13 @@ class DismissalOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
                 .build();
 
-            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(caseData);
 
@@ -108,9 +117,6 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
@@ -137,10 +143,12 @@ class DismissalOrderGeneratorTest {
                                                            .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -154,9 +162,6 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
@@ -164,7 +169,7 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                    REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
+                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
         }
 
         @Test
@@ -183,10 +188,12 @@ class DismissalOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -200,15 +207,12 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getApplicantName(), caseData.getApplicantPartyName()),
-                () -> assertEquals(templateData.getApplicationDate(), caseData.getCreatedDate().toLocalDate()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
+                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
         }
 
         @Test
@@ -227,10 +231,12 @@ class DismissalOrderGeneratorTest {
                     .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                     .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -255,10 +261,5 @@ class DismissalOrderGeneratorTest {
             return String.join(", ", defendatsName);
         }
 
-        private String getApplicationType(CaseData caseData) {
-            List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-            return types.stream()
-                .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
-        }
     }
 }
