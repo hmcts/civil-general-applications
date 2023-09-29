@@ -186,7 +186,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         """;
 
     private static final String JUDICIAL_RECITAL_TEXT = """
-        The Judge considered the%sapplication of %s dated %s
+        The Judge considered the%sapplication of the %s dated %s
 
         %s""";
 
