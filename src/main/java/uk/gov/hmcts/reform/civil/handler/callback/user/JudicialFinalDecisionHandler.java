@@ -180,12 +180,19 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             .publicFundingCostsProtection(NO);
 
         caseDataBuilder.assistedOrderAppealDetails(AssistedOrderAppealDetails.builder()
-                                                       .appealTypeChoices(AppealTypeChoices.builder()
+
+                                                       .appealTypeChoicesForGranted(AppealTypeChoices.builder()
                                                                               .appealChoiceOptionA(AppealTypeChoiceList.builder()
                                                                                                        .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
                                                                               .appealChoiceOptionB(AppealTypeChoiceList.builder()
                                                                                                        .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
-                                                                              .build()).build());
+                                                                              .build())
+                                                       .appealTypeChoicesForRefused(AppealTypeChoices.builder()
+                                                                                        .appealChoiceOptionA(AppealTypeChoiceList.builder()
+                                                                                                                 .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
+                                                                                        .appealChoiceOptionB(AppealTypeChoiceList.builder()
+                                                                                                                 .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
+                                                                                        .build()).build());
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
@@ -272,12 +279,21 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private void validateAssertedOrderDatesForAppeal(CaseData caseData, List<String> errors) {
         if (nonNull(caseData.getAssistedOrderAppealDetails())
-            && ((nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA()))
-            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))
-            || (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices())
-            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB()))
-            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoices().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now())))) {
+            && ((nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionA()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))
+            || (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionB()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now())))) {
+            errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
+        }
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+            && ((nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused().getAppealChoiceOptionA()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused().getAppealChoiceOptionA().getAppealGrantedRefusedDate().isBefore(LocalDate.now()))
+            || (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused())
+            && (nonNull(caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused().getAppealChoiceOptionB()))
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForRefused().getAppealChoiceOptionB().getAppealGrantedRefusedDate().isBefore(LocalDate.now())))) {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Appeal notice date"));
         }
     }

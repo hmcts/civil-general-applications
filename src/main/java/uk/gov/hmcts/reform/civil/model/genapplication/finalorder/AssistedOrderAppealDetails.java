@@ -16,18 +16,21 @@ public class AssistedOrderAppealDetails {
     private final AppealOriginTypes appealOrigin;
     private final String otherOriginText;
     private final PermissionToAppealTypes permissionToAppeal;
-    private final AppealTypeChoices appealTypeChoices;
+    private final AppealTypeChoices appealTypeChoicesForGranted;
+    private final AppealTypeChoices appealTypeChoicesForRefused;
 
     @JsonCreator
     AssistedOrderAppealDetails(@JsonProperty("appealOrigin") AppealOriginTypes appealOrigin,
                                @JsonProperty("otherOriginText") String otherOriginText,
                                @JsonProperty("permissionToAppeal") PermissionToAppealTypes permissionToAppeal,
-                               @JsonProperty("assistedOrderAppealDropdown") AppealTypeChoices appealTypeChoices
+                               @JsonProperty("assistedOrderAppealDropdownGranted") AppealTypeChoices appealTypeChoicesForGranted,
+                               @JsonProperty("assistedOrderAppealDropdownRefused") AppealTypeChoices appealTypeChoicesForRefused
                                ) {
 
         this.appealOrigin = appealOrigin;
         this.otherOriginText = otherOriginText;
         this.permissionToAppeal = permissionToAppeal;
-        this.appealTypeChoices = appealTypeChoices;
+        this.appealTypeChoicesForGranted = appealTypeChoicesForGranted;
+        this.appealTypeChoicesForRefused = appealTypeChoicesForRefused;
     }
 }

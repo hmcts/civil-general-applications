@@ -151,11 +151,14 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .isEqualTo(localDatePlus14days.toString());
         assertThat(response.getData()).extracting("assistedOrderMakeAnOrderForCosts").extracting("assistedOrderCostsFirstDropdownDate")
             .isEqualTo(localDatePlus14days.toString());
-        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdown").extracting("assistedOrderAppealFirstOption")
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdownGranted").extracting("assistedOrderAppealFirstOption")
             .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
-        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdown").extracting("assistedOrderAppealSecondOption")
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdownGranted").extracting("assistedOrderAppealSecondOption")
             .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
-
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdownRefused").extracting("assistedOrderAppealFirstOption")
+            .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
+        assertThat(response.getData().get("assistedOrderAppealDetails")).extracting("assistedOrderAppealDropdownRefused").extracting("assistedOrderAppealSecondOption")
+            .extracting("assistedOrderAppealDate").isEqualTo(localDatePlus21days.toString());
         assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("assistedOrderFurtherHearingDetails")))
             .get("alternativeHearingLocation")).get("list_items")).get(0))
                        .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
@@ -474,15 +477,17 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
                                                   .assistedOrderAssessmentThirdDropdownDate(LocalDate.now().plusDays(2))
                                                   .assistedOrderCostsFirstDropdownDate(LocalDate.now().plusDays(2))
-                                                  .makeAnOrderForCostsYesOrNo(NO).build()
-
-            )
-            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+                                                  .makeAnOrderForCostsYesOrNo(NO).build())
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoicesForGranted(AppealTypeChoices.builder()
                                                                                                    .appealChoiceOptionA(
                                                                                                        AppealTypeChoiceList.builder()
                                                                                                            .appealGrantedRefusedDate(LocalDate.now().minusDays(2))
-                                                                                                           .build()).build()).build())
-            .build();
+                                                                                                           .build()).build())
+                                            .appealTypeChoicesForRefused(AppealTypeChoices.builder()
+                                                                             .appealChoiceOptionA(
+                                                                                 AppealTypeChoiceList.builder()
+                                                                                     .appealGrantedRefusedDate(LocalDate.now().minusDays(2))
+                                                                                     .build()).build()).build()).build();
 
         CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
 
@@ -511,7 +516,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                   .makeAnOrderForCostsYesOrNo(NO).build()
 
             )
-            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoicesForGranted(AppealTypeChoices.builder()
                                                                                                    .appealChoiceOptionB(
                                                                                                        AppealTypeChoiceList.builder()
                                                                                                            .appealGrantedRefusedDate(LocalDate.now().minusDays(2))
@@ -545,7 +550,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                   .makeAnOrderForCostsYesOrNo(NO).build()
 
             )
-            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoicesForGranted(AppealTypeChoices.builder()
                                                                                                    .appealChoiceOptionB(
                                                                                                        AppealTypeChoiceList.builder()
                                                                                                            .appealGrantedRefusedDate(LocalDate.now().plusDays(2))
@@ -579,7 +584,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                   .makeAnOrderForCostsYesOrNo(NO).build()
 
             )
-            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoices(AppealTypeChoices.builder()
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder().appealTypeChoicesForGranted(AppealTypeChoices.builder()
                                                                                                   .build()).build())
             .build();
 
