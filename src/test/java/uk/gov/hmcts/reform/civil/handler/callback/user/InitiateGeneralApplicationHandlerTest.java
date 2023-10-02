@@ -59,11 +59,12 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     @Value("${civil.response-pack-url}")
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
-    private static final String CONFIRMATION_BODY = "<br/> <p> Your application fee of £%s"
-        + " is now due for payment. Your application will not be reviewed by the"
-        + " court until this fee has been paid."
-        + "%n%n To pay this fee, you will need to open your application from the"
-        + " Applications tab of this case listing."
+    private static final String CONFIRMATION_BODY = "<br/>"
+        + "<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+        + " is now due for payment. Your application will not be processed further"
+        + " until this fee is paid.</p>"
+        + "%n%n To pay this fee, click the link below, or else open your application from the"
+        + " Applications tab of this case listing and then click on the service request tab."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
             + " on this application."
@@ -150,7 +151,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).usingRecursiveComparison().isEqualTo(
                 SubmittedCallbackResponse.builder()
                     .confirmationHeader(
-                        "# You have made an application")
+                        "# You have submitted an application")
                     .confirmationBody(body)
                     .build());
             assertThat(response).isNotNull();
@@ -169,7 +170,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).usingRecursiveComparison().isEqualTo(
                     SubmittedCallbackResponse.builder()
                             .confirmationHeader(
-                                    "# You have made an application")
+                                    "# You have submitted an application")
                             .confirmationBody(CONFIRMATION_BODY_FREE)
                             .build());
             assertThat(response).isNotNull();
