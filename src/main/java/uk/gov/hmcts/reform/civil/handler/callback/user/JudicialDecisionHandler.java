@@ -109,7 +109,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String WITHOUT_NOTICE = " without notice ";
     private static final String DEFENDANT = "defendant";
     private static final String CLAIMANT = "claimant";
-    private static final String PARTIES = "parties";
     private static final String JUDICIAL_MISSING_DATA = "Missing data during submission of judicial decision";
     private static final String NO_SUPPORT = "no support";
 
@@ -187,9 +186,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         """;
 
     private static final String JUDICIAL_RECITAL_TEXT = """
-        The judge considered the%sapplication of %s dated %s
+        The Judge considered the%sapplication of %s dated %s
 
-        And the judge considered the information provided by the %s""";
+        %s""";
 
     private static final String JUDICIAL_RESPONDENT_VULNERABILITY_TEXT = """
 
@@ -378,7 +377,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                 ? CLAIMANT : DEFENDANT,
                         DATE_FORMATTER.format(caseData.getCreatedDate()),
                         (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
-                                == NO ? PARTIES : identifySolicitor(caseData)))).build();
+                                == NO ? "" : "And the Judge considered the information provided by the " + identifySolicitor(caseData)))).build();
 
         return gaJudicialRequestMoreInfoBuilder;
     }
@@ -538,8 +537,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         || YES.equals(caseData.getParentClaimantIsApplicant()))
                         ? CLAIMANT : DEFENDANT,
                 DATE_FORMATTER.format(caseData.getCreatedDate()),
-                (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : identifySolicitor(caseData)
-                )
+                (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                    == NO ? "" : "And the Judge considered the information provided by the "
+                    + identifySolicitor(caseData))
         );
     }
 
@@ -551,8 +551,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         || YES.equals(caseData.getParentClaimantIsApplicant()))
                         ? CLAIMANT : DEFENDANT,
                 DATE_FORMATTER.format(caseData.getCreatedDate()),
-                (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData) == NO ? PARTIES : identifySolicitor(caseData)
-                )
+                (helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)
+                    == NO ? "" : "And the Judge considered the information provided by the "
+                    + identifySolicitor(caseData))
         );
     }
 
