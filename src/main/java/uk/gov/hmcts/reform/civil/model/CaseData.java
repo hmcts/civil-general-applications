@@ -261,10 +261,8 @@ public class CaseData implements MappableObject {
     private final List<FinalOrderShowToggle> assistedOrderRecitals;
     private final AssistedOrderRecitalRecord assistedOrderRecitalsRecorded;
     private final AssistedCostTypesList assistedCostTypes;
-    private final AssistedOrderCost claimantCostStandardBase;
-    private final AssistedOrderCost defendantCostStandardBase;
-    private final AssistedOrderCost claimantCostSummarilyBase;
-    private final AssistedOrderCost defendantCostSummarilyBase;
+    private final AssistedOrderCost assistedOrderMakeAnOrderForCosts;
+    private final YesOrNo publicFundingCostsProtection;
     private final DetailText costReservedDetails;
     private final DetailText bespokeCostDetails;
     private final String assistedOrderOrderedThatText;
