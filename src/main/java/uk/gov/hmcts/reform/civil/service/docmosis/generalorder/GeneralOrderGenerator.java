@@ -2,11 +2,8 @@ package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
-import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -28,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -83,39 +79,10 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .submittedOn(getFormattedDate(new Date()))
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
-                .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
-                .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData));
+                .reasonForDecision(docmosisService.populateJudgeReason(caseData))
+                .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
-    }
-
-    public static String populateJudgeReasonForDecisionText(CaseData caseData) {
-        if (Objects.nonNull(caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision())
-            && caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision().equals(YesOrNo.NO)) {
-            return "";
-        }
-        return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
-            ? caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
-            : "";
-    }
-
-    private String populateJudicialByCourtsInitiative(CaseData caseData) {
-
-        if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative().equals(GAByCourtsInitiativeGAspec
-                                                                                               .OPTION_3)) {
-            return StringUtils.EMPTY;
-        }
-
-        if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative()
-            .equals(GAByCourtsInitiativeGAspec.OPTION_1)) {
-            return caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative() + " "
-                .concat(caseData.getJudicialDecisionMakeOrder().getOrderCourtOwnInitiativeDate()
-                            .format(DATE_FORMATTER));
-        } else {
-            return caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice() + " "
-                .concat(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNoticeDate()
-                            .format(DATE_FORMATTER));
-        }
     }
 
     private DocmosisTemplates getDocmosisTemplate() {

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -50,7 +51,8 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     DirectionOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    DocmosisService.class,
 })
 class DirectionOrderGeneratorTest {
 
@@ -69,6 +71,8 @@ class DirectionOrderGeneratorTest {
     private IdamClient idamClient;
     @Autowired
     private ObjectMapper mapper;
+    @Autowired
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateDirectionOrderDocument() {
