@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -49,7 +50,8 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     GeneralOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    DocmosisService.class
 })
 class GeneralOrderGeneratorTest {
 
@@ -68,6 +70,8 @@ class GeneralOrderGeneratorTest {
     private ObjectMapper mapper;
     @MockBean
     private IdamClient idamClient;
+    @Autowired
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateGeneralOrderDocument() {
@@ -98,9 +102,6 @@ class GeneralOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetGeneralOrderData() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
                 .build();
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -118,6 +119,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
@@ -148,9 +150,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -173,6 +172,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
@@ -199,9 +199,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -220,6 +217,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
@@ -251,9 +249,6 @@ class GeneralOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                     .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 

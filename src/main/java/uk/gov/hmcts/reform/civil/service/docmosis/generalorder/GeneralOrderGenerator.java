@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
-
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -15,13 +14,12 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,17 +38,14 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
-    private final IdamClient idamClient;
     private final ObjectMapper mapper;
+    private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        String judgeNameTitle = userDetails.getFullName();
-
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         Map<String, Object> map = templateData.toMap(mapper);
-        map.put("judgeNameTitle", judgeNameTitle);
+        map.put("judgeNameTitle", docmosisService.getJudgeNameTitle(authorisation));
         templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
@@ -87,7 +82,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .submittedOn(getFormattedDate(new Date()))
-                .reasonAvailable(reasonAvailable(caseData))
+                .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
                 .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData));
 
@@ -133,13 +128,5 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText())
                 && Objects.nonNull(judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0))
                 && judicialDecisionMakeOrder.getShowJudgeRecitalText().get(0).equals(FinalOrderShowToggle.SHOW);
-    }
-
-    private YesOrNo reasonAvailable(CaseData caseData) {
-        if (Objects.nonNull(caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision())
-            && caseData.getJudicialDecisionMakeOrder().getShowReasonForDecision().equals(YesOrNo.NO)) {
-            return YesOrNo.NO;
-        }
-        return YesOrNo.YES;
     }
 }
