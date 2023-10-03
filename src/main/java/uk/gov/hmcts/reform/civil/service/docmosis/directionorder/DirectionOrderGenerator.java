@@ -29,12 +29,11 @@ import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate
 @RequiredArgsConstructor
 public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
-    private final DocumentManagementService documentManagementService;
-    private final DocumentGeneratorService documentGeneratorService;
-    private final ListGeneratorService listGeneratorService;
-    private final ObjectMapper mapper;
-
+    private final ListGeneratorService listGenService;
     private final DocmosisService docmosisService;
+    private final DocumentManagementService documentMangtService;
+    private final ObjectMapper mapper;
+    private final DocumentGeneratorService documentGenService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
@@ -44,16 +43,16 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
         map.put("judgeNameTitle", docmosisService.getJudgeNameTitle(authorisation));
         templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
+        DocmosisTemplates docTemplate = getDocmosisTemplate();
 
-        DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
+        DocmosisDocument docDocument = documentGenService.generateDocmosisDocument(
             templateData,
-            docmosisTemplate
+            docTemplate
         );
 
-        return documentManagementService.uploadDocument(
+        return documentMangtService.uploadDocument(
             authorisation,
-            new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),
+            new PDF(getFileName(docTemplate), docDocument.getBytes(),
                     DocumentType.DIRECTION_ORDER)
         );
     }
@@ -66,9 +65,9 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
+        String claimantName = listGenService.claimantsName(caseData);
 
-        String defendantName = listGeneratorService.defendantsName(caseData);
+        String defendantName = listGenService.defendantsName(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
