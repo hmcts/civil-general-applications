@@ -43,6 +43,8 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_M
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Service
@@ -241,15 +243,20 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private boolean isWrittenRepConOrder(final CaseData caseData) {
         return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                .getWrittenConcurrentRepresentationsBy() != null;
+                .getWrittenConcurrentRepresentationsBy() != null
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS)
+                ;
     }
 
     private boolean isWrittenRepSeqOrder(final CaseData caseData) {
         return caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenSequentailRepresentationsBy() != null
-                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                .getSequentialApplicantMustRespondWithin() != null;
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getSequentialApplicantMustRespondWithin() != null
+                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS);
     }
 
     private boolean isHearingOrder(final CaseData caseData) {

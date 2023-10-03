@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,8 +33,12 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
+    private final IdamClient idamClient;
+    private String judgeNameTitle;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
@@ -64,6 +70,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
