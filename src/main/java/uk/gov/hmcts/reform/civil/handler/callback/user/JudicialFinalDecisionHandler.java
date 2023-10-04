@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
@@ -47,6 +49,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
@@ -193,6 +196,17 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                                                         .appealChoiceOptionB(AppealTypeChoiceList.builder()
                                                                                                                  .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
                                                                                         .build()).build());
+        caseDataBuilder.assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                                        .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                                                             .claimantPartyName(caseData.getClaimant1PartyName())
+                                                                                             .defendantPartyName(caseData.getDefendant1PartyName()).build()).build());
+        if (caseData.getIsMultiParty() == YES) {
+            caseDataBuilder.assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                                            .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                                                                 .claimantPartyName(caseData.getClaimant1PartyName())
+                                                                                                 .defendantPartyName(caseData.getDefendant1PartyName())
+                                                                                                 .defendantTwoPartyName(caseData.getDefendant2PartyName()).build()).build());
+        }
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));

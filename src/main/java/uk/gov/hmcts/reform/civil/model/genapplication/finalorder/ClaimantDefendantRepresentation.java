@@ -19,6 +19,10 @@ public class ClaimantDefendantRepresentation {
     private HeardDefendantNotAttend heardFromDefendantNotAttend;
     private String detailsRepresentationText;
 
+    private String claimantPartyName;
+    private String defendantPartyName;
+    private String defendantTwoPartyName;
+
     @JsonCreator
     ClaimantDefendantRepresentation(@JsonProperty("claimantRepresentation")
                                     ClaimantRepresentationType claimantRepresentation,
@@ -29,12 +33,21 @@ public class ClaimantDefendantRepresentation {
                                     @JsonProperty("heardFromDefendantNotAttend")
                                     HeardDefendantNotAttend heardFromDefendantNotAttend,
                                     @JsonProperty("detailsRepresentationText")
-                                    String detailsRepresentationText) {
+                                    String detailsRepresentationText,
+                                    @JsonProperty("claimantPartyName")
+                                    String claimantPartyName,
+                                    @JsonProperty("defendantOnePartyName")
+                                    String defendantPartyName,
+                                    @JsonProperty("defendantTwoPartyName")
+                                    String defendantTwoPartyName) {
 
         this.claimantRepresentation = claimantRepresentation;
         this.defendantRepresentation = defendantRepresentation;
         this.heardFromClaimantNotAttend = heardFromClaimantNotAttend;
         this.heardFromDefendantNotAttend = heardFromDefendantNotAttend;
         this.detailsRepresentationText = detailsRepresentationText;
+        this.claimantPartyName = claimantPartyName;
+        this.defendantPartyName = defendantPartyName;
+        this.defendantTwoPartyName = defendantTwoPartyName;
     }
 }
