@@ -81,6 +81,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_THE_CLAIM;
@@ -654,7 +655,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
                                                .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
                                                .build());
-
+        caseDataBuilder.judicialDecisionMakeAnOrderForWrittenRepresentations(
+                GAJudicialWrittenRepresentations.builder()
+                        .writtenConcurrentRepresentationsBy(LocalDate.now().plusDays(14))
+                        .writtenSequentailRepresentationsBy(LocalDate.now().plusDays(14))
+                        .sequentialApplicantMustRespondWithin(LocalDate.now().plusDays(21)).build());
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
@@ -927,6 +932,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                    .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
+                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenSequentailRepresentationsBy() != null
                 && judicialWrittenRepresentationsDate.getSequentialApplicantMustRespondWithin() != null) {
 
@@ -938,6 +945,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+                && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS)
                 && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenConcurrentRepresentationsBy() != null) {
 

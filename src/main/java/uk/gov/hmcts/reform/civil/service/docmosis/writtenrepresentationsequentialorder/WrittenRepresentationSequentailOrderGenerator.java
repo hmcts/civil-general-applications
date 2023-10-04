@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,12 +33,15 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
+    private final IdamClient idamClient;
+    private String judgeNameTitle;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
-
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
             docmosisTemplate
@@ -64,6 +69,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .claimantName(claimantName)
