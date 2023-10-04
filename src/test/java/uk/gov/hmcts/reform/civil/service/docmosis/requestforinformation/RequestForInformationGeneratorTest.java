@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentMan
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,7 +59,6 @@ class RequestForInformationGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
             .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
 
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -83,7 +80,6 @@ class RequestForInformationGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
-            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -100,12 +96,11 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getDateBy(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoByDate()),
-                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText())
             );
@@ -127,12 +122,6 @@ class RequestForInformationGeneratorTest {
                 defendatsName.add(caseData.getDefendant2PartyName());
             }
             return String.join(", ", defendatsName);
-        }
-
-        private String getApplicationType(CaseData caseData) {
-            List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-            return types.stream()
-                .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
         }
     }
 }

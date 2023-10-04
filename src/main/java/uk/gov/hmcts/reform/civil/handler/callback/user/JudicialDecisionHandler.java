@@ -646,6 +646,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.showRequestInfoPreviewDoc(NO);
 
         caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
+        caseDataBuilder.judicialDecisionRequestMoreInfo(
+            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(LocalDate.now().plusDays(14)).build());
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)

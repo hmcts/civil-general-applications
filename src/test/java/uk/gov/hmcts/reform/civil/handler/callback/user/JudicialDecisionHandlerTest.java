@@ -1923,8 +1923,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expectedErrorText = "Select your preferred hearing location.";
 
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-
             assertThat(response).isNotNull();
             assertThat(response.getErrors()).contains(expectedErrorText);
         }
@@ -1948,10 +1946,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         private CaseData getJudicialListHearingData() {
 
-            YesOrNo hasRespondentResponseVul = NO;
-
-            List<GeneralApplicationTypes> types = List.of(
-                (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
             return CaseData.builder()
                 .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                             .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
@@ -2080,6 +2074,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(LocalDate.now().plusDays(7).toString());
             assertThat(response.getData().get("caseNameHmctsInternal")
                            .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
+            assertThat(response.getData())
+                .extracting("judicialDecisionRequestMoreInfo").extracting("judgeRequestMoreInfoByDate")
+                .isEqualTo(LocalDate.now().plusDays(14).toString());
         }
 
         @Test
