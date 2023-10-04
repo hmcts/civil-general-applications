@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.directionorder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -24,9 +25,12 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -47,13 +51,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     DirectionOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    DocmosisService.class,
 })
 class DirectionOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -63,6 +67,12 @@ class DirectionOrderGeneratorTest {
     private ListGeneratorService listGeneratorService;
     @Autowired
     private DirectionOrderGenerator directionOrderGenerator;
+    @MockBean
+    private IdamClient idamClient;
+    @Autowired
+    private ObjectMapper mapper;
+    @Autowired
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateDirectionOrderDocument() {
@@ -71,7 +81,9 @@ class DirectionOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
 
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -93,7 +105,9 @@ class DirectionOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
                 .build();
 
-            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -110,7 +124,6 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -143,11 +156,13 @@ class DirectionOrderGeneratorTest {
                                                            .build()).build();
             CaseData updateCaseData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateCaseData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateCaseData))
                 .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
@@ -161,7 +176,6 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -171,7 +185,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                            caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -195,7 +209,9 @@ class DirectionOrderGeneratorTest {
 
             CaseData updateCaseData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateCaseData)).thenReturn("Extend time");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(updateCaseData))
                 .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))
@@ -213,7 +229,6 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -221,7 +236,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                            REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                            caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -244,7 +259,9 @@ class DirectionOrderGeneratorTest {
 
             CaseData updateCaseData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateCaseData)).thenReturn("Extend time");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(listGeneratorService.claimantsName(updateCaseData))
                     .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))

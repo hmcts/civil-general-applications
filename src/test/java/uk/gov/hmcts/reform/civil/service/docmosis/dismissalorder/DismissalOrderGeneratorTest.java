@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -45,7 +46,8 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     DismissalOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    DocmosisService.class
 })
 class DismissalOrderGeneratorTest {
 
@@ -62,6 +64,8 @@ class DismissalOrderGeneratorTest {
     private DismissalOrderGenerator dismissalOrderGenerator;
     @Autowired
     private ObjectMapper mapper;
+    @Autowired
+    private DocmosisService docmosisService;
     @MockBean
     private IdamClient idamClient;
 
@@ -100,10 +104,6 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(caseData);
 
@@ -146,9 +146,6 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -163,6 +160,7 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
@@ -191,9 +189,6 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -211,6 +206,7 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getReasonForDecision(),
                                    caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()));
         }
@@ -241,6 +237,7 @@ class DismissalOrderGeneratorTest {
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
             assertEquals("", templateData.getReasonForDecision());
+            assertEquals(YesOrNo.NO, templateData.getReasonAvailable());
         }
 
         private String getClaimats(CaseData caseData) {

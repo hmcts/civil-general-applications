@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -10,7 +11,6 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -25,9 +25,12 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -47,13 +50,13 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     GeneralOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    DocmosisService.class
 })
 class GeneralOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
-    private static final String REASON_PREFIX = "Reasons for decision: \n";
 
     @MockBean
     private UnsecuredDocumentManagementService documentManagementService;
@@ -63,6 +66,12 @@ class GeneralOrderGeneratorTest {
     ListGeneratorService listGeneratorService;
     @Autowired
     private GeneralOrderGenerator generalOrderGenerator;
+    @Autowired
+    private ObjectMapper mapper;
+    @MockBean
+    private IdamClient idamClient;
+    @Autowired
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateGeneralOrderDocument() {
@@ -70,8 +79,9 @@ class GeneralOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
-
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -92,8 +102,6 @@ class GeneralOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetGeneralOrderData() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
                 .build();
-
-            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -109,9 +117,9 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
@@ -142,7 +150,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -159,17 +166,17 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                        caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
@@ -192,7 +199,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -209,15 +215,15 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
+                () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiative()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
                 () -> assertEquals(templateData.getReasonForDecision(),
-                        REASON_PREFIX + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
+                                   caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
             );
         }
 
