@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String judicialByCourtsInitiative;
     private final String locationName;
     private final String courtName;
+    private final YesOrNo reasonAvailable;
 
     private final String judicialByCourtsInitiativeListForHearing;
     private final String judicialByCourtsInitiativeForWrittenRep;
