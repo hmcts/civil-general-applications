@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -30,12 +29,10 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -50,8 +47,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     GeneralOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class,
-    DocmosisService.class
+    CaseDetailsConverter.class
 })
 class GeneralOrderGeneratorTest {
 
@@ -70,7 +66,7 @@ class GeneralOrderGeneratorTest {
     private ObjectMapper mapper;
     @MockBean
     private IdamClient idamClient;
-    @Autowired
+    @MockBean
     private DocmosisService docmosisService;
 
     @Test
@@ -79,9 +75,6 @@ class GeneralOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -105,6 +98,11 @@ class GeneralOrderGeneratorTest {
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
 
             var templateData = generalOrderGenerator.getTemplateData(caseData);
 
@@ -153,6 +151,10 @@ class GeneralOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
 
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
@@ -202,6 +204,10 @@ class GeneralOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn(StringUtils.EMPTY);
 
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
@@ -249,6 +255,7 @@ class GeneralOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                     .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
 
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
@@ -272,12 +279,6 @@ class GeneralOrderGeneratorTest {
                 defendatsName.add(caseData.getDefendant2PartyName());
             }
             return String.join(", ", defendatsName);
-        }
-
-        private String getApplicationType(CaseData caseData) {
-            List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-            return types.stream()
-                .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
         }
     }
 }

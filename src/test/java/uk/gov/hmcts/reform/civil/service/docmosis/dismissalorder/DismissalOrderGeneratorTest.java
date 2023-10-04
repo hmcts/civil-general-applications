@@ -46,8 +46,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     DismissalOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class,
-    DocmosisService.class
+    CaseDetailsConverter.class
 })
 class DismissalOrderGeneratorTest {
 
@@ -64,7 +63,7 @@ class DismissalOrderGeneratorTest {
     private DismissalOrderGenerator dismissalOrderGenerator;
     @Autowired
     private ObjectMapper mapper;
-    @Autowired
+    @MockBean
     private DocmosisService docmosisService;
     @MockBean
     private IdamClient idamClient;
@@ -75,10 +74,6 @@ class DismissalOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DISMISSAL_ORDER)))
             .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
-
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -104,6 +99,10 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
 
             var templateData = dismissalOrderGenerator.getTemplateData(caseData);
 
@@ -146,6 +145,10 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -189,6 +192,10 @@ class DismissalOrderGeneratorTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn(StringUtils.EMPTY);
 
             var templateData = dismissalOrderGenerator.getTemplateData(updateData);
 
@@ -227,6 +234,8 @@ class DismissalOrderGeneratorTest {
                     .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                     .thenReturn("Test Defendant1 Name, Test Defendant2 Name");

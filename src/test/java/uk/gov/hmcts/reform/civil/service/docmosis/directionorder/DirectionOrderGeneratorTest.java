@@ -11,11 +11,9 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -35,7 +33,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -51,8 +48,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @ContextConfiguration(classes = {
     DirectionOrderGenerator.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class,
-    DocmosisService.class,
+    CaseDetailsConverter.class
 })
 class DirectionOrderGeneratorTest {
 
@@ -71,7 +67,7 @@ class DirectionOrderGeneratorTest {
     private IdamClient idamClient;
     @Autowired
     private ObjectMapper mapper;
-    @Autowired
+    @MockBean
     private DocmosisService docmosisService;
 
     @Test
@@ -81,9 +77,6 @@ class DirectionOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
 
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
@@ -105,9 +98,10 @@ class DirectionOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
                 .build();
 
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
@@ -160,9 +154,10 @@ class DirectionOrderGeneratorTest {
                 .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
@@ -216,6 +211,10 @@ class DirectionOrderGeneratorTest {
                 .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn(StringUtils.EMPTY);
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
@@ -266,6 +265,7 @@ class DirectionOrderGeneratorTest {
                     .thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateCaseData))
                     .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData);
 
@@ -289,12 +289,6 @@ class DirectionOrderGeneratorTest {
                 defendatsName.add(caseData.getDefendant2PartyName());
             }
             return String.join(", ", defendatsName);
-        }
-
-        private String getApplicationType(CaseData caseData) {
-            List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-            return types.stream()
-                .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
         }
     }
 }
