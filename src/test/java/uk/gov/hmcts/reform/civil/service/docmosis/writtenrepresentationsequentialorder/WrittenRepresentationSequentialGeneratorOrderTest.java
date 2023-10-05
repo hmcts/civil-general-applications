@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -56,6 +58,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
     private DocumentGeneratorService documentGeneratorService;
     @MockBean
     private ListGeneratorService listGeneratorService;
+    @MockBean
+    private IdamClient idamClient;
     @Autowired
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
 
@@ -70,6 +74,9 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
         when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+        when(idamClient
+                .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
         writtenRepresentationSequentailOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -93,6 +100,9 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(caseData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                    .getUserDetails(any()))
+                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData);
 
@@ -119,7 +129,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                         caseData.getOrderCourtOwnInitiativeForWrittenRep()
                             .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
-                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
             );
         }
 
@@ -141,6 +152,9 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                    .getUserDetails(any()))
+                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
                 .getTemplateData(updateData);
@@ -168,7 +182,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                     caseData.getOrderWithoutNoticeForWrittenRep()
                         .getOrderWithoutNoticeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
-                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
             );
         }
 
@@ -187,6 +202,9 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
             when(listGeneratorService.defendantsName(updateData))
                 .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
+            when(idamClient
+                    .getUserDetails(any()))
+                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
                 .getTemplateData(updateData);
@@ -211,7 +229,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
-                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText())
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
             );
         }
 

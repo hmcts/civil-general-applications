@@ -31,10 +31,6 @@ import java.util.Map;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList.CLAIMANT_COST_STANDARD_BASE;
-import static uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList.CLAIMANT_COST_SUMMARILY_BASE;
-import static uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList.DEFENDANT_COST_STANDARD_BASE;
-import static uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList.DEFENDANT_COST_SUMMARILY_BASE;
 import static uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle.CONSIDERED;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
@@ -159,49 +155,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                         COSTS_RESERVED_TEXT,
                         caseData.getCostReservedDetails().getDetailText()
                     ));
-                }
-            }
-            break;
-            case DEFENDANT_COST_STANDARD_BASE: {
-                costsTextBuilder.append(DEFENDANT_COST_STANDARD_BASE.getDisplayedValue());
-                costsTextBuilder.append(". ");
-                if (nonNull(caseData.getDefendantCostStandardBase())) {
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getCostText(caseData.getDefendantCostStandardBase()));
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostStandardBase()));
-                }
-            }
-            break;
-
-            case CLAIMANT_COST_STANDARD_BASE: {
-                costsTextBuilder.append(CLAIMANT_COST_STANDARD_BASE.getDisplayedValue());
-                costsTextBuilder.append(". ");
-                if (nonNull(caseData.getClaimantCostStandardBase())) {
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getCostText(caseData.getClaimantCostStandardBase()));
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostStandardBase()));
-                }
-            }
-            break;
-
-            case DEFENDANT_COST_SUMMARILY_BASE: {
-                costsTextBuilder.append(DEFENDANT_COST_SUMMARILY_BASE.getDisplayedValue());
-                if (nonNull(caseData.getDefendantCostSummarilyBase())) {
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getDefendantCostSummarilyBase().formatCaseAmountToPounds());
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getDefendantCostSummarilyBase()));
-                }
-            }
-            break;
-
-            case CLAIMANT_COST_SUMMARILY_BASE: {
-                costsTextBuilder.append(CLAIMANT_COST_SUMMARILY_BASE.getDisplayedValue());
-
-                if (nonNull(caseData.getClaimantCostSummarilyBase())) {
-                    costsTextBuilder.append(" ");
-                    costsTextBuilder.append(caseData.getClaimantCostSummarilyBase().formatCaseAmountToPounds());
-                    costsTextBuilder.append(LINE_BREAKER);
-                    costsTextBuilder.append(getIsProtectionDateText(caseData.getClaimantCostSummarilyBase()));
                 }
             }
             break;
@@ -429,14 +382,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                         .getAppealOrigin().getDisplayedValue(),
                     caseData.getAssistedOrderAppealDetails()
                         .getPermissionToAppeal().getDisplayedValue()));
-
-                if (nonNull(caseData.getAssistedOrderAppealDetails().getReasonsText())) {
-                    permissionToAppealBuilder.append(LINE_BREAKER);
-                    permissionToAppealBuilder.append(String.format(
-                        PERMISSION_TO_APPEAL_REASONS_TEXT,
-                        caseData.getAssistedOrderAppealDetails()
-                                                                       .getReasonsText()));
-                }
             }
             return permissionToAppealBuilder.toString();
         }
