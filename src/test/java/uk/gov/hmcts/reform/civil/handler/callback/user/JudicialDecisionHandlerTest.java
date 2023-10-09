@@ -1812,6 +1812,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(String.format(expectedSequentialText, formatLocalDate(
                     responseCaseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                         .getWrittenSequentailRepresentationsBy(), DATE)));
+            assertThat(responseCaseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate())
+                .isEqualTo(LocalDate.now().plusDays(7));
             assertThat(responseCaseData.getJudicialApplicanSequentialDateText())
                 .isEqualTo(String.format(expectedApplicantSequentialText, formatLocalDate(
                     responseCaseData
@@ -1866,6 +1868,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudicialGeneralOrderHearingEstimationTimeText())
                 .isEqualTo(String.format(expeceedJudicialTimeEstimateText, responseCaseData
                     .getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()));
+
+            assertThat(responseCaseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate())
+                .isEqualTo(LocalDate.now().plusDays(7));
         }
 
         @Test
@@ -2076,7 +2081,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                            .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
             assertThat(response.getData())
                 .extracting("judicialDecisionRequestMoreInfo").extracting("judgeRequestMoreInfoByDate")
-                .isEqualTo(LocalDate.now().plusDays(14).toString());
+                .isEqualTo(LocalDate.now().plusDays(7).toString());
         }
 
         @Test

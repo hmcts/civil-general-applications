@@ -170,7 +170,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                        .get("label")).isEqualTo("Other location");
         assertThat(response.getData()).extracting("assistedOrderOrderedThatText")
             .isEqualTo(ORDERED_TEXT);
-
+        assertThat(response.getData()).extracting("orderMadeOnOwnInitiative").extracting("date")
+            .isEqualTo(LocalDate.now().plusDays(7).toString());
     }
 
     @Test

@@ -647,7 +647,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
         caseDataBuilder.judicialDecisionRequestMoreInfo(
-            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(LocalDate.now().plusDays(14)).build());
+            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(LocalDate.now().plusDays(7)).build());
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
@@ -908,6 +908,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
                         .builder()
                         .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(LocalDate.now().plusDays(7))
                         .build())
                 .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
                         .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
@@ -998,7 +999,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData))
                 .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
                         .builder()
-                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE).build())
+                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(LocalDate.now().plusDays(7)).build())
                 .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
                         .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();

@@ -163,7 +163,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .build());
 
         caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
-                                                     .date(LocalDate.now()).build());
+                                                     .date(LocalDate.now().plusDays(7)).build());
         caseDataBuilder.orderMadeOnWithOutNotice(DetailTextWithDate.builder().detailText(WITHOUT_NOTICE_SELECTION_TEXT)
                                                      .date(LocalDate.now()).build());
 
