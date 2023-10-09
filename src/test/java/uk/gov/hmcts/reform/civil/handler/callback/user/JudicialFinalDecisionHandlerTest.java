@@ -11,8 +11,17 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType;
+import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -20,11 +29,6 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -46,6 +50,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT;
 
 @SpringBootTest(classes = {
     JudicialFinalDecisionHandler.class,
@@ -95,7 +100,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     void shouldPopulateFreeFormOrderValues_onMidEventCallback() {
         // Given
         CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft()
-                .build().toBuilder().generalAppDetailsOfOrder("order test")
+                .build().toBuilder().isMultiParty(NO)
+            .generalAppDetailsOfOrder("order test")
             .locationName("County Court Money Centre")
             .caseManagementLocation(GACaseLocation.builder()
                                         .baseLocation("Ccmcc")
@@ -394,6 +400,80 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getErrors().contains("The date in Further Hearing may not be before the established date")).isTrue();
+    }
+
+    @Test
+    void shouldShowError_When_JudgeHeardFromClaimantListIsNull() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                             .representationType(CLAIMANT_AND_DEFENDANT)
+                                             .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                                                  .defendantRepresentation(
+                                                                                      DefendantRepresentationType.COST_DRAFTSMAN_FOR_THE_DEFENDANT).build())
+                                             .build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("Judge Heard from: 'Claimant(s) and defendant(s)' section for Claimant, requires a selection to be made")).isTrue();
+    }
+
+    @Test
+    void shouldShowError_When_JudgeHeardFromDefendantListIsNull() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .build()
+            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                             .representationType(CLAIMANT_AND_DEFENDANT)
+                                             .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                                                  .claimantRepresentation(
+                                                                                      ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING).build())
+                                                                                  .build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("Judge Heard from: 'Claimant(s) and defendant(s)' section for Defendant, requires a selection to be made")).isTrue();
+    }
+
+    @Test
+    void shouldShowError_When_JudgeHeardFromDefendantTwoListIsNull() {
+
+        when(assistedOrderFormGenerator.generate(any(), any()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+        CaseData caseData = CaseDataBuilder.builder()
+            .generalOrderApplication()
+            .build()
+            .toBuilder().isMultiParty(YES).finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppDetailsOfOrder("order test")
+            .assistedOrderMadeSelection(NO)
+            .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                             .representationType(CLAIMANT_AND_DEFENDANT)
+                                             .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
+                                                                                  .defendantRepresentation(DefendantRepresentationType.COUNSEL_FOR_DEFENDANT)
+                                                                                  .claimantRepresentation(
+                                                                                      ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING).build())
+                                             .build())
+            .build();
+
+        CallbackParams params = callbackParamsOf(caseData, MID, "populate-final-order-preview-doc");
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response.getErrors().contains("Judge Heard from: 'Claimant(s) and defendant(s)' section for Defendant, requires a selection to be made")).isTrue();
     }
 
     @Test

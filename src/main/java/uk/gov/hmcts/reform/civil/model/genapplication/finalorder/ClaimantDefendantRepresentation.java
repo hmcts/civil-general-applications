@@ -15,8 +15,10 @@ public class ClaimantDefendantRepresentation {
 
     private ClaimantRepresentationType claimantRepresentation;
     private DefendantRepresentationType defendantRepresentation;
+    private DefendantRepresentationType defendantTwoRepresentation;
     private HeardClaimantNotAttend heardFromClaimantNotAttend;
     private HeardDefendantNotAttend heardFromDefendantNotAttend;
+    private HeardDefendantTwoNotAttend heardFromDefendantTwoNotAttend;
     private String detailsRepresentationText;
 
     private String claimantPartyName;
@@ -28,10 +30,14 @@ public class ClaimantDefendantRepresentation {
                                     ClaimantRepresentationType claimantRepresentation,
                                     @JsonProperty("defendantRepresentation")
                                     DefendantRepresentationType defendantRepresentation,
+                                    @JsonProperty("defendantTwoRepresentation")
+                                    DefendantRepresentationType defendantTwoRepresentation,
                                     @JsonProperty("heardFromClaimantNotAttend")
                                     HeardClaimantNotAttend heardFromClaimantNotAttend,
                                     @JsonProperty("heardFromDefendantNotAttend")
                                     HeardDefendantNotAttend heardFromDefendantNotAttend,
+                                    @JsonProperty("heardFromDefendantTwoNotAttend")
+                                    HeardDefendantTwoNotAttend heardFromDefendantTwoNotAttend,
                                     @JsonProperty("detailsRepresentationText")
                                     String detailsRepresentationText,
                                     @JsonProperty("claimantPartyName")
@@ -43,8 +49,10 @@ public class ClaimantDefendantRepresentation {
 
         this.claimantRepresentation = claimantRepresentation;
         this.defendantRepresentation = defendantRepresentation;
+        this.defendantTwoRepresentation = defendantTwoRepresentation;
         this.heardFromClaimantNotAttend = heardFromClaimantNotAttend;
         this.heardFromDefendantNotAttend = heardFromDefendantNotAttend;
+        this.heardFromDefendantTwoNotAttend = heardFromDefendantTwoNotAttend;
         this.detailsRepresentationText = detailsRepresentationText;
         this.claimantPartyName = claimantPartyName;
         this.defendantPartyName = defendantPartyName;

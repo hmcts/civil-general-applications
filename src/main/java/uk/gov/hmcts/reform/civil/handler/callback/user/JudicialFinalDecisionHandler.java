@@ -52,6 +52,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
+import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
 @Slf4j
@@ -64,6 +65,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     public static final String DATE_RANGE_NOT_ALLOWED = "The date range in %s should not have a 'from date', that is after the 'date to'";
     public static final String PAST_DATE_NOT_ALLOWED = "The date in %s may not be before the established date";
+    public static final String JUDGE_HEARD_FROM_EMPTY_LIST = "Judge Heard from: 'Claimant(s) and defendant(s)' section for %s, requires a selection to be made";
     private final GeneralAppLocationRefDataService locationRefDataService;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
@@ -200,7 +202,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                         .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
                                                                                              .claimantPartyName(caseData.getClaimant1PartyName())
                                                                                              .defendantPartyName(caseData.getDefendant1PartyName()).build()).build());
-        if (caseData.getIsMultiParty() == YES) {
+        if (caseData.getIsMultiParty().equals(YES)) {
             caseDataBuilder.assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
                                                             .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
                                                                                                  .claimantPartyName(caseData.getClaimant1PartyName())
@@ -288,7 +290,24 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
             errors.add(String.format(PAST_DATE_NOT_ALLOWED, "Make an order for detailed/summary costs"));
         }
         validateAssertedOrderDatesForAppeal(caseData, errors);
+        validateAssertedOrderJudgeHeardForm(caseData, errors);
         return  errors;
+    }
+
+    private void validateAssertedOrderJudgeHeardForm(CaseData caseData, List<String> errors) {
+        if (nonNull(caseData.getAssistedOrderRepresentation())
+            && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(CLAIMANT_AND_DEFENDANT)) {
+            if (caseData.getAssistedOrderRepresentation().getClaimantDefendantRepresentation().getClaimantRepresentation() == null) {
+                errors.add(String.format(JUDGE_HEARD_FROM_EMPTY_LIST, "Claimant"));
+            }
+            if (caseData.getAssistedOrderRepresentation().getClaimantDefendantRepresentation().getDefendantRepresentation() == null) {
+                errors.add(String.format(JUDGE_HEARD_FROM_EMPTY_LIST, "Defendant"));
+            }
+            if (caseData.getIsMultiParty().equals(YES)
+                && (caseData.getAssistedOrderRepresentation().getClaimantDefendantRepresentation().getDefendantTwoRepresentation() == null)) {
+                errors.add(String.format(JUDGE_HEARD_FROM_EMPTY_LIST, "Defendant"));
+            }
+        }
     }
 
     private void validateAssertedOrderDatesForAppeal(CaseData caseData, List<String> errors) {
