@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -21,11 +19,13 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
@@ -76,6 +76,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final String ORDER_2_DEF = "%n%n ## Defendant 2 %n%n %s";
     private static final String POPULATE_FINAL_ORDER_FORM_VALUES = "populate-finalOrder-form-values";
     private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
+
+    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+
     private final ObjectMapper objectMapper;
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
@@ -155,17 +158,17 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                 .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                .onInitiativeSelectionDate(LocalDate.now().plusDays(7))
+                .onInitiativeSelectionDate(localDatePlus7days)
                 .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                 .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
+                .withoutNoticeSelectionDate(localDatePlus7days)
                 .build());
 
         caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
-                                                     .date(LocalDate.now().plusDays(7)).build());
+                                                     .date(localDatePlus7days).build());
         caseDataBuilder.orderMadeOnWithOutNotice(DetailTextWithDate.builder().detailText(WITHOUT_NOTICE_SELECTION_TEXT)
-                                                     .date(LocalDate.now()).build());
+                                                     .date(localDatePlus7days).build());
 
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .singleDateSelection(AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build())
@@ -201,7 +204,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                                .hearingLocationList(populateHearingLocation(caseData))
                                                                .alternativeHearingLocation(dynamicLocationList)
                                                                .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
-                                                                                             .datesToAvoidDates(LocalDate.now().plusDays(7))
+                                                                                             .datesToAvoidDates(localDatePlus7days)
                                                                                              .build()).build());
         caseDataBuilder.assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
 

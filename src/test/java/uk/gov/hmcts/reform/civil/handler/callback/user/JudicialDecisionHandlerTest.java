@@ -191,6 +191,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + "this order was made, you may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
 
+    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(MAKE_DECISION);
@@ -1044,7 +1046,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnCorrectDirectionOrderText_whenJudgeMakeDecisionGiveDirection() {
             List<GeneralApplicationTypes> types = List.of(
                 (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-            LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
             CallbackParams params = callbackParamsOf(getDirectionOrderApplnAndResp(types, NO, NO), ABOUT_TO_START);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -1813,7 +1814,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     responseCaseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                         .getWrittenSequentailRepresentationsBy(), DATE)));
             assertThat(responseCaseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate())
-                .isEqualTo(LocalDate.now().plusDays(7));
+                .isEqualTo(localDatePlus7days);
+            assertThat(responseCaseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate())
+                .isEqualTo(localDatePlus7days);
             assertThat(responseCaseData.getJudicialApplicanSequentialDateText())
                 .isEqualTo(String.format(expectedApplicantSequentialText, formatLocalDate(
                     responseCaseData
@@ -1870,7 +1873,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                     .getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()));
 
             assertThat(responseCaseData.getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiativeDate())
-                .isEqualTo(LocalDate.now().plusDays(7));
+                .isEqualTo(localDatePlus7days);
+            assertThat(responseCaseData.getOrderWithoutNoticeListForHearing().getOrderWithoutNoticeDate())
+                .isEqualTo(localDatePlus7days);
         }
 
         @Test
@@ -2072,16 +2077,16 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionTextArea")
                 .isEqualTo(ON_INITIATIVE_SELECTION_TEST);
             assertThat(response.getData()).extracting("orderOnCourtInitiative").extracting("onInitiativeSelectionDate")
-                .isEqualTo(LocalDate.now().plusDays(7).toString());
+                .isEqualTo(localDatePlus7days.toString());
             assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionTextArea")
                 .isEqualTo(WITHOUT_NOTICE_SELECTION_TEXT);
             assertThat(response.getData()).extracting("orderWithoutNotice").extracting("withoutNoticeSelectionDate")
-                .isEqualTo(LocalDate.now().plusDays(7).toString());
+                .isEqualTo(localDatePlus7days.toString());
             assertThat(response.getData().get("caseNameHmctsInternal")
                            .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
             assertThat(response.getData())
                 .extracting("judicialDecisionRequestMoreInfo").extracting("judgeRequestMoreInfoByDate")
-                .isEqualTo(LocalDate.now().plusDays(7).toString());
+                .isEqualTo(localDatePlus7days.toString());
         }
 
         @Test
