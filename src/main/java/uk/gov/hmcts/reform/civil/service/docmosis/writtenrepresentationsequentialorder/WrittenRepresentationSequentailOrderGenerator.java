@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -80,7 +81,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
                                         .getWrittenSequentailRepresentationsBy())
                 .responseDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                           .getSequentialApplicantMustRespondWithin())
-                .submittedOn(getFormattedDate(new Date()))
+                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
                 .locationName(caseData.getLocationName())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 

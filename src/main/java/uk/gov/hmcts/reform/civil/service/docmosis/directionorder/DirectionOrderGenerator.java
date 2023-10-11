@@ -16,14 +16,14 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
-import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +78,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                     .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-                .submittedOn(getFormattedDate(new Date()))
+                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));

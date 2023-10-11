@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -75,7 +76,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
-                .submittedOn(getFormattedDate(new Date()))
+                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
                 .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData))
                 .locationName(caseData.getLocationName());
 

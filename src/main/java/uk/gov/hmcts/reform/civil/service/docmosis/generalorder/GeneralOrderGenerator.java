@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
@@ -77,7 +79,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .defendantName(defendantName)
                 .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
-                .submittedOn(getFormattedDate(new Date()))
+                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
