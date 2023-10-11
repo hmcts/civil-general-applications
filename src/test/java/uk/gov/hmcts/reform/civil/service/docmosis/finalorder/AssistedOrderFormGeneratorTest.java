@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
@@ -33,7 +32,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFu
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGiveReasonsDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRecitalRecord;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
@@ -49,16 +47,13 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = {
     AssistedOrderFormGenerator.class
@@ -348,63 +343,6 @@ class AssistedOrderFormGeneratorTest {
 
             return furtherHearingBuilder.build();
 
-        }
-    }
-
-    @Nested
-    class RecitalRecord {
-        @Test
-        void shouldReturnNull_When_RecitalsShowOption_Null() {
-            CaseData caseData = CaseData.builder()
-                .assistedOrderRecitals(null)
-                .build();
-            String assistedOrderString = generator.getRecitalRecordedText(caseData);
-            assertNull(assistedOrderString);
-        }
-
-        @Test
-        void shouldReturnNull_When_RecitalsShowOption_NoSelected() {
-            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
-            recitalsOrderShowOption.add(null);
-            CaseData caseData = CaseData.builder()
-                .assistedOrderRecitals(recitalsOrderShowOption)
-                .build();
-            String assistedOrderString = generator.getRecitalRecordedText(caseData);
-            assertNull(assistedOrderString);
-        }
-
-        @Test
-        void shouldReturnNull_When_RecitalsShowOption_SelectedHide() {
-            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
-            recitalsOrderShowOption.add(FinalOrderShowToggle.HIDE);
-            CaseData caseData = CaseData.builder()
-                .assistedOrderRecitals(recitalsOrderShowOption)
-                .build();
-            String assistedOrderString = generator.getRecitalRecordedText(caseData);
-            assertNull(assistedOrderString);
-        }
-
-        @Test
-        void shouldReturnNull_When_RecitalsShowOption_SelectedShow_RecitalTextEmpty() {
-            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
-            recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
-            CaseData caseData = CaseData.builder()
-                .assistedOrderRecitals(recitalsOrderShowOption)
-                .build();
-            String assistedOrderString = generator.getRecitalRecordedText(caseData);
-            assertTrue(assistedOrderString.isEmpty());
-        }
-
-        @Test
-        void shouldReturnNull_When_RecitalsShowOption_SelectedShow_WithRecitalText() {
-            List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
-            recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
-            CaseData caseData = CaseData.builder()
-                .assistedOrderRecitals(recitalsOrderShowOption)
-                .assistedOrderRecitalsRecorded(AssistedOrderRecitalRecord.builder().text(TEST_TEXT).build())
-                .build();
-            String assistedOrderString = generator.getRecitalRecordedText(caseData);
-            assertThat(assistedOrderString).contains(TEST_TEXT);
         }
     }
 
@@ -804,19 +742,6 @@ class AssistedOrderFormGeneratorTest {
     void test_getDateFormatted() {
         String dateString = generator.getDateFormatted(LocalDate.EPOCH);
         assertThat(dateString).isEqualTo(" 1 January 1970");
-    }
-
-    @Test
-    void test_getReference() {
-        Map<String, String> refMap = new HashMap<>();
-        refMap.put("applicantSolicitor1Reference", "app1ref");
-        refMap.put("respondentSolicitor1Reference", "resp1ref");
-        Map<String, Object> caseDataContent = new HashMap<>();
-        caseDataContent.put("solicitorReferences", refMap);
-        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
-
-        assertThat(generator.getReference(caseDetails, "applicantSolicitor1Reference")).isEqualTo("app1ref");
-        assertThat(generator.getReference(caseDetails, "notExist")).isNull();
     }
 
     @Test
