@@ -216,6 +216,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "this order was made, you may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
 
+    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+
     private final ObjectMapper objectMapper;
 
     private final GeneralOrderGenerator generalOrderGenerator;
@@ -401,7 +403,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
                                                                                  CallbackParams callbackParams) {
-        LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
         if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
@@ -647,15 +648,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
         caseDataBuilder.judicialDecisionRequestMoreInfo(
-            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(LocalDate.now().plusDays(14)).build());
+            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(localDatePlus7days).build());
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                                                   .onInitiativeSelectionDate(LocalDate.now().plusDays(7))
+                                                   .onInitiativeSelectionDate(localDatePlus7days)
                                                    .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                                               .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
+                                               .withoutNoticeSelectionDate(localDatePlus7days)
                                                .build());
         caseDataBuilder.judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
@@ -908,9 +909,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
                         .builder()
                         .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(localDatePlus7days)
                         .build())
                 .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
-                        .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+                        .builder().orderWithoutNoticeDate(localDatePlus7days)
+                        .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -998,9 +1001,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData))
                 .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
                         .builder()
-                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE).build())
+                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(localDatePlus7days).build())
                 .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
-                        .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+                        .builder()
+                        .orderWithoutNoticeDate(localDatePlus7days)
+                        .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
