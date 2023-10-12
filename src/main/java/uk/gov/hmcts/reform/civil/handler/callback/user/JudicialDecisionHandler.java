@@ -146,14 +146,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
+    private static final String JUDICIAL_HEARING_TYPE = "The hearing will be %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
-            "The respondent may upload any written representations by 4pm on %s";
+            "The respondent may upload any written responses or evidence by 4pm on %s";
     private static final String JUDICIAL_SEQUENTIAL_APPLICANT_DATE =
-            "The applicant may upload any written representations by 4pm on %s";
+            "The applicant may upload any written responses or evidence in reply by 4pm on %s";
     private static final String JUDICIAL_CONCURRENT_DATE =
-            "The applicant and respondent may respond with written representations by 4pm on %s";
+            "The applicant and respondent may upload any written submissions and evidence by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
@@ -215,6 +215,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String WITHOUT_NOTICE_SELECTION_TEXT = "If you were not notified of the application before "
         + "this order was made, you may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
+
+    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
 
     private final ObjectMapper objectMapper;
 
@@ -401,7 +403,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder(CaseData caseData,
                                                                                  CallbackParams callbackParams) {
-        LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
         GAJudicialMakeAnOrder.GAJudicialMakeAnOrderBuilder makeAnOrderBuilder;
         if (caseData.getJudicialDecisionMakeOrder() != null && callbackParams.getType() != ABOUT_TO_START) {
             makeAnOrderBuilder = caseData.getJudicialDecisionMakeOrder().toBuilder();
@@ -647,15 +648,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
         caseDataBuilder.judicialDecisionRequestMoreInfo(
-            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(LocalDate.now().plusDays(14)).build());
+            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(localDatePlus7days).build());
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                                                   .onInitiativeSelectionDate(LocalDate.now().plusDays(7))
+                                                   .onInitiativeSelectionDate(localDatePlus7days)
                                                    .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                                               .withoutNoticeSelectionDate(LocalDate.now().plusDays(7))
+                                               .withoutNoticeSelectionDate(localDatePlus7days)
                                                .build());
         caseDataBuilder.judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
@@ -908,9 +909,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
                         .builder()
                         .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(localDatePlus7days)
                         .build())
                 .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
-                        .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+                        .builder().orderWithoutNoticeDate(localDatePlus7days)
+                        .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -998,9 +1001,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .judicialGeneralOrderHearingEstimationTimeText(getJudgeHearingTimeEstPrePopulatedText(caseData))
                 .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
                         .builder()
-                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE).build())
+                        .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
+                        .orderCourtOwnInitiativeDate(localDatePlus7days).build())
                 .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
-                        .builder().orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
+                        .builder()
+                        .orderWithoutNoticeDate(localDatePlus7days)
+                        .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -1053,6 +1059,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return format(
                 JUDICIAL_HEARING_TYPE,
                 caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue()
+                    .concat(".")
         );
     }
 
