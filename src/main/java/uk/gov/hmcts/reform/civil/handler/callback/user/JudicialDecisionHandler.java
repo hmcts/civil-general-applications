@@ -146,7 +146,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private static final DateTimeFormatter DATE_FORMATTER_SUBMIT_CALLBACK = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final String VALIDATE_WRITTEN_REPRESENTATION_DATE = "ga-validate-written-representation-date";
-    private static final String JUDICIAL_HEARING_TYPE = "Hearing type is %s";
+    private static final String JUDICIAL_HEARING_TYPE = "The hearing will be %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
             "The respondent may upload any written responses or evidence by 4pm on %s";
@@ -1059,6 +1059,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return format(
                 JUDICIAL_HEARING_TYPE,
                 caseData.getJudicialListForHearing().getHearingPreferencesPreferredType().getDisplayedValue()
+                    .concat(".")
         );
     }
 

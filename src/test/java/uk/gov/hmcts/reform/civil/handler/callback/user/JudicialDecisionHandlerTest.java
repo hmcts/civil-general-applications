@@ -1852,7 +1852,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldPopulateJudicialGOHearingAndTimeEst() {
 
-            String expectedJudicialHearingTypeText = "Hearing type is %s";
+            String expectedJudicialHearingTypeText = "The hearing will be %s.";
             String expeceedJudicialTimeEstimateText = "Estimated length of hearing is %s";
 
             List<SupportRequirements> judgeSupportReqChoices = new ArrayList<>();
