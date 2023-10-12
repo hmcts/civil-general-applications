@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -97,7 +98,7 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getDateBy(), caseData.getJudicialDecisionRequestMoreInfo()
-                    .getJudgeRequestMoreInfoByDate()),
+                    .getJudgeRequestMoreInfoByDate().format(DATE_FORMATTER)),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),
