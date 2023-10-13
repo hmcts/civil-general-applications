@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -81,8 +82,11 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                     .collect(Collectors.joining(", ")))
                 .generalAppDetailsOfOrder(caseData.getGeneralAppDetailsOfOrder())
                 .generalAppReasonsOfOrder(caseData.getGeneralAppReasonsOfOrder())
-                .hearingYesorNo(caseData.getGeneralAppHearingDate().getHearingScheduledPreferenceYesNo())
-                .hearingDate(getDateFormatted(caseData.getGeneralAppHearingDate().getHearingScheduledDate()))
+                .hearingYesorNo(Objects.nonNull(caseData.getGeneralAppHearingDate())
+                                    ? caseData.getGeneralAppHearingDate().getHearingScheduledPreferenceYesNo() : null)
+                .hearingDate(Objects.nonNull(caseData.getGeneralAppHearingDate())
+                                 ? getDateFormatted(caseData.getGeneralAppHearingDate().getHearingScheduledDate())
+                                 : null)
                 .hearingPreferencesPreferredType(caseData.getGeneralAppHearingDetails()
                                                      .getHearingPreferencesPreferredType()
                                                      .getDisplayedValue())
