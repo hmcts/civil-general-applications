@@ -51,6 +51,17 @@ public class AssistedOrderForm implements MappableObject {
     //Recitals
     private final Boolean showRecitals;
     private final String recitalRecordedText;
+    //Further Hearing
+    private final Boolean showFurtherHearing;
+    private final YesOrNo checkListToDate;
+    private final String furtherHearingListFromDate;
+    private final String furtherHearingListToDate;
+    private final String furtherHearingDuration;
+    private final Boolean checkDatesToAvoid;
+    private final String furtherHearingDatesToAvoid;
+    private final String furtherHearingLocation;
+    private final String furtherHearingMethod;
+    //Costs
     private final String judgeHeardFromText;
     private final String costsText;
     private final String furtherHearingText;

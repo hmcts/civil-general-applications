@@ -154,8 +154,57 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .showRecitals(checkRecitalsToggle(caseData))
                 .recitalRecordedText(nonNull(caseData.getAssistedOrderRecitalsRecorded()) ? caseData.getAssistedOrderRecitalsRecorded().getText() : null)
-                .reasonText(getReasonText(caseData))
+                .showFurtherHearing(checkFurtherHearingToggle(caseData))
+                .checkListToDate(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+                                     && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) ? YesOrNo.YES : YesOrNo.NO)
+            .furtherHearingListFromDate(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+                                            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate()): null)
+            .furtherHearingListToDate((nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+                                          && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()))
+                                          ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) : null )
+            .furtherHearingMethod(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) ? caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods().getDisplayedValue() : null)
+            .furtherHearingDuration(getFurtherHearingDuration(caseData))
+            .checkDatesToAvoid(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES))
+            .furtherHearingDatesToAvoid(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+                                            && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES)
+                                            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates()) : null)
+            .furtherHearingLocation(getFurtherHearingLocation(caseData))
+            .reasonText(getReasonText(caseData))
                 .build();
+    }
+
+    private String getFurtherHearingLocation(CaseData caseData) {
+        if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+        && (caseData.getAssistedOrderFurtherHearingDetails().getHearingLocationList()
+            .getValue().getLabel().equalsIgnoreCase("Other location"))) {
+            return caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation().getValue().getLabel();
+        }
+        return caseData.getLocationName();
+    }
+
+    private String getFurtherHearingDuration(CaseData caseData) {
+        StringBuilder otherDuration = new StringBuilder();
+        if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            && caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
+            otherDuration.append(caseData.getAssistedOrderFurtherHearingDetails()
+                                     .getLengthOfHearingOther().getLengthListOtherDays() + " days ")
+                .append(caseData.getAssistedOrderFurtherHearingDetails()
+                            .getLengthOfHearingOther().getLengthListOtherHours() + " hours ")
+                .append(caseData.getAssistedOrderFurtherHearingDetails()
+                            .getLengthOfHearingOther().getLengthListOtherMinutes() + " minutes ");
+            return otherDuration.toString();
+        }
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            ? caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing().getDisplayedValue() : null;
+    }
+
+    private Boolean checkFurtherHearingToggle(CaseData caseData) {
+        if (nonNull(caseData.getAssistedOrderFurtherHearingToggle())
+            && nonNull(caseData.getAssistedOrderFurtherHearingToggle().get(0))
+            && caseData.getAssistedOrderFurtherHearingToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
+            return true;
+        }
+        return false;
     }
 
     private String getHeardClaimantNotAttend(CaseData caseData) {
