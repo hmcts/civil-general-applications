@@ -77,8 +77,8 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                 .judgeRecital(caseData.getJudgeRecitalText())
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                        .getWrittenConcurrentRepresentationsBy().format(DATE_FORMATTER))
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
+                                        .getWrittenConcurrentRepresentationsBy())
+                .submittedOn(LocalDate.now())
                 .locationName(caseData.getLocationName())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 

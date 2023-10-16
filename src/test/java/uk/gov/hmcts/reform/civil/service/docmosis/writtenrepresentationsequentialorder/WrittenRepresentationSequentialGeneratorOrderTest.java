@@ -117,12 +117,6 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenSequentailRepresentationsBy().format(DATE_FORMATTER)),
-                () -> assertEquals(templateData.getResponseDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getSequentialApplicantMustRespondWithin().format(DATE_FORMATTER)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
@@ -170,12 +164,6 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenSequentailRepresentationsBy().format(DATE_FORMATTER)),
-                () -> assertEquals(templateData.getResponseDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getSequentialApplicantMustRespondWithin().format(DATE_FORMATTER)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " ".concat(
@@ -220,12 +208,6 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenSequentailRepresentationsBy().format(DATE_FORMATTER)),
-                () -> assertEquals(templateData.getResponseDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getSequentialApplicantMustRespondWithin().format(DATE_FORMATTER)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),

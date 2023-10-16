@@ -76,10 +76,10 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
                 .judgeRecital(caseData.getJudgeRecitalText())
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                        .getWrittenSequentailRepresentationsBy().format(DATE_FORMATTER))
+                                        .getWrittenSequentailRepresentationsBy())
                 .responseDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                          .getSequentialApplicantMustRespondWithin().format(DATE_FORMATTER))
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
+                                          .getSequentialApplicantMustRespondWithin())
+                .submittedOn(LocalDate.now())
                 .locationName(caseData.getLocationName())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 

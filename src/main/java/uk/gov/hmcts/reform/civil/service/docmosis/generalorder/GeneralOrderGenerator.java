@@ -17,15 +17,15 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +36,13 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final ListGeneratorService listGeneratorService;
     private final ObjectMapper mapper;
     private final DocmosisService docmosisService;
+    private String judgeNameTitle;
+    private final IdamClient idamClient;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
-
-        Map<String, Object> map = templateData.toMap(mapper);
-        map.put("judgeNameTitle", docmosisService.getJudgeNameTitle(authorisation));
-        templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
@@ -71,13 +71,14 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .courtName(caseData.getLocationName())
                 .defendantName(defendantName)
                 .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
+                .submittedOn(LocalDate.now())
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));

@@ -1,10 +1,15 @@
 package uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
+
+import java.time.LocalDate;
 
 @Getter
 @Builder
@@ -15,7 +20,6 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String claimantName;
     private final String defendantName;
     private final String applicationType;
-    private final String submittedOn;
     private final String judicialByCourtsInitiative;
     private final String locationName;
     private final String courtName;
@@ -34,9 +38,22 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String reasonForDecision;
     private final String judgeRecital;
     private final String hearingOrder;
-    private final String dateBy;
     private final String judgeComments;
-    private final String uploadDeadlineDate;
-    private final String  responseDeadlineDate;
     private final String judgeNameTitle;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate dateBy;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate uploadDeadlineDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate  responseDeadlineDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate submittedOn;
 }

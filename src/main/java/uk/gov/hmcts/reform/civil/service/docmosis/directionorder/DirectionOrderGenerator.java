@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.directionorder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -15,14 +14,14 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 
 @Service
@@ -32,16 +31,16 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
     private final ListGeneratorService listGenService;
     private final DocmosisService docmosisService;
     private final DocumentManagementService documentMangtService;
-    private final ObjectMapper mapper;
     private final DocumentGeneratorService documentGenService;
+    private String judgeNameTitle;
+    private final IdamClient idamClient;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
 
-        Map<String, Object> map = templateData.toMap(mapper);
-        map.put("judgeNameTitle", docmosisService.getJudgeNameTitle(authorisation));
-        templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docTemplate = getDocmosisTemplate();
 
@@ -71,6 +70,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .courtName(caseData.getLocationName())
@@ -78,7 +78,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                     .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
+                .submittedOn(LocalDate.now())
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));

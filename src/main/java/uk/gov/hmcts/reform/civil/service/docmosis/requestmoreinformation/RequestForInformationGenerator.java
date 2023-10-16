@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +62,8 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .courtName(caseData.getLocationName())
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
-                .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate().format(DATE_FORMATTER));
+                .submittedOn(LocalDate.now())
+                .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate());
 
         return judgeDecisionPdfDocumentBuilder.build();
     }

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -15,14 +14,14 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -30,15 +29,16 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
     private final DocumentManagementService docManagementService;
     private final ListGeneratorService listGeneratorService;
-    private final ObjectMapper mapper;
+    private final IdamClient idamClient;
     private final DocumentGeneratorService docGeneratorService;
     private final DocmosisService docmosisService;
+    private String judgeNameTitle;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
+
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
-        Map<String, Object> map = templateData.toMap(mapper);
-        map.put("judgeNameTitle", docmosisService.getJudgeNameTitle(authorisation));
-        templateData = mapper.convertValue(map, JudgeDecisionPdfDocument.class);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
@@ -68,13 +68,14 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .defendantName(defendantName)
                 .courtName(caseData.getLocationName())
                 .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
                 .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
-                .submittedOn(LocalDate.now().format(DATE_FORMATTER))
+                .submittedOn(LocalDate.now())
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
