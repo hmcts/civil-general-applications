@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 public enum PermissionToAppealTypes {
 
     GRANTED("granted"),
-    REFUSED("not granted");
+    REFUSED("not granted"),
+    CIRCUIT_COURT_JUDGE("Circuit Court Judge"),
+    HIGH_COURT_JUDGE("High Court Judge");
 
     private final String displayedValue;
 }

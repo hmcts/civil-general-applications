@@ -62,10 +62,27 @@ public class AssistedOrderForm implements MappableObject {
     private final String furtherHearingLocation;
     private final String furtherHearingMethod;
     //Costs
-    private final String judgeHeardFromText;
-    private final String costsText;
-    private final String furtherHearingText;
-    private final String permissionToAppealText;
+    private final String costSelection;
+    private final String summarilyAssessed;
+    private final String summarilyAssessedDate;
+    private final String detailedAssessment;
+    private final String interimPayment;
+    private final String interimPaymentDate;
+    private final String beSpokeCostsText;
+    private final YesOrNo costsProtection;
+    private final Boolean isQocsProtectionEnabled;
+    //Appeal
+    private final Boolean showAppeal;
+    private final String claimantOrDefendantAppeal;
+    private final Boolean isAppealGranted;
+    private final String tableAorB;
+    private final String appealDate;
+    //Order Made
+    private final Boolean showInitiativeOrWithoutNotice;
+    private final Boolean showInitiative;
     private final String orderMadeOnText;
-    private final String reasonText;
+    private final String initiativeDate;
+    private final String withoutNoticeDate;
+    //Reasons
+    private final String reasonsText;
 }
