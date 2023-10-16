@@ -2,14 +2,14 @@ package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.ClaimantDefendantNotAttendingType;
+import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.AssistedOrderCostDropdownList;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
-import uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
@@ -17,21 +17,21 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType.CLAIMANT_NOT_ATTENDING;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle.CONSIDERED;
 import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT;
@@ -45,49 +45,10 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final DocmosisService docmosisService;
-    private final CoreCaseDataService coreCaseDataService;
+
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    private static final String LINE_BREAKER = "\n\n";
-    private static final String ORDER_MADE_ON_NONE_TEXT = "This order was not made on the court’s own initiative"
-                                                + " or without notice.";
-    private static final String CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT = "The Judge heard from %s and %s.";
-    private static final String CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT = "The Judge heard from %s.";
-
-    private static final String CLAIMANT_NOT_ATTENDED_TEXT = "The claimant did not attend the trial";
-    private static final String DEFENDANT_NOT_ATTENDED_TEXT = "The defendant did not attend the trial";
-    private static final String JUDGE_SATISFIED_TO_PROCEED_TEXT = ", but the Judge was satisfied that they had received"
-        + " notice of the trial and it was reasonable to proceed in their absence.";
-    private static final String JUDGE_SATISFIED_NOTICE_OF_TRIAL_TEXT = " and whilst the Judge was satisfied that they"
-        + " had received notice of the trial it was not reasonable to proceed in their absence.";
-    private static final String JUDGE_NOT_SATISFIED_NOTICE_OF_TRIAL_TEXT = ", but the Judge was not satisfied that they"
-        + " had received notice of the hearing and it was not reasonable to proceed in their absence.";
-
-    private static final String JUDGE_HEARD_FROM_TEXT = "The Judge heard other representation: %s";
-    private static final String JUDGE_CONSIDERED_PAPERS_TEXT = "The judge considered the papers.";
-    private static final String RECITAL_RECORDED_TEXT = "It is recorded that %s.";
-    private static final String COST_IN_CASE_TEXT = "Costs in the case have been ordered.";
-    private static final String NO_ORDER_COST_TEXT = "No order as to costs has been made.";
-    private static final String COSTS_RESERVED_TEXT = "Costs reserved:%s.";
-    private static final String COST_AMOUNT_TEXT = "Amount: %s ";
-    private static final String COST_PAID_BY_TEXT =  "To be paid by: %s.";
-    private static final String COST_PARTY_HAS_BENEFIT_TEXT = "The paying party has the benefit of cost protection"
-        + " under section 26 Sentencing and Punishment Offenders Act 2012. The amount of the costs pay shall"
-        + " be determined on an application by the receiving party under Legal Aid (Costs) Regulations 2013."
-        + " Any objection by the paying party claimed shall be dealt with on that occasion.";
-    private static final String COST_PARTY_NO_BENEFIT_TEXT =  "The paying party does not have cost protection.";
-    private static final String COST_BESPOKE_TEXT = "Bespoke costs orders: %s ";
-
-    private static final String FURTHER_HEARING_TAKE_PLACE_AFTER_TEXT = "A further hearing will take place after: %s ";
-    private static final String FURTHER_HEARING_TAKE_PLACE_BEFORE_TEXT = "It will take place before: %s";
-    private static final String FURTHER_HEARING_LENGTH_TEXT = "The length of new hearing will be: %s";
-    private static final String FURTHER_HEARING_LENGTH_OTHER = "Days - %s, Hours - %s, Minutes - %s ";
-    private static final String FURTHER_HEARING_ALTERNATIVE_HEARING_TEXT = "Alternative hearing location: %s";
-    private static final String FURTHER_HEARING_METHOD_HEARING_TEXT = "Method of hearing: %s";
-    private static final String PERMISSION_TO_APPEAL_TEXT = "The application for permission to appeal "
-                                                        + "for the %s is %s.";
-    private static final String PERMISSION_TO_APPEAL_REASONS_TEXT = "Reasons: %s ";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
@@ -118,20 +79,12 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .judgeNameTitle(docmosisService.getJudgeNameTitle(authorisation))
                 .isOrderMade(caseData.getAssistedOrderMadeSelection())
                 .isSingleDate(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection()))
-                .orderMadeSingleDate((caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-                    && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection()))
-                                        ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate()) : null)
+                .orderMadeSingleDate(getOrderMadeSingleDate(caseData))
                 .isDateRange(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection()))
-                .orderMadeDateRangeFrom((caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-                    && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection()))
-                                        ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()) : null)
-                .orderMadeDateRangeTo((caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-                    && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection()))
-                                        ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo()) : null)
+                .orderMadeDateRangeFrom(getOrderMadeDateRangeFrom(caseData))
+                .orderMadeDateRangeTo(getOrderMadeDateRangeTo(caseData))
                 .isBeSpokeRange(caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES) && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection()))
-                .orderMadeBeSpokeText((caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
-                    && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection()))
-                                        ? caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection().getBeSpokeRangeText() : null)
+                .orderMadeBeSpokeText(getOrderMadeBeSpokeText(caseData))
                 .judgeHeardFromShowHide(checkJudgeHeardFromToggle(caseData))
                 .judgeHeardSelection(getJudgeHeardFromRepresentation(caseData))
                 .claimantRepresentation(getClaimantRepresentation(caseData))
@@ -144,34 +97,259 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .isOtherRepresentation(nonNull(caseData.getAssistedOrderRepresentation())
                                        && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(
                 OTHER_REPRESENTATION))
-                .otherRepresentationText(nonNull(caseData.getAssistedOrderRepresentation())
-                                             && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(
-                    OTHER_REPRESENTATION) ? caseData.getAssistedOrderRepresentation().getOtherRepresentation().getDetailText() : null)
-                .isJudgeConsidered(nonNull(caseData.getAssistedOrderRepresentation())
-                                   && nonNull(caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList())
-                                   && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()
-                                            .get(0).getDisplayedValue().equals(CONSIDERED.getDisplayedValue()))
+                .otherRepresentationText(getOtherRepresentationText(caseData))
+                .isJudgeConsidered(checkIsJudgeConsidered(caseData))
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .showRecitals(checkRecitalsToggle(caseData))
                 .recitalRecordedText(nonNull(caseData.getAssistedOrderRecitalsRecorded()) ? caseData.getAssistedOrderRecitalsRecorded().getText() : null)
                 .showFurtherHearing(checkFurtherHearingToggle(caseData))
                 .checkListToDate(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
                                      && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) ? YesOrNo.YES : YesOrNo.NO)
-            .furtherHearingListFromDate(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-                                            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate()): null)
-            .furtherHearingListToDate((nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-                                          && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()))
-                                          ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) : null )
-            .furtherHearingMethod(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) ? caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods().getDisplayedValue() : null)
+            .furtherHearingListFromDate(getFurtherHearingListFromDate(caseData))
+            .furtherHearingListToDate(getFurtherHearingListToDate(caseData))
+            .furtherHearingMethod(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) ? caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods().name() : null)
             .furtherHearingDuration(getFurtherHearingDuration(caseData))
             .checkDatesToAvoid(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES))
-            .furtherHearingDatesToAvoid(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-                                            && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES)
-                                            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates()) : null)
+            .furtherHearingDatesToAvoid(getFurtherHearingDatesToAvoid(caseData))
             .furtherHearingLocation(getFurtherHearingLocation(caseData))
-            .reasonText(getReasonText(caseData))
+            .costSelection(caseData.getAssistedCostTypes().name())
+            .summarilyAssessed(getSummarilyAssessed(caseData))
+            .summarilyAssessedDate(getDateFormatted(getSummarilyAssessedDate(caseData)))
+            .detailedAssessment(getDetailedAssessment(caseData))
+            .interimPayment(getInterimPayment(caseData))
+            .interimPaymentDate(getDateFormatted(getInterimPaymentDate(caseData)))
+            .isQocsProtectionEnabled(checkIsQocsProtectionEnabled(caseData))
+            .costsProtection(caseData.getPublicFundingCostsProtection())
+            .showAppeal(checkAppealToggle(caseData))
+            .claimantOrDefendantAppeal(getClaimantOrDefendantAppeal(caseData))
+            .isAppealGranted(nonNull(caseData.getAssistedOrderAppealDetails())
+                                 && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.GRANTED.name()))
+            .tableAorB(checkCircuitOrHighCourtJudge(caseData))
+            .appealDate(getDateFormatted(getAppealDate(caseData)))
+            .showInitiativeOrWithoutNotice(caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.COURTS_INITIATIVE)
+                                               || caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.WITHOUT_NOTICE))
+            .showInitiative(caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.COURTS_INITIATIVE))
+            .orderMadeOnText(getOrderMadeOnText(caseData))
+            .initiativeDate(getOrderMadeCourtInitiativeDate(caseData))
+            .withoutNoticeDate(getOrderMadeCourtWithOutNoticeDate(caseData))
+            .reasonsText(getReasonText(caseData))
                 .build();
     }
+
+    private String getOrderMadeDateRangeTo(CaseData caseData) {
+        return (caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection()))
+            ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeTo()) : null;
+    }
+
+    private String getOrderMadeDateRangeFrom(CaseData caseData) {
+        return (caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection()))
+            ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getDateRangeSelection().getDateRangeFrom()) : null;
+    }
+
+    private String getOrderMadeBeSpokeText(CaseData caseData) {
+        return (caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection()))
+            ? caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection().getBeSpokeRangeText() : null;
+    }
+
+    private String getFurtherHearingListFromDate(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate()): null;
+    }
+
+    private String getFurtherHearingListToDate(CaseData caseData) {
+        return (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()))
+            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) : null;
+    }
+
+    private String getFurtherHearingDatesToAvoid(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES)
+            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates()) : null;
+    }
+
+    private String getOrderMadeSingleDate(CaseData caseData) {
+        return (caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
+            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection()))
+            ? getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate()) : null;
+    }
+
+    private String getOtherRepresentationText(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderRepresentation())
+            && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(
+            OTHER_REPRESENTATION) ? caseData.getAssistedOrderRepresentation().getOtherRepresentation().getDetailText() : null;
+    }
+
+    private Boolean checkIsQocsProtectionEnabled(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsYesOrNo())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsYesOrNo().equals(
+            YES);
+    }
+
+    private Boolean checkIsJudgeConsidered(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderRepresentation())
+            && nonNull(caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList())
+            && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()
+            .get(0).getDisplayedValue().equals(CONSIDERED.getDisplayedValue());
+    }
+
+    private String getOrderMadeCourtWithOutNoticeDate(CaseData caseData) {
+        if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.WITHOUT_NOTICE)) {
+            return DATE_FORMATTER.format(caseData.getOrderMadeOnWithOutNotice().getDate());
+        }
+        return "";
+    }
+
+    private String getOrderMadeCourtInitiativeDate(CaseData caseData) {
+        if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.COURTS_INITIATIVE)) {
+            return DATE_FORMATTER.format(caseData.getOrderMadeOnOwnInitiative().getDate());
+        }
+        return "";
+    }
+
+    private LocalDate getAppealDate(CaseData caseData) {
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+            && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.GRANTED.name())) {
+            if (caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelection()
+                .equals(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)) {
+                return caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionA().getAppealGrantedRefusedDate();
+            } else {
+                return caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionB().getAppealGrantedRefusedDate();
+            }
+        }
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+                        && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.REFUSED.name())) {
+            if (caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelectionRefuse()
+                .equals(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)) {
+                return caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionA().getAppealGrantedRefusedDate();
+            } else {
+                return caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAppealChoiceOptionB().getAppealGrantedRefusedDate();
+            }
+        }
+        return null;
+    }
+
+    private String checkCircuitOrHighCourtJudge(CaseData caseData) {
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+        && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.GRANTED.name())
+        && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelection()
+            .equals(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)) {
+            return "A";
+        }
+        if (nonNull(caseData.getAssistedOrderAppealDetails())
+            && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.REFUSED.name())
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelection()
+            .equals(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)) {
+            return "A";
+        }
+        return "B";
+    }
+
+    private String getClaimantOrDefendantAppeal(CaseData caseData) {
+        if (nonNull(caseData.getAssistedOrderAppealDetails()) && nonNull(caseData.getAssistedOrderAppealDetails().getAppealOrigin())) {
+            if(caseData.getAssistedOrderAppealDetails().getAppealOrigin().name().equals(AppealOriginTypes.OTHER.name())) {
+                return caseData.getAssistedOrderAppealDetails().getOtherOriginText();
+            } else {
+                return caseData.getAssistedOrderAppealDetails().getAppealOrigin().getDisplayedValue();
+            }
+        }
+        return "";
+    }
+
+    private Boolean checkAppealToggle(CaseData caseData) {
+        return (nonNull(caseData.getAssistedOrderAppealToggle())
+            && nonNull(caseData.getAssistedOrderAppealToggle().get(0))
+            && caseData.getAssistedOrderAppealToggle().get(0).equals(FinalOrderShowToggle.SHOW));
+    }
+
+    private String getSummarilyAssessed(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsMakeAnOrderTopList().equals(
+            AssistedOrderCostDropdownList.COSTS)
+            ? populateSummarilyAssessedText(caseData) : null;
+    }
+
+    private LocalDate getSummarilyAssessedDate(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsMakeAnOrderTopList().equals(
+            AssistedOrderCostDropdownList.COSTS)
+            ? caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownDate() : null;
+    }
+
+    public String populateSummarilyAssessedText(CaseData caseData) {
+        if (caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList().equals(
+            AssistedOrderCostDropdownList.CLAIMANT)) {
+            return format(
+                "The claimant shall pay the defendant's costs (both fixed and summarily assessed as appropriate) "
+                    + "in the sum of %s. Such a sum shall be made by 4pm on",
+                MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
+        } else {
+            return format(
+                "The defendant shall pay the claimant's costs (both fixed and summarily assessed as appropriate) "
+                    + "in the sum of %s. Such a sum shall be made by 4pm on",
+                MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
+        }
+    }
+
+    private String getDetailedAssessment(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsMakeAnOrderTopList().equals(
+            AssistedOrderCostDropdownList.SUBJECT_DETAILED_ASSESSMENT)
+            ? populateDetailedAssessmentText(caseData) : null;
+    }
+
+    public String populateDetailedAssessmentText(CaseData caseData) {
+        String standardOrIndemnity;
+        if (caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentSecondDropdownList1().equals(
+            AssistedOrderCostDropdownList.INDEMNITY_BASIS)) {
+            standardOrIndemnity = "on the indemnity basis if not agreed";
+        } else {
+            standardOrIndemnity = "on the standard basis if not agreed";
+        }
+
+        if (caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList().equals(AssistedOrderCostDropdownList.CLAIMANT)) {
+            return format(
+                "The claimant shall pay the defendant's costs to be subject to a detailed assessment %s",
+                standardOrIndemnity
+            );
+        }
+        return format(
+            "The defendant shall pay the claimant's costs to be subject to a detailed assessment %s",
+            standardOrIndemnity
+        );
+    }
+
+    private String getInterimPayment(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsMakeAnOrderTopList().equals(
+            AssistedOrderCostDropdownList.SUBJECT_DETAILED_ASSESSMENT)
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentSecondDropdownList2().equals(
+            AssistedOrderCostDropdownList.YES)
+            ? populateInterimPaymentText(caseData) : null;
+    }
+
+    public String populateInterimPaymentText(CaseData caseData) {
+        return format(
+            "An interim payment of £%s on account of costs shall be paid by 4pm on ",
+            MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownAmount()));
+    }
+
+    private LocalDate getInterimPaymentDate(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderMakeAnOrderForCosts())
+            && nonNull(caseData.getAssistedOrderMakeAnOrderForCosts().getMakeAnOrderForCostsList())
+            && caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsMakeAnOrderTopList().equals(
+            AssistedOrderCostDropdownList.SUBJECT_DETAILED_ASSESSMENT)
+            ? caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate() : null;
+    }
+
 
     private String getFurtherHearingLocation(CaseData caseData) {
         if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
@@ -187,11 +365,11 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
             && caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
             otherDuration.append(caseData.getAssistedOrderFurtherHearingDetails()
-                                     .getLengthOfHearingOther().getLengthListOtherDays() + " days ")
+                                     .getLengthOfHearingOther().getLengthListOtherDays()).append(" days ")
                 .append(caseData.getAssistedOrderFurtherHearingDetails()
-                            .getLengthOfHearingOther().getLengthListOtherHours() + " hours ")
-                .append(caseData.getAssistedOrderFurtherHearingDetails()
-                            .getLengthOfHearingOther().getLengthListOtherMinutes() + " minutes ");
+                    .getLengthOfHearingOther().getLengthListOtherHours()).append(" hours ")
+                .append(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfHearingOther()
+                            .getLengthListOtherMinutes()).append(" minutes ");
             return otherDuration.toString();
         }
         return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
@@ -199,12 +377,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     private Boolean checkFurtherHearingToggle(CaseData caseData) {
-        if (nonNull(caseData.getAssistedOrderFurtherHearingToggle())
+        return (nonNull(caseData.getAssistedOrderFurtherHearingToggle())
             && nonNull(caseData.getAssistedOrderFurtherHearingToggle().get(0))
-            && caseData.getAssistedOrderFurtherHearingToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            return true;
-        }
-        return false;
+            && caseData.getAssistedOrderFurtherHearingToggle().get(0).equals(FinalOrderShowToggle.SHOW));
     }
 
     private String getHeardClaimantNotAttend(CaseData caseData) {
@@ -274,267 +449,26 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     private boolean checkJudgeHeardFromToggle(CaseData caseData) {
-        if (nonNull(caseData.getAssistedOrderJudgeHeardFrom())
+        return (nonNull(caseData.getAssistedOrderJudgeHeardFrom())
             && nonNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))
-            && caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            return true;
-        }
-        return false;
+            && caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW));
     }
 
     private boolean checkRecitalsToggle(CaseData caseData) {
 
-        if (nonNull(caseData.getAssistedOrderRecitals())
+        return (nonNull(caseData.getAssistedOrderRecitals())
             && nonNull(caseData.getAssistedOrderRecitals().get(0))
-            && caseData.getAssistedOrderRecitals().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            return true;
-        }
-        return false;
-    }
-
-    protected String getCostsTextValue(CaseData caseData) {
-
-        if (isNull(caseData.getAssistedCostTypes())) {
-            return null;
-        } else {
-            return constructAssistedCostTypes(caseData);
-        }
-
-    }
-
-    public String constructAssistedCostTypes(CaseData caseData) {
-
-        StringBuilder costsTextBuilder = new StringBuilder();
-
-        switch (caseData.getAssistedCostTypes()) {
-            case COSTS_IN_CASE: {
-                costsTextBuilder.append(COST_IN_CASE_TEXT);
-            }
-            break;
-            case NO_ORDER_TO_COST: {
-                costsTextBuilder.append(NO_ORDER_COST_TEXT);
-            }
-            break;
-            case COSTS_RESERVED: {
-                if (nonNull(caseData.getCostReservedDetails())
-                    && nonNull(caseData.getCostReservedDetails().getDetailText())) {
-                    costsTextBuilder.append(String.format(
-                        COSTS_RESERVED_TEXT,
-                        caseData.getCostReservedDetails().getDetailText()
-                    ));
-                }
-            }
-            break;
-            case BESPOKE_COSTS_ORDER: {
-                if (nonNull(caseData.getBespokeCostDetails())) {
-                    costsTextBuilder.append(String.format(COST_BESPOKE_TEXT, caseData.getBespokeCostDetails()
-                        .getDetailText()));
-                }
-            }
-            break;
-            default:
-
-        }
-        return costsTextBuilder.toString();
-
-    }
-
-    protected String getFurtherHearingText(CaseData caseData) {
-
-        StringBuilder furtherHearingBuilder = new StringBuilder();
-        if (nonNull(caseData.getAssistedOrderFurtherHearingToggle())
-            && nonNull(caseData.getAssistedOrderFurtherHearingToggle().get(0))
-            && caseData.getAssistedOrderFurtherHearingToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
-
-            furtherHearingBuilder.append(String.format(
-                FURTHER_HEARING_TAKE_PLACE_AFTER_TEXT,
-                getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate())));
-
-            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate())) {
-                furtherHearingBuilder.append(LINE_BREAKER);
-                furtherHearingBuilder.append(String.format(FURTHER_HEARING_TAKE_PLACE_BEFORE_TEXT, getDateFormatted(
-                    caseData.getAssistedOrderFurtherHearingDetails().getListToDate())));
-            }
-
-            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing())) {
-                if (caseData.getAssistedOrderFurtherHearingDetails()
-                    .getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
-                    furtherHearingBuilder.append(LINE_BREAKER);
-                    furtherHearingBuilder.append(String.format(
-                        FURTHER_HEARING_LENGTH_TEXT,
-                        String.format(
-                            FURTHER_HEARING_LENGTH_OTHER,
-                            caseData.getAssistedOrderFurtherHearingDetails()
-                                                                   .getLengthOfHearingOther().getLengthListOtherDays(),
-                            caseData.getAssistedOrderFurtherHearingDetails()
-                                                                   .getLengthOfHearingOther().getLengthListOtherHours(),
-                            caseData.getAssistedOrderFurtherHearingDetails()
-                                                                   .getLengthOfHearingOther()
-                                                                                 .getLengthListOtherMinutes())));
-                } else {
-                    furtherHearingBuilder.append(LINE_BREAKER);
-                    furtherHearingBuilder.append(String.format(
-                        FURTHER_HEARING_LENGTH_TEXT,
-                        caseData.getAssistedOrderFurtherHearingDetails()
-                                                     .getLengthOfNewHearing().getDisplayedValue()));
-                }
-            }
-
-            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation())
-                && nonNull(caseData.getAssistedOrderFurtherHearingDetails()
-                               .getAlternativeHearingLocation().getValue())) {
-                furtherHearingBuilder.append(LINE_BREAKER);
-                furtherHearingBuilder.append(String.format(
-                    FURTHER_HEARING_ALTERNATIVE_HEARING_TEXT,
-                    caseData.getAssistedOrderFurtherHearingDetails()
-                                                               .getAlternativeHearingLocation().getValue().getLabel()));
-
-            }
-
-            if (nonNull(caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods())) {
-                furtherHearingBuilder.append(LINE_BREAKER);
-                furtherHearingBuilder.append(String.format(
-                    FURTHER_HEARING_METHOD_HEARING_TEXT,
-                    caseData.getAssistedOrderFurtherHearingDetails()
-                                                               .getHearingMethods().getDisplayedValue()));
-            }
-            return furtherHearingBuilder.toString();
-        }
-        return null;
-    }
-
-    protected String generalJudgeHeardFromText(CaseData caseData) {
-        StringBuilder judgeHeardFromBuilder = new StringBuilder();
-        if (isNull(caseData.getAssistedOrderJudgeHeardFrom())
-            || isNull(caseData.getAssistedOrderJudgeHeardFrom().get(0))
-            || !caseData.getAssistedOrderJudgeHeardFrom().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            return null;
-        } else {
-            if (nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
-                .getRepresentationType().equals(HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT)) {
-                presentationAttended(judgeHeardFromBuilder, caseData);
-            } else if (nonNull(caseData.getAssistedOrderRepresentation()) && caseData.getAssistedOrderRepresentation()
-                .getRepresentationType().equals(HeardFromRepresentationTypes.OTHER_REPRESENTATION)) {
-                judgeHeardFromBuilder.append(String.format(
-                    AssistedOrderFormGenerator.JUDGE_HEARD_FROM_TEXT,
-                    caseData.getAssistedOrderRepresentation()
-                                                           .getOtherRepresentation().getDetailText()));
-            }
-            if (nonNull(caseData.getAssistedOrderRepresentation())
-                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList() != null
-                && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList().get(0)
-                .equals(CONSIDERED)) {
-                judgeHeardFromBuilder.append(LINE_BREAKER);
-                judgeHeardFromBuilder.append(JUDGE_CONSIDERED_PAPERS_TEXT);
-            }
-
-        }
-        return judgeHeardFromBuilder.toString();
-    }
-
-    private void presentationAttended(StringBuilder judgeHeardFromBuilder, CaseData caseData) {
-
-        //Both Attended
-        if (!caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                && !caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-            judgeHeardFromBuilder.append(String.format(
-                    CLAIMANT_DEFENDANT_BOTH_ATTENDED_TEXT,
-                    caseData.getAssistedOrderRepresentation()
-                            .getClaimantDefendantRepresentation()
-                            .getClaimantRepresentation().getDisplayedValue()
-                            .toLowerCase(),
-                    caseData.getAssistedOrderRepresentation()
-                            .getClaimantDefendantRepresentation()
-                            .getDefendantRepresentation()
-                            .getDisplayedValue().toLowerCase()));
-
-        } else if (caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                && !caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-            //Claimant Attended Defendant Not ATTENDED
-            judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
-                    caseData.getAssistedOrderRepresentation()
-                            .getClaimantDefendantRepresentation()
-                            .getClaimantRepresentation().getDisplayedValue()));
-            judgeHeardFromBuilder.append(LINE_BREAKER);
-            judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
-            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation()
-                    .getHeardFromDefendantNotAttend()
-                    .getListDef()));
-
-        } else if (!caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                && caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-            //Claimant Not ATTENDED, Defendant Attended
-            judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
-            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation()
-                    .getHeardFromClaimantNotAttend()
-                    .getListClaim()));
-            judgeHeardFromBuilder.append(LINE_BREAKER);
-            judgeHeardFromBuilder.append(String.format(CLAIMANT_OR_DEFENDANT_ATTENDED_TEXT,
-                    caseData.getAssistedOrderRepresentation()
-                            .getClaimantDefendantRepresentation()
-                            .getDefendantRepresentation()
-                            .getDisplayedValue()));
-        } else if (caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getDefendantRepresentation().equals(
-                        DefendantRepresentationType.DEFENDANT_NOT_ATTENDING)
-                && caseData.getAssistedOrderRepresentation()
-                .getClaimantDefendantRepresentation().getClaimantRepresentation().equals(CLAIMANT_NOT_ATTENDING)) {
-            //Both Not Attended
-            judgeHeardFromBuilder.append(CLAIMANT_NOT_ATTENDED_TEXT);
-            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation()
-                    .getHeardFromClaimantNotAttend()
-                    .getListClaim()));
-            judgeHeardFromBuilder.append(LINE_BREAKER);
-            judgeHeardFromBuilder.append(DEFENDANT_NOT_ATTENDED_TEXT);
-            judgeHeardFromBuilder.append(getJudgeSatisfiedText(caseData.getAssistedOrderRepresentation()
-                    .getClaimantDefendantRepresentation()
-                    .getHeardFromDefendantNotAttend()
-                    .getListDef()));
-        }
+            && caseData.getAssistedOrderRecitals().get(0).equals(FinalOrderShowToggle.SHOW));
     }
 
     protected String getOrderMadeOnText(CaseData caseData) {
-        StringBuilder orderMadeOnText = new StringBuilder();
         if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.COURTS_INITIATIVE)) {
-            orderMadeOnText.append(caseData.getOrderMadeOnOwnInitiative().getDetailText());
-            orderMadeOnText.append(DATE_FORMATTER.format(caseData.getOrderMadeOnOwnInitiative().getDate()));
+            return caseData.getOrderMadeOnOwnInitiative().getDetailText();
         } else if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.WITHOUT_NOTICE)) {
-            orderMadeOnText.append(caseData.getOrderMadeOnWithOutNotice().getDetailText());
-            orderMadeOnText.append(DATE_FORMATTER.format(caseData.getOrderMadeOnWithOutNotice().getDate()));
-        } else if (caseData.getOrderMadeOnOption().equals(OrderMadeOnTypes.NONE)) {
-            orderMadeOnText.append(ORDER_MADE_ON_NONE_TEXT);
+            return caseData.getOrderMadeOnWithOutNotice().getDetailText();
+        } else {
+            return "";
         }
-        return orderMadeOnText.toString();
-    }
-
-    protected String getPermissionToAppealText(CaseData caseData) {
-        StringBuilder permissionToAppealBuilder = new StringBuilder();
-        if (nonNull(caseData.getAssistedOrderAppealToggle())
-            && nonNull(caseData.getAssistedOrderAppealToggle().get(0))
-            && caseData.getAssistedOrderAppealToggle().get(0).equals(FinalOrderShowToggle.SHOW)) {
-            if (nonNull(caseData.getAssistedOrderAppealDetails())) {
-                permissionToAppealBuilder.append(String.format(
-                    PERMISSION_TO_APPEAL_TEXT,
-                    caseData.getAssistedOrderAppealDetails()
-                        .getAppealOrigin().getDisplayedValue(),
-                    caseData.getAssistedOrderAppealDetails()
-                        .getPermissionToAppeal().getDisplayedValue()));
-            }
-            return permissionToAppealBuilder.toString();
-        }
-        return null;
     }
 
     protected String getOrderMadeDate(CaseData caseData) {
@@ -551,9 +485,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             || isNull(caseData.getAssistedOrderGiveReasonsDetails().getReasonsText())) {
             return null;
         } else {
-            StringBuilder reasonBuilder = new StringBuilder();
-            reasonBuilder.append(caseData.getAssistedOrderGiveReasonsDetails().getReasonsText());
-            return reasonBuilder.toString();
+            return (caseData.getAssistedOrderGiveReasonsDetails().getReasonsText());
         }
     }
 
@@ -563,13 +495,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 LocalDateTime.now().format(formatter));
     }
 
-    @SuppressWarnings("unchecked")
-    protected String getReference(CaseDetails caseData, String refKey) {
-        if (nonNull(caseData.getData().get("solicitorReferences"))) {
-            return ((Map<String, String>) caseData.getData().get("solicitorReferences")).get(refKey);
-        }
-        return null;
-    }
 
     protected String getCaseNumberFormatted(CaseData caseData) {
         String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
@@ -581,47 +506,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             return null;
         }
         return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
-    }
-
-    protected String getCostText(AssistedOrderCost assistedOrderCost) {
-        if (nonNull(assistedOrderCost.getCostAmount())) {
-            return String.format(COST_AMOUNT_TEXT, assistedOrderCost.formatCaseAmountToPounds());
-        }
-        return "";
-    }
-
-    protected  String getJudgeSatisfiedText(ClaimantDefendantNotAttendingType attendingType) {
-        if (nonNull(attendingType)) {
-            if (attendingType.equals(ClaimantDefendantNotAttendingType.SATISFIED_REASONABLE_TO_PROCEED)) {
-                return JUDGE_SATISFIED_TO_PROCEED_TEXT;
-            } else if (attendingType.equals(ClaimantDefendantNotAttendingType.SATISFIED_NOTICE_OF_TRIAL)) {
-                return JUDGE_SATISFIED_NOTICE_OF_TRIAL_TEXT;
-            } else if (attendingType.equals(ClaimantDefendantNotAttendingType.NOT_SATISFIED_NOTICE_OF_TRIAL)) {
-                return JUDGE_NOT_SATISFIED_NOTICE_OF_TRIAL_TEXT;
-            }
-        }
-        return "";
-    }
-
-    protected String getIsProtectionDateText(AssistedOrderCost assistedOrderCost) {
-        StringBuilder assistedCostBuilder = new StringBuilder();
-
-        if (nonNull(assistedOrderCost.getCostPaymentDeadLine())) {
-            assistedCostBuilder.append(LINE_BREAKER);
-            assistedCostBuilder.append(
-                String.format(COST_PAID_BY_TEXT, getDateFormatted(assistedOrderCost.getCostPaymentDeadLine())));
-        }
-
-        if (nonNull(assistedOrderCost.getIsPartyCostProtection())) {
-            if (assistedOrderCost.getIsPartyCostProtection().equals(YesOrNo.YES)) {
-                assistedCostBuilder.append(LINE_BREAKER);
-                assistedCostBuilder.append(COST_PARTY_NO_BENEFIT_TEXT);
-            } else {
-                assistedCostBuilder.append(LINE_BREAKER);
-                assistedCostBuilder.append(COST_PARTY_HAS_BENEFIT_TEXT);
-            }
-        }
-        return assistedCostBuilder.toString();
     }
 
     protected DocmosisTemplates getTemplate() {
