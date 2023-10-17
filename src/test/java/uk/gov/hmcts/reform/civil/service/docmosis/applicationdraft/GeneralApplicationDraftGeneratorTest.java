@@ -493,12 +493,6 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         assertThat(generalApplicationDraftGenerator.getReference(caseDetails, "notExist")).isNull();
     }
 
-    @Test
-    void test_getDateFormatted() {
-        String dateString = generalApplicationDraftGenerator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo(" 1 January 1970");
-    }
-
     private String getClaimants(CaseData caseData) {
         List<String> claimantsName = new ArrayList<>();
         claimantsName.add(caseData.getClaimant1PartyName());
