@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedOrderCostDropdownList;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
-import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -46,8 +46,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     private final DocumentGeneratorService documentGeneratorService;
     private final DocmosisService docmosisService;
 
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
@@ -75,14 +73,14 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .defendant2Name(caseData.getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
                 .caseName(caseData.getCaseNameHmctsInternal())
                 .courtLocation(caseData.getLocationName())
-                .receivedDate(getDateFormatted(LocalDate.now()))
+                .receivedDate(LocalDate.now())
                 .judgeNameTitle(docmosisService.getJudgeNameTitle(authorisation))
                 .isOrderMade(caseData.getAssistedOrderMadeSelection())
                 .isSingleDate(checkIsSingleDate(caseData))
-                .orderMadeSingleDate(getDateFormatted(getOrderMadeSingleDate(caseData)))
+                .orderMadeSingleDate(getOrderMadeSingleDate(caseData))
                 .isDateRange(checkIsDateRange(caseData))
-                .orderMadeDateRangeFrom(getDateFormatted(getOrderMadeDateRangeFrom(caseData)))
-                .orderMadeDateRangeTo(getDateFormatted(getOrderMadeDateRangeTo(caseData)))
+                .orderMadeDateRangeFrom(getOrderMadeDateRangeFrom(caseData))
+                .orderMadeDateRangeTo(getOrderMadeDateRangeTo(caseData))
                 .isBeSpokeRange(checkIsBeSpokeRange(caseData))
                 .orderMadeBeSpokeText(getOrderMadeBeSpokeText(caseData))
                 .judgeHeardFromShowHide(checkJudgeHeardFromToggle(caseData))
@@ -90,48 +88,74 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .claimantRepresentation(getClaimantRepresentation(caseData))
                 .defendantRepresentation(getDefendantRepresentation(caseData))
                 .defendantTwoRepresentation(getDefendantTwoRepresentation(caseData))
-                .isDefendantTwoExists(caseData.getIsMultiParty().equals(YesOrNo.YES))
+                .isDefendantTwoExists(checkIsMultiparty(caseData))
                 .heardClaimantNotAttend(getHeardClaimantNotAttend(caseData))
                 .heardDefendantNotAttend(getHeardDefendantNotAttend(caseData))
                 .heardDefendantTwoNotAttend(getHeardDefendantTwoNotAttend(caseData))
-                .isOtherRepresentation(nonNull(caseData.getAssistedOrderRepresentation())
-                                       && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(
-                OTHER_REPRESENTATION))
+                .isOtherRepresentation(checkIsOtherRepresentation(caseData))
                 .otherRepresentationText(getOtherRepresentationText(caseData))
                 .isJudgeConsidered(checkIsJudgeConsidered(caseData))
                 .orderedText(caseData.getAssistedOrderOrderedThatText())
                 .showRecitals(checkRecitalsToggle(caseData))
                 .recitalRecordedText(getRecitalRecordedText(caseData))
                 .showFurtherHearing(checkFurtherHearingToggle(caseData))
-                .checkListToDate(nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-                                     && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) ? YesOrNo.YES : YesOrNo.NO)
-            .furtherHearingListFromDate(getFurtherHearingListFromDate(caseData))
+                .checkListToDate(checkListToDate(caseData))
+                .furtherHearingListFromDate(getFurtherHearingListFromDate(caseData))
             .furtherHearingListToDate(getFurtherHearingListToDate(caseData))
-            .furtherHearingMethod(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) ? caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods().name() : null)
+            .furtherHearingMethod(getFurtherHearingMethod(caseData))
             .furtherHearingDuration(getFurtherHearingDuration(caseData))
-            .checkDatesToAvoid(nonNull(caseData.getAssistedOrderFurtherHearingDetails()) && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES))
+            .checkDatesToAvoid(checkDatesToAvoid(caseData))
             .furtherHearingDatesToAvoid(getFurtherHearingDatesToAvoid(caseData))
             .furtherHearingLocation(getFurtherHearingLocation(caseData))
             .costSelection(caseData.getAssistedCostTypes().name())
+            .costsReservedText(getCostsReservedText(caseData))
             .summarilyAssessed(getSummarilyAssessed(caseData))
-            .summarilyAssessedDate(getDateFormatted(getSummarilyAssessedDate(caseData)))
+            .summarilyAssessedDate(getSummarilyAssessedDate(caseData))
             .detailedAssessment(getDetailedAssessment(caseData))
             .interimPayment(getInterimPayment(caseData))
-            .interimPaymentDate(getDateFormatted(getInterimPaymentDate(caseData)))
+            .interimPaymentDate(getInterimPaymentDate(caseData))
             .isQocsProtectionEnabled(checkIsQocsProtectionEnabled(caseData))
             .costsProtection(caseData.getPublicFundingCostsProtection())
             .showAppeal(checkAppealToggle(caseData))
             .claimantOrDefendantAppeal(getClaimantOrDefendantAppeal(caseData))
             .isAppealGranted(isAppealGranted(caseData))
             .tableAorB(checkCircuitOrHighCourtJudge(caseData))
-            .appealDate(getDateFormatted(getAppealDate(caseData)))
+            .appealDate(getAppealDate(caseData))
             .showInitiativeOrWithoutNotice(checkInitiativeOrWithoutNotice(caseData))
             .showInitiative(checkInitiative(caseData))
             .orderMadeOnText(getOrderMadeOnText(caseData))
-            .initiativeDate(getDateFormatted(getOrderMadeCourtInitiativeDate(caseData)))
-            .withoutNoticeDate(getDateFormatted(getOrderMadeCourtWithOutNoticeDate(caseData)))
+            .initiativeDate(getOrderMadeCourtInitiativeDate(caseData))
+            .withoutNoticeDate(getOrderMadeCourtWithOutNoticeDate(caseData))
             .reasonsText(getReasonText(caseData))
                 .build();
+    }
+
+    protected String getCostsReservedText(CaseData caseData) {
+        return caseData.getAssistedCostTypes().getDisplayedValue().equals(AssistedCostTypesList.COSTS_RESERVED.getDisplayedValue())
+            && nonNull(caseData.getCostReservedDetails()) ? caseData.getCostReservedDetails().getDetailText() : null;
+    }
+
+    protected Boolean checkIsOtherRepresentation(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderRepresentation())
+            && caseData.getAssistedOrderRepresentation().getRepresentationType().equals(
+            OTHER_REPRESENTATION);
+    }
+
+    protected Boolean checkIsMultiparty(CaseData caseData) {
+        return caseData.getIsMultiParty().equals(YesOrNo.YES);
+    }
+
+    protected Boolean checkDatesToAvoid(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails()) && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES);
+    }
+
+    protected String getFurtherHearingMethod(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails()) ? caseData.getAssistedOrderFurtherHearingDetails().getHearingMethods().name() : null;
+    }
+
+    protected YesOrNo checkListToDate(CaseData caseData) {
+        return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
+            && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) ? YesOrNo.YES : YesOrNo.NO;
     }
 
     protected String getRecitalRecordedText(CaseData caseData) {
@@ -182,21 +206,21 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             ? caseData.getAssistedOrderMadeDateHeardDetails().getBeSpokeRangeSelection().getBeSpokeRangeText() : null;
     }
 
-    protected String getFurtherHearingListFromDate(CaseData caseData) {
+    protected LocalDate getFurtherHearingListFromDate(CaseData caseData) {
         return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListFromDate()): null;
+            ? caseData.getAssistedOrderFurtherHearingDetails().getListFromDate() : null;
     }
 
-    protected String getFurtherHearingListToDate(CaseData caseData) {
+    protected LocalDate getFurtherHearingListToDate(CaseData caseData) {
         return (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
             && nonNull(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()))
-            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getListToDate()) : null;
+            ? caseData.getAssistedOrderFurtherHearingDetails().getListToDate() : null;
     }
 
-    protected String getFurtherHearingDatesToAvoid(CaseData caseData) {
+    protected LocalDate getFurtherHearingDatesToAvoid(CaseData caseData) {
         return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
             && caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoid().equals(YesOrNo.YES)
-            ? getDateFormatted(caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates()) : null;
+            ? caseData.getAssistedOrderFurtherHearingDetails().getDatesToAvoidDateDropdown().getDatesToAvoidDates() : null;
     }
 
     protected LocalDate getOrderMadeSingleDate(CaseData caseData) {
@@ -257,8 +281,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
     protected String checkCircuitOrHighCourtJudge(CaseData caseData) {
         if (nonNull(caseData.getAssistedOrderAppealDetails())
-        && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.GRANTED.name())
-        && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelection()
+            && caseData.getAssistedOrderAppealDetails().getPermissionToAppeal().name().equals(PermissionToAppealTypes.GRANTED.name())
+            && caseData.getAssistedOrderAppealDetails().getAppealTypeChoicesForGranted().getAssistedOrderAppealJudgeSelection()
             .equals(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)) {
             return "A";
         }
@@ -273,7 +297,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
     protected String getClaimantOrDefendantAppeal(CaseData caseData) {
         if (nonNull(caseData.getAssistedOrderAppealDetails()) && nonNull(caseData.getAssistedOrderAppealDetails().getAppealOrigin())) {
-            if(caseData.getAssistedOrderAppealDetails().getAppealOrigin().name().equals(AppealOriginTypes.OTHER.name())) {
+            if (caseData.getAssistedOrderAppealDetails().getAppealOrigin().name().equals(AppealOriginTypes.OTHER.name())) {
                 return caseData.getAssistedOrderAppealDetails().getOtherOriginText();
             } else {
                 return caseData.getAssistedOrderAppealDetails().getAppealOrigin().getDisplayedValue();
@@ -372,10 +396,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             ? caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderAssessmentThirdDropdownDate() : null;
     }
 
-
     protected String getFurtherHearingLocation(CaseData caseData) {
         if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
-        && (caseData.getAssistedOrderFurtherHearingDetails().getHearingLocationList()
+            && (caseData.getAssistedOrderFurtherHearingDetails().getHearingLocationList()
             .getValue().getLabel().equalsIgnoreCase("Other location"))) {
             return caseData.getAssistedOrderFurtherHearingDetails().getAlternativeHearingLocation().getValue().getLabel();
         }
@@ -493,14 +516,6 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         }
     }
 
-    protected String getOrderMadeDate(CaseData caseData) {
-        if (nonNull(caseData.getAssistedOrderMadeDateHeardDetails())
-            && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())) {
-            return getDateFormatted(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection().getSingleDate());
-        }
-        return null;
-    }
-
     protected String getReasonText(CaseData caseData) {
         if (isNull(caseData.getAssistedOrderGiveReasonsYesNo())
             || caseData.getAssistedOrderGiveReasonsYesNo().equals(YesOrNo.NO)
@@ -517,17 +532,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 LocalDateTime.now().format(formatter));
     }
 
-
     protected String getCaseNumberFormatted(CaseData caseData) {
         String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
         return String.join("-", parts);
-    }
-
-    protected String getDateFormatted(LocalDate date) {
-        if (isNull(date)) {
-            return null;
-        }
-        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     protected DocmosisTemplates getTemplate() {

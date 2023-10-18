@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.model.genapplication.finalorder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.core.util.Json;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
