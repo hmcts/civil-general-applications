@@ -64,14 +64,13 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         );
     }
 
-    private AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
+    AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
 
         return AssistedOrderForm.builder()
                 .caseNumber(getCaseNumberFormatted(caseData))
                 .claimant1Name(caseData.getClaimant1PartyName())
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
-                .caseName(caseData.getCaseNameHmctsInternal())
                 .courtLocation(caseData.getLocationName())
                 .receivedDate(LocalDate.now())
                 .judgeNameTitle(docmosisService.getJudgeNameTitle(authorisation))

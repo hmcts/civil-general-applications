@@ -19,7 +19,6 @@ import java.time.LocalDate;
 public class AssistedOrderForm implements MappableObject {
 
     private final String caseNumber;
-    private final String caseName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate receivedDate;

@@ -23,6 +23,11 @@ import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.common.MappableObject;
+import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
+import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
+import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
@@ -55,6 +60,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
 
 @SpringBootTest(classes = {
     AssistedOrderFormGenerator.class
@@ -62,6 +73,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class AssistedOrderFormGeneratorTest {
 
     private static final String RECITAL_RECORDED_TEXT = "It is recorded that";
+    private static final String BEARER_TOKEN = "Bearer Token";
+    private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
     private static final String CLAIMANT_SUMMARILY_ASSESSED_TEXT = "The claimant shall pay the defendant's costs (both fixed and summarily assessed as appropriate) " +
         "in the sum of £789.00. " +
         "Such a sum shall be made by 4pm on";
@@ -1995,5 +2008,94 @@ class AssistedOrderFormGeneratorTest {
     @Test
     void test_getTemplate() {
         assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
+    }
+
+    @Test
+    void shouldGenerateAssistedOrderDocument() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO);
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
+            .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
+        when(docmosisService.getJudgeNameTitle(any())).thenReturn("Mr.Judge");
+        generator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentGeneratorService).generateDocmosisDocument(any(AssistedOrderForm.class),
+                                                                  eq(ASSISTED_ORDER_FORM));
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_ORDER));
+
+        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+    }
+
+    private CaseData getSampleGeneralApplicationCaseData(YesOrNo isMultiparty) {
+        List<FinalOrderShowToggle> judgeHeardFromShowOption = new ArrayList<>();
+        judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
+        List<FinalOrderShowToggle> recitalsOrderShowOption = new ArrayList<>();
+        recitalsOrderShowOption.add(FinalOrderShowToggle.SHOW);
+        List<FinalOrderShowToggle> furtherHearingShowOption = new ArrayList<>();
+        furtherHearingShowOption.add(FinalOrderShowToggle.SHOW);
+        List<FinalOrderShowToggle> appealShowOption = new ArrayList<>();
+        appealShowOption.add(FinalOrderShowToggle.SHOW);
+        return CaseData.builder()
+            .ccdCaseReference(1644495739087775L)
+            .claimant1PartyName("ClaimantName")
+            .defendant1PartyName("defendant1PartyName")
+            .isMultiParty(isMultiparty)
+            .locationName("ccmcc")
+            .assistedOrderMadeSelection(YesOrNo.YES)
+            .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().singleDateSelection(
+                AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build()).build())
+            .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+            .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
+                                             .representationType(HeardFromRepresentationTypes.OTHER_REPRESENTATION)
+                                             .otherRepresentation(DetailText.builder().detailText(OTHER_ORIGIN_TEXT).build()).build())
+            .assistedOrderRecitals(recitalsOrderShowOption)
+            .assistedOrderRecitalsRecorded(AssistedOrderRecitalRecord.builder().text(RECITAL_RECORDED_TEXT).build())
+            .assistedOrderOrderedThatText(TEST_TEXT)
+            .assistedCostTypes(AssistedCostTypesList.MAKE_AN_ORDER_FOR_DETAILED_COSTS)
+            .assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
+                                                  .makeAnOrderForCostsList(AssistedOrderCostDropdownList.CLAIMANT)
+                                                  .assistedOrderCostsMakeAnOrderTopList(
+                                                      AssistedOrderCostDropdownList.COSTS)
+                                                  .assistedOrderCostsFirstDropdownAmount(BigDecimal.valueOf(78900)).build())
+            .publicFundingCostsProtection(YesOrNo.YES)
+            .assistedOrderFurtherHearingToggle(furtherHearingShowOption)
+            .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                                                    .listFromDate(LocalDate.now().minusDays(5))
+                                                    .lengthOfNewHearing(LengthOfHearing.OTHER)
+                                                    .lengthOfHearingOther(HearingLength.builder().lengthListOtherDays(2)
+                                                                              .lengthListOtherHours(5)
+                                                                              .lengthListOtherMinutes(30).build())
+                                                    .datesToAvoid(YesOrNo.NO)
+                                                    .hearingLocationList(DynamicList.builder().value(
+                                                        DynamicListElement.builder().label("Other location").build()).build())
+                                                    .alternativeHearingLocation(DynamicList.builder().value(
+                                                        DynamicListElement.builder().label("Site Name 2 - Address2 - 28000").build()).build())
+                                                    .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
+            .assistedOrderAppealToggle(appealShowOption)
+            .assistedOrderAppealDetails(AssistedOrderAppealDetails.builder()
+                                            .appealOrigin(AppealOriginTypes.DEFENDANT)
+                                            .permissionToAppeal(PermissionToAppealTypes.GRANTED)
+                                            .appealTypeChoicesForGranted(
+                                                AppealTypeChoices.builder()
+                                                    .assistedOrderAppealJudgeSelection(PermissionToAppealTypes.CIRCUIT_COURT_JUDGE)
+                                                    .appealChoiceOptionA(
+                                                        AppealTypeChoiceList.builder()
+                                                            .appealGrantedRefusedDate(LocalDate.now().plusDays(14))
+                                                            .build()).build()).build())
+            .orderMadeOnOption(OrderMadeOnTypes.COURTS_INITIATIVE)
+            .orderMadeOnOwnInitiative(DetailTextWithDate.builder()
+                                          .detailText(TEST_TEXT)
+                                          .date(LocalDate.now())
+                                          .build())
+            .assistedOrderGiveReasonsYesNo(YesOrNo.YES)
+            .assistedOrderGiveReasonsDetails(AssistedOrderGiveReasonsDetails
+                                                 .builder()
+                                                 .reasonsText(TEST_TEXT)
+                                                 .build())
+            .build();
+
     }
 }
