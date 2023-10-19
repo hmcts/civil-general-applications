@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
@@ -36,19 +34,16 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     private final DocumentGeneratorService documentGeneratorService;
     private final IdamClient idamClient;
     private final ListGeneratorService listGeneratorService;
-    private final ObjectMapper mapper;
+    private String judgeNameTitle;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
         UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        String judgeNameTitle = userDetails.getFullName();
+        judgeNameTitle = userDetails.getFullName();
 
         FreeFormOrder templateData = getTemplateData(caseData);
-        Map<String, Object> map = templateData.toMap(mapper);
-        map.put("judgeNameTitle", judgeNameTitle);
-        templateData = mapper.convertValue(map, FreeFormOrder.class);
         DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
@@ -67,16 +62,17 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         String claimantName = listGeneratorService.claimantsName(caseData);
         String defendantName = listGeneratorService.defendantsName(caseData);
         return FreeFormOrder.builder()
-                .caseNumber(getCaseNumberFormatted(caseData))
-                .caseName(caseData.getCaseNameHmctsInternal())
-                .receivedDate(getDateFormatted(LocalDate.now()))
-                .freeFormRecitalText(caseData.getFreeFormRecitalText())
-                .freeFormOrderedText(caseData.getFreeFormOrderedText())
-                .freeFormOrderValue(getFreeFormOrderValue(caseData))
-                .courtName(caseData.getLocationName())
-                .claimantName(claimantName)
-                .defendantName(defendantName)
-                .build();
+            .judgeNameTitle(judgeNameTitle)
+            .caseNumber(getCaseNumberFormatted(caseData))
+            .caseName(caseData.getCaseNameHmctsInternal())
+            .receivedDate(getDateFormatted(LocalDate.now()))
+            .freeFormRecitalText(caseData.getFreeFormRecitalText())
+            .freeFormOrderedText(caseData.getFreeFormOrderedText())
+            .freeFormOrderValue(getFreeFormOrderValue(caseData))
+            .courtName(caseData.getLocationName())
+            .claimantName(claimantName)
+            .defendantName(defendantName)
+            .build();
     }
 
     protected String getFreeFormOrderValue(CaseData caseData) {

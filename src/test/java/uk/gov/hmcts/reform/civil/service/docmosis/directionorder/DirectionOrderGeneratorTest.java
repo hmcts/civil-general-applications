@@ -74,6 +74,8 @@ class DirectionOrderGeneratorTest {
     void shouldGenerateDirectionOrderDocument() {
         CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
 

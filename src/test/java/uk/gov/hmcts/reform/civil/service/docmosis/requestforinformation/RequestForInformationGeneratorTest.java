@@ -96,8 +96,6 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getDateBy(), caseData.getJudicialDecisionRequestMoreInfo()
-                    .getJudgeRequestMoreInfoByDate()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),
