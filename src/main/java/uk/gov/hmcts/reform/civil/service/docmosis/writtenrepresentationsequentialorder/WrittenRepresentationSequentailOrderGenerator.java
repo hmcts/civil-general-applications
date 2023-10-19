@@ -18,13 +18,12 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_SEQUENTIAL;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
-import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
 
 @Service
 @RequiredArgsConstructor
@@ -80,7 +79,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
                                         .getWrittenSequentailRepresentationsBy())
                 .responseDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                           .getSequentialApplicantMustRespondWithin())
-                .submittedOn(getFormattedDate(new Date()))
+                .submittedOn(LocalDate.now())
                 .locationName(caseData.getLocationName())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 

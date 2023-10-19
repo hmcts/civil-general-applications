@@ -72,6 +72,8 @@ class DismissalOrderGeneratorTest {
     void shouldGenerateDismissalOrderDocument() {
         CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build();
 
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DISMISSAL_ORDER)))
             .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
 
