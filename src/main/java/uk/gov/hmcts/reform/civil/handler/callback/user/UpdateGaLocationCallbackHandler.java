@@ -57,7 +57,7 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
                     .camundaEvent(TRIGGER_LOCATION_UPDATE.name())
                     .status(BusinessProcessStatus.FINISHED)
                     .build())
-            .isCcmccLocation(YesOrNo.NO)
+            .isCtscLocation(YesOrNo.NO)
             .caseManagementLocation(GACaseLocation.builder().baseLocation(civilCaseData.getCaseManagementLocation()
                                                                               .getBaseLocation())
                                         .region(civilCaseData.getCaseManagementLocation().getRegion())

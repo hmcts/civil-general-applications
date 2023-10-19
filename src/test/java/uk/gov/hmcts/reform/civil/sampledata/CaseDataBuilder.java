@@ -497,7 +497,7 @@ public class CaseDataBuilder {
             .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
             .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
             .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
-            .isCcmccLocation(application.getIsCcmccLocation())
+            .isCtscLocation(application.getIsCtscLocation())
             .caseManagementLocation(application.getCaseManagementLocation())
             .build();
     }
@@ -521,7 +521,7 @@ public class CaseDataBuilder {
             .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
             .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
             .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
-            .isCcmccLocation(application.getIsCcmccLocation())
+            .isCtscLocation(application.getIsCtscLocation())
             .caseManagementLocation(application.getCaseManagementLocation())
             .build();
     }
@@ -545,7 +545,7 @@ public class CaseDataBuilder {
             .parentClaimantIsApplicant(application.getParentClaimantIsApplicant())
             .generalAppParentCaseLink(application.getGeneralAppParentCaseLink())
             .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
-            .isCcmccLocation(application.getIsCcmccLocation())
+            .isCtscLocation(application.getIsCtscLocation())
             .caseManagementLocation(application.getCaseManagementLocation())
             .build();
     }

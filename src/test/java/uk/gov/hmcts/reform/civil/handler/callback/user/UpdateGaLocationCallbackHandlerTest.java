@@ -101,7 +101,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                     "TRIGGER_LOCATION_UPDATE");
 
             assertThat(response.getData()).containsEntry(
-                    "isCcmccLocation",
+                    "isCtscLocation",
                     "No");
             assertThat(response.getData()).containsEntry(
                 "locationName",
@@ -142,7 +142,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                 .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
                                                                  .email("abc@gmail.com").build()))
                 .isMultiParty(NO)
-                .isCcmccLocation(YES)
+                .isCtscLocation(YES)
                 .caseManagementLocation(GACaseLocation.builder()
                                             .baseLocation("687686")
                                             .region("4").build())
