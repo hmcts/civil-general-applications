@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -73,6 +74,8 @@ class GeneralOrderGeneratorTest {
     void shouldGenerateGeneralOrderDocument() {
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");

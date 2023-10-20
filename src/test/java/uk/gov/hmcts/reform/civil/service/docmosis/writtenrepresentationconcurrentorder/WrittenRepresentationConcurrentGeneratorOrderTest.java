@@ -116,9 +116,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenConcurrentRepresentationsBy()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
@@ -164,9 +161,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenConcurrentRepresentationsBy()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " ".concat(
@@ -209,9 +203,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getUploadDeadlineDate(),
-                                   caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                       .getWrittenConcurrentRepresentationsBy()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
