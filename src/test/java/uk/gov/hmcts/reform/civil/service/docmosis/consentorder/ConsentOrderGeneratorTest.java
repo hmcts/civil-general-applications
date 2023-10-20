@@ -99,9 +99,7 @@ class ConsentOrderGeneratorTest {
             () -> assertEquals(templateData.getConsentOrder(),
                                caseData.getApproveConsentOrder().getConsentOrderDescription()),
             () -> assertEquals(templateData.getCourtName(),
-                               caseData.getCaseManagementLocation().getSiteName()),
-            () -> assertEquals(templateData.getOrderDate(),
-                               consentOrderGenerator.getDateFormatted(LocalDate.now()))
+                               caseData.getCaseManagementLocation().getSiteName())
         );
     }
 

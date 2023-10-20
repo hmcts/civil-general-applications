@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
-import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -30,9 +29,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.LANGUAGE_INTERPRETER;
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.OTHER_SUPPORT;
@@ -65,7 +64,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .defendantName(defendantName)
                 .claimantReference(getReference(civilMainCase, "applicantSolicitor1Reference"))
                 .defendantReference(getReference(civilMainCase, "respondentSolicitor1Reference"))
-                .date(getDateFormatted(LocalDate.now()))
+                .date(LocalDate.now())
                 .applicantPartyName(caseData.getApplicantPartyName())
                 .isCasePastDueDate(validateCasePastDueDate(caseData))
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
@@ -73,16 +72,18 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
                                              .getReasonsForWithoutNotice() : null)
                 .generalAppUrgency(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())
-                .urgentAppConsiderationDate(getDateFormatted(caseData.getGeneralAppUrgencyRequirement()
-                                                                 .getUrgentAppConsiderationDate()))
+                .urgentAppConsiderationDate(caseData.getGeneralAppUrgencyRequirement().getUrgentAppConsiderationDate())
                 .reasonsForUrgency(caseData.getGeneralAppUrgencyRequirement().getReasonsForUrgency())
                 .generalAppType(caseData.getGeneralAppType().getTypes().stream()
                                     .map(GeneralApplicationTypes::getDisplayedValue)
                                     .collect(Collectors.joining(", ")))
                 .generalAppDetailsOfOrder(caseData.getGeneralAppDetailsOfOrder())
                 .generalAppReasonsOfOrder(caseData.getGeneralAppReasonsOfOrder())
-                .hearingYesorNo(caseData.getGeneralAppHearingDetails().getHearingYesorNo())
-                .hearingDate(getDateFormatted(caseData.getGeneralAppHearingDetails().getHearingDate()))
+                .hearingYesorNo(Objects.nonNull(caseData.getGeneralAppHearingDate())
+                                    ? caseData.getGeneralAppHearingDate().getHearingScheduledPreferenceYesNo() : null)
+                .hearingDate(Objects.nonNull(caseData.getGeneralAppHearingDate())
+                                 ? caseData.getGeneralAppHearingDate().getHearingScheduledDate()
+                                 : null)
                 .hearingPreferencesPreferredType(caseData.getGeneralAppHearingDetails()
                                                      .getHearingPreferencesPreferredType()
                                                      .getDisplayedValue())
@@ -96,8 +97,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                            .getHearingDetailsEmailID())
                 .unavailableTrialRequiredYesOrNo(caseData.getGeneralAppHearingDetails()
                                                      .getUnavailableTrialRequiredYesOrNo())
-                .unavailableTrialDateTo(getDateFormatted(getAppUnavailabilityDate(caseData, YesOrNo.YES)))
-                .unavailableTrialDateFrom(getDateFormatted(getAppUnavailabilityDate(caseData, YesOrNo.NO)))
+                .unavailableTrialDateTo(getAppUnavailabilityDate(caseData, YesOrNo.YES))
+                .unavailableTrialDateFrom(getAppUnavailabilityDate(caseData, YesOrNo.NO))
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
                 .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
@@ -109,7 +110,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isOtherSupportExists(checkAdditionalSupport(caseData, OTHER_SUPPORT))
                 .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
                     .getGeneralAppStatementOfTruth().getName() : null)
-                .date(getDateFormatted(LocalDate.now()));
+                .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
             GAHearingDetails gaResp1HearingDetails = caseData.getRespondentsResponses().get(0)
@@ -128,15 +129,15 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp1HearingYesOrNo(gaResp1HearingDetails.getHearingYesorNo())
                 .resp1HearingPreferredType(gaResp1HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
-                .resp1Hearingdate(getDateFormatted(gaResp1HearingDetails.getHearingDate()))
+                .resp1Hearingdate(gaResp1HearingDetails.getHearingDate())
                 .resp1ReasonForPreferredType(gaResp1HearingDetails
                                                  .getReasonForPreferredHearingType())
                 .resp1PreferredLocation(getRespHearingLocation(caseData, ONE_V_ONE))
                 .resp1PreferredTelephone(gaResp1HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp1PreferredEmail(gaResp1HearingDetails.getHearingDetailsEmailID())
                 .resp1UnavailableTrialRequired(gaResp1HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp1UnavailableTrialDateFrom(getDateFormatted(getResp1UnavailabilityDate(caseData, YesOrNo.YES)))
-                .resp1UnavailableTrialDateTo(getDateFormatted(getResp1UnavailabilityDate(caseData, YesOrNo.NO)))
+                .resp1UnavailableTrialDateFrom(getResp1UnavailabilityDate(caseData, YesOrNo.YES))
+                .resp1UnavailableTrialDateTo(getResp1UnavailabilityDate(caseData, YesOrNo.NO))
                 .resp1VulnerableQuestions(gaResp1HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp1SupportRequirement(getRespSupportRequirement(caseData, ONE_V_ONE))
                 .resp1SignLanguage(gaResp1HearingDetails.getSupportRequirementSignLanguage())
@@ -161,15 +162,15 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp2HearingYesOrNo(gaResp2HearingDetails.getHearingYesorNo())
                 .resp2HearingPreferredType(gaResp2HearingDetails
                                                .getHearingPreferencesPreferredType().getDisplayedValue())
-                .resp2Hearingdate(getDateFormatted(gaResp2HearingDetails.getHearingDate()))
+                .resp2Hearingdate(gaResp2HearingDetails.getHearingDate())
                 .resp2ReasonForPreferredType(gaResp2HearingDetails
                                                  .getReasonForPreferredHearingType())
                 .resp2PreferredLocation(getRespHearingLocation(caseData, ONE_V_TWO))
                 .resp2PreferredTelephone(gaResp2HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp2PreferredEmail(gaResp2HearingDetails.getHearingDetailsEmailID())
                 .resp2UnavailableTrialRequired(gaResp2HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp2UnavailableTrialDateFrom(getDateFormatted(getResp2UnavailabilityDate(caseData, YesOrNo.YES)))
-                .resp2UnavailableTrialDateTo(getDateFormatted(getResp2UnavailabilityDate(caseData, YesOrNo.NO)))
+                .resp2UnavailableTrialDateFrom(getResp2UnavailabilityDate(caseData, YesOrNo.YES))
+                .resp2UnavailableTrialDateTo(getResp2UnavailabilityDate(caseData, YesOrNo.NO))
                 .resp2VulnerableQuestions(gaResp2HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp2SupportRequirement(getRespSupportRequirement(caseData, ONE_V_TWO))
                 .resp2SignLanguage(gaResp2HearingDetails.getSupportRequirementSignLanguage())
@@ -337,13 +338,6 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
             return ((Map<String, String>) caseData.getData().get("solicitorReferences")).get(refKey);
         }
         return null;
-    }
-
-    protected String getDateFormatted(LocalDate date) {
-        if (isNull(date)) {
-            return null;
-        }
-        return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {

@@ -29,17 +29,18 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.GADraftForm;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDateGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -282,6 +283,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF)
+            .generalAppHearingDate(
+                GAHearingDateGAspec.builder()
+                    .hearingScheduledPreferenceYesNo(YES).hearingScheduledDate(LocalDate.now()).build())
             .generalAppRespondentSolicitors(respondentSols)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
@@ -327,6 +331,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                 getGeneralApplication(isConsented, isTobeNotified))
             .toBuilder()
             .claimant1PartyName("Test Claimant1 Name")
+            .generalAppHearingDate(
+                GAHearingDateGAspec.builder()
+                    .hearingScheduledPreferenceYesNo(YES).hearingScheduledDate(LocalDate.now()).build())
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF).build();
     }
@@ -336,6 +343,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                 getGeneralApplicationWithDeadlineReached(isConsented, isTobeNotified))
             .toBuilder()
             .claimant1PartyName("Test Claimant1 Name")
+            .generalAppHearingDate(
+                GAHearingDateGAspec.builder()
+                    .hearingScheduledPreferenceYesNo(YES).hearingScheduledDate(LocalDate.now()).build())
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF).build();
     }
@@ -395,6 +405,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
+            .generalAppHearingDate(
+                GAHearingDateGAspec.builder()
+                    .hearingScheduledPreferenceYesNo(YES).hearingScheduledDate(LocalDate.now()).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
                     .fee(
@@ -478,12 +491,6 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
 
         assertThat(generalApplicationDraftGenerator.getReference(caseDetails, "applicantSolicitor1Reference")).isEqualTo("app1ref");
         assertThat(generalApplicationDraftGenerator.getReference(caseDetails, "notExist")).isNull();
-    }
-
-    @Test
-    void test_getDateFormatted() {
-        String dateString = generalApplicationDraftGenerator.getDateFormatted(LocalDate.EPOCH);
-        assertThat(dateString).isEqualTo(" 1 January 1970");
     }
 
     private String getClaimants(CaseData caseData) {

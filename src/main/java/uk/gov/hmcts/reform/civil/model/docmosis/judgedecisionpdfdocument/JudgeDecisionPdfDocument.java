@@ -20,7 +20,6 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String claimantName;
     private final String defendantName;
     private final String applicationType;
-    private final String submittedOn;
     private final String judicialByCourtsInitiative;
     private final String locationName;
     private final String courtName;
@@ -29,9 +28,6 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String judicialByCourtsInitiativeListForHearing;
     private final String judicialByCourtsInitiativeForWrittenRep;
     private final String applicantName;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate applicationDate;
     private final String judgeDirection;
     private final String dismissalOrder;
     private final String generalOrder;
@@ -42,13 +38,22 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String reasonForDecision;
     private final String judgeRecital;
     private final String hearingOrder;
-    private final LocalDate dateBy;
     private final String judgeComments;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private final String judgeNameTitle;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate dateBy;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate uploadDeadlineDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate responseDeadlineDate;
-    private final String judgeNameTitle;
+    private final LocalDate  responseDeadlineDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate submittedOn;
 }
