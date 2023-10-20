@@ -67,7 +67,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
 
         return AssistedOrderForm.builder()
-                .caseNumber(getCaseNumberFormatted(caseData))
+                .caseNumber(caseData.getCcdCaseReference().toString())
                 .claimant1Name(caseData.getClaimant1PartyName())
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
@@ -332,12 +332,12 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             AssistedOrderCostDropdownList.CLAIMANT)) {
             return format(
                 "The claimant shall pay the defendant's costs (both fixed and summarily assessed as appropriate) "
-                    + "in the sum of £%s. Such a sum shall be made by 4pm on",
+                    + "in the sum of £%s. Such sum shall be made by 4pm on",
                 MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
         } else {
             return format(
                 "The defendant shall pay the claimant's costs (both fixed and summarily assessed as appropriate) "
-                    + "in the sum of £%s. Such a sum shall be made by 4pm on",
+                    + "in the sum of £%s. Such sum shall be made by 4pm on",
                 MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
         }
     }
