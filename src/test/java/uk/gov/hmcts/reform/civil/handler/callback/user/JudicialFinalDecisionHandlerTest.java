@@ -257,6 +257,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .isEqualTo(LocalDate.now().plusDays(7).toString());
         assertThat(response.getData()).extracting("orderMadeOnWithOutNotice").extracting("date")
             .isEqualTo(LocalDate.now().plusDays(7).toString());
+
     }
 
     @Test

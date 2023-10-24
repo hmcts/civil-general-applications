@@ -36,7 +36,7 @@ public class ClaimantDefendantRepresentation {
                                     HeardClaimantNotAttend heardFromClaimantNotAttend,
                                     @JsonProperty("heardFromDefendantNotAttend")
                                     HeardDefendantNotAttend heardFromDefendantNotAttend,
-                                    @JsonProperty("heardFromDefendantTwoNotAttend")
+                                    @JsonProperty("heardFromDefTwoNotAttend")
                                     HeardDefendantTwoNotAttend heardFromDefendantTwoNotAttend,
                                     @JsonProperty("detailsRepresentationText")
                                     String detailsRepresentationText,
