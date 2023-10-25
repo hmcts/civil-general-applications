@@ -121,14 +121,12 @@ allprojects {
       ) {
         entry 'groovy-all'
       }
-
       // Fix CVE-2023-42795, CVE-2023-45648
       dependencySet(group: 'org.apache.tomcat.embed', version: '10.1.15') {
         entry 'tomcat-embed-core'
         entry 'tomcat-embed-el'
         entry 'tomcat-embed-websocket'
       }
-
       // CVE-2022-41854
       dependencySet(
         group: 'org.yaml',

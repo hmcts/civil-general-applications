@@ -17,16 +17,19 @@ public class AssistedOrderDateHeard {
     private LocalDate dateRangeFrom;
     private LocalDate dateRangeTo;
     private LocalDate datesToAvoidDates;
+    private String beSpokeRangeText;
 
     @JsonCreator
     AssistedOrderDateHeard(@JsonProperty("singleDateHeard") LocalDate singleDate,
                             @JsonProperty("dateRangeFrom") LocalDate dateRangeFrom,
                             @JsonProperty("dateRangeTo") LocalDate dateRangeTo,
-                           @JsonProperty("datesToAvoidDates") LocalDate datesToAvoidDates) {
+                           @JsonProperty("datesToAvoidDates") LocalDate datesToAvoidDates,
+                           @JsonProperty("bespokeRangeTextArea") String beSpokeRangeText) {
 
         this.singleDate = singleDate;
         this.dateRangeFrom = dateRangeFrom;
         this.dateRangeTo = dateRangeTo;
         this.datesToAvoidDates = datesToAvoidDates;
+        this.beSpokeRangeText = beSpokeRangeText;
     }
 }

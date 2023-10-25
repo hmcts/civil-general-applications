@@ -13,12 +13,15 @@ public class AssistedOrderMadeDateHeardDetails {
 
     private AssistedOrderDateHeard singleDateSelection;
     private AssistedOrderDateHeard dateRangeSelection;
+    private AssistedOrderDateHeard beSpokeRangeSelection;
 
     @JsonCreator
     AssistedOrderMadeDateHeardDetails(@JsonProperty("singleDateSelection") AssistedOrderDateHeard singleDateSelection,
-                                       @JsonProperty("dateRangeSelection") AssistedOrderDateHeard dateRangeSelection) {
+                                       @JsonProperty("dateRangeSelection") AssistedOrderDateHeard dateRangeSelection,
+                                      @JsonProperty("bespokeRangeSelection") AssistedOrderDateHeard beSpokeRangeSelection) {
 
         this.singleDateSelection = singleDateSelection;
         this.dateRangeSelection = dateRangeSelection;
+        this.beSpokeRangeSelection = beSpokeRangeSelection;
     }
 }
