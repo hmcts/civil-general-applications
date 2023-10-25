@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -45,7 +47,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_LOCATION_UPDATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.*;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
@@ -88,7 +90,12 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
             when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
             when(caseDetailsConverter.toCaseData(parentCaseDetails))
                 .thenReturn(getParentCaseDataAfterUpdateFromCivilService(NO, YES));
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            CallbackParams params = CallbackParamsBuilder.builder()
+                .of(ABOUT_TO_SUBMIT, caseData)
+                .request(CallbackRequest.builder()
+                             .eventId(TRIGGER_LOCATION_UPDATE.name())
+                             .build())
+                .build();
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response.getErrors()).isNull();
@@ -98,7 +105,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
             assertThat(response.getData()).extracting("businessProcess")
                     .extracting("camundaEvent").isEqualTo(
-                    "TRIGGER_LOCATION_UPDATE");
+                        "TRIGGER_LOCATION_UPDATE");
 
             assertThat(response.getData()).containsEntry(
                     "isCcmccLocation",
@@ -113,6 +120,48 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                         "baseLocation", "00000",
                         "siteName", "locationForRegion2"
                     ));
+        }
+
+        @Test
+        void shouldRespondAndUpdateCaseManagementLocationForTaskReconfig() {
+            CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+            CaseDetails parentCaseDetails = CaseDetailsBuilder.builder().data(
+                    getParentCaseDataAfterUpdateFromCivilService(NO, YES))
+                .id(1645779506193000L)
+                .build();
+            when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+            when(caseDetailsConverter.toCaseData(parentCaseDetails))
+                .thenReturn(getParentCaseDataAfterUpdateFromCivilService(NO, YES));
+            CallbackParams params = CallbackParamsBuilder.builder()
+                .of(ABOUT_TO_SUBMIT, caseData)
+                .request(CallbackRequest.builder()
+                             .eventId(TRIGGER_TASK_RECONFIG.name())
+                             .build())
+                .build();
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response.getErrors()).isNull();
+
+            assertThat(response.getData()).extracting("businessProcess")
+                .extracting("status").isEqualTo("FINISHED");
+
+            assertThat(response.getData()).extracting("businessProcess")
+                .extracting("camundaEvent").isEqualTo(
+                    "TRIGGER_TASK_RECONFIG");
+
+            assertThat(response.getData()).containsEntry(
+                "isCcmccLocation",
+                "No");
+            assertThat(response.getData()).containsEntry(
+                "locationName",
+                "locationForRegion2");
+            assertThat(response.getData()).containsEntry(
+                "caseManagementLocation",
+                Map.of(
+                    "region", "2",
+                    "baseLocation", "00000",
+                    "siteName", "locationForRegion2"
+                ));
         }
 
         private GeneralApplication getGeneralApplication(YesOrNo isConsented, YesOrNo isTobeNotified) {
