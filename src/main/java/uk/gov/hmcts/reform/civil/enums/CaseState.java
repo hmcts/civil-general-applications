@@ -16,6 +16,13 @@ public enum CaseState {
     PROCEEDS_IN_HERITAGE_SYSTEM("Proceeds in heritage system"),
     JUDICIAL_REFERRAL("Judicial Referral"),
     CASE_PROGRESSION("Case Progression"),
+    HEARING_READINESS("Hearing Readiness"),
+    PREPARE_FOR_HEARING_CONDUCT_HEARING("Prepare for hearing conduct hearing"),
+    DECISION_OUTCOME("Decision Outcome"),
+    IN_MEDIATION("In Mediation"),
+    CASE_STAYED("Case Stayed"),
+    All_FINAL_ORDERS_ISSUED("All final orders issued"),
+    CASE_SETTLED("Case Settled"),
 
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
