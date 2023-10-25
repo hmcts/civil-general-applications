@@ -251,9 +251,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();
-        if (nonNull(caseData.getGaFinalOrderDocPreview())) {
-            caseDataBuilder.gaFinalOrderDocPreview(null);
-        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
