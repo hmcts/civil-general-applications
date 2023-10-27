@@ -12,7 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -26,11 +25,12 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,6 +59,8 @@ class HearingOrderGeneratorTest {
     ListGeneratorService listGeneratorService;
     @Autowired
     private HearingOrderGenerator hearingOrderGenerator;
+    @MockBean
+    private IdamClient idamClient;
 
     @Test
     void shouldGenerateHearingOrderDocument() {
@@ -66,6 +68,8 @@ class HearingOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_ORDER)))
             .thenReturn(new DocmosisDocument(HEARING_ORDER.getDocumentTitle(), bytes));
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
 
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
@@ -106,9 +110,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
+                () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
                     .getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiative()
@@ -154,9 +156,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
+                () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
                     .getOrderWithoutNoticeListForHearing().getOrderWithoutNotice()
@@ -200,9 +200,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
                 () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
-                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
-                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
-                () -> assertEquals(templateData.getHearingLocation(), caseData.getJudicialListForHearing()
+                () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeListForHearing()),
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
@@ -228,12 +226,6 @@ class HearingOrderGeneratorTest {
                 defendatsName.add(caseData.getDefendant2PartyName());
             }
             return String.join(", ", defendatsName);
-        }
-
-        private String getApplicationType(CaseData caseData) {
-            List<GeneralApplicationTypes> types = caseData.getGeneralAppType().getTypes();
-            return types.stream()
-                .map(GeneralApplicationTypes::getDisplayedValue).collect(Collectors.joining(", "));
         }
     }
 }
