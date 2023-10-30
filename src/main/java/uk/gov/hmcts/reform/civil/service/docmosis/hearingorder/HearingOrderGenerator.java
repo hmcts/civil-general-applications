@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,8 +32,12 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
+    private String judgeNameTitle;
+    private final IdamClient idamClient;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
+        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        judgeNameTitle = userDetails.getFullName();
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
@@ -60,23 +66,21 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
         String defendantName = listGeneratorService.defendantsName(caseData);
 
-        String collect = listGeneratorService.applicationType(caseData);
-
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .claimantName(claimantName)
                 .defendantName(defendantName)
-                .applicationType(collect)
                 .judgeRecital(caseData.getJudicialGeneralHearingOrderRecital())
                 .hearingOrder(caseData.getJudicialGOHearingDirections())
-                .hearingLocation(caseData.getJudicialListForHearing()
+                .hearingPrefType(caseData.getJudicialListForHearing()
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
-                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData))
-                .locationName(caseData.getLocationName());
+                .courtName(caseData.getLocationName())
+                .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
     }
