@@ -54,6 +54,7 @@ import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_D
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.LISTED_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PROCEED_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ORDER_MADE;
 
 @Service
 @RequiredArgsConstructor
@@ -129,6 +130,9 @@ public class FlowStateAllowedEventService {
                       TRIGGER_LOCATION_UPDATE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       MAIN_CASE_CLOSED)
+        ),
+        entry(ORDER_MADE.fullName(),
+              List.of(HEARING_SCHEDULED_GA)
         ),
 
         entry(ADDITIONAL_INFO.fullName(),

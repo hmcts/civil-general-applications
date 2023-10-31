@@ -829,6 +829,30 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
+    public CaseData.CaseDataBuilder approveApplication() {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
+            .orderCourtOwnInitiativeForWrittenRep(
+                GAOrderCourtOwnInitiativeGAspec.builder()
+                    .orderCourtOwnInitiative("abcd")
+                    .orderCourtOwnInitiativeDate(LocalDate.now()).build())
+            .judgeRecitalText("Test Judge's recital")
+            .directionInRelationToHearingText("Test written order")
+            .createdDate(LocalDateTime.now())
+            .generalAppType(GAApplicationType.builder()
+                                .types(singletonList(EXTEND_TIME))
+                                .build())
+            .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
+            .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
     public CaseData.CaseDataBuilder writtenRepresentationConcurrentApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)

@@ -11,6 +11,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 public class FlowPredicate {
@@ -52,6 +53,11 @@ public class FlowPredicate {
         caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING);
+
+    public static final Predicate<CaseData> judgeMadeOrder = caseData ->
+        caseData.getJudicialDecision() != null
+            && caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT);
 
     public static final Predicate<CaseData> judgeMadeWrittenRep = caseData ->
         caseData.getJudicialDecision() != null
