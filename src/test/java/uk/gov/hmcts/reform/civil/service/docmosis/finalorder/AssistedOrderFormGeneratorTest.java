@@ -1283,8 +1283,9 @@ class AssistedOrderFormGeneratorTest {
             judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
             CaseData caseData = CaseData.builder()
                 .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .typeRepresentationJudgePapersList(judgeConsideredPapers)
                 .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
-                                                 .typeRepresentationJudgePapersList(judgeConsideredPapers)
+
                                                  .representationType(HeardFromRepresentationTypes.OTHER_REPRESENTATION)
                                                  .otherRepresentation(DetailText.builder().detailText(OTHER_ORIGIN_TEXT).build()).build())
                 .build();
@@ -1299,8 +1300,8 @@ class AssistedOrderFormGeneratorTest {
             judgeHeardFromShowOption.add(FinalOrderShowToggle.SHOW);
             CaseData caseData = CaseData.builder()
                 .assistedOrderJudgeHeardFrom(judgeHeardFromShowOption)
+                .typeRepresentationJudgePapersList(judgeConsideredPapers)
                 .assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
-                                                 .typeRepresentationJudgePapersList(judgeConsideredPapers)
                                                  .representationType(HeardFromRepresentationTypes.OTHER_REPRESENTATION)
                                                  .otherRepresentation(DetailText.builder().detailText(OTHER_ORIGIN_TEXT).build()).build())
                 .build();
