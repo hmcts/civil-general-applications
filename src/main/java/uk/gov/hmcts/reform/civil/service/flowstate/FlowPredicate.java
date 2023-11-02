@@ -59,9 +59,8 @@ public class FlowPredicate {
         caseData.getJudicialDecision() != null
             && (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
             && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT))
-            || (caseData.getJudicialDecision().getDecision().equals(FREE_FORM_ORDER))
-            || (caseData.getFinalOrderSelection() != null);
-    
+            || (caseData.getJudicialDecision().getDecision().equals(FREE_FORM_ORDER));
+
     public static final Predicate<CaseData> judgeMadeWrittenRep = caseData ->
         caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS);
