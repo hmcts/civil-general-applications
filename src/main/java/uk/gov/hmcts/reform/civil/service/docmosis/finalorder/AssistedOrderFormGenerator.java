@@ -242,9 +242,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected Boolean checkIsJudgeConsidered(CaseData caseData) {
-        return nonNull(caseData.getAssistedOrderRepresentation())
-            && nonNull(caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList())
-            && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()
+        return nonNull(caseData.getTypeRepresentationJudgePapersList())
+            && caseData.getTypeRepresentationJudgePapersList()
             .get(0).getDisplayedValue().equals(CONSIDERED.getDisplayedValue());
     }
 
