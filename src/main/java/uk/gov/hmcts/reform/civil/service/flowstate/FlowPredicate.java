@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -56,9 +57,11 @@ public class FlowPredicate {
 
     public static final Predicate<CaseData> judgeMadeOrder = caseData ->
         caseData.getJudicialDecision() != null
-            && caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
-            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT);
-
+            && (caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(APPROVE_OR_EDIT))
+            || (caseData.getJudicialDecision().getDecision().equals(FREE_FORM_ORDER))
+            || (caseData.getFinalOrderSelection() != null);
+    
     public static final Predicate<CaseData> judgeMadeWrittenRep = caseData ->
         caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS);

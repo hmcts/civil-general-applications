@@ -132,7 +132,8 @@ public class FlowStateAllowedEventService {
                       MAIN_CASE_CLOSED)
         ),
         entry(ORDER_MADE.fullName(),
-              List.of(HEARING_SCHEDULED_GA)
+              List.of(HEARING_SCHEDULED_GA,
+                      GENERATE_DIRECTIONS_ORDER)
         ),
 
         entry(ADDITIONAL_INFO.fullName(),

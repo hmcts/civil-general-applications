@@ -30,6 +30,7 @@ public interface FlowState {
         LISTED_FOR_HEARING,
         ADDITIONAL_INFO,
         JUDGE_DIRECTIONS,
+        HEARING_SCHEDULED,
         JUDGE_WRITTEN_REPRESENTATION;
 
         public static final String FLOW_NAME = "MAIN";

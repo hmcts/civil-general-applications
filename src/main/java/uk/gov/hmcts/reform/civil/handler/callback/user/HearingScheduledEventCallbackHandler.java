@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -69,9 +70,10 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
-        if (Objects.nonNull(caseData.getJudicialListForHearing())
-                && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation())
-                && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue())
+        if (!caseData.getCcdState().equals(CaseState.ORDER_MADE)
+            && Objects.nonNull(caseData.getJudicialListForHearing())
+            && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation())
+            && Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue())
         ) {
             String preLabel = caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue().getLabel();
             Optional<DynamicListElement> first = dynamicLocationList.getListItems().stream()
@@ -80,6 +82,11 @@ public class HearingScheduledEventCallbackHandler extends CallbackHandler {
         }
         caseDataBuilder.gaHearingNoticeDetail(GAHearingNoticeDetail
                         .builder().hearingLocation(dynamicLocationList).build());
+
+        if (caseData.getCcdState().equals(CaseState.ORDER_MADE)) {
+            caseDataBuilder.gaHearingNoticeApplication(null)
+                .gaHearingNoticeInformation(null);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))

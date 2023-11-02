@@ -104,6 +104,58 @@ public class StateFlowEngineTest {
     }
 
     @Test
+    void shouldReturn_ApplicationSubmitted_JudicialDecision_WhenJudgeMadeDecisionFreeformOrder() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .generalOrderFreeFormApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_WhenJudgeMadeFinalOrder() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judgeFinalOrderApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
     void shouldReturn_Judge_Written_Rep_WhenJudgeMadeDecision() {
         CaseData caseData = CaseDataBuilder.builder()
             .writtenRepresentationSequentialApplication()
