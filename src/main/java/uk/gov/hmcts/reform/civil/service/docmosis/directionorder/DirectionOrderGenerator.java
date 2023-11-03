@@ -64,18 +64,18 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGenService.claimantsName(caseData);
-
-        String defendantName = listGenService.defendantsName(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .claimantName(claimantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .courtName(caseData.getLocationName())
-                .defendantName(defendantName)
-                    .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
+                .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
                 .submittedOn(LocalDate.now())
