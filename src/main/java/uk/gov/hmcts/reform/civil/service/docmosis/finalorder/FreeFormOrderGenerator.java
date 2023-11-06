@@ -59,8 +59,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
     @Override
     public FreeFormOrder getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-        String defendantName = listGeneratorService.defendantsName(caseData);
+
         return FreeFormOrder.builder()
             .judgeNameTitle(judgeNameTitle)
             .caseNumber(getCaseNumberFormatted(caseData))
@@ -70,8 +69,11 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
             .courtName(caseData.getLocationName())
-            .claimantName(claimantName)
-            .defendantName(defendantName)
+            .isMultiParty(caseData.getIsMultiParty())
+            .claimant1Name(caseData.getClaimant1PartyName())
+            .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+            .defendant1Name(caseData.getDefendant1PartyName())
+            .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
             .build();
     }
 

@@ -52,13 +52,15 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-        String defendantName = listGeneratorService.defendantsName(caseData);
+
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .claimantName(claimantName)
-                .defendantName(defendantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .courtName(caseData.getLocationName())
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
