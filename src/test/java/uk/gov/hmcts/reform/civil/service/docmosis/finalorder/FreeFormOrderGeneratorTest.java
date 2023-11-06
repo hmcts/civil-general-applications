@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -63,8 +62,6 @@ class FreeFormOrderGeneratorTest {
 
     @MockBean
     private IdamClient idamClient;
-    @MockBean
-    private ListGeneratorService listGeneratorService;
 
     @Autowired
     private FreeFormOrderGenerator generator;
@@ -82,13 +79,6 @@ class FreeFormOrderGeneratorTest {
         when(idamClient
                 .getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
-        when(listGeneratorService
-                .claimantsName(any()))
-                .thenReturn("claimant");
-        when(listGeneratorService
-                .defendantsName(any()))
-                .thenReturn("defendant");
-
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);

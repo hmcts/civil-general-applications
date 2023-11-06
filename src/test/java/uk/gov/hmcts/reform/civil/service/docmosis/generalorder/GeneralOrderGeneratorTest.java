@@ -26,13 +26,11 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,8 +57,6 @@ class GeneralOrderGeneratorTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
-    @MockBean
-    ListGeneratorService listGeneratorService;
     @Autowired
     private GeneralOrderGenerator generalOrderGenerator;
     @Autowired
@@ -78,9 +74,6 @@ class GeneralOrderGeneratorTest {
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
-        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
         generalOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
@@ -98,9 +91,6 @@ class GeneralOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetGeneralOrderData() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
                 .build();
-            when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(caseData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
@@ -116,8 +106,10 @@ class GeneralOrderGeneratorTest {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
@@ -151,9 +143,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(updateData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
@@ -169,8 +158,10 @@ class GeneralOrderGeneratorTest {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -204,9 +195,6 @@ class GeneralOrderGeneratorTest {
                                                           .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(updateData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
@@ -222,8 +210,10 @@ class GeneralOrderGeneratorTest {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
@@ -254,34 +244,12 @@ class GeneralOrderGeneratorTest {
                     .build()).build();
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
-            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(updateData))
-                    .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
 
             var templateData = generalOrderGenerator.getTemplateData(updateData);
 
             assertNull(templateData.getJudgeRecital());
             assertEquals("", templateData.getReasonForDecision());
-        }
-
-        private String getClaimats(CaseData caseData) {
-            List<String> claimantsName = new ArrayList<>();
-            claimantsName.add(caseData.getClaimant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                claimantsName.add(caseData.getClaimant2PartyName());
-            }
-            return String.join(", ", claimantsName);
-        }
-
-        private String getDefendats(CaseData caseData) {
-            List<String> defendatsName = new ArrayList<>();
-            defendatsName.add(caseData.getDefendant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                defendatsName.add(caseData.getDefendant2PartyName());
-            }
-            return String.join(", ", defendatsName);
         }
     }
 }

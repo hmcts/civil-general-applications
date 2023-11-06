@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -28,7 +27,6 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMI
 public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService docManagementService;
-    private final ListGeneratorService listGeneratorService;
     private final IdamClient idamClient;
     private final DocumentGeneratorService docGeneratorService;
     private final DocmosisService docmosisService;

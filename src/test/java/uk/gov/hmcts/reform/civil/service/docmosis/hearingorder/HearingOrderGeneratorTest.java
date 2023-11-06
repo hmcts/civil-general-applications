@@ -23,14 +23,11 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeG
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,8 +52,6 @@ class HearingOrderGeneratorTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
-    @MockBean
-    ListGeneratorService listGeneratorService;
     @Autowired
     private HearingOrderGenerator hearingOrderGenerator;
     @MockBean
@@ -70,10 +65,6 @@ class HearingOrderGeneratorTest {
             .thenReturn(new DocmosisDocument(HEARING_ORDER.getDocumentTitle(), bytes));
         when(idamClient.getUserDetails(any()))
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
-
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
         hearingOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -94,11 +85,6 @@ class HearingOrderGeneratorTest {
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .build();
 
-            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-            when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(caseData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
             var templateData = hearingOrderGenerator.getTemplateData(caseData);
 
             assertThatFieldsAreCorrect_HearingOrder(templateData, caseData);
@@ -108,8 +94,10 @@ class HearingOrderGeneratorTest {
             Assertions.assertAll(
                 "Hearing Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
@@ -138,12 +126,6 @@ class HearingOrderGeneratorTest {
                                                            .orderWithoutNoticeDate(LocalDate.now()).build()).build();
 
             CaseData updateData = caseDataBuilder.build();
-
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
-            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(updateData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
             var templateData = hearingOrderGenerator.getTemplateData(updateData);
 
             assertThatFieldsAreCorrect_HearingOrder_Option2(templateData, updateData);
@@ -154,8 +136,10 @@ class HearingOrderGeneratorTest {
             Assertions.assertAll(
                 "Hearing Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
@@ -183,11 +167,6 @@ class HearingOrderGeneratorTest {
 
             CaseData updateData = caseDataBuilder.build();
 
-            when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
-            when(listGeneratorService.claimantsName(updateData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(updateData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
             var templateData = hearingOrderGenerator.getTemplateData(updateData);
 
             assertThatFieldsAreCorrect_HearingOrder_Option3(templateData, updateData);
@@ -198,8 +177,10 @@ class HearingOrderGeneratorTest {
             Assertions.assertAll(
                 "Hearing Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeListForHearing()),
@@ -208,24 +189,6 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),
                 () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections())
             );
-        }
-
-        private String getClaimats(CaseData caseData) {
-            List<String> claimantsName = new ArrayList<>();
-            claimantsName.add(caseData.getClaimant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                claimantsName.add(caseData.getClaimant2PartyName());
-            }
-            return String.join(", ", claimantsName);
-        }
-
-        private String getDefendats(CaseData caseData) {
-            List<String> defendatsName = new ArrayList<>();
-            defendatsName.add(caseData.getDefendant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                defendatsName.add(caseData.getDefendant2PartyName());
-            }
-            return String.join(", ", defendatsName);
         }
     }
 }

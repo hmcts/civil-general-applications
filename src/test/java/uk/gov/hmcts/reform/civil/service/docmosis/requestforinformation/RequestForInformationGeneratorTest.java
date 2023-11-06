@@ -18,12 +18,8 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,8 +43,6 @@ class RequestForInformationGeneratorTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
-    @MockBean
-    private ListGeneratorService listGeneratorService;
     @Autowired
     private RequestForInformationGenerator requestForInformationGenerator;
 
@@ -58,9 +52,6 @@ class RequestForInformationGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
             .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
-
-        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
         requestForInformationGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -80,10 +71,6 @@ class RequestForInformationGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
-            when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-            when(listGeneratorService.defendantsName(caseData))
-                .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
             var templateData = requestForInformationGenerator.getTemplateData(caseData);
 
             assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
@@ -94,32 +81,16 @@ class RequestForInformationGeneratorTest {
             Assertions.assertAll(
                 "Request For Information Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getClaimantName(), getClaimats(caseData)),
-                () -> assertEquals(templateData.getDefendantName(), getDefendats(caseData)),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText())
             );
-        }
-
-        private String getClaimats(CaseData caseData) {
-            List<String> claimantsName = new ArrayList<>();
-            claimantsName.add(caseData.getClaimant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                claimantsName.add(caseData.getClaimant2PartyName());
-            }
-            return String.join(", ", claimantsName);
-        }
-
-        private String getDefendats(CaseData caseData) {
-            List<String> defendatsName = new ArrayList<>();
-            defendatsName.add(caseData.getDefendant1PartyName());
-            if (caseData.getDefendant2PartyName() != null) {
-                defendatsName.add(caseData.getDefendant2PartyName());
-            }
-            return String.join(", ", defendatsName);
         }
     }
 }
