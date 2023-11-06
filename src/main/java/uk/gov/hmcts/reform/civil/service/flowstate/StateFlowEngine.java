@@ -14,6 +14,7 @@ import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMad
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeWrittenRep;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeRequestAdditionalInfo;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeOrder;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.paymentSuccess;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withNoticeApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withOutNoticeApplication;
@@ -26,6 +27,7 @@ import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_D
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.LISTED_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PROCEED_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ORDER_MADE;
 
 @Component
 @RequiredArgsConstructor
@@ -49,10 +51,12 @@ public class StateFlowEngine {
                 .transitionTo(ADDITIONAL_INFO).onlyIf(judgeRequestAdditionalInfo)
                 .transitionTo(JUDGE_DIRECTIONS).onlyIf(judgeMadeDirections)
                 .transitionTo(JUDGE_WRITTEN_REPRESENTATION).onlyIf(judgeMadeWrittenRep)
+            .transitionTo(ORDER_MADE).onlyIf(judgeMadeOrder)
             .state(LISTED_FOR_HEARING)
             .state(ADDITIONAL_INFO)
             .state(JUDGE_DIRECTIONS)
             .state(JUDGE_WRITTEN_REPRESENTATION)
+            .state(ORDER_MADE)
             .build();
     }
 
