@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -258,6 +259,7 @@ public class CaseData implements MappableObject {
     private final AssistedOrderMadeDateHeardDetails assistedOrderMadeDateHeardDetails;
     private final List<FinalOrderShowToggle> assistedOrderJudgeHeardFrom;
     private final AssistedOrderHeardRepresentation assistedOrderRepresentation;
+    private final List<FinalOrderConsideredToggle> typeRepresentationJudgePapersList;
     private final List<FinalOrderShowToggle> assistedOrderRecitals;
     private final AssistedOrderRecitalRecord assistedOrderRecitalsRecorded;
     private final AssistedCostTypesList assistedCostTypes;

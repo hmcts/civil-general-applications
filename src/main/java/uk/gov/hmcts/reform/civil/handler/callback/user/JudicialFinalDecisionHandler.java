@@ -223,7 +223,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                                                                .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
                                                                                              .datesToAvoidDates(localDatePlus7days)
                                                                                              .build()).build());
-        caseDataBuilder.assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
+        caseDataBuilder.assistedOrderGiveReasonsYesNo(NO)
+            .assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
