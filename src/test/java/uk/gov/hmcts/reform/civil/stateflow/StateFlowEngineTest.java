@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_D
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.LISTED_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.PROCEED_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ORDER_MADE;
 
 @SpringBootTest(classes = {
     JacksonAutoConfiguration.class,
@@ -92,13 +93,66 @@ public class StateFlowEngineTest {
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
-            .isEqualTo(APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName());
+            .isEqualTo(ORDER_MADE.fullName());
 
-        assertThat(stateFlow.getStateHistory()).hasSize(4)
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
             .extracting(State::getName)
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
-                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName());
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_ApplicationSubmitted_JudicialDecision_WhenJudgeMadeDecisionFreeformOrder() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .generalOrderFreeFormApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_WhenJudgeMadeFinalOrder() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .judgeFinalOrderApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
     }
 
     @Test
@@ -125,6 +179,32 @@ public class StateFlowEngineTest {
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
                              JUDGE_WRITTEN_REPRESENTATION.fullName());
+    }
+
+    @Test
+    void shouldReturn_Judge_Order_Made_WhenJudgeMadeDecision() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .approveApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
     }
 
     @Test

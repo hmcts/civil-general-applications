@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -63,16 +65,31 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnLocationList_whenLocationsAreQueried() {
             List<LocationRefData> locations = new ArrayList<>();
             locations.add(LocationRefData.builder().siteName("Site Name 1").courtAddress("Address1").postcode("18000")
-                    .build());
+                              .build());
             locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
-                    .build());
+                              .build());
             when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
-            CaseData caseData = CaseDataBuilder.builder().build();
+            CaseData caseData = CaseDataBuilder.builder().ccdState(CaseState.LISTING_FOR_A_HEARING).build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(((Map)((ArrayList)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
-                    .get("hearingLocation")).get("list_items")).get(0))
-                    .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
+            assertThat(((Map) ((ArrayList) ((Map) ((Map) (response.getData().get("gaHearingNoticeDetail")))
+                .get("hearingLocation")).get("list_items")).get(0))
+                           .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
+        }
+
+        @Test
+        void shouldNotPrepopulateData_whenCcdStateIsOrderMade() {
+            List<LocationRefData> locations = new ArrayList<>();
+            locations.add(LocationRefData.builder().siteName("Site Name 1").courtAddress("Address1").postcode("18000")
+                              .build());
+            locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
+                              .build());
+            when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+            CaseData caseData = CaseDataBuilder.builder().ccdState(CaseState.ORDER_MADE).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertNull(response.getData().get("gaHearingNoticeApplication"));
+            assertNull(response.getData().get("gaHearingNoticeInformation"));
         }
 
         @Test
@@ -90,7 +107,8 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     GAJudgesHearingListGAspec.builder().hearingPreferredLocation(DynamicList.builder()
                     .listItems(List.of(location1))
                     .value(location1).build()).build();
-            CaseData caseData = CaseData.builder().judicialListForHearing(gaJudgesHearingListGAspec).build();
+            CaseData caseData = CaseData.builder().ccdState(CaseState.LISTING_FOR_A_HEARING)
+                .judicialListForHearing(gaJudgesHearingListGAspec).build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             String label = ((Map)((Map)((Map)(response.getData().get("gaHearingNoticeDetail")))
@@ -98,6 +116,30 @@ class HearingScheduledEventCallbackHandlerTest extends BaseCallbackHandlerTest {
                     .get("label")
                     .toString();
             assertThat(label).isEqualTo("Site Name 2 - Address2 - 28000");
+        }
+
+        @Test
+        void shouldNotReturnLocationList_with_preferredLocationSelected_whenLocationsAreQueried() {
+            List<LocationRefData> locations = new ArrayList<>();
+            locations.add(LocationRefData.builder().siteName("Site Name 1").courtAddress("Address1").postcode("18000")
+                              .build());
+            locations.add(LocationRefData.builder().siteName("Site Name 2").courtAddress("Address2").postcode("28000")
+                              .build());
+            DynamicListElement location1 = DynamicListElement.builder()
+                .code(String.valueOf(UUID.randomUUID())).label("Site Name 2 - Address2 - 28000").build();
+
+            when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+            GAJudgesHearingListGAspec gaJudgesHearingListGAspec =
+                GAJudgesHearingListGAspec.builder().hearingPreferredLocation(DynamicList.builder()
+                                                                                 .listItems(List.of(location1))
+                                                                                 .value(location1).build()).build();
+            CaseData caseData = CaseData.builder().ccdState(CaseState.ORDER_MADE)
+                .judicialListForHearing(gaJudgesHearingListGAspec).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(((Map) ((ArrayList) ((Map) ((Map) (response.getData().get("gaHearingNoticeDetail")))
+                .get("hearingLocation")).get("list_items")).get(0))
+                           .get("label")).isEqualTo("Site Name 1 - Address1 - 18000");
         }
     }
 
