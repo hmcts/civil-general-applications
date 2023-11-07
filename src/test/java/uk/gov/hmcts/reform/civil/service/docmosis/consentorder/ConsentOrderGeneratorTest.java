@@ -17,12 +17,9 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,8 +46,6 @@ class ConsentOrderGeneratorTest {
     private UnsecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
-    @MockBean
-    ListGeneratorService listGeneratorService;
 
     @Autowired
     ConsentOrderGenerator consentOrderGenerator;
@@ -61,10 +56,6 @@ class ConsentOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(CONSENT_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(CONSENT_ORDER_FORM.getDocumentTitle(), bytes));
-
-        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name, Test Defendant2 Name");
 
         consentOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -81,10 +72,6 @@ class ConsentOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder()
             .build();
 
-        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name, Test Claimant2 Name");
-        when(listGeneratorService.defendantsName(caseData))
-            .thenReturn("Test Defendant1 Name, Test Defendant2 Name");
-
         var templateData = consentOrderGenerator.getTemplateData(caseData);
 
         assertThatFieldsAreCorrect_GeneralOrder(templateData, caseData);
@@ -94,8 +81,10 @@ class ConsentOrderGeneratorTest {
         Assertions.assertAll(
             "ConsentOrderDocument data should be as expected",
             () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-            () -> assertEquals(templateData.getClaimantName(), getClaimants(caseData)),
-            () -> assertEquals(templateData.getDefendantName(), getDefendants(caseData)),
+            () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+            () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+            () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
             () -> assertEquals(templateData.getConsentOrder(),
                                caseData.getApproveConsentOrder().getConsentOrderDescription()),
             () -> assertEquals(templateData.getCourtName(),
@@ -107,24 +96,6 @@ class ConsentOrderGeneratorTest {
     void test_getDateFormatted() {
         String dateString = consentOrderGenerator.getDateFormatted(LocalDate.EPOCH);
         assertThat(dateString).isEqualTo(" 1 January 1970");
-    }
-
-    private String getClaimants(CaseData caseData) {
-        List<String> claimantsName = new ArrayList<>();
-        claimantsName.add(caseData.getClaimant1PartyName());
-        if (caseData.getDefendant2PartyName() != null) {
-            claimantsName.add(caseData.getClaimant2PartyName());
-        }
-        return String.join(", ", claimantsName);
-    }
-
-    private String getDefendants(CaseData caseData) {
-        List<String> defendantsName = new ArrayList<>();
-        defendantsName.add(caseData.getDefendant1PartyName());
-        if (caseData.getDefendant2PartyName() != null) {
-            defendantsName.add(caseData.getDefendant2PartyName());
-        }
-        return String.join(", ", defendantsName);
     }
 
 }
