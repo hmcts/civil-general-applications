@@ -85,7 +85,7 @@ class ConsentOrderGeneratorTest {
             "ConsentOrderDocument data should be as expected",
             () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
             () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-            () -> assertEquals(templateData.getIsMultiParty(), YES),
+            () -> assertEquals(YES, templateData.getIsMultiParty()),
             () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
             () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
             () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
