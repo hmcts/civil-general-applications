@@ -34,6 +34,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
@@ -83,6 +85,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             var templateData = hearingOrderGenerator.getTemplateData(caseData);
@@ -97,6 +100,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
@@ -115,6 +119,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option2() {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(NO)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -140,6 +145,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), NO),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
@@ -157,6 +163,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option3() {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(NO)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -179,6 +186,49 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), NO),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
+                    .getHearingPreferencesPreferredType().getDisplayedValue()),
+                () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeListForHearing()),
+                () -> assertEquals(templateData.getEstimatedHearingLength(),
+                                   caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),
+                () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections())
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option3_1v1() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_3)
+                .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec.builder().build())
+                .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
+                                                      .builder().build()).build();
+
+            CaseData updateData = caseDataBuilder.build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(updateData);
+
+            assertThatFieldsAreCorrect_HearingOrder_Option3_1v1(templateData, updateData);
+        }
+
+        private void assertThatFieldsAreCorrect_HearingOrder_Option3_1v1(JudgeDecisionPdfDocument templateData,
+                                                                     CaseData caseData) {
+            Assertions.assertAll(
+                "Hearing Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()

@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -36,6 +37,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
@@ -90,7 +93,9 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationConcurrentData() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
-                .toBuilder().build();
+                .toBuilder()
+                .isMultiParty(YesOrNo.YES)
+                .build();
 
             when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
             when(idamClient
@@ -111,6 +116,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
@@ -126,7 +132,9 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationConcurrentData_Option2() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
-                .toBuilder().build();
+                .toBuilder()
+                .isMultiParty(YES)
+                .build();
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
                 .orderWithoutNoticeForWrittenRep(
@@ -155,6 +163,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
@@ -170,7 +179,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationConcurrentData_Option3() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
-                .toBuilder().build();
+                .toBuilder().isMultiParty(YES).build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3).build();
@@ -196,6 +205,49 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetWrittenRepresentationConcurrentData_1V2() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
+                .toBuilder()
+                .isMultiParty(NO)
+                .defendant2PartyName(null)
+                .claimant2PartyName(null).build();
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3).build();
+            CaseData updateDate = caseDataBuilder.build();
+
+            when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
+            when(idamClient
+                     .getUserDetails(any()))
+                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+
+            var templateData = writtenRepresentationConcurrentOrderGenerator
+                .getTemplateData(updateDate);
+
+            assertThatFieldsAreCorrect_WrittenRepConcurrent_1V2(templateData, updateDate);
+        }
+
+        private void assertThatFieldsAreCorrect_WrittenRepConcurrent_1V2(JudgeDecisionPdfDocument templateData,
+                                                                             CaseData caseData) {
+            Assertions.assertAll(
+                "Written Representation Concurrent Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), null),
+                () -> assertEquals(templateData.getIsMultiParty(), NO),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),

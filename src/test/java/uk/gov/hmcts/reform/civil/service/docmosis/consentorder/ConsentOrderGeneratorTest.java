@@ -27,6 +27,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.CONSENT_ORDER_FORM;
 
 @SuppressWarnings("ALL")
@@ -69,7 +71,7 @@ class ConsentOrderGeneratorTest {
 
     @Test
     void whenCaseWorkerMakeDecision_ShouldGetConsentOrderData() {
-        CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder()
+        CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder().isMultiParty(YES)
             .build();
 
         var templateData = consentOrderGenerator.getTemplateData(caseData);
@@ -82,9 +84,38 @@ class ConsentOrderGeneratorTest {
             "ConsentOrderDocument data should be as expected",
             () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
             () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(templateData.getIsMultiParty(), YES),
             () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
             () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
             () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+            () -> assertEquals(templateData.getConsentOrder(),
+                               caseData.getApproveConsentOrder().getConsentOrderDescription()),
+            () -> assertEquals(templateData.getCourtName(),
+                               caseData.getCaseManagementLocation().getSiteName())
+        );
+    }
+
+    @Test
+    void whenCaseWorkerMakeDecision_ShouldGetConsentOrderData_1v1() {
+        CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder()
+            .defendant2PartyName(null)
+            .claimant2PartyName(null)
+            .isMultiParty(NO)
+            .build();
+
+        var templateData = consentOrderGenerator.getTemplateData(caseData);
+        assertThatFieldsAreCorrect_GeneralOrder_1v1(templateData, caseData);
+    }
+
+    private void assertThatFieldsAreCorrect_GeneralOrder_1v1(ConsentOrderForm templateData, CaseData caseData) {
+        Assertions.assertAll(
+            "ConsentOrderDocument data should be as expected",
+            () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+            () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(templateData.getIsMultiParty(), NO),
+            () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+            () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+            () -> assertEquals(templateData.getDefendant2Name(), null),
             () -> assertEquals(templateData.getConsentOrder(),
                                caseData.getApproveConsentOrder().getConsentOrderDescription()),
             () -> assertEquals(templateData.getCourtName(),

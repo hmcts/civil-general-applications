@@ -38,6 +38,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
@@ -91,6 +93,7 @@ class DirectionOrderGeneratorTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
@@ -112,6 +115,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -124,8 +128,39 @@ class DirectionOrderGeneratorTest {
         }
 
         @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData_1v1() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+
+            var templateData = directionOrderGenerator.getTemplateData(caseData);
+
+            assertThatFieldsAreCorrect_DirectionOrder_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DirectionOrder_1v1(JudgeDecisionPdfDocument templateData,
+                                                               CaseData caseData) {
+            Assertions.assertAll(
+                "Direction Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), null),
+                () -> assertEquals(templateData.getIsMultiParty(), NO));
+        }
+
+        @Test
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option2() {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -163,6 +198,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -179,6 +215,7 @@ class DirectionOrderGeneratorTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option3() {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -218,6 +255,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),

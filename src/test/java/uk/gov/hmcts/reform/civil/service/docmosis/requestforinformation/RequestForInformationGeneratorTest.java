@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 
 @ExtendWith(SpringExtension.class)
@@ -85,6 +86,37 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText())
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_1v1() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .isMultiParty(NO)
+                .build();
+
+            var templateData = requestForInformationGenerator.getTemplateData(caseData);
+
+            assertThatFieldsAreCorrect_RequestForInformation_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_RequestForInformation_1v1(JudgeDecisionPdfDocument templateData,
+                                                                      CaseData caseData) {
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertEquals(templateData.getIsMultiParty(), NO),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), null),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),

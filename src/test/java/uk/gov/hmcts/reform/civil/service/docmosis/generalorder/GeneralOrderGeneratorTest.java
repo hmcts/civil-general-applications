@@ -39,6 +39,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
@@ -123,8 +125,38 @@ class GeneralOrderGeneratorTest {
         }
 
         @Test
+        void whenJudgeMakeDecision_ShouldGetGeneralOrderData_1v1() {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+
+            var templateData = generalOrderGenerator.getTemplateData(caseData);
+
+            assertThatFieldsAreCorrect_GeneralOrder_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_GeneralOrder_1v1(JudgeDecisionPdfDocument templateData, CaseData caseData) {
+            Assertions.assertAll(
+                "GeneralOrderDocument data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertEquals(templateData.getIsMultiParty(), NO),
+                () -> assertEquals(templateData.getDefendant2Name(), null),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()));
+        }
+
+        @Test
         void whenJudgeMakeDecision_ShouldGetGeneralOrderData_Option2() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -168,6 +200,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
@@ -179,6 +212,7 @@ class GeneralOrderGeneratorTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetGeneralOrderData_Option3() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build().toBuilder()
+                .isMultiParty(YES)
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -214,6 +248,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getIsMultiParty(), YES),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),

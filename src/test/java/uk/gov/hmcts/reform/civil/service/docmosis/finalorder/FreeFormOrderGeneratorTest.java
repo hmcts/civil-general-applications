@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
+import uk.gov.hmcts.reform.civil.model.docmosis.FreeFormOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -27,10 +29,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
@@ -145,5 +149,52 @@ class FreeFormOrderGeneratorTest {
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
         assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
+    }
+
+    @Test
+    void whenJudgeMakeDecision_ShouldGetFreeFormOrderData() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .finalOrderFreeForm().isMultiParty(YES).build().toBuilder()
+            .build();
+
+        FreeFormOrder templateDate = generator.getTemplateData(caseData);
+        assertThatFieldsAreCorrect_FreeFormOrder(templateDate, caseData);
+    }
+
+    private void assertThatFieldsAreCorrect_FreeFormOrder(FreeFormOrder freeFormOrder,
+                                                          CaseData caseData) {
+        Assertions.assertAll(
+            "GeneralOrderDocument data should be as expected",
+            () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(freeFormOrder.getClaimant2Name(), caseData.getClaimant2PartyName()),
+            () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
+            () -> assertEquals(freeFormOrder.getDefendant2Name(), caseData.getDefendant2PartyName()),
+            () -> assertEquals(freeFormOrder.getIsMultiParty(), YES)
+        );
+    }
+
+    @Test
+    void whenJudgeMakeDecision_ShouldGetFreeFormOrderData_1V1() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .finalOrderFreeForm().build().toBuilder()
+            .defendant2PartyName(null)
+            .claimant2PartyName(null)
+            .isMultiParty(NO)
+            .build();
+
+        FreeFormOrder templateDate = generator.getTemplateData(caseData);
+        assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
+    }
+
+    private void assertThatFieldsAreCorrect_FreeFormOrder_1V1(FreeFormOrder freeFormOrder,
+                                                          CaseData caseData) {
+        Assertions.assertAll(
+            "GeneralOrderDocument data should be as expected",
+            () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(freeFormOrder.getClaimant2Name(), null),
+            () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
+            () -> assertEquals(freeFormOrder.getDefendant2Name(), null),
+            () -> assertEquals(freeFormOrder.getIsMultiParty(), NO)
+        );
     }
 }
