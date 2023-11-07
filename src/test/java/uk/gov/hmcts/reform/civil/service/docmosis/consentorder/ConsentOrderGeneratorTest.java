@@ -23,6 +23,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -112,10 +113,10 @@ class ConsentOrderGeneratorTest {
             "ConsentOrderDocument data should be as expected",
             () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
             () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-            () -> assertEquals(templateData.getIsMultiParty(), NO),
-            () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+            () -> assertEquals(NO, templateData.getIsMultiParty()),
+            () -> assertNull(templateData.getClaimant2Name()),
             () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
-            () -> assertEquals(templateData.getDefendant2Name(), null),
+            () -> assertNull(templateData.getDefendant2Name()),
             () -> assertEquals(templateData.getConsentOrder(),
                                caseData.getApproveConsentOrder().getConsentOrderDescription()),
             () -> assertEquals(templateData.getCourtName(),

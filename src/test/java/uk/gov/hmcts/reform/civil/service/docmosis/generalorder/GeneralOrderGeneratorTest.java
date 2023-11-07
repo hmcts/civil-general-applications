@@ -147,9 +147,9 @@ class GeneralOrderGeneratorTest {
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-                () -> assertEquals(templateData.getClaimant2Name(), null),
-                () -> assertEquals(templateData.getIsMultiParty(), NO),
-                () -> assertEquals(templateData.getDefendant2Name(), null),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertNull(templateData.getDefendant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()));
         }
 
@@ -200,7 +200,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderWithoutNotice()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getJudgeRecital(),
                                    caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
@@ -248,7 +248,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),

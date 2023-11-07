@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -169,7 +170,7 @@ class FreeFormOrderGeneratorTest {
             () -> assertEquals(freeFormOrder.getClaimant2Name(), caseData.getClaimant2PartyName()),
             () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
             () -> assertEquals(freeFormOrder.getDefendant2Name(), caseData.getDefendant2PartyName()),
-            () -> assertEquals(freeFormOrder.getIsMultiParty(), YES)
+            () -> assertEquals(YES, freeFormOrder.getIsMultiParty())
         );
     }
 
@@ -191,10 +192,10 @@ class FreeFormOrderGeneratorTest {
         Assertions.assertAll(
             "GeneralOrderDocument data should be as expected",
             () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
-            () -> assertEquals(freeFormOrder.getClaimant2Name(), null),
+            () -> assertNull(freeFormOrder.getClaimant2Name()),
             () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
-            () -> assertEquals(freeFormOrder.getDefendant2Name(), null),
-            () -> assertEquals(freeFormOrder.getIsMultiParty(), NO)
+            () -> assertNull(freeFormOrder.getDefendant2Name()),
+            () -> assertEquals(NO, freeFormOrder.getIsMultiParty())
         );
     }
 }

@@ -115,7 +115,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -151,10 +151,10 @@ class DirectionOrderGeneratorTest {
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertNull(templateData.getClaimant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
-                () -> assertEquals(templateData.getDefendant2Name(), null),
-                () -> assertEquals(templateData.getIsMultiParty(), NO));
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()));
         }
 
         @Test
@@ -198,7 +198,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -255,7 +255,7 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getJudgeDirection(),
                                    caseData.getJudicialDecisionMakeOrder().getDirectionsText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),

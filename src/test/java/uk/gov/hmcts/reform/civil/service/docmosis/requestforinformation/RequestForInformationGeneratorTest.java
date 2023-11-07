@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.Request
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -113,10 +114,10 @@ class RequestForInformationGeneratorTest {
                 "Request For Information Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-                () -> assertEquals(templateData.getClaimant2Name(), null),
-                () -> assertEquals(templateData.getIsMultiParty(), NO),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
-                () -> assertEquals(templateData.getDefendant2Name(), null),
+                () -> assertNull(templateData.getDefendant2Name()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getCourtName(), caseData.getLocationName()),

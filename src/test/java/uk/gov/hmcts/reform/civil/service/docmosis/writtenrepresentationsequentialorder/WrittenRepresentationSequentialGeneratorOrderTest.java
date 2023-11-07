@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -123,7 +124,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                             .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
-                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
+                () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
             );
         }
 
@@ -169,7 +170,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                         .getOrderWithoutNoticeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
-                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
+                () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
             );
         }
 
@@ -204,13 +205,13 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getIsMultiParty(), YES),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
-                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
+                () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
             );
         }
 
@@ -245,16 +246,16 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 "Written Representation Sequential Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
-                () -> assertEquals(templateData.getClaimant2Name(), null),
+                () -> assertNull(templateData.getClaimant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
-                () -> assertEquals(templateData.getDefendant2Name(), null),
-                () -> assertEquals(templateData.getIsMultiParty(), NO),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
-                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe")
+                () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
             );
         }
 
