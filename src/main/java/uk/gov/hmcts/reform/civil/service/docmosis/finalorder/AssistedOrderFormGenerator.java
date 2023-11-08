@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
@@ -331,12 +333,12 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             AssistedOrderCostDropdownList.CLAIMANT)) {
             return format(
                 "The claimant shall pay the defendant's costs (both fixed and summarily assessed as appropriate) "
-                    + "in the sum of £%s. Such sum shall be made by 4pm on",
+                    + "in the sum of £%s. Such sum shall be paid by 4pm on",
                 MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
         } else {
             return format(
                 "The defendant shall pay the claimant's costs (both fixed and summarily assessed as appropriate) "
-                    + "in the sum of £%s. Such sum shall be made by 4pm on",
+                    + "in the sum of £%s. Such sum shall be paid by 4pm on",
                 MonetaryConversions.penniesToPounds(caseData.getAssistedOrderMakeAnOrderForCosts().getAssistedOrderCostsFirstDropdownAmount()));
         }
     }
@@ -404,19 +406,26 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected String getFurtherHearingDuration(CaseData caseData) {
-        StringBuilder otherDuration = new StringBuilder();
         if (nonNull(caseData.getAssistedOrderFurtherHearingDetails())
             && caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing().equals(LengthOfHearing.OTHER)) {
-            otherDuration.append(caseData.getAssistedOrderFurtherHearingDetails()
-                                     .getLengthOfHearingOther().getLengthListOtherDays()).append(" days ")
-                .append(caseData.getAssistedOrderFurtherHearingDetails()
-                    .getLengthOfHearingOther().getLengthListOtherHours()).append(" hours ")
-                .append(caseData.getAssistedOrderFurtherHearingDetails().getLengthOfHearingOther()
-                            .getLengthListOtherMinutes()).append(" minutes ");
-            return otherDuration.toString();
+            return getOtherLength(caseData);
         }
         return nonNull(caseData.getAssistedOrderFurtherHearingDetails())
             ? caseData.getAssistedOrderFurtherHearingDetails().getLengthOfNewHearing().getDisplayedValue() : null;
+    }
+
+    private String getOtherLength(CaseData caseData) {
+        StringBuilder otherLength = new StringBuilder();
+        HearingLength other = caseData.getAssistedOrderFurtherHearingDetails().getLengthOfHearingOther();
+        if (Objects.nonNull(other)) {
+            int otherDay = other.getLengthListOtherDays();
+            int otherHour = other.getLengthListOtherHours();
+            int otherMinute = other.getLengthListOtherMinutes();
+            otherLength.append(otherDay>0 ? (otherDay + " days ") : "")
+                    .append(otherHour>0 ? (otherHour + " hours ") : "")
+                    .append(otherMinute>0 ? (otherMinute + " minutes") : "");
+        }
+        return otherLength.toString().trim();
     }
 
     protected Boolean checkFurtherHearingToggle(CaseData caseData) {

@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum AppealOriginTypes {
 
-    CLAIMANT("claimant"),
-    DEFENDANT("defendant"),
+    CLAIMANT("claimant's"),
+    DEFENDANT("defendant's"),
     OTHER("other");
 
     private final String displayedValue;
