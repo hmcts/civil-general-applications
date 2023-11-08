@@ -421,9 +421,9 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             int otherDay = other.getLengthListOtherDays();
             int otherHour = other.getLengthListOtherHours();
             int otherMinute = other.getLengthListOtherMinutes();
-            otherLength.append(otherDay>0 ? (otherDay + " days ") : "")
-                    .append(otherHour>0 ? (otherHour + " hours ") : "")
-                    .append(otherMinute>0 ? (otherMinute + " minutes") : "");
+            otherLength.append(otherDay > 0 ? (otherDay + " days ") : "")
+                    .append(otherHour > 0 ? (otherHour + " hours ") : "")
+                    .append(otherMinute > 0 ? (otherMinute + " minutes") : "");
         }
         return otherLength.toString().trim();
     }
