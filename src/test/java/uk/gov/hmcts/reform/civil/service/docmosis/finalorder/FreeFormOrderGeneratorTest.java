@@ -127,13 +127,6 @@ class FreeFormOrderGeneratorTest {
     }
 
     @Test
-    void test_getCaseNumberFormatted() {
-        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1644495739087775L).build();
-        String formattedCaseNumber = generator.getCaseNumberFormatted(caseData);
-        assertThat(formattedCaseNumber).isEqualTo("1644-4957-3908-7775");
-    }
-
-    @Test
     void test_getFileName() {
         String name = generator.getFileName(DocmosisTemplates.FREE_FORM_ORDER);
         assertThat(name).startsWith("General_order_for_application_");

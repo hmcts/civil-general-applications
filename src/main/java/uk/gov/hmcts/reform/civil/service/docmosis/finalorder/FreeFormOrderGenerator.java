@@ -60,7 +60,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
         return FreeFormOrder.builder()
             .judgeNameTitle(judgeNameTitle)
-            .caseNumber(getCaseNumberFormatted(caseData))
+            .caseNumber(caseData.getCcdCaseReference().toString())
             .caseName(caseData.getCaseNameHmctsInternal())
             .receivedDate(getDateFormatted(LocalDate.now()))
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
@@ -97,11 +97,6 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(FILE_TIMESTAMP_FORMAT);
         return String.format(template.getDocumentTitle(),
                 LocalDateTime.now().format(formatter));
-    }
-
-    protected String getCaseNumberFormatted(CaseData caseData) {
-        String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
-        return String.join("-", parts);
     }
 
     protected String getDateFormatted(LocalDate date) {
