@@ -85,7 +85,7 @@ public class GeneralAppLocationRefDataService {
             return responseEntity.getBody();
         } catch (Exception var4) {
             log.error("Location Reference Data Lookup Failed - " + var4.getMessage(), var4);
-            return new ArrayList<LocationRefData>();
+            return new ArrayList<>();
         }
     }
 
