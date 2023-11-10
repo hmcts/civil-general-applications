@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -31,7 +30,6 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
-    private final ListGeneratorService listGeneratorService;
     private String judgeNameTitle;
     private final IdamClient idamClient;
 
@@ -62,16 +60,16 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-
-        String defendantName = listGeneratorService.defendantsName(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .claimantName(claimantName)
-                .defendantName(defendantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .judgeRecital(caseData.getJudicialGeneralHearingOrderRecital())
                 .hearingOrder(caseData.getJudicialGOHearingDirections())
                 .hearingPrefType(caseData.getJudicialListForHearing()

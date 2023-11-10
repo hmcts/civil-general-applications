@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
@@ -608,6 +610,24 @@ public class CaseDataBuilder {
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT)
                                            .judgeRecitalText("Test Judge's recital")
                                            .build())
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData.CaseDataBuilder finalOrderFreeForm() {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .freeFormRecitalText("abcd")
+            .freeFormOrderedText("abcd")
+            .orderOnCourtsList(OrderOnCourts.ORDER_ON_COURT_INITIATIVE)
+            .orderOnCourtInitiative(FreeFormOrderValues.builder()
+                                        .onInitiativeSelectionTextArea("abcd")
+                                        .onInitiativeSelectionDate(now()).build())
+            .createdDate(SUBMITTED_DATE_TIME)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 

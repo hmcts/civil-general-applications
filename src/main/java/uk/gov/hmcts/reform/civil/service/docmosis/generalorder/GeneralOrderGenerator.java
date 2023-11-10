@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -33,7 +32,6 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
-    private final ListGeneratorService listGeneratorService;
     private final ObjectMapper mapper;
     private final DocmosisService docmosisService;
     private String judgeNameTitle;
@@ -65,20 +63,20 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-
-        String defendantName = listGeneratorService.defendantsName(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .judgeNameTitle(judgeNameTitle)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .claimantName(claimantName)
                 .courtName(caseData.getLocationName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
-                .defendantName(defendantName)
                 .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .generalOrder(caseData.getJudicialDecisionMakeOrder().getOrderText())
                 .submittedOn(LocalDate.now())

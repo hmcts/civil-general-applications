@@ -61,10 +61,6 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-
-        String defendantName = listGeneratorService.defendantsName(caseData);
-
         String collect = listGeneratorService.applicationType(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
@@ -72,8 +68,11 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                 .judgeNameTitle(judgeNameTitle)
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
-                .claimantName(claimantName)
-                .defendantName(defendantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .judgeRecital(caseData.getJudgeRecitalText())
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()

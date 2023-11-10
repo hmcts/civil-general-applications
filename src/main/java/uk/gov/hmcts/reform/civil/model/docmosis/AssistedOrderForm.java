@@ -24,7 +24,9 @@ public class AssistedOrderForm implements MappableObject {
     private final LocalDate receivedDate;
     private final String claimantReference;
     private final String defendantReference;
+    private final YesOrNo isMultiParty;
     private final String claimant1Name;
+    private final String claimant2Name;
     private final String defendant1Name;
     private final String defendant2Name;
     private final String judgeNameTitle;
