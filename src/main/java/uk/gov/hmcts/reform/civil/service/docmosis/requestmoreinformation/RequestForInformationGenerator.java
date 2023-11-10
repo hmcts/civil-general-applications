@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
@@ -26,7 +25,6 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
-    private final ListGeneratorService listGeneratorService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
@@ -52,13 +50,15 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-        String defendantName = listGeneratorService.defendantsName(caseData);
+
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .claimantName(claimantName)
-                .defendantName(defendantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .courtName(caseData.getLocationName())
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())

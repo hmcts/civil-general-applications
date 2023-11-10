@@ -69,6 +69,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return AssistedOrderForm.builder()
                 .caseNumber(caseData.getCcdCaseReference().toString())
                 .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .isMultiParty(caseData.getIsMultiParty())
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
                 .courtLocation(caseData.getLocationName())
@@ -242,9 +244,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     }
 
     protected Boolean checkIsJudgeConsidered(CaseData caseData) {
-        return nonNull(caseData.getAssistedOrderRepresentation())
-            && nonNull(caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList())
-            && caseData.getAssistedOrderRepresentation().getTypeRepresentationJudgePapersList()
+        return nonNull(caseData.getTypeRepresentationJudgePapersList())
+            && caseData.getTypeRepresentationJudgePapersList()
             .get(0).getDisplayedValue().equals(CONSIDERED.getDisplayedValue());
     }
 
