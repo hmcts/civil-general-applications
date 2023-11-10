@@ -111,7 +111,6 @@ class GeneralAppLocationRefDataServiceTest {
                                             "court address 1111"
         ));
 
-
         return new ResponseEntity<List<LocationRefData>>(responseData, OK);
     }
 
@@ -359,7 +358,7 @@ class GeneralAppLocationRefDataServiceTest {
             .thenReturn(getAllLocationsRefDataResponseByEpimms());
 
         List<LocationRefData> courtLocations = refDataService
-            .getCourtLocationsByEpimmsId("user_token","00000");
+            .getCourtLocationsByEpimmsId("user_token", "00000");
 
         DynamicList courtLocationString = getLocationsFromList(courtLocations);
 

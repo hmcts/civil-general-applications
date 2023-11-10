@@ -2029,8 +2029,8 @@ class AssistedOrderFormGeneratorTest {
 
         var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
-        assertThat(templateData.getAddress()).isEqualTo("testing");
-        assertThat(templateData.getSiteName()).isEqualTo("london court");
+        assertThat(templateData.getAddress()).isEqualTo("london court");
+        assertThat(templateData.getSiteName()).isEqualTo("testing");
         assertThat(templateData.getPostcode()).isEqualTo("BA 117");
     }
 

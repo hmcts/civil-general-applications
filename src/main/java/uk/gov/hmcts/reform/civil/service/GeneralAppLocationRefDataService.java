@@ -15,7 +15,10 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppLRDConfiguration;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.apache.logging.log4j.util.Strings.concat;
 
@@ -78,8 +81,7 @@ public class GeneralAppLocationRefDataService {
         try {
             ResponseEntity<List<LocationRefData>> responseEntity = this.restTemplate.exchange(this.buildURIforCourtLocation(epimmsId),
                                                                                               HttpMethod.GET, this.getHeaders(authToken),
-                                                                                              new ParameterizedTypeReference<List<LocationRefData>>() {
-            });
+                                                                                              new ParameterizedTypeReference<List<LocationRefData>>() {});
             return responseEntity.getBody();
         } catch (Exception var4) {
             log.error("Location Reference Data Lookup Failed - " + var4.getMessage(), var4);
