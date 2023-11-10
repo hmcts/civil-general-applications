@@ -15,10 +15,7 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppLRDConfiguration;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.apache.logging.log4j.util.Strings.concat;
 
@@ -76,4 +73,25 @@ public class GeneralAppLocationRefDataService {
         return concat(concat(concat(location.getSiteName(), " - "), concat(location.getCourtAddress(), " - ")),
                       location.getPostcode());
     }
+
+    public List<LocationRefData> getCourtLocationsByEpimmsId(String authToken, String epimmsId) {
+        try {
+            ResponseEntity<List<LocationRefData>> responseEntity = this.restTemplate.exchange(this.buildURIforCourtLocation(epimmsId),
+                                                                                              HttpMethod.GET, this.getHeaders(authToken),
+                                                                                              new ParameterizedTypeReference<List<LocationRefData>>() {
+            });
+            return responseEntity.getBody();
+        } catch (Exception var4) {
+            log.error("Location Reference Data Lookup Failed - " + var4.getMessage(), var4);
+            return new ArrayList<LocationRefData>();
+        }
+    }
+
+    private URI buildURIforCourtLocation(String epimmsId) {
+        String var10000 = this.lrdConfiguration.getUrl();
+        String queryURL = var10000 + this.lrdConfiguration.getEndpoint();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL).queryParam("epimms_id", epimmsId);
+        return builder.buildAndExpand(new HashMap<>()).toUri();
+    }
+
 }
