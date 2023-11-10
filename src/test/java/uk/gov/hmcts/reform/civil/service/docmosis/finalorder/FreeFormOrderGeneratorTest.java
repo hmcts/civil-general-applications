@@ -129,6 +129,7 @@ class FreeFormOrderGeneratorTest {
                 .orderWithoutNotice(values).build();
         String orderString = generator.getFreeFormOrderValue(caseData);
         assertThat(orderString).contains("test");
+
     }
 
     @Test

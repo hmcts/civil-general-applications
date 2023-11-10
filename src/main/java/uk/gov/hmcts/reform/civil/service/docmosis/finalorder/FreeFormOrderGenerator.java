@@ -70,6 +70,9 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
             .courtName(caseData.getLocationName())
+            .siteName(caseData.getCaseManagementLocation().getSiteName())
+            .address(caseData.getCaseManagementLocation().getAddress())
+            .postcode(caseData.getCaseManagementLocation().getPostcode())
             .claimantName(claimantName)
             .defendantName(defendantName)
             .build();

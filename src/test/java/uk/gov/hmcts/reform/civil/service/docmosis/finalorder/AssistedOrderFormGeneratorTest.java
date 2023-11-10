@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.AssistedOrderForm;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
@@ -2028,6 +2029,9 @@ class AssistedOrderFormGeneratorTest {
 
         var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+        assertThat(templateData.getAddress()).isEqualTo("testing");
+        assertThat(templateData.getSiteName()).isEqualTo("london court");
+        assertThat(templateData.getPostcode()).isEqualTo("BA 117");
     }
 
     private CaseData getSampleGeneralApplicationCaseData(YesOrNo isMultiparty) {
@@ -2045,6 +2049,9 @@ class AssistedOrderFormGeneratorTest {
             .defendant1PartyName("defendant1PartyName")
             .isMultiParty(isMultiparty)
             .locationName("ccmcc")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .assistedOrderMadeSelection(YesOrNo.YES)
             .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().singleDateSelection(
                 AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build()).build())

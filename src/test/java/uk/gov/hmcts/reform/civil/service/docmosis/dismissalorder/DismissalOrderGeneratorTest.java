@@ -122,6 +122,9 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()));
         }

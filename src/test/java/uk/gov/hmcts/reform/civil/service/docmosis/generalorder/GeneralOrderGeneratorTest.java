@@ -126,7 +126,10 @@ class GeneralOrderGeneratorTest {
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(),
-                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                                   caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText()),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode())
             );
         }
 

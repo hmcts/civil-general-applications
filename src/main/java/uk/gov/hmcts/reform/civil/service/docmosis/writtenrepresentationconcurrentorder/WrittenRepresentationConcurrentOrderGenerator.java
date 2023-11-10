@@ -79,7 +79,10 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                         .getWrittenConcurrentRepresentationsBy())
                 .submittedOn(LocalDate.now())
-                .locationName(caseData.getLocationName())
+                .courtName(caseData.getLocationName())
+                .siteName(caseData.getCaseManagementLocation().getSiteName())
+                .address(caseData.getCaseManagementLocation().getAddress())
+                .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
