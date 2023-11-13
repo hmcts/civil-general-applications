@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
@@ -29,8 +28,8 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.HearingLength;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
@@ -39,7 +38,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGi
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRecitalRecord;
-
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
@@ -65,6 +63,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
 
 @SpringBootTest(classes = {
@@ -2013,7 +2012,7 @@ class AssistedOrderFormGeneratorTest {
 
     @Test
     void shouldGenerateAssistedOrderDocument() {
-        CaseData caseData = getSampleGeneralApplicationCaseData(NO);
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO).toBuilder().claimant2PartyName(null).build();
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
@@ -2028,6 +2027,34 @@ class AssistedOrderFormGeneratorTest {
 
         var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+        assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
+        assertThat(templateData.getClaimant2Name()).isNull();
+        assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
+        assertThat(templateData.getDefendant2Name()).isNull();
+    }
+
+    @Test
+    void shouldGenerateAssistedOrderDocument_1v2() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(YES).toBuilder().claimant2PartyName(null).build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
+            .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
+        when(docmosisService.getJudgeNameTitle(any())).thenReturn("Mr.Judge");
+        generator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentGeneratorService).generateDocmosisDocument(any(AssistedOrderForm.class),
+                                                                  eq(ASSISTED_ORDER_FORM));
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.GENERAL_ORDER));
+
+        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+        assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
+        assertThat(templateData.getClaimant2Name()).isEqualTo(caseData.getClaimant2PartyName());
+        assertThat(templateData.getIsMultiParty()).isEqualTo(YES);
+        assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
+        assertThat(templateData.getDefendant2Name()).isEqualTo(caseData.getDefendant2PartyName());
     }
 
     private CaseData getSampleGeneralApplicationCaseData(YesOrNo isMultiparty) {
@@ -2043,6 +2070,8 @@ class AssistedOrderFormGeneratorTest {
             .ccdCaseReference(1644495739087775L)
             .claimant1PartyName("ClaimantName")
             .defendant1PartyName("defendant1PartyName")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant2PartyName("Test Defendant2 Name")
             .isMultiParty(isMultiparty)
             .locationName("ccmcc")
             .assistedOrderMadeSelection(YesOrNo.YES)
