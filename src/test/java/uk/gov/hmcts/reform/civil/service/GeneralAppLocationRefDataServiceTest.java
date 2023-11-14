@@ -105,6 +105,15 @@ class GeneralAppLocationRefDataServiceTest {
         return new ResponseEntity<List<LocationRefData>>(responseData, OK);
     }
 
+    private ResponseEntity<List<LocationRefData>> getAllLocationsRefDataResponseByEpimms() {
+        List<LocationRefData> responseData = new ArrayList<LocationRefData>();
+        responseData.add(getLocationRefData("site_name_01", "London", "AA0 0BB",
+                                            "court address 1111"
+        ));
+
+        return new ResponseEntity<List<LocationRefData>>(responseData, OK);
+    }
+
     private ResponseEntity<List<LocationRefData>> getNonScotlandLocationsRefDataResponse() {
         List<LocationRefData> responseData = new ArrayList<LocationRefData>();
         responseData.add(getLocationRefData("site_name_01", "London", "AA0 0BB",
@@ -335,5 +344,37 @@ class GeneralAppLocationRefDataServiceTest {
             .getCourtLocations("user_token");
 
         assertThat(courtLocations.size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsAllLocationsByEpimmsId() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getAllLocationsRefDataResponseByEpimms());
+
+        List<LocationRefData> courtLocations = refDataService
+            .getCourtLocationsByEpimmsId("user_token", "00000");
+
+        DynamicList courtLocationString = getLocationsFromList(courtLocations);
+
+        assertThat(locationsFromDynamicList(courtLocationString))
+            .containsOnly(
+                "site_name_01 - court address 1111 - AA0 0BB"
+            );
+
+        assertThat(courtLocations.size()).isEqualTo(1);
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue().toString())
+            .isEqualTo("dummy_url/fees-register/fees/lookup?epimms_id=00000");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
     }
 }
