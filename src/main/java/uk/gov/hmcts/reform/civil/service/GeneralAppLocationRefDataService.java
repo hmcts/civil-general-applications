@@ -90,9 +90,8 @@ public class GeneralAppLocationRefDataService {
     }
 
     private URI buildURIforCourtLocation(String epimmsId) {
-        String var10000 = this.lrdConfiguration.getUrl();
-        String queryURL = var10000 + this.lrdConfiguration.getEndpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL).queryParam("epimms_id", epimmsId);
+        String refDataQueryURL = this.lrdConfiguration.getUrl() +  this.lrdConfiguration.getEndpoint();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(refDataQueryURL).queryParam("epimms_id", epimmsId);
         return builder.buildAndExpand(new HashMap<>()).toUri();
     }
 
