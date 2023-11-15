@@ -41,6 +41,9 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .orderDate(LocalDate.now())
                 .courtName(caseData.getLocationName())
+                .siteName(caseData.getCaseManagementLocation().getSiteName())
+                .address(caseData.getCaseManagementLocation().getAddress())
+                .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .consentOrder(caseData.getApproveConsentOrder()
                                   .getConsentOrderDescription());
 

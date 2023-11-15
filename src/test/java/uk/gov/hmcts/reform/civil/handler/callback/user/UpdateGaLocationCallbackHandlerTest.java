@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
@@ -38,13 +39,16 @@ import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.Time;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_LOCATION_UPDATE;
@@ -69,6 +73,9 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     private CoreCaseDataService coreCaseDataService;
     @MockBean
     private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    private GeneralAppLocationRefDataService locationRefDataService;
     private static final Long CHILD_CCD_REF = 1646003133062762L;
     private static final Long PARENT_CCD_REF = 1645779506193000L;
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
@@ -88,6 +95,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                     getParentCaseDataAfterUpdateFromCivilService(NO, YES))
                 .id(1645779506193000L)
                 .build();
+            when(locationRefDataService.getCourtLocationsByEpimmsId(any(), any())).thenReturn(getSampleCourLocationsRefObject());
             when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
             when(caseDetailsConverter.toCaseData(parentCaseDetails))
                 .thenReturn(getParentCaseDataAfterUpdateFromCivilService(NO, YES));
@@ -115,12 +123,23 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                 "locationName",
                 "locationForRegion2");
             assertThat(response.getData()).containsEntry(
-                    "caseManagementLocation",
-                    Map.of(
-                        "region", "2",
-                        "baseLocation", "00000",
-                        "siteName", "locationForRegion2"
-                    ));
+                "caseManagementLocation",
+                Map.of(
+                    "region", "2",
+                    "baseLocation", "00000",
+                    "siteName", "locationOfRegion2",
+                    "address", "Prince William House, Peel Cross Road, Salford",
+                    "postcode", "M5 4RR"
+                ));
+        }
+
+        protected List<LocationRefData> getSampleCourLocationsRefObject() {
+            return new ArrayList<>(List.of(
+                LocationRefData.builder()
+                    .epimmsId("00000").siteName("locationOfRegion2").courtAddress("Prince William House, Peel Cross Road, Salford")
+                    .postcode("M5 4RR")
+                    .courtLocationCode("court1").build()
+            ));
         }
 
         @Test

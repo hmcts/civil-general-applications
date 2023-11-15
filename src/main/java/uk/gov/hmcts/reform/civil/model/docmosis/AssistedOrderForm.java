@@ -31,6 +31,9 @@ public class AssistedOrderForm implements MappableObject {
     private final String defendant2Name;
     private final String judgeNameTitle;
     private final String courtLocation;
+    private final String siteName;
+    private final String postcode;
+    private final String address;
     //Order Made
     private final YesOrNo isOrderMade;
     private final Boolean isSingleDate;

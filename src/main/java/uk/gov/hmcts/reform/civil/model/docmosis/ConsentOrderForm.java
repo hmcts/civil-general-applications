@@ -29,5 +29,9 @@ public class ConsentOrderForm implements MappableObject {
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate orderDate;
     private final String courtName;
+    private final String locationName;
+    private final String siteName;
+    private final String address;
+    private final String postcode;
 
 }

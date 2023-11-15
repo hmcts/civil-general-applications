@@ -76,4 +76,23 @@ public class GeneralAppLocationRefDataService {
         return concat(concat(concat(location.getSiteName(), " - "), concat(location.getCourtAddress(), " - ")),
                       location.getPostcode());
     }
+
+    public List<LocationRefData> getCourtLocationsByEpimmsId(String authToken, String epimmsId) {
+        try {
+            ResponseEntity<List<LocationRefData>> responseEntity = this.restTemplate.exchange(this.buildURIforCourtLocation(epimmsId),
+                                                                                              HttpMethod.GET, this.getHeaders(authToken),
+                                                                                              new ParameterizedTypeReference<List<LocationRefData>>() {});
+            return responseEntity.getBody();
+        } catch (Exception var4) {
+            log.error("Location Reference Data Lookup Failed - " + var4.getMessage(), var4);
+            return new ArrayList<>();
+        }
+    }
+
+    private URI buildURIforCourtLocation(String epimmsId) {
+        String refDataQueryURL = this.lrdConfiguration.getUrl() +  this.lrdConfiguration.getEndpoint();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(refDataQueryURL).queryParam("epimms_id", epimmsId);
+        return builder.buildAndExpand(new HashMap<>()).toUri();
+    }
+
 }

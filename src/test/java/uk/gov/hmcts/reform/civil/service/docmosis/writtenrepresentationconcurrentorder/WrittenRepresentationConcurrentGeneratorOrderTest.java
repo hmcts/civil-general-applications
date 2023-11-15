@@ -126,7 +126,10 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                         .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
-                () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe"),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode())
             );
         }
 
