@@ -149,6 +149,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                     getParentCaseDataAfterUpdateFromCivilService(NO, YES))
                 .id(1645779506193000L)
                 .build();
+            when(locationRefDataService.getCourtLocationsByEpimmsId(any(), any())).thenReturn(getSampleCourLocationsRefObject());
             when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
             when(caseDetailsConverter.toCaseData(parentCaseDetails))
                 .thenReturn(getParentCaseDataAfterUpdateFromCivilService(NO, YES));
@@ -180,7 +181,9 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                 Map.of(
                     "region", "2",
                     "baseLocation", "00000",
-                    "siteName", "locationForRegion2"
+                    "siteName", "locationOfRegion2",
+                    "address", "Prince William House, Peel Cross Road, Salford",
+                    "postcode", "M5 4RR"
                 ));
         }
 
