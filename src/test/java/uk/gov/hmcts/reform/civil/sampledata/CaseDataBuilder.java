@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
@@ -611,6 +613,27 @@ public class CaseDataBuilder {
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
+    public CaseData.CaseDataBuilder finalOrderFreeForm() {
+        return CaseData.builder()
+            .ccdCaseReference(CASE_ID)
+            .claimant1PartyName("Test Claimant1 Name")
+            .claimant2PartyName("Test Claimant2 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .defendant2PartyName("Test Defendant2 Name")
+            .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                           .address("london court")
+                                           .postcode("BA 117").build())
+            .freeFormRecitalText("abcd")
+            .freeFormOrderedText("abcd")
+            .orderOnCourtsList(OrderOnCourts.ORDER_ON_COURT_INITIATIVE)
+            .orderOnCourtInitiative(FreeFormOrderValues.builder()
+                                        .onInitiativeSelectionTextArea("abcd")
+                                        .onInitiativeSelectionDate(now()).build())
+            .createdDate(SUBMITTED_DATE_TIME)
+            .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
     public CaseData.CaseDataBuilder generalOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
@@ -619,6 +642,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .isMultiParty(NO)
             .createdDate(SUBMITTED_DATE_TIME)
             .generalAppType(GAApplicationType.builder()
@@ -646,6 +672,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .isMultiParty(NO)
             .createdDate(SUBMITTED_DATE_TIME)
             .generalAppType(GAApplicationType.builder()
@@ -673,6 +702,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .isMultiParty(NO)
             .createdDate(SUBMITTED_DATE_TIME)
             .generalAppType(GAApplicationType.builder()
@@ -701,6 +733,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .createdDate(LocalDateTime.now())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -728,6 +763,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .createdDate(LocalDateTime.now())
             .generalAppType(GAApplicationType.builder()
                                 .types(singletonList(EXTEND_TIME))
@@ -759,6 +797,9 @@ public class CaseDataBuilder {
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
             .createdDate(LocalDateTime.now())
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .judicialGeneralHearingOrderRecital("Test Judge's recital")
             .judicialGOHearingDirections("Test hearing direction")
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isAgreed).build())
@@ -829,6 +870,9 @@ public class CaseDataBuilder {
                                                .organisation(Organisation.builder().organisationID("3").build())
                                                .build())
             .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .businessProcess(BusinessProcess.builder().camundaEvent(HEARING_SCHEDULED).build())
@@ -865,6 +909,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
             .orderCourtOwnInitiativeForWrittenRep(
                 GAOrderCourtOwnInitiativeGAspec.builder()
@@ -894,6 +941,9 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
             .orderCourtOwnInitiativeForWrittenRep(
                 GAOrderCourtOwnInitiativeGAspec.builder()
@@ -916,6 +966,9 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_1)
             .orderCourtOwnInitiativeForWrittenRep(
                 GAOrderCourtOwnInitiativeGAspec.builder()
@@ -943,6 +996,9 @@ public class CaseDataBuilder {
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
             .locationName("abcd")
+            .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                        .address("london court")
+                                        .postcode("BA 117").build())
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
@@ -957,12 +1013,12 @@ public class CaseDataBuilder {
                                 .types(singletonList(EXTEND_TIME))
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
-            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                  .judgeRecitalText(JUDICIAL_REQUEST_MORE_INFO_RECITAL_TEXT)
                                                  .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
-                                                 .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                 .judgeRequestMoreInfoByDate(now())
                                                  .judgeRequestMoreInfoText("test").build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }

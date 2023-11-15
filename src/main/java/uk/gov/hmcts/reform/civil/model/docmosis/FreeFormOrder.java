@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 @Getter
@@ -19,7 +20,14 @@ public class FreeFormOrder implements MappableObject {
     private final String freeFormOrderedText;
     private final String freeFormOrderValue;
     private final String courtName;
+    private final String locationName;
+    private final String siteName;
+    private final String address;
+    private final String postcode;
+    private final YesOrNo isMultiParty;
     private final String judgeNameTitle;
-    private final String claimantName;
-    private final String defendantName;
+    private final String defendant1Name;
+    private final String defendant2Name;
+    private final String claimant1Name;
+    private final String claimant2Name;
 }

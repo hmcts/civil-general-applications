@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -33,7 +32,6 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final IdamClient idamClient;
-    private final ListGeneratorService listGeneratorService;
     private String judgeNameTitle;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
@@ -59,19 +57,24 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
     @Override
     public FreeFormOrder getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-        String defendantName = listGeneratorService.defendantsName(caseData);
+
         return FreeFormOrder.builder()
             .judgeNameTitle(judgeNameTitle)
-            .caseNumber(getCaseNumberFormatted(caseData))
+            .caseNumber(caseData.getCcdCaseReference().toString())
             .caseName(caseData.getCaseNameHmctsInternal())
             .receivedDate(getDateFormatted(LocalDate.now()))
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
             .courtName(caseData.getLocationName())
-            .claimantName(claimantName)
-            .defendantName(defendantName)
+            .siteName(caseData.getCaseManagementLocation().getSiteName())
+            .address(caseData.getCaseManagementLocation().getAddress())
+            .postcode(caseData.getCaseManagementLocation().getPostcode())
+            .isMultiParty(caseData.getIsMultiParty())
+            .claimant1Name(caseData.getClaimant1PartyName())
+            .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+            .defendant1Name(caseData.getDefendant1PartyName())
+            .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
             .build();
     }
 
@@ -97,11 +100,6 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(FILE_TIMESTAMP_FORMAT);
         return String.format(template.getDocumentTitle(),
                 LocalDateTime.now().format(formatter));
-    }
-
-    protected String getCaseNumberFormatted(CaseData caseData) {
-        String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
-        return String.join("-", parts);
     }
 
     protected String getDateFormatted(LocalDate date) {

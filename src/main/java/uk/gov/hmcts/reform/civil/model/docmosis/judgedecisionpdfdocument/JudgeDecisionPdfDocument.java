@@ -23,6 +23,9 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String judicialByCourtsInitiative;
     private final String locationName;
     private final String courtName;
+    private final String siteName;
+    private final String address;
+    private final String postcode;
     private final YesOrNo reasonAvailable;
 
     private final String judicialByCourtsInitiativeListForHearing;
@@ -40,6 +43,11 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String hearingOrder;
     private final String judgeComments;
     private final String judgeNameTitle;
+    private final YesOrNo isMultiParty;
+    private final String defendant1Name;
+    private final String defendant2Name;
+    private final String claimant1Name;
+    private final String claimant2Name;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)

@@ -16,4 +16,6 @@ public class GACaseLocation {
     private String region;
     private String siteName;
     private String baseLocation;
+    private String address;
+    private String postcode;
 }
