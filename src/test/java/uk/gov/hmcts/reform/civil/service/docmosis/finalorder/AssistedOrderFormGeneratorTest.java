@@ -77,10 +77,10 @@ class AssistedOrderFormGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
     private static final String CLAIMANT_SUMMARILY_ASSESSED_TEXT = "The claimant shall pay the defendant's costs (both fixed and summarily assessed as appropriate) " +
         "in the sum of £789.00. " +
-        "Such sum shall be made by 4pm on";
+        "Such sum shall be paid by 4pm on";
     private static final String DEFENDANT_SUMMARILY_ASSESSED_TEXT = "The defendant shall pay the claimant's costs (both fixed and summarily assessed as appropriate) " +
         "in the sum of £789.00. " +
-        "Such sum shall be made by 4pm on";
+        "Such sum shall be paid by 4pm on";
     private static final String CLAIMANT_DETAILED_INDEMNITY_ASSESSED_TEXT = "The claimant shall pay the defendant's costs to be subject to a detailed assessment " +
         "on the indemnity basis if not agreed";
     private static final String CLAIMANT_DETAILED_STANDARD_ASSESSED_TEXT = "The claimant shall pay the defendant's costs to be subject to a detailed assessment " +
@@ -655,7 +655,55 @@ class AssistedOrderFormGeneratorTest {
                                                         .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
                 .build();
             String hearingDurationText = generator.getFurtherHearingDuration(caseData);
-            assertThat(hearingDurationText).contains("2 days 5 hours 30 minutes ");
+            assertThat(hearingDurationText).isEqualTo("2 days 5 hours 30 minutes");
+
+            caseData = CaseData.builder()
+                    .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                            .listFromDate(LocalDate.now().minusDays(5))
+                            .lengthOfNewHearing(LengthOfHearing.OTHER)
+                            .lengthOfHearingOther(HearingLength.builder().lengthListOtherDays(0)
+                                    .lengthListOtherHours(5)
+                                    .lengthListOtherMinutes(30).build())
+                            .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
+                    .build();
+            hearingDurationText = generator.getFurtherHearingDuration(caseData);
+            assertThat(hearingDurationText).isEqualTo("5 hours 30 minutes");
+
+            caseData = CaseData.builder()
+                    .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                            .listFromDate(LocalDate.now().minusDays(5))
+                            .lengthOfNewHearing(LengthOfHearing.OTHER)
+                            .lengthOfHearingOther(HearingLength.builder().lengthListOtherDays(0)
+                                    .lengthListOtherHours(5)
+                                    .lengthListOtherMinutes(0).build())
+                            .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
+                    .build();
+            hearingDurationText = generator.getFurtherHearingDuration(caseData);
+            assertThat(hearingDurationText).isEqualTo("5 hours");
+
+            caseData = CaseData.builder()
+                    .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                            .listFromDate(LocalDate.now().minusDays(5))
+                            .lengthOfNewHearing(LengthOfHearing.OTHER)
+                            .lengthOfHearingOther(HearingLength.builder().lengthListOtherDays(5)
+                                    .lengthListOtherHours(0)
+                                    .lengthListOtherMinutes(0).build())
+                            .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
+                    .build();
+            hearingDurationText = generator.getFurtherHearingDuration(caseData);
+            assertThat(hearingDurationText).isEqualTo("5 days");
+
+            caseData = CaseData.builder()
+                    .assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
+                            .listFromDate(LocalDate.now().minusDays(5))
+                            .lengthOfNewHearing(LengthOfHearing.OTHER)
+                            .lengthOfHearingOther(HearingLength.builder().lengthListOtherDays(0)
+                                    .lengthListOtherHours(0)
+                                    .lengthListOtherMinutes(30).build())
+                            .hearingMethods(GAJudicialHearingType.TELEPHONE).build())
+                    .build();
+            hearingDurationText = generator.getFurtherHearingDuration(caseData);
+            assertThat(hearingDurationText).isEqualTo("30 minutes");
         }
 
         @Test
