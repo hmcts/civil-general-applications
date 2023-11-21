@@ -171,7 +171,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildResponseConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-
+        userInfo = null;
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(RESPONSE_MESSAGE)
             .confirmationBody(buildConfirmationSummary(caseData))
