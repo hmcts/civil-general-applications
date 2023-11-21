@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -132,7 +133,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .hearingDetailsResp(
                 GAHearingDetails
                     .builder()
-                    .hearingPreferredLocation(getLocationsFromList(caseData, authToken))
+                    .hearingPreferredLocation(getLocationsFromList(locationRefDataService
+                                                                       .getCourtLocations(authToken)))
                     .build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -156,15 +158,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
-    private DynamicList getLocationsFromList(CaseData caseData, String authToken) {
-
-        if (Objects.nonNull(caseData.getGeneralAppHearingDetails())
-            && Objects.nonNull(caseData.getGeneralAppHearingDetails().getHearingPreferredLocation())) {
-            return caseData.getGeneralAppHearingDetails().getHearingPreferredLocation();
-        }
-        return fromList(locationRefDataService
-                            .getCourtLocations(authToken).stream()
-                            .map(location -> new StringBuilder().append(location.getSiteName())
+    private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
+        return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
                 .append(" - ").append(location.getCourtAddress())
                 .append(" - ").append(location.getPostcode()).toString()).toList());
     }
