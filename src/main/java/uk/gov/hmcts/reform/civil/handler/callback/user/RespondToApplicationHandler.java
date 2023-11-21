@@ -171,7 +171,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildResponseConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        userInfo = null;
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(RESPONSE_MESSAGE)
             .confirmationBody(buildConfirmationSummary(caseData))
@@ -308,6 +307,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondConsentDocument(null);
         caseDataBuilder.generalAppRespondDebtorDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
+
+        userInfo = null;
 
         CaseData updatedCaseData = caseDataBuilder.build();
 
