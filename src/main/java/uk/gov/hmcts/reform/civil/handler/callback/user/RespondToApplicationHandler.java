@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
-import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -30,7 +29,7 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -69,6 +68,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
     private final GeneralAppLocationRefDataService locationRefDataService;
+    private UserInfo userInfo;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -108,6 +108,14 @@ public class RespondToApplicationHandler extends CallbackHandler {
         );
     }
 
+    public UserInfo getUserInfo(String token) {
+
+        if (Objects.isNull(userInfo)) {
+            return idamClient.getUserInfo(token);
+        }
+        return userInfo;
+    }
+
     private AboutToStartOrSubmitCallbackResponse applicationValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -124,8 +132,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .hearingDetailsResp(
                 GAHearingDetails
                     .builder()
-                    .hearingPreferredLocation(getLocationsFromList(locationRefDataService
-                                                                       .getCourtLocations(authToken)))
+                    .hearingPreferredLocation(getLocationsFromList(caseData, authToken))
                     .build());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -149,8 +156,15 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
-    private DynamicList getLocationsFromList(final List<LocationRefData> locations) {
-        return fromList(locations.stream().map(location -> new StringBuilder().append(location.getSiteName())
+    private DynamicList getLocationsFromList(CaseData caseData, String authToken) {
+
+        if (Objects.nonNull(caseData.getGeneralAppHearingDetails())
+            && Objects.nonNull(caseData.getGeneralAppHearingDetails().getHearingPreferredLocation())) {
+            return caseData.getGeneralAppHearingDetails().getHearingPreferredLocation();
+        }
+        return fromList(locationRefDataService
+                            .getCourtLocations(authToken).stream()
+                            .map(location -> new StringBuilder().append(location.getSiteName())
                 .append(" - ").append(location.getCourtAddress())
                 .append(" - ").append(location.getPostcode()).toString()).toList());
     }
@@ -171,7 +185,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     public List<String> applicationExistsValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        UserInfo userInfo = getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
 
         List<String> errors = new ArrayList<>();
@@ -184,7 +198,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             Optional<Element<GARespondentResponse>> respondentResponseElement = respondentResponse.stream().findAny();
             if (respondentResponseElement.isPresent()) {
                 String respondentResponseId = respondentResponseElement.get().getValue().getGaRespondentDetails();
-                if (respondentResponseId.equals(userDetails.getId())) {
+                if (respondentResponseId.equals(userInfo.getUid())) {
                     errors.add(RESPONDENT_RESPONSE_EXISTS);
                 }
             }
@@ -282,10 +296,11 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
+
+        UserInfo userInfo = getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<Element<GARespondentResponse>> respondentsResponses =
-            addResponse(buildResponse(caseData, userDetails), caseData.getRespondentsResponses());
+            addResponse(buildResponse(caseData, userInfo), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
         caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
@@ -363,7 +378,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         return newApplication;
     }
 
-    private GARespondentResponse buildResponse(CaseData caseData, UserDetails userDetails) {
+    private GARespondentResponse buildResponse(CaseData caseData, UserInfo userInfo) {
 
         YesOrNo generalOther = NO;
         if (Objects.nonNull(caseData.getGeneralAppConsentOrder())) {
@@ -387,7 +402,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
                 .getGeneralAppRespondent1Representative())
             .gaHearingDetails(populateHearingDetailsResp(caseData))
             .gaRespondentResponseReason(reason)
-            .gaRespondentDetails(userDetails.getId()).build();
+            .gaRespondentDetails(userInfo.getUid()).build();
 
         return gaRespondentResponseBuilder.build();
     }
