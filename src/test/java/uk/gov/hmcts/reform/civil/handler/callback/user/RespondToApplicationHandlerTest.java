@@ -542,10 +542,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         respondentSols.add(element(respondent1));
 
-        when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
-                                                                 .uid(STRING_CONSTANT)
-                                                                 .build());
-
         CaseData caseData = getCaseWithJudicialDecision(respondentSols, respondentsResponses);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
