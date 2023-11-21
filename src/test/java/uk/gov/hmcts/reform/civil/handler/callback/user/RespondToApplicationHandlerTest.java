@@ -257,6 +257,26 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void aboutToStartCallbackExistingLocationDetails() {
+
+        List<String> locations = new ArrayList<>(Arrays.asList("ABCD - RG0 0AL"));
+
+        CallbackParams params = callbackParamsOf(getCase(AWAITING_RESPONDENT_RESPONSE).toBuilder().generalAppHearingDetails(
+                                                     GAHearingDetails.builder().hearingPreferredLocation(fromList(locations)).build()).build(),
+                                                 CallbackType.ABOUT_TO_START);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(response.getErrors()).isEmpty();
+        assertThat(data.getHearingDetailsResp()).isNotNull();
+        DynamicList dynamicList = getLocationDynamicList(data);
+        assertThat(dynamicList).isNotNull();
+        assertThat(locationsFromDynamicList(dynamicList))
+            .containsOnly("ABCD - RG0 0AL");
+    }
+
+    @Test
     void midCallBackValidateDebtorPaymentDatePastDateError() {
         CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
