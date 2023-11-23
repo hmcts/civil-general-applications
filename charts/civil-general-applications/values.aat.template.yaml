@@ -154,6 +154,7 @@ civil-service:
       STITCHING_API_ENABLED: false
       DOCUMENT_MANAGEMENT_SECURED: true
       RD_COMMONDATA_API_URL: http://rd-commondata-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+      CIVIL_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service,civil-citizen-ui
 
 idam-pr:
   enabled: true
