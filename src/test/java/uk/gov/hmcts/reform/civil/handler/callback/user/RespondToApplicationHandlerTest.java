@@ -35,8 +35,8 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -46,7 +46,7 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -105,9 +105,10 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     @BeforeEach
         public void setUp() throws IOException {
 
-        when(idamClient.getUserDetails(anyString())).thenReturn(UserDetails.builder()
-                                                                    .id(STRING_CONSTANT)
-                                                                    .build());
+        when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
+                                                                 .uid(STRING_CONSTANT)
+                                                                 .build());
+
         Document document = Document.builder().documentUrl("url").documentFileName("file").build();
         documents.add(ElementUtils.element(document));
     }
