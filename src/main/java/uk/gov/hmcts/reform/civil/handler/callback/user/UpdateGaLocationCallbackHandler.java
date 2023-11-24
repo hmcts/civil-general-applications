@@ -26,13 +26,14 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_LOCATION_UPDATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_TASK_RECONFIG;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UpdateGaLocationCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(TRIGGER_LOCATION_UPDATE);
+    private static final List<CaseEvent> EVENTS = List.of(TRIGGER_LOCATION_UPDATE, TRIGGER_TASK_RECONFIG);
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final GeneralAppLocationRefDataService locationRefDataService;
@@ -71,7 +72,7 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
         caseDataBuilder
             .businessProcess(
                 BusinessProcess.builder()
-                    .camundaEvent(TRIGGER_LOCATION_UPDATE.name())
+                    .camundaEvent(callbackParams.getRequest().getEventId())
                     .status(BusinessProcessStatus.FINISHED)
                     .build())
             .isCcmccLocation(YesOrNo.NO)
