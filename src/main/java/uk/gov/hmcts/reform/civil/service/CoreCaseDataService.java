@@ -262,6 +262,7 @@ public class CoreCaseDataService {
         } catch (Exception e) {
             log.info(e.getMessage());
             log.info(RETRY_MSG);
+            systemUpdateUser = refreshSystemUpdateUser();
             return submitForCaseWorker(caseDataContent, systemUpdateUser);
         }
     }
