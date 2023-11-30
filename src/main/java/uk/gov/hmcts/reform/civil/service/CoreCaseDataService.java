@@ -50,62 +50,112 @@ public class CoreCaseDataService {
 
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
-        return coreCaseDataApi.startEventForCaseWorker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            CASE_TYPE,
-            caseId,
-            eventName.name()
-        );
+        try {
+            return coreCaseDataApi.startEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    CASE_TYPE,
+                    caseId,
+                    eventName.name()
+            );
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+            return coreCaseDataApi.startEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    CASE_TYPE,
+                    caseId,
+                    eventName.name());
+        }
     }
 
     public StartEventResponse startGaUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
-        return coreCaseDataApi.startEventForCaseWorker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            GENERAL_APPLICATION_CASE_TYPE,
-            caseId,
-            eventName.name()
-        );
+        try {
+            return coreCaseDataApi.startEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    caseId,
+                    eventName.name()
+            );
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+            return coreCaseDataApi.startEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    caseId,
+                    eventName.name());
+        }
     }
 
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
-        CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            CASE_TYPE,
-            caseId,
-            true,
-            caseDataContent
-        );
-        return caseDetailsConverter.toCaseData(caseDetails);
+        try {
+            CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    CASE_TYPE,
+                    caseId,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+            CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    CASE_TYPE,
+                    caseId,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        }
     }
 
     public CaseData submitGaUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-
-        CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            GENERAL_APPLICATION_CASE_TYPE,
-            caseId,
-            true,
-            caseDataContent
-        );
-        return caseDetailsConverter.toCaseData(caseDetails);
+        try {
+            CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    caseId,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+            CaseDetails caseDetails = coreCaseDataApi.submitEventForCaseWorker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    caseId,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        }
     }
 
     public void triggerGaEvent(Long caseId, CaseEvent eventName, Map<String, Object> contentModified) {
@@ -115,26 +165,52 @@ public class CoreCaseDataService {
 
     public SearchResult searchCases(Query query) {
         String userToken = userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword());
-        return coreCaseDataApi.searchCases(userToken, authTokenGenerator.generate(), CASE_TYPE, query.toString());
+        try {
+            return coreCaseDataApi.searchCases(userToken, authTokenGenerator.generate(), CASE_TYPE, query.toString());
+        } catch (Exception e) {
+            userToken = userService.refreshAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            return coreCaseDataApi.searchCases(userToken, authTokenGenerator.generate(), CASE_TYPE, query.toString());
+        }
     }
 
     public SearchResult searchGeneralApplication(Query query) {
         String userToken = userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword());
-        return coreCaseDataApi.searchCases(
-            userToken,
-            authTokenGenerator.generate(),
-            GENERAL_APPLICATION_CASE_TYPE,
-            query.toString()
-        );
+        try {
+            return coreCaseDataApi.searchCases(
+                    userToken,
+                    authTokenGenerator.generate(),
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    query.toString()
+            );
+        } catch (Exception e) {
+            userToken = userService.refreshAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            return coreCaseDataApi.searchCases(
+                    userToken,
+                    authTokenGenerator.generate(),
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    query.toString()
+            );
+        }
     }
 
     public CaseDetails getCase(Long caseId) {
         String userToken = userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword());
-        return coreCaseDataApi.getCase(userToken, authTokenGenerator.generate(), caseId.toString());
+        try {
+            return coreCaseDataApi.getCase(userToken, authTokenGenerator.generate(), caseId.toString());
+        } catch (Exception e) {
+            userToken = userService.refreshAccessToken(userConfig.getUserName(), userConfig.getPassword());
+            return coreCaseDataApi.getCase(userToken, authTokenGenerator.generate(), caseId.toString());
+        }
     }
 
     private UserAuthContent getSystemUpdateUser() {
         String userToken = userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword());
+        String userId = userService.getUserInfo(userToken).getUid();
+        return UserAuthContent.builder().userToken(userToken).userId(userId).build();
+    }
+
+    private UserAuthContent refreshSystemUpdateUser() {
+        String userToken = userService.refreshAccessToken(userConfig.getUserName(), userConfig.getPassword());
         String userId = userService.getUserInfo(userToken).getUid();
         return UserAuthContent.builder().userToken(userToken).userId(userId).build();
     }
@@ -155,27 +231,53 @@ public class CoreCaseDataService {
 
     public StartEventResponse startCaseForCaseworker(String eventId) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-        return coreCaseDataApi.startForCaseworker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            GENERAL_APPLICATION_CASE_TYPE,
-            eventId);
+        try {
+            return coreCaseDataApi.startForCaseworker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    eventId);
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+            return coreCaseDataApi.startForCaseworker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    eventId);
+        }
     }
 
     public CaseData submitForCaseWorker(CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-        CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
-            systemUpdateUser.getUserToken(),
-            authTokenGenerator.generate(),
-            systemUpdateUser.getUserId(),
-            JURISDICTION,
-            GENERAL_APPLICATION_CASE_TYPE,
-            true,
-            caseDataContent
-        );
-        return caseDetailsConverter.toCaseData(caseDetails);
+        try {
+            CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        } catch (Exception e) {
+            systemUpdateUser = refreshSystemUpdateUser();
+
+            CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
+                    systemUpdateUser.getUserToken(),
+                    authTokenGenerator.generate(),
+                    systemUpdateUser.getUserId(),
+                    JURISDICTION,
+                    GENERAL_APPLICATION_CASE_TYPE,
+                    true,
+                    caseDataContent
+            );
+            return caseDetailsConverter.toCaseData(caseDetails);
+        }
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, Map<String, Object> caseDataMap) {
