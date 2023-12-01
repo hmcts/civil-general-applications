@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +26,7 @@ class UserServiceTest {
     private static final List<String> ROLES = Lists.newArrayList("citizen");
 
     private static final String AUTHORISATION = "Bearer I am a valid token";
+    private static final String ACCESS_TOKEN = "token";
 
     private static final UserInfo userInfo = UserInfo.builder()
         .sub(SUB)
@@ -43,11 +45,11 @@ class UserServiceTest {
     @BeforeEach
     public void setup() {
         userService = new UserService(idamClient);
-        when(idamClient.getUserInfo(AUTHORISATION)).thenReturn(userInfo);
     }
 
     @Test
     void shouldReturnUserInfo_whenValidAuthToken() {
+        when(idamClient.getUserInfo(AUTHORISATION)).thenReturn(userInfo);
         UserInfo found = userService.getUserInfo(AUTHORISATION);
 
         assertThat(found.getSub()).isEqualTo(SUB);
@@ -56,5 +58,12 @@ class UserServiceTest {
         assertThat(found.getGivenName()).isEqualTo(GIVEN_NAME);
         assertThat(found.getFamilyName()).isEqualTo(FAMILY_NAME);
         assertThat(found.getRoles()).isEqualTo(ROLES);
+    }
+
+    @Test
+    void shouldReturnToken_whenLogin() {
+        when(idamClient.getAccessToken(anyString(), anyString())).thenReturn(ACCESS_TOKEN);
+        String auth = userService.refreshAccessToken("username", "password");
+        assertThat(auth).isEqualTo("token");
     }
 }
