@@ -427,7 +427,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             } else {
                 sb.append("Proposed set date is ")
                         .append(DateFormatHelper
-                                .formatLocalDate(gaRespondentDebtorOffer.getPaymentSetDate(), " d MMMM yyyy"))
+                                .formatLocalDate(gaRespondentDebtorOffer.getPaymentSetDate(), "d MMMM yyyy"))
                         .append(". ");
             }
             sb.append("Objections to the debtor's proposals is ")
