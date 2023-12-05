@@ -43,17 +43,15 @@ java:
     civil:
       resourceGroup: civil
       secrets:
-        - name: prd-admin-user-password
         - civil-idam-client-secret
-        - microservicekey-civil-service
         - system-update-user-username
         - system-update-user-password
         - cross-access-user-username
         - cross-access-user-password
         - prd-admin-user-username
         - prd-admin-user-password
-        - name: AppInsightsInstrumentationKeyGeneralApplications
-          alias: azure.application-insights.instrumentation-key
+        - name: genapp-appinsights-connection-string
+          alias: appinsights-connection-string
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
