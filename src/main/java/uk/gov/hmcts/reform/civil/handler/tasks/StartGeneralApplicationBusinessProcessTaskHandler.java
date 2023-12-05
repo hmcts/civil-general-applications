@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
-import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -13,7 +12,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -31,7 +29,6 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private final TaskHandlerHelper taskHandlerHelper;
 
     private VariableMap variables;
 
@@ -100,12 +97,5 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
             .event(Event.builder().id(startEventResponse.getEventId()).build())
             .data(data)
             .build();
-    }
-
-    @Override
-    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
-
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 }
