@@ -69,7 +69,16 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      * @param e                   the exception thrown by business logic.
      */
     default void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
-        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
+        int maxRetries = getMaxAttempts();
+        int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
+
+        externalTaskService.handleFailure(
+                externalTask,
+                e.getMessage(),
+                getStackTrace(e),
+                remainingRetries - 1,
+                calculateExponentialRetryTimeout(1000, maxRetries, remainingRetries)
+        );
     }
 
     default String getStackTrace(Throwable throwable) {
@@ -78,20 +87,6 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
         }
 
         return Arrays.toString(throwable.getStackTrace());
-    }
-
-    default void handleFailureToExternalTaskService(ExternalTask externalTask, ExternalTaskService externalTaskService,
-                                                    Exception e) {
-        int maxRetries = getMaxAttempts();
-        int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
-        log.info("Task id: {} , Remaining Tries: {}", externalTask.getId(), remainingRetries);
-        externalTaskService.handleFailure(
-            externalTask,
-            e.getMessage(),
-            getStackTrace(e),
-            remainingRetries - 1,
-            calculateExponentialRetryTimeout(1000, maxRetries, remainingRetries)
-        );
     }
     /**
      * Defines the number of attempts for a given external task.
