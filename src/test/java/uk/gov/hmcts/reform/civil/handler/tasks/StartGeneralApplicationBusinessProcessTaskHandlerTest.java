@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -69,8 +68,6 @@ class StartGeneralApplicationBusinessProcessTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
     @MockBean
     private FeatureToggleService featureToggleService;
-    @MockBean
-    private TaskHandlerHelper taskHandlerHelper;
     @Autowired
     private StartGeneralApplicationBusinessProcessTaskHandler handler;
 
@@ -140,8 +137,6 @@ class StartGeneralApplicationBusinessProcessTaskHandlerTest {
 
         when(coreCaseDataService.startUpdate(CASE_ID, START_GA_BUSINESS_PROCESS))
             .thenReturn(startEventResponse);
-        when(taskHandlerHelper.gaCaseDataContent(any(), any()))
-            .thenReturn(content(startEventResponse, businessProcess));
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         handler.execute(mockTask, externalTaskService);

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.camunda.bpm.client.task.ExternalTask;
-import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -30,7 +28,6 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private final TaskHandlerHelper taskHandlerHelper;
 
     private CaseData data;
 
@@ -44,7 +41,6 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
             .activityId(externalTask.getActivityId()).build();
-        businessProcess.resetFailedBusinessProcessToStarted();
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
                                                           variables, startEventData.getGeneralAppParentCaseLink());
         data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
@@ -57,14 +53,6 @@ public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
         return variables;
-    }
-
-    @Override
-    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
-
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-
-        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,

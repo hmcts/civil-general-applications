@@ -3,19 +3,20 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
-import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
+
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -24,7 +25,6 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
-    private final TaskHandlerHelper taskHandlerHelper;
     private final StateFlowEngine stateFlowEngine;
 
     private CaseData data;
@@ -40,8 +40,7 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
             .activityId(externalTask.getActivityId()).build();
-        businessProcess.resetFailedBusinessProcessToStarted();
-        CaseDataContent caseDataContent = taskHandlerHelper.gaCaseDataContent(startEventResponse, businessProcess);
+        CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
     }
 
@@ -54,11 +53,16 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
         return variables;
     }
 
-    @Override
-    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+    private CaseDataContent gaCaseDataContent(StartEventResponse startGaEventResponse,
+                                              BusinessProcess businessProcess) {
+        Map<String, Object> objectDataMap = startGaEventResponse.getCaseDetails().getData();
+        objectDataMap.put("businessProcess", businessProcess);
 
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-
-        handleFailureToExternalTaskService(externalTask, externalTaskService, e);
+        return CaseDataContent.builder()
+                .eventToken(startGaEventResponse.getToken())
+                .event(Event.builder().id(startGaEventResponse.getEventId())
+                        .build())
+                .data(objectDataMap)
+                .build();
     }
 }

@@ -4,6 +4,5 @@ public enum BusinessProcessStatus {
     READY,
     DISPATCHED,
     STARTED,
-    FINISHED,
-    FAILED
+    FINISHED
 }

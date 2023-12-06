@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -16,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
-import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.delegate.BpmnError;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +27,6 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
     protected static int waitGap = 3;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final TaskHandlerHelper taskHandlerHelper;
     private final ObjectMapper mapper;
 
     @Override
@@ -53,12 +50,6 @@ public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
             log.error("Civil draft document update wait time out");
             throw new BpmnError("ABORT");
         }
-    }
-
-    @Override
-    public void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskServ, Exception e) {
-        taskHandlerHelper.updateEventToFailedState(externalTask, getMaxAttempts());
-        handleFailureToExternalTaskService(externalTask, externalTaskServ, e);
     }
 
     protected boolean checkCivilDocUpdated(CaseData gaCaseData) {

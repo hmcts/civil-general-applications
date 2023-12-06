@@ -12,7 +12,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.WAIT_GA_DRAFT;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.helpers.TaskHandlerHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -52,8 +51,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     private ExternalTaskService externalTaskService;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
-    @MockBean
-    private TaskHandlerHelper taskHandlerHelper;
     @MockBean
     private ObjectMapper mapper;
     @MockBean
@@ -152,22 +149,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     void updated_should_success_civil_doc_is_updated() {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCaseDataNow);
         assertThat(waitCivilDocUpdatedTaskHandler.checkCivilDocUpdated(gaCaseData)).isTrue();
-    }
-
-    @Test
-    void shouldHandleFailure() {
-
-        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
-                .caseEvent(WAIT_GA_DRAFT).build();
-        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
-        CaseDetails ga = CaseDetails.builder().id(1L).build();
-        when(coreCaseDataService.getCase(1L)).thenAnswer(invocation -> {
-            throw new Exception("there was an error");
-        });
-
-        waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
-
-        verify(taskHandlerHelper, times(1)).updateEventToFailedState(mockTask, 3);
     }
 
     @Test
