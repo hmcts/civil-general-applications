@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -688,28 +689,34 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
-    void shouldReturn_No_WhenDebtorIsAcceptedByRespondent() {
+    void shouldReturn_No_WhenDebtorIsDeclinedByRespondent() {
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        LocalDate planDate = LocalDate.of(2023, 11, 29);
         caseDataBuilder.parentClaimantIsApplicant(NO)
             .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
             .gaRespondentDebtorOffer(
             GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
                     GARespondentDebtorOfferOptionsGAspec.DECLINE)
+                    .debtorObjections("I have no money")
                 .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
-                .paymentSetDate(LocalDate.now().minusDays(2)).build())
+                .paymentSetDate(planDate).build())
             .generalAppRespondDebtorDocument(documents);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-
+        String expectedReason = "Proposed payment plan is I will accept payment in full by a set date. " +
+                "Proposed set date is 29 November 2023. " +
+                "Objections to the debtor's proposals is I have no money";
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getHearingDetailsResp().getHearingPreferredLocation()).isNull();
         assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
                        .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                .getGaRespondentResponseReason()).isEqualTo(expectedReason);
         assertThat(responseCaseData.getGeneralAppRespondDebtorDocument()).isNull();
         assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
         assertThat(responseCaseData.getGaRespondDoc()
@@ -721,6 +728,32 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getGaRespondDoc()
                 .get(0).getValue().getDocumentLink().getDocumentFileName())
                 .isEqualTo("file");
+    }
+
+    @Test
+    void shouldReturn_No_Instalment_WhenDebtorIsDeclinedByRespondent() {
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+                .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+                .gaRespondentDebtorOffer(
+                        GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
+                                        GARespondentDebtorOfferOptionsGAspec.DECLINE)
+                                .debtorObjections("I have no money")
+                                .paymentPlan(GADebtorPaymentPlanGAspec.INSTALMENT)
+                                .monthlyInstalment(new BigDecimal(1234)).build())
+                .generalAppRespondDebtorDocument(documents);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        String expectedReason = "Proposed payment plan is I will accept the following instalments per month." +
+                " Proposed instalments per month is 12.34 pounds." +
+                " Objections to the debtor's proposals is I have no money";
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                .getGaRespondentResponseReason()).isEqualTo(expectedReason);
     }
 
     @Test
