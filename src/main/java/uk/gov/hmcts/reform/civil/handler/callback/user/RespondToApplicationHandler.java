@@ -11,9 +11,11 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.GADebtorPaymentPlanGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -24,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -32,6 +35,8 @@ import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -390,6 +395,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
         String reason = caseData.getGeneralAppRespondReason();
         if (Objects.isNull(reason)) {
             reason = caseData.getGeneralAppRespondConsentReason();
+            if (Objects.isNull(reason)) {
+                reason = getDebtorReason(caseData.getGaRespondentDebtorOffer());
+            }
         }
         gaRespondentResponseBuilder
             .generalAppRespondent1Representative(caseData.getGeneralAppRespondent1Representative() == null
@@ -401,5 +409,31 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .gaRespondentDetails(userInfo.getUid()).build();
 
         return gaRespondentResponseBuilder.build();
+    }
+
+    private String getDebtorReason(GARespondentDebtorOfferGAspec gaRespondentDebtorOffer) {
+        if (Objects.nonNull(gaRespondentDebtorOffer)
+                && gaRespondentDebtorOffer.getRespondentDebtorOffer().equals(DECLINE)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Proposed payment plan is ")
+                    .append(gaRespondentDebtorOffer.getPaymentPlan().getDisplayedValue())
+                    .append(". ");
+            if (gaRespondentDebtorOffer.getPaymentPlan().equals(GADebtorPaymentPlanGAspec.INSTALMENT)) {
+                BigDecimal pounds = gaRespondentDebtorOffer.getMonthlyInstalment()
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                sb.append("Proposed instalments per month is ")
+                        .append(pounds)
+                        .append(" pounds. ");
+            } else {
+                sb.append("Proposed set date is ")
+                        .append(DateFormatHelper
+                                .formatLocalDate(gaRespondentDebtorOffer.getPaymentSetDate(), "d MMMM yyyy"))
+                        .append(". ");
+            }
+            sb.append("Objections to the debtor's proposals is ")
+                    .append(gaRespondentDebtorOffer.getDebtorObjections());
+            return sb.toString();
+        }
+        return null;
     }
 }
