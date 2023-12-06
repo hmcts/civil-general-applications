@@ -692,6 +692,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     void shouldReturn_No_WhenDebtorIsDeclinedByRespondent() {
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        LocalDate planDate = LocalDate.of(2023, 11, 29);
         caseDataBuilder.parentClaimantIsApplicant(NO)
             .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
             .gaRespondentDebtorOffer(
@@ -699,7 +700,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                     GARespondentDebtorOfferOptionsGAspec.DECLINE)
                     .debtorObjections("I have no money")
                 .paymentPlan(GADebtorPaymentPlanGAspec.PAYFULL)
-                .paymentSetDate(LocalDate.now().minusDays(2)).build())
+                .paymentSetDate(planDate).build())
             .generalAppRespondDebtorDocument(documents);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
