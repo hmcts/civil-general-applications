@@ -36,4 +36,10 @@
     <notes>All latest jars has got the vulnerablities. will upgrade later when that is fixed</notes>
     <cve>CVE-2023-5072</cve>
   </suppress>
+  <suppress until="2024-01-10">
+    <notes>
+      The latest logback version from Java-logging has got the vulnerability
+    </notes>
+    <cve>CVE-2023-6378</cve>
+  </suppress>
 </suppressions>
