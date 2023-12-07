@@ -259,7 +259,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
     private List<String> validAssistedOrderForm(CaseData caseData) {
         List<String> errors = new ArrayList<>();
-        
         if (caseData.getAssistedOrderMadeSelection() != null
             && caseData.getAssistedOrderMadeSelection().equals(YesOrNo.YES)
             && nonNull(caseData.getAssistedOrderMadeDateHeardDetails().getSingleDateSelection())
