@@ -1,4 +1,4 @@
-# civil-general-applications 
+# civil-general-applications
 
 [![Build Status](https://travis-ci.org/hmcts/civil-general-applications.svg?branch=master)](https://travis-ci.org/hmcts/civil-general-applications)
 
@@ -21,6 +21,9 @@ To build the project execute the following command:
 ```bash
   ./gradlew build
 ```
+
+for running depdendency check locally
+./gradlew --no-daemon --stacktrace -DdependencyCheck.failBuild=true -Dnvd.api.check.validforhours=24 -Danalyzer.central.enabled=false -Danalyzer.retirejs.enabled=false -Danalyzer.ossindex.enabled=false -Dnvd.api.key=<your_nvd_api_key> dependencyCheckAggregate
 
 ### Running the application
 
