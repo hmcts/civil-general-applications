@@ -39,6 +39,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGi
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRecitalRecord;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.BeSpokeCostDetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
@@ -124,6 +125,16 @@ class AssistedOrderFormGeneratorTest {
             String assistedOrderString = generator.getCostsReservedText(caseData);
 
             assertThat(assistedOrderString).isNull();
+        }
+
+        @Test
+        void shouldReturnValue_WhenSelected_BeSpokeCostOrder() {
+            CaseData caseData = CaseData.builder().assistedCostTypes(AssistedCostTypesList.BESPOKE_COSTS_ORDER)
+                .assistedOrderCostsBespoke(BeSpokeCostDetailText.builder().detailText("test").build())
+                .build();
+            String assistedOrderString = generator.getBespokeCostOrderText(caseData);
+
+            assertThat(assistedOrderString).isEqualTo("\n\n" + "test");
         }
 
         @Test

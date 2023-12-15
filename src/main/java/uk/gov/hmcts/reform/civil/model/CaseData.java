@@ -56,6 +56,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderGi
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRecitalRecord;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.BeSpokeCostDetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 
@@ -266,7 +267,7 @@ public class CaseData implements MappableObject {
     private final AssistedOrderCost assistedOrderMakeAnOrderForCosts;
     private final YesOrNo publicFundingCostsProtection;
     private final DetailText costReservedDetails;
-    private final DetailText bespokeCostDetails;
+    private final BeSpokeCostDetailText assistedOrderCostsBespoke;
     private final String assistedOrderOrderedThatText;
     private final List<FinalOrderShowToggle> assistedOrderFurtherHearingToggle;
     private final AssistedOrderFurtherHearingDetails assistedOrderFurtherHearingDetails;

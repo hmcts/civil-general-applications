@@ -97,6 +97,7 @@ public class AssistedOrderForm implements MappableObject {
     private final LocalDate interimPaymentDate;
     private final String beSpokeCostsText;
     private final YesOrNo costsProtection;
+    private final String beSpokeCostDetailsText;
     private final Boolean isQocsProtectionEnabled;
     //Appeal
     private final Boolean showAppeal;

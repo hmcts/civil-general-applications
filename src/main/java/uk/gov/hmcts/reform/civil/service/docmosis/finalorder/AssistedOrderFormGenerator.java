@@ -114,6 +114,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             .furtherHearingDatesToAvoid(getFurtherHearingDatesToAvoid(caseData))
             .furtherHearingLocation(getFurtherHearingLocation(caseData))
             .costSelection(caseData.getAssistedCostTypes().name())
+            .beSpokeCostDetailsText(getBespokeCostOrderText(caseData))
             .costsReservedText(getCostsReservedText(caseData))
             .summarilyAssessed(getSummarilyAssessed(caseData))
             .summarilyAssessedDate(getSummarilyAssessedDate(caseData))
@@ -139,6 +140,12 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     protected String getCostsReservedText(CaseData caseData) {
         return caseData.getAssistedCostTypes().getDisplayedValue().equals(AssistedCostTypesList.COSTS_RESERVED.getDisplayedValue())
             && nonNull(caseData.getCostReservedDetails()) ? caseData.getCostReservedDetails().getDetailText() : null;
+    }
+
+    protected String getBespokeCostOrderText(CaseData caseData) {
+        return caseData.getAssistedCostTypes().getDisplayedValue()
+            .equals(AssistedCostTypesList.BESPOKE_COSTS_ORDER.getDisplayedValue())
+            && nonNull(caseData.getAssistedOrderCostsBespoke()) ? "\n\n" + caseData.getAssistedOrderCostsBespoke().getDetailText() : null;
     }
 
     protected Boolean checkIsOtherRepresentation(CaseData caseData) {
