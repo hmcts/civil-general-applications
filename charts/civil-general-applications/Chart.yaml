@@ -3,13 +3,13 @@ appVersion: "1.1"
 description: A Helm chart for civil-general-applications App
 name: civil-general-applications
 home: https://github.com/hmcts/civil-general-applications
-version: 0.0.53
+version: 0.0.54
 maintainers:
   - name: HMCTS Civil team
 
 dependencies:
   - name: java
-    version: 5.0.0
+    version: 5.0.3
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
   - name: civil-service
     version: 0.0.57
