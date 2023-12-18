@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -227,6 +228,26 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             );
 
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
+        } else if (Objects.nonNull(caseData.getJudicialDecision())) {
+            if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
+
+                decision = freeFormOrderGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+
+                List<Element<CaseDocument>> documentList =
+                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+
+                documentList.addAll(wrapElements(decision));
+                assignCategoryId.assignCategoryIdToCollection(
+                    documentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.ORDER_DOCUMENTS
+                );
+                caseDataBuilder.generalOrderDocument(documentList);
+
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
