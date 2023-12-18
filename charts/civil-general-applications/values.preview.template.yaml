@@ -11,11 +11,10 @@ java:
     MANAGE_CASE_UI_BASE_URL: https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net
     SPRING_SECURITY_ENABLED: true
     OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat2.internal:8443/openam/oauth2/realms/root/realms/hmcts
-    CMC_DB_HOST: ${SERVICE_NAME}-postgresql
-    CMC_DB_USERNAME: ${POSTGRES_USER}
-    CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-    CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
-    CMC_DB_NAME: cmc
+    CMC_DB_HOST: civil-preview.postgres.database.azure.com
+    CMC_DB_CONNECTION_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+    CMC_DB_USERNAME: hmcts
+    CMC_DB_NAME: "pr-${CHANGE_ID}-cmc"
     CMC_DB_PORT: 5432
     REFERENCE_DATABASE_MIGRATION: false
     TESTING_SUPPORT_ENABLED: true
@@ -39,6 +38,11 @@ java:
     SPRING_CLOUD_BOOTSTRAP_ENABLED: true
     RD_PROFESSIONAL_API_URL: http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     SOME_ENV_VARIABLE: true
+  secrets:
+    CMC_DB_PASSWORD:
+      secretRef: postgres
+      key: PASSWORD
+      disabled: false
   keyVaults:
     civil:
       resourceGroup: civil
@@ -65,28 +69,7 @@ java:
       secrets:
         - microservicekey-civil-general-applications
   postgresql:
-    enabled: true
-    image:
-      registry: hmctspublic.azurecr.io
-      repository: imported/bitnami/postgresql
-      tag: '11.6.0'
-    primary:
-      persistence:
-        enabled: false
-      resources:
-        requests:
-          cpu: 25m
-      initdb:
-        scripts:
-          init.sql: |-
-            CREATE DATABASE cmc WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
-            CREATE DATABASE "data-store" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
-            CREATE DATABASE "definition-store" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
-            CREATE DATABASE "camunda" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
-            CREATE DATABASE "role_assignment" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
-    auth:
-      username: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
+    enabled: false
 
 civil-service:
   enabled: true
@@ -172,10 +155,6 @@ civil-service:
       LAUNCH_DARKLY_ENV: ${SERVICE_FQDN}
       CORE_CASE_DATA_API_URL: http://${SERVICE_NAME}-ccd-data-store-api
       CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
-      CMC_DB_HOST: ${SERVICE_NAME}-postgresql
-      CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
-      CMC_DB_USERNAME: ${POSTGRES_USER}
-      CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       REFERENCE_DATABASE_MIGRATION: true
       FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
@@ -187,6 +166,15 @@ civil-service:
       SERVICE_REQUEST_UPDATE: https://${SERVICE_NAME}.preview.platform.hmcts.net/service-request-update
       SERVICE_REQUEST_UPDATE_CLAIM_ISSUED: https://${SERVICE_NAME}.preview.platform.hmcts.net/service-request-update-claim-issued
       CIVIL_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service,civil-citizen-ui
+      CMC_DB_HOST: civil-preview.postgres.database.azure.com
+      CMC_DB_CONNECTION_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      CMC_DB_USERNAME: hmcts
+      CMC_DB_NAME: "pr-${CHANGE_ID}-cmc"
+    secrets:
+      CMC_DB_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+        disabled: false
 ccd:
   enabled: true
   ccd:
@@ -218,6 +206,10 @@ ccd:
     idamApiUrl: https://idam-api.aat.platform.hmcts.net
     idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
     s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+    postgresUsername: hmcts
+    postgresSecret: postgres
+    postgresHostname: civil-preview.postgres.database.azure.com
+    databaseNamePrefix: "pr-${CHANGE_ID}-"
 
   ccd-api-gateway-web:
     nodejs:
@@ -308,11 +300,41 @@ camunda-bpm:
     ingressHost: camunda-${SERVICE_FQDN}
     environment:
       CAMUNDA_API_AUTH_ENABLED: false
-      CAMUNDA_DB_HOST: ${SERVICE_NAME}-postgresql
-      CAMUNDA_DB_NAME: camunda
-      CAMUNDA_DB_USER_NAME: ${POSTGRES_USER}
-      CAMUNDA_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CAMUNDA_DB_HOST: civil-preview.postgres.database.azure.com
+      CAMUNDA_DB_USER_NAME: hmcts
+      CAMUNDA_DB_CONN_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+      CAMUNDA_DB_NAME: "pr-${CHANGE_ID}-camunda"
+      TEMP_VAR: false
       CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-      CAMUNDA_DB_CONN_OPTIONS: ""
+    secrets:
+      CAMUNDA_DB_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+        disabled: false
 
+postgresql:
+  enabled: true
+  flexibleserver: civil-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-user-profile"
+      - name: "pr-${CHANGE_ID}-draftstore"
+      - name: "pr-${CHANGE_ID}-evidence"
+      - name: "pr-${CHANGE_ID}-annotation"
+      - name: "pr-${CHANGE_ID}-role-assignment"
+      - name: "pr-${CHANGE_ID}-hmc-cft-hearing-service"
+      - name: "pr-${CHANGE_ID}-cft_task_db"
+      - name: "pr-${CHANGE_ID}-wa-case-event-handler"
+      - name: "pr-${CHANGE_ID}-wa_workflow_api"
+      - name: "pr-${CHANGE_ID}-camunda"
+      - name: "pr-${CHANGE_ID}-org_role_mapping"
+      - name: "pr-${CHANGE_ID}-emstitch"
+      - name: "pr-${CHANGE_ID}-payment"
+      - name: "pr-${CHANGE_ID}-dbrdcaseworker"
+      - name: "pr-${CHANGE_ID}-dbrefdata"
+      - name: "pr-${CHANGE_ID}-dbuserprofile"
+      - name: "pr-${CHANGE_ID}-dbjuddata"
+      - name: "pr-${CHANGE_ID}-cmc"
