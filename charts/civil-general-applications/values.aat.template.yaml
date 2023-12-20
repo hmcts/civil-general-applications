@@ -240,7 +240,6 @@ ccd:
     idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
     s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     postgresHostname: ${SERVICE_NAME}-postgresql
-    postgresSecret: postgres
 
   ccd-api-gateway-web:
     nodejs:
@@ -278,11 +277,6 @@ ccd:
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
       ingressHost: civil-ga-data-store-staging.aat.platform.hmcts.net
-      secrets:
-        DATA_STORE_DB_PASSWORD:
-          secretRef: "{{ .Values.global.postgresSecret }}"
-          key: PASSWORD
-          disabled: true
 
   ccd-definition-store-api:
     java:
@@ -298,11 +292,6 @@ ccd:
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
       keyVaults: []
       ingressHost: civil-ga-definition-store-staging.aat.platform.hmcts.net
-      secrets:
-        DEFINITION_STORE_DB_PASSWORD:
-          secretRef: "{{ .Values.global.postgresSecret }}"
-          key: PASSWORD
-          disabled: true
 
   postgresql:
     persistence:
@@ -326,6 +315,3 @@ camunda-bpm:
       CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
       CAMUNDA_DB_CONN_OPTIONS: ""
-
-postgresql:
-  enabled: false
