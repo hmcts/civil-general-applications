@@ -149,11 +149,11 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String JUDICIAL_HEARING_TYPE = "The hearing will be %s";
     private static final String JUDICIAL_TIME_ESTIMATE = "Estimated length of hearing is %s";
     private static final String JUDICIAL_SEQUENTIAL_DATE =
-            "The respondent may upload any written responses or evidence by 4pm on %s";
+            "The defendant may upload any written responses or evidence by 4pm on %s";
     private static final String JUDICIAL_SEQUENTIAL_APPLICANT_DATE =
-            "The applicant may upload any written responses or evidence in reply by 4pm on %s";
+            "The claimant may upload any written responses or evidence in reply by 4pm on %s";
     private static final String JUDICIAL_CONCURRENT_DATE =
-            "The applicant and respondent may upload any written submissions and evidence by 4pm on %s";
+            "The claimant and defendant should upload any written submissions and evidence by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
     public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
