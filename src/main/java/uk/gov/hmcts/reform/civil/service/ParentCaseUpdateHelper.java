@@ -307,7 +307,7 @@ public class ParentCaseUpdateHelper {
             } else {
                 if (generalAppCaseData.getIsMultiParty().equals(NO)) {
                     updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
-                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && gaDetailsRespondentSol.isEmpty() && !gaDetailsRespondentSol2.isEmpty()) {
+                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && (gaDetailsRespondentSol.isEmpty() || !gaDetailsRespondentSol2.isEmpty())) {
                     updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol2);
                     updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaDetailsRespondentSol2);
                 } else {
