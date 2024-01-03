@@ -9,8 +9,8 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
-def generalappCCDBranch = "master"
-def ccddefbranch = "CIV-11935"
+def generalappCCDBranch = "CIV-11935"
+def ccddefbranch = "master"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 
 AppPipelineConfig pipelineConf
