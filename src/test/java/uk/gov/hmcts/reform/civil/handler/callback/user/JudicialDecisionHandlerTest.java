@@ -82,6 +82,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -3042,6 +3043,27 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldClearJudicialHearingLabelText() {
+
+            CaseData caseData = getApplicationBusinessProcess()
+                .toBuilder().judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                                        .judgeHearingCourtLocationText1("test")
+                                                        .judgeHearingTimeEstimateText1("test")
+                                                        .hearingPreferencesPreferredTypeLabel1("test")
+                                                        .judgeHearingSupportReqText1("test")
+                                                        .build()).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertNull(responseCaseData.getJudicialListForHearing().getJudgeHearingCourtLocationText1());
+            assertNull(responseCaseData.getJudicialListForHearing().getJudgeHearingTimeEstimateText1());
+            assertNull(responseCaseData.getJudicialListForHearing().getHearingPreferencesPreferredTypeLabel1());
+            assertNull(responseCaseData.getJudicialListForHearing().getJudgeHearingSupportReqText1());
+        }
+
+        @Test
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
@@ -3132,7 +3154,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
         }
 
-        private CaseData getApplicationBusinessProcess() {
+        public CaseData getApplicationBusinessProcess() {
 
             return CaseData.builder()
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
