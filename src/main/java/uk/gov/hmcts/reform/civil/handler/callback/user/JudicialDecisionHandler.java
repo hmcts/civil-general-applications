@@ -827,6 +827,18 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (Objects.nonNull(caseData.getJudicialRequestMoreInfoDocPreview())) {
             dataBuilder.judicialRequestMoreInfoDocPreview(null);
         }
+
+        if (Objects.nonNull(caseData.getJudicialListForHearing())) {
+            GAJudgesHearingListGAspec.GAJudgesHearingListGAspecBuilder judicialListForHearing
+                = caseData.getJudicialListForHearing().toBuilder();
+
+            dataBuilder.judicialListForHearing(judicialListForHearing.judgeHearingCourtLocationText1(null)
+                                                   .judgeHearingTimeEstimateText1(null)
+                                                   .hearingPreferencesPreferredTypeLabel1(null)
+                                                   .judgeHearingSupportReqText1(null)
+                                                   .build());
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();

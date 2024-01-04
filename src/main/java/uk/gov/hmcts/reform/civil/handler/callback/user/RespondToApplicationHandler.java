@@ -127,7 +127,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
 
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)) {
             caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
         } else {
@@ -384,7 +384,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         YesOrNo generalOther = NO;
         if (Objects.nonNull(caseData.getGeneralAppConsentOrder())) {
             generalOther = caseData.getGaRespondentConsent();
-        } else if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+        } else if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)
             && ofNullable(caseData.getGaRespondentDebtorOffer()).isPresent()
             && caseData.getGaRespondentDebtorOffer().getRespondentDebtorOffer().equals(ACCEPT)) {
