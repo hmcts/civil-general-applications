@@ -1794,9 +1794,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotReturnErrors_whenSequentialWrittenRepresentationDateIsInFuture() {
 
-            String expectedSequentialText = "The respondent may upload any written responses or evidence by 4pm on %s";
+            String expectedSequentialText = "The defendant should upload any written responses or evidence by 4pm on %s";
             String expectedApplicantSequentialText =
-                "The applicant may upload any written responses or evidence in reply by 4pm on %s";
+                "The claimant should upload any written responses or evidence in reply by 4pm on %s";
 
             CallbackParams params = callbackParamsOf(
                 getSequentialWrittenRepresentationDecision(LocalDate.now()),
@@ -1829,7 +1829,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldNotReturnErrors_whenConcurrentWrittenRepresentationDateIsInFuture() {
 
             String expectedConcurrentText =
-                "The applicant and respondent may upload any written submissions and evidence by 4pm on %s";
+                "The claimant and defendant should upload any written submissions and evidence by 4pm on %s";
 
             CallbackParams params = callbackParamsOf(
                 getConcurrentWrittenRepresentationDecision(LocalDate.now()),
