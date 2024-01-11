@@ -74,7 +74,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESP
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
-import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_JUDGEMENT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
@@ -230,7 +230,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         CaseData caseData = getCaseWithRespondentResponse();
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
-        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        List<GeneralApplicationTypes> types = List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT);
         updateCaseData.parentClaimantIsApplicant(NO)
             .generalAppType(GAApplicationType.builder().types(types).build()).build();
 
@@ -271,7 +271,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     void midCallBackValidateDebtorPaymentDatePastDateError() {
         CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
-        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        List<GeneralApplicationTypes> types = List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT);
         updateCaseData.parentClaimantIsApplicant(NO)
             .generalAppType(GAApplicationType.builder().types(types).build())
             .gaRespondentDebtorOffer(
@@ -294,7 +294,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     void midCallBackValidateDebtorPaymentDateIsFuture() {
         CaseData caseData = getCase(AWAITING_RESPONDENT_RESPONSE);
         CaseData.CaseDataBuilder updateCaseData = caseData.toBuilder();
-        List<GeneralApplicationTypes> types = List.of(VARY_JUDGEMENT);
+        List<GeneralApplicationTypes> types = List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT);
         updateCaseData.generalAppType(GAApplicationType.builder().types(types).build())
             .gaRespondentDebtorOffer(
                 GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
@@ -834,7 +834,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         LocalDate planDate = LocalDate.of(2023, 11, 29);
         caseDataBuilder.parentClaimantIsApplicant(NO)
-            .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+            .generalAppType(GAApplicationType.builder().types(List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
             .gaRespondentDebtorOffer(
             GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
                     GARespondentDebtorOfferOptionsGAspec.DECLINE)
@@ -890,7 +890,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.parentClaimantIsApplicant(NO)
-                .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+                .generalAppType(GAApplicationType.builder().types(List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
             .defendant2PartyName("Defendant Two")
             .defendant1PartyName("Defendant One")
             .claimant1PartyName("Claimant One")
@@ -935,7 +935,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder.parentClaimantIsApplicant(NO)
-            .generalAppType(GAApplicationType.builder().types(List.of(VARY_JUDGEMENT)).build())
+            .generalAppType(GAApplicationType.builder().types(List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
             .gaRespondentDebtorOffer(
                 GARespondentDebtorOfferGAspec.builder().respondentDebtorOffer(
                         GARespondentDebtorOfferOptionsGAspec.ACCEPT)
