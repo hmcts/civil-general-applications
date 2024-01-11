@@ -467,7 +467,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
             .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
 
         GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            .email("abcd2@gmail.com").organisationIdentifier("org2").build();
 
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
@@ -476,7 +476,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(eq(civil)))
-            .thenReturn(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL));
+            .thenReturn(getCivilCaseData("abcd@gmail.com", DUMMY_EMAIL, "abcd@gmail.com"));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
 
@@ -498,6 +498,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getRespondentsResponses().size()).isEqualTo(1);
         assertThat(responseCaseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
                        .getHearingPreferredLocation().getListItems().size()).isEqualTo(1);
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
+                       .getRespondentResponsePartyName()).isEqualTo("Defendant One - Defendant");
     }
 
     @Test
@@ -588,23 +590,28 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
         GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email("test@gmail.com").organisationIdentifier("org2").build();
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
             .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+        respondentSols.add(element(respondent2));
         respondentSols.add(element(respondent1));
         CaseData caseData = getCaseWithJudicialDecision(respondentSols, respondentsResponses);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.isMultiParty(YES);
 
         // Civil Claim Case Data
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(eq(civil)))
-            .thenReturn(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL));
+            .thenReturn(getCivilCaseData("ab@gmail.com", "abcd@gmail.com", DUMMY_EMAIL));
 
         // GA Case Data
         CaseDetails ga = CaseDetails.builder().id(456L).build();
         when(coreCaseDataService.getCase(456L)).thenReturn(ga);
         when(caseDetailsConverter.toCaseData(eq(ga)))
-            .thenReturn(caseData);
+            .thenReturn(caseDataBuilder.build());
 
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
@@ -613,6 +620,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
         assertThat(response).isNotNull();
+        assertThat(responseData.getRespondentsResponses()
+                       .get(0).getValue().getGaHearingDetails().getRespondentResponsePartyName())
+            .isEqualTo("Defendant Two - Defendant");
     }
 
     @Test
@@ -698,7 +708,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseDetails civil = CaseDetails.builder().id(123L).build();
         when(coreCaseDataService.getCase(123L)).thenReturn(civil);
         when(caseDetailsConverter.toCaseData(eq(civil)))
-            .thenReturn(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL));
+            .thenReturn(getCivilCaseData(DUMMY_EMAIL, "abcd@gmail.com", "abc@gmail.com"));
 
         // GA CaseData
         CaseDetails ga = CaseDetails.builder().id(456L).build();
@@ -714,6 +724,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getHearingDetailsResp()).isNull();
+        assertThat(responseCaseData.getRespondentsResponses()
+                       .get(0).getValue().getGaHearingDetails()
+                       .getRespondentResponsePartyName()).isEqualTo("Claimant One - Claimant");
     }
 
     @Test
