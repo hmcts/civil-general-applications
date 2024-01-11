@@ -84,6 +84,11 @@ allprojects {
       dependencySet(group: 'com.google.guava', version: '31.1-jre') {
         entry 'guava'
       }
+      // CVE-2023-6378
+      dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
+        entry 'logback-classic'
+        entry 'logback-core'
+      }
 
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-common', version: '1.8.10'
       dependency group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: '1.8.10'
