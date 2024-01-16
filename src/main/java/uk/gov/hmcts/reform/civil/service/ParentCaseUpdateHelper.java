@@ -657,8 +657,7 @@ public class ParentCaseUpdateHelper {
     private GeneralApplication buildGeneralApplication(GeneralApplication generalApplication) {
         GeneralApplication.GeneralApplicationBuilder applicationBuilder = generalApplication.toBuilder();
 
-        applicationBuilder.generalAppType(GAApplicationType.builder().build())
-            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().build())
+        applicationBuilder.generalAppRespondentAgreement(GARespondentOrderAgreement.builder().build())
             .generalAppPBADetails(GAPbaDetails.builder().build())
             .generalAppDetailsOfOrder(EMPTY)
             .generalAppReasonsOfOrder(EMPTY)
