@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -29,6 +31,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -66,6 +69,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RespondToApplicationHandler extends CallbackHandler {
@@ -75,6 +79,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final IdamClient idamClient;
     private final GeneralAppLocationRefDataService locationRefDataService;
     private UserInfo userInfo;
+    private final CoreCaseDataService coreCaseDataService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -302,7 +307,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             addResponse(buildResponse(caseData, userInfo), caseData.getRespondentsResponses());
 
         caseDataBuilder.respondentsResponses(respondentsResponses);
-        caseDataBuilder.hearingDetailsResp(populateHearingDetailsResp(caseData));
+        caseDataBuilder.hearingDetailsResp(null); // Empty HearingDetails Respondent details as its added in the field RespondetsResponses collection
         caseDataBuilder.generalAppRespondent1Representative(GARespondentRepresentative.builder().build());
         caseDataBuilder.gaRespondentConsent(null);
         caseDataBuilder.generalAppRespondReason(null);
@@ -348,7 +353,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         }
     }
 
-    private GAHearingDetails populateHearingDetailsResp(CaseData caseData) {
+    private GAHearingDetails populateHearingDetailsResp(CaseData caseData, UserInfo userInfo) {
         GAHearingDetails gaHearingDetailsResp;
         String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
         if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
@@ -361,13 +366,60 @@ public class RespondToApplicationHandler extends CallbackHandler {
                 .filter(l -> l.getLabel().equals(applicationLocationLabel)).findFirst();
             first.ifPresent(dynamicLocationList::setValue);
             gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .respondentResponsePartyName(getRespondentResponsePartyName(caseData, userInfo))
                 .hearingPreferredLocation(dynamicLocationList).build();
 
         } else {
             gaHearingDetailsResp = caseData.getHearingDetailsResp().toBuilder()
+                .respondentResponsePartyName(getRespondentResponsePartyName(caseData, userInfo))
                 .hearingPreferredLocation(DynamicList.builder().build()).build();
         }
         return gaHearingDetailsResp;
+    }
+
+    private String getRespondentResponsePartyName(CaseData gaCaseData, UserInfo userInfo) {
+
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(gaCaseData.getGeneralAppParentCaseLink().getCaseReference())));
+
+        return checkIfEmailIdMatch(userInfo, civilCaseData, gaCaseData);
+    }
+
+    private String checkIfEmailIdMatch(UserInfo userInfo,
+                                       CaseData civilCaseData, CaseData gaCaseData) {
+
+        // civil claim claimant
+        if (!gaCaseData.getParentClaimantIsApplicant().equals(YES)
+            && userInfo.getSub().equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail())) {
+
+            log.info("Return Civil Claim Defendant two party Name if GA Solicitor Email ID "
+                         + "as same as Civil Claim Claimant Solicitor Two Email");
+
+            return gaCaseData.getClaimant1PartyName() + " - Claimant";
+        }
+
+        // Civil Claim Defendant 1
+        if (userInfo.getSub().equals(civilCaseData.getRespondentSolicitor1EmailAddress())) {
+
+            log.info("Return Civil Claim Defendant One party Name if GA Solicitor Email ID "
+                         + "as same as Civil Claim Respondent Solicitor Two Email");
+
+            return gaCaseData.getDefendant1PartyName() + " - Defendant";
+        }
+
+        // civil claim defendant 2
+        if (YES.equals(gaCaseData.getIsMultiParty())
+            && NO.equals(civilCaseData.getRespondent2SameLegalRepresentative())
+            && userInfo.getSub().equals(civilCaseData.getRespondentSolicitor2EmailAddress())) {
+
+            log.info("Return Civil Claim Defendant two party Name if GA Solicitor Email ID "
+                         + "as same as Civil Claim Respondent Solicitor Two Email");
+
+            return gaCaseData.getDefendant2PartyName() + " - Defendant";
+        }
+
+        return StringUtils.EMPTY;
     }
 
     private List<Element<GARespondentResponse>> addResponse(GARespondentResponse gaRespondentResponseBuilder,
@@ -404,7 +456,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
                                                      ? generalOther
                                                      : caseData.getGeneralAppRespondent1Representative()
                 .getGeneralAppRespondent1Representative())
-            .gaHearingDetails(populateHearingDetailsResp(caseData))
+            .gaHearingDetails(populateHearingDetailsResp(caseData, userInfo))
             .gaRespondentResponseReason(reason)
             .gaRespondentDetails(userInfo.getUid()).build();
 
