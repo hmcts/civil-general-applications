@@ -284,7 +284,16 @@ public class ParentCaseUpdateHelper {
                                                            .getGeneralAppSubmittedDateGAspec())
                         .caseLink(CaseLink.builder().caseReference(String.valueOf(
                             generalAppCaseData.getCcdCaseReference())).build()).build())));
-        } else if (generalAppCaseData.getIsMultiParty().equals(NO)) {
+            /**
+             * When main claim's 1 V 2 Same Legal Representative happens,
+             * Check if main claim "Respondent2SameLegalRespresentative" value is true,
+             * if so, ADD GA application has to master collection
+             *
+             * In addition to above, above condition, Add GA into mater collection if it's not multiparty scenario
+             */
+        } else if ((Objects.nonNull(parentCaseData.getRespondent2SameLegalRepresentative())
+            && parentCaseData.getRespondent2SameLegalRepresentative().equals(YES))
+            || generalAppCaseData.getIsMultiParty().equals(NO)) {
             updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol);
         } else {
             updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol2);
@@ -305,9 +314,21 @@ public class ParentCaseUpdateHelper {
                     updateRespCollectionFromClaimant(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaClaimantDetails);
                 }
             } else {
-                if (generalAppCaseData.getIsMultiParty().equals(NO)) {
+                if ((Objects.nonNull(parentCaseData.getRespondent2SameLegalRepresentative())
+                    && parentCaseData.getRespondent2SameLegalRepresentative().equals(YES))
+                    || generalAppCaseData.getIsMultiParty().equals(NO)) {
+
+                    /**
+                     * When main claim's 1 V 2 Same Legal Representative happens,
+                     * Check if main claim "Respondent2SameLegalRespresentative" value is true,
+                     * if so, ADD GA application has to master collection
+                     *
+                     * In addition to above, above condition, Add GA into mater collection if it's not multiparty scenario
+                     */
+
                     updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
-                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && gaDetailsRespondentSol.isEmpty()) {
+
+                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && (gaDetailsRespondentSol.isEmpty() || !gaDetailsRespondentSol2.isEmpty())) {
                     updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol2);
                     updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaDetailsRespondentSol2);
                 } else {
