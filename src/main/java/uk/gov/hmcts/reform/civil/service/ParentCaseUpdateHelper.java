@@ -258,9 +258,12 @@ public class ParentCaseUpdateHelper {
 
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
-        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(parentCaseId,
-                                                                                UPDATE_CASE_WITH_GA_STATE);
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
+            parentCaseId,
+            UPDATE_CASE_WITH_GA_STATE
+        );
         CaseData parentCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+
         List<Element<GeneralApplicationsDetails>> gaMasterDetails = ofNullable(
             parentCaseData.getGaDetailsMasterCollection()).orElse(newArrayList());
 
@@ -269,6 +272,7 @@ public class ParentCaseUpdateHelper {
 
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
             parentCaseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
+
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol2 = ofNullable(
             parentCaseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
@@ -288,15 +292,31 @@ public class ParentCaseUpdateHelper {
              * Check if main claim "Respondent2SameLegalRespresentative" value is true,
              * if so, ADD GA application has to master collection
              *
-             * In addition to above, above condition, Add GA into mater collection if it's not multiparty scenario
+             * In addition to above, the condition : generalAppCaseData.getIsMultiParty().equals(NO)
+             * Add GA into mater collection if it's not multiparty scenario and GA initiated by Main claim Defendant 1v1
              */
         } else if ((Objects.nonNull(parentCaseData.getRespondent2SameLegalRepresentative())
             && parentCaseData.getRespondent2SameLegalRepresentative().equals(YES))
             || generalAppCaseData.getIsMultiParty().equals(NO)) {
+
+            updateJudgeOrClaimantFromRespCollection(
+                generalAppCaseData,
+                applicationId,
+                gaMasterDetails,
+                gaDetailsRespondentSol
+            );
+        }
+
+        if (generalAppCaseData.getIsMultiParty().equals(YES)
+            && !gaDetailsRespondentSol.isEmpty()) {
             updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol);
-        } else {
+        }
+
+        if (generalAppCaseData.getIsMultiParty().equals(YES)
+            && !gaDetailsRespondentSol2.isEmpty()) {
             updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaMasterDetails, gaDetailsRespondentSol2);
         }
+
         /**
          * Respondent Agreement is NO and with notice.
          * Application should be visible to all solicitor
@@ -335,7 +355,6 @@ public class ParentCaseUpdateHelper {
                     updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaDetailsRespondentSol);
                 }
             }
-
         }
 
         Map<String, Object> updateMap = getUpdatedCaseData(parentCaseData, parentCaseData.getGeneralApplications(),
@@ -387,8 +406,10 @@ public class ParentCaseUpdateHelper {
                                                          List<Element<GeneralApplicationsDetails>> gaMasterDetails,
                                                          List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol) {
         if (!gaDetailsRespondentSol.isEmpty()) {
+
             Optional<Element<GADetailsRespondentSol>> respondentSolCollection = gaDetailsRespondentSol
                 .stream().filter(respondentSolElement2 -> gaRespSolAppFilterCriteria(respondentSolElement2, applicationId)).findAny();
+
             respondentSolCollection.ifPresent(respondentSolElement -> gaMasterDetails.add(
                 element(
                     GeneralApplicationsDetails.builder()

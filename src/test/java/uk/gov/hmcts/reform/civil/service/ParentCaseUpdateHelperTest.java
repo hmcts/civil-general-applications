@@ -308,6 +308,48 @@ class ParentCaseUpdateHelperTest {
     }
 
     @Test
+    void addGA_to_judgeCollection_after_payment_1V2DifferntSolicitor_Def1() {
+
+        CaseData gaCase = getGaVaryCaseData("RespondentSol", AWAITING_APPLICATION_PAYMENT, YES);
+
+        CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSol");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).asList().hasSize(1);
+    }
+
+    @Test
+    void addGA_to_judgeCollection_after_payment_1V2DifferntSolicitor_Def2() {
+
+        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", AWAITING_APPLICATION_PAYMENT, YES);
+
+        CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSolTwo");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).asList().hasSize(1);
+    }
+
+    @Test
     void updateParentWithGAState_with_collections_after_payment_1V2SameSolicitor() {
 
         CaseData gaCase = getGaVaryCaseData("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO);
