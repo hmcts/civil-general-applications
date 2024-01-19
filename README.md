@@ -19,7 +19,7 @@ The project uses [Gradle](https://gradle.org) as a build tool. It already contai
 To build the project execute the following command:
 
 ```bash
-  ./gradlew build
+  ./gradlew build 
 ```
 
 for running depdendency check locally
