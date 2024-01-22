@@ -344,17 +344,35 @@ public class ParentCaseUpdateHelper {
                      *
                      * In addition to above, above condition, Add GA into mater collection if it's not multiparty scenario
                      */
-
                     updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
 
-                } else if (generalAppCaseData.getIsMultiParty().equals(YES) && (gaDetailsRespondentSol.isEmpty() || !gaDetailsRespondentSol2.isEmpty())) {
-                    updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol2);
-                    updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaDetailsRespondentSol2);
-                } else {
-                    updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
-                    updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaDetailsRespondentSol);
                 }
             }
+
+            /**
+             * Parties : Claimant, Respondent 1, Respondent 2
+             *
+             * Condition : Multiparty - Yes, Respondent One initiates the GA - Yes
+             * Add GA from Respondent One Collection into Claimant's and Respondent Two's collections
+             */
+            if (generalAppCaseData.getIsMultiParty().equals(YES) && !gaDetailsRespondentSol.isEmpty()) {
+
+                updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol);
+                updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol2, gaDetailsRespondentSol);
+            }
+
+            /**
+             * Parties : Claimant, Respondent 1, Respondent 2
+             *
+             * Condition : Multiparty - Yes, Respondent Two initiates the GA - Yes
+             * Add GA from Respondent Two Collection into Claimant's and Respondent One's collections
+             */
+            if (generalAppCaseData.getIsMultiParty().equals(YES) && !gaDetailsRespondentSol2.isEmpty()) {
+
+                updateJudgeOrClaimantFromRespCollection(generalAppCaseData, applicationId, gaClaimantDetails, gaDetailsRespondentSol2);
+                updateRespCollectionForMultiParty(generalAppCaseData, applicationId, gaDetailsRespondentSol, gaDetailsRespondentSol2);
+            }
+
         }
 
         Map<String, Object> updateMap = getUpdatedCaseData(parentCaseData, parentCaseData.getGeneralApplications(),
@@ -374,15 +392,23 @@ public class ParentCaseUpdateHelper {
                                                   List<Element<GADetailsRespondentSol>> gaRespondentSol) {
         Optional<Element<GADetailsRespondentSol>> respCollection = gaRespondentSol
             .stream().filter(respCollectionApp -> applicationRespFilterCriteria(respCollectionApp, applicationId)).findAny();
-        respCollection.ifPresent(generalApplicationsDetailsElement -> gaDetailsRespondentSol.add(
-            element(
-                GADetailsRespondentSol.builder()
-                    .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
-                    .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
-                                                       .getGeneralAppSubmittedDateGAspec())
-                    .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                        generalAppCaseData.getCcdCaseReference())).build()).build())));
 
+        Optional<Element<GADetailsRespondentSol>> gaToBeAdded = gaDetailsRespondentSol
+            .stream().filter(respCollectionElement -> gaRespSolAppFilterCriteria(respCollectionElement, applicationId)).findAny();
+
+        /**
+         * To Prevent duplicate, Check if the application already present in the Respondent Collection before adding it from another Collection
+         */
+        if (!gaToBeAdded.isPresent()) {
+            respCollection.ifPresent(generalApplicationsDetailsElement -> gaDetailsRespondentSol.add(
+                element(
+                    GADetailsRespondentSol.builder()
+                        .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build()).build())));
+        }
     }
 
     private void updateRespCollectionFromClaimant(CaseData generalAppCaseData, String applicationId,
@@ -410,14 +436,22 @@ public class ParentCaseUpdateHelper {
             Optional<Element<GADetailsRespondentSol>> respondentSolCollection = gaDetailsRespondentSol
                 .stream().filter(respondentSolElement2 -> gaRespSolAppFilterCriteria(respondentSolElement2, applicationId)).findAny();
 
-            respondentSolCollection.ifPresent(respondentSolElement -> gaMasterDetails.add(
-                element(
-                    GeneralApplicationsDetails.builder()
-                        .generalApplicationType(respondentSolElement.getValue().getGeneralApplicationType())
-                        .generalAppSubmittedDateGAspec(respondentSolElement.getValue()
-                                                           .getGeneralAppSubmittedDateGAspec())
-                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                            generalAppCaseData.getCcdCaseReference())).build()).build())));
+            Optional<Element<GeneralApplicationsDetails>> masterCollection = gaMasterDetails
+                .stream().filter(masterCollectionElement -> applicationFilterCriteria(masterCollectionElement, applicationId)).findAny();
+
+            /**
+             * To Prevent duplicate, Check if the application already present in the Master Collection before adding it from Respondent Collection
+             */
+            if (!masterCollection.isPresent()) {
+                respondentSolCollection.ifPresent(respondentSolElement -> gaMasterDetails.add(
+                    element(
+                        GeneralApplicationsDetails.builder()
+                            .generalApplicationType(respondentSolElement.getValue().getGeneralApplicationType())
+                            .generalAppSubmittedDateGAspec(respondentSolElement.getValue()
+                                                               .getGeneralAppSubmittedDateGAspec())
+                            .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                                generalAppCaseData.getCcdCaseReference())).build()).build())));
+            }
         }
     }
 
