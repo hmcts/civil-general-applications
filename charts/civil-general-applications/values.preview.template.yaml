@@ -343,12 +343,8 @@ camunda-bpm:
       CAMUNDA_DB_USER_NAME: ${POSTGRES_USER}
       CAMUNDA_DB_CONN_OPTIONS: "?stringtype=unspecified"
       CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
+      CAMUNDA_DB_PASSWORD: ${POSTGRES_PASSWORD}
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-    secrets:
-      CAMUNDA_DB_PASSWORD:
-        secretRef: "{{ .Values.global.postgresSecret }}"
-        key: PASSWORD
-        disabled: true
 
 postgresql:
   enabled: false
