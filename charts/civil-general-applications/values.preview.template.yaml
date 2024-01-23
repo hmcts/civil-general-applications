@@ -175,7 +175,7 @@ civil-service:
       CMC_DB_HOST: ${SERVICE_NAME}-postgresql
       CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
       CMC_DB_USERNAME: ${POSTGRES_USER}
-      CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CMC_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
       REFERENCE_DATABASE_MIGRATION: true
       FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
       FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
@@ -218,6 +218,7 @@ ccd:
     idamApiUrl: https://idam-api.aat.platform.hmcts.net
     idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
     s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+    postgresHostname: ${SERVICE_NAME}-postgresql
 
   ccd-api-gateway-web:
     nodejs:
@@ -239,7 +240,8 @@ ccd:
       devcpuLimits: 4000m
       environment:
         CASE_DOCUMENT_AM_API_ATTACH_DOCUMENT_ENABLED: false
-        DATA_STORE_DB_HOST: ${SERVICE_NAME}-postgresql
+        DATA_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
+        DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         DATA_STORE_IDAM_KEY: ${CCD_DATA_STORE_S2S_SECRET}
         DATA_STORE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_gw,ccd_ps,bulk_scan_orchestrator,ccpay_bubble,ctsc_work_allocation,em_ccd_orchestrator,xui_webapp,civil_service,ccd_case_document_am_api,civil_general_applications
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
@@ -252,6 +254,19 @@ ccd:
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
       keyVaults: []
+      secrets:
+        STORAGE_ACCOUNT_NAME:
+          secretRef: storage-secret-{{ .Release.Name }}-blobstorage
+          key: storageAccountName
+          disabled: true
+        STORAGE_ACCOUNT_KEY:
+          secretRef: storage-secret-{{ .Release.Name }}-blobstorage
+          key: accessKey
+          disabled: true
+        DATA_STORE_DB_PASSWORD:
+          secretRef: "{{ .Values.global.postgresSecret }}"
+          key: PASSWORD
+          disabled: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
 
   ccd-definition-store-api:
@@ -263,9 +278,24 @@ ccd:
       devcpuLimits: 4000m
       environment:
         DEFINITION_STORE_DB_HOST: ${SERVICE_NAME}-postgresql
+        DEFINITION_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
+        DEFINITION_STORE_DB_OPTIONS: "?stringtype=unspecified"
         DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
       keyVaults: []
+      secrets:
+        STORAGE_ACCOUNT_NAME:
+          secretRef: storage-secret-{{ .Release.Name }}-blobstorage
+          key: storageAccountName
+          disabled: true
+        STORAGE_ACCOUNT_KEY:
+          secretRef: storage-secret-{{ .Release.Name }}-blobstorage
+          key: accessKey
+          disabled: true
+        DEFINITION_STORE_DB_PASSWORD:
+          secretRef: "{{ .Values.global.postgresSecret }}"
+          key: PASSWORD
+          disabled: true
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
 
   postgresql:
@@ -310,9 +340,16 @@ camunda-bpm:
       CAMUNDA_API_AUTH_ENABLED: false
       CAMUNDA_DB_HOST: ${SERVICE_NAME}-postgresql
       CAMUNDA_DB_NAME: camunda
-      CAMUNDA_DB_USER_NAME: ${POSTGRES_USER}
-      CAMUNDA_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CAMUNDA_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
+      CAMUNDA_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
+      CAMUNDA_DB_CONN_OPTIONS: "?stringtype=unspecified"
       CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-      CAMUNDA_DB_CONN_OPTIONS: ""
+    secrets:
+      CAMUNDA_DB_PASSWORD:
+        secretRef: "{{ .Values.global.postgresSecret }}"
+        key: PASSWORD
+        disabled: true
 
+postgresql:
+  enabled: false
