@@ -255,6 +255,7 @@ ccd:
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+        DATA_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
       secrets:
         STORAGE_ACCOUNT_NAME:
           secretRef: storage-secret-{{ .Release.Name }}-blobstorage
@@ -283,6 +284,7 @@ ccd:
         DEFINITION_STORE_DB_OPTIONS: "?stringtype=unspecified"
         DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
+        DEFINITION_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.postgresPassword}}"
       secrets:
         STORAGE_ACCOUNT_NAME:
           secretRef: storage-secret-{{ .Release.Name }}-blobstorage
