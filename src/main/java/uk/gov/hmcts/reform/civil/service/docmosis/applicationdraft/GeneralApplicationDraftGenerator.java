@@ -266,7 +266,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
 
     private YesOrNo checkAppIsVaryJudgment(CaseData caseData) {
         YesOrNo isVaryJudgmentApp;
-        isVaryJudgmentApp = caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_JUDGEMENT)
+        isVaryJudgmentApp = caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             ? YesOrNo.YES : YesOrNo.NO;
         return isVaryJudgmentApp;
     }
