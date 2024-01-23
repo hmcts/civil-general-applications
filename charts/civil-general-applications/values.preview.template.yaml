@@ -240,6 +240,7 @@ ccd:
       devcpuRequests: 2000m
       devmemoryLimits: 4096Mi
       devcpuLimits: 4000m
+      disableKeyVaults: true
       environment:
         CASE_DOCUMENT_AM_API_ATTACH_DOCUMENT_ENABLED: false
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
@@ -264,7 +265,7 @@ ccd:
           key: accessKey
           disabled: true
         DATA_STORE_DB_PASSWORD:
-          secretRef: "{{ .Values.global.postgresSecret }}"
+          secretRef: postgres
           key: PASSWORD
           disabled: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
@@ -276,6 +277,7 @@ ccd:
       devcpuRequests: 2000m
       devmemoryLimits: 4096Mi
       devcpuLimits: 4000m
+      disableKeyVaults: true
       environment:
         DEFINITION_STORE_DB_HOST: ${SERVICE_NAME}-postgresql
         DEFINITION_STORE_DB_OPTIONS: "?stringtype=unspecified"
@@ -291,7 +293,7 @@ ccd:
           key: accessKey
           disabled: true
         DEFINITION_STORE_DB_PASSWORD:
-          secretRef: "{{ .Values.global.postgresSecret }}"
+          secretRef: postgres
           key: PASSWORD
           disabled: true
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
@@ -331,6 +333,7 @@ xui-webapp:
 camunda-bpm:
   enabled: true
   java:
+    disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
     ingressHost: camunda-${SERVICE_FQDN}
     environment:
@@ -343,7 +346,7 @@ camunda-bpm:
       S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     secrets:
       CAMUNDA_DB_PASSWORD:
-        secretRef: "{{ .Values.global.postgresSecret }}"
+        secretRef: postgres
         key: PASSWORD
         disabled: true
 
