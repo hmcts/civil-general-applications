@@ -308,6 +308,71 @@ class ParentCaseUpdateHelperTest {
     }
 
     @Test
+    void shouldAddGA_to_Existing_collection_after_payment_1V2Diff_Solicitor_Def1() {
+
+        CaseData gaCase = getGaVaryCaseData("RespondentSol", AWAITING_APPLICATION_PAYMENT, YES);
+
+        CaseData civilCase = getCollectionsWithTwoExistingElements();
+
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
+
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).asList().hasSize(2);
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(2);
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).asList().hasSize(2);
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).asList().hasSize(2);
+    }
+
+    @Test
+    void addGA_to_judgeCollection_after_payment_1V2DifferntSolicitor_Def1() {
+
+        CaseData gaCase = getGaVaryCaseData("RespondentSol", AWAITING_APPLICATION_PAYMENT, YES);
+
+        CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSol");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).asList().hasSize(1);
+    }
+
+    @Test
+    void addGA_to_judgeCollection_after_payment_1V2DifferntSolicitor_Def2() {
+
+        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", AWAITING_APPLICATION_PAYMENT, YES);
+
+        CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSolTwo");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolTwoGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).asList().hasSize(1);
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).asList().hasSize(1);
+    }
+
+    @Test
     void updateParentWithGAState_with_collections_after_payment_1V2SameSolicitor() {
 
         CaseData gaCase = getGaVaryCaseData("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO);
@@ -893,6 +958,97 @@ class ParentCaseUpdateHelperTest {
             default:
                 break;
         }
+        return builder.build();
+    }
+
+    private CaseData getCollectionsWithTwoExistingElements() {
+        CaseData.CaseDataBuilder builder = CaseData.builder();
+
+        // Claimant Collection with one element
+        GeneralApplication generalApplication01 = GeneralApplication
+            .builder()
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(3451956117501L)).build())
+            .build();
+
+        GeneralApplicationsDetails claimantCollectionElement01 = GeneralApplicationsDetails.builder()
+            .generalApplicationType(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT.toString())
+            .generalAppSubmittedDateGAspec(generalApplication01.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication01.getCaseLink())
+            .caseState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString()).build();
+
+        List<Element<GeneralApplicationsDetails>> claimantCollection
+            = Lists.newArrayList((element(claimantCollectionElement01)));
+
+        builder.claimantGaAppDetails(claimantCollection);
+
+        // Master Collection with One element
+        GeneralApplication gaMaster001 = GeneralApplication
+            .builder()
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(3451956117501L)).build())
+            .build();
+
+        GeneralApplicationsDetails masterElement001 = GeneralApplicationsDetails.builder()
+            .generalApplicationType(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT.toString())
+            .generalAppSubmittedDateGAspec(gaMaster001.getGeneralAppSubmittedDateGAspec())
+            .caseLink(gaMaster001.getCaseLink())
+            .caseState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString()).build();
+
+        List<Element<GeneralApplicationsDetails>> masterCollection
+            = Lists.newArrayList((element(masterElement001)));
+
+        builder.gaDetailsMasterCollection(masterCollection);
+
+        // Construct respondent One collection with 2 GAs
+        GeneralApplication respondentOne01 = GeneralApplication
+            .builder()
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(3451956117501L)).build())
+            .build();
+
+        GeneralApplication respondentOne02 = GeneralApplication
+            .builder()
+            .caseLink(CaseLink.builder().caseReference(CaseDataBuilder.CASE_ID.toString()).build())
+            .build();
+
+        GADetailsRespondentSol respondentSolOneElement01 = GADetailsRespondentSol.builder()
+            .generalApplicationType(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT.toString())
+            .generalAppSubmittedDateGAspec(respondentOne01.getGeneralAppSubmittedDateGAspec())
+            .caseLink(respondentOne01.getCaseLink())
+            .caseState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString()).build();
+
+        GADetailsRespondentSol respondentSolOneElement02 = GADetailsRespondentSol.builder()
+            .generalApplicationType(GeneralApplicationTypes.STAY_THE_CLAIM.toString())
+            .generalAppSubmittedDateGAspec(respondentOne02.getGeneralAppSubmittedDateGAspec())
+            .caseLink(respondentOne02.getCaseLink())
+            .caseState(AWAITING_APPLICATION_PAYMENT.toString()).build();
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList =
+            Lists.newArrayList(element(respondentSolOneElement01), element(respondentSolOneElement02));
+
+        builder.respondent1OrganisationPolicy(OrganisationPolicy.builder().build())
+            .respondent1OrganisationIDCopy("RespondentSol");
+        builder.respondentSolGaAppDetails(gaDetailsRespondentSolList);
+
+        // Build Respondent Two Collection with One element
+        GeneralApplication generalApplication3 = GeneralApplication
+            .builder()
+            .caseLink(CaseLink.builder().caseReference(String.valueOf(3451956117501L)).build())
+            .build();
+
+        GADetailsRespondentSol respondentSolTwoGA1 = GADetailsRespondentSol.builder()
+            .generalApplicationType(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT.toString())
+            .generalAppSubmittedDateGAspec(generalApplication3.getGeneralAppSubmittedDateGAspec())
+            .caseLink(generalApplication3.getCaseLink())
+            .caseState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString()).build();
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSolList2 =
+            Lists.newArrayList(element(respondentSolTwoGA1));
+
+        builder.respondent2OrganisationPolicy(OrganisationPolicy.builder().build())
+            .respondent2OrganisationIDCopy("RespondentSolTwo")
+            .respondent2SameLegalRepresentative(NO)
+            .addApplicant2(NO);
+        builder.respondentSolTwoGaAppDetails(gaDetailsRespondentSolList2);
+
         return builder.build();
     }
 }
