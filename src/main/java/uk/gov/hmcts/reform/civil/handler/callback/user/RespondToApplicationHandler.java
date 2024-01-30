@@ -187,6 +187,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
+    // comment
     public List<String> applicationExistsValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         userInfo = getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
