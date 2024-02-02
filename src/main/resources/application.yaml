@@ -24,11 +24,6 @@ spring:
     cache-names: userInfoCache, accessTokenCache
     caffeine:
       spec: expireAfterAccess=3600s
-  datasource:
-    driverClassName: org.postgresql.Driver
-    username: ${CMC_DB_USERNAME:-}
-    password: ${CMC_DB_PASSWORD:-}
-    url: jdbc:postgresql://${CMC_DB_HOST:}:${CMC_DB_PORT:}/${CMC_DB_NAME:cmc}${CMC_DB_CONNECTION_OPTIONS:}
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
@@ -175,12 +170,6 @@ spring:
   config:
     activate:
       on-profile: local
-
-  datasource:
-    driverClassName: org.postgresql.Driver
-    username: ${CMC_DB_USERNAME:ccd}
-    password: ${CMC_DB_PASSWORD:ccd}
-    url: jdbc:postgresql://${CMC_DB_HOST:localhost}:${CMC_DB_PORT:5050}/${CMC_DB_NAME:cmc}
 
 feign:
   client:
