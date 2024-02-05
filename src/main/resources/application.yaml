@@ -26,6 +26,11 @@ spring:
     cache-names: userInfoCache, accessTokenCache
     caffeine:
       spec: expireAfterAccess=3600s
+  datasource:
+    driverClassName: org.postgresql.Driver
+    username: ${CMC_DB_USERNAME:-}
+    password: ${CMC_DB_PASSWORD:-}
+    url: jdbc:postgresql://${CMC_DB_HOST:}:${CMC_DB_PORT:}/${CMC_DB_NAME:cmc}${CMC_DB_CONNECTION_OPTIONS:}
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
@@ -40,8 +45,6 @@ spring:
           oidc:
             client-id: internal
             client-secret: internal
-  flyway:
-    enabled: ${REFERENCE_DATABASE_MIGRATION:false}
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
