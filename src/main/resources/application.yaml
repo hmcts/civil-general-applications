@@ -121,7 +121,7 @@ case_document_am:
   url: ${CASE_DOCUMENT_AM_URL:http://localhost:4455}
 reference:
   database:
-    enabled: false
+    enabled: true
     migration: false
 
 notifications:
