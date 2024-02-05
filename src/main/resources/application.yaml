@@ -13,6 +13,8 @@ management:
       exposure:
         include: health, info, prometheus
   health:
+    db:
+      enabled: false
     case-document-am-api:
       enabled: true
 spring:
@@ -116,7 +118,7 @@ case_document_am:
   url: ${CASE_DOCUMENT_AM_URL:http://localhost:4455}
 reference:
   database:
-    enabled: true
+    enabled: false
     migration: false
 
 notifications:
@@ -248,6 +250,9 @@ spring:
     lazy-initialization: true
 
 management:
+  health:
+    db:
+      enabled: false
   endpoints:
     enabled-by-default: false
 
