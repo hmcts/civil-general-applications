@@ -253,9 +253,6 @@ spring:
     lazy-initialization: true
 
 management:
-  health:
-    db:
-      enabled: false
   endpoints:
     enabled-by-default: false
 
