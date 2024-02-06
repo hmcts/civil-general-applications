@@ -51,6 +51,15 @@ def secrets = [
 // Vars for Kubernetes
 env.PACT_BROKER_FULL_URL = 'https://pact-broker.platform.hmcts.net'
 
+def validatePactContractTest() {
+    sh """ ./gradlew contract """
+}
+
+def publishRpaContract() {
+    env.PACT_BROKER_FULL_URL="https://pact-broker.platform.hmcts.net/"
+    sh """ ./gradlew pactPublish """
+}
+
 def checkForEnableHelmLabel(branch_name) {
   return new GithubAPI(this).getLabelsbyPattern(branch_name, "enableHelm").contains("enableHelm")
 }
@@ -77,6 +86,7 @@ withPipeline(type, product, component) {
     }
 
     before('smoketest:preview') {
+        validatePactContractTest()
         sh """
           eval \$(./bin/variables/load-preview-environment-variables.sh ${CHANGE_ID})
           ./bin/add-roles.sh
@@ -120,6 +130,7 @@ withPipeline(type, product, component) {
     }
 
     before('smoketest:aat') {
+        validatePactContractTest()
         sh """
           eval \$(./bin/variables/load-staging-environment-variables.sh)
           ./bin/add-roles.sh

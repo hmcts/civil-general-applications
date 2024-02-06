@@ -243,11 +243,6 @@ testing:
 rd_professional:
   api:
     url: http://localhost:8765
-
-robotics:
-  notification:
-    sender: hmcts.civil@gmail.com
-    recipient: hmcts.civil+robotics@gmail.com
 ---
 
 spring:
