@@ -118,8 +118,18 @@ civil-service:
             alias: GOV_NOTIFY_API_KEY
           - name: sendgrid-api-key
             alias: SENDGRID_API_KEY
+          - name: robotics-notification-sender
+            alias: robotics.notification.sender
+          - name: robotics-notification-recipient
+            alias: robotics.notification.recipient
           - name: launch-darkly-sdk-key-non-prod
             alias: LAUNCH_DARKLY_SDK_KEY
+          - name: robotics-notification-multipartyrecipient
+            alias: robotics.notification.multipartyrecipient
+          - name: robotics-notification-recipient-spec
+            alias: robotics.notification.specRecipient
+          - name: robotics-notification-recipient-lipj
+            alias: robotics.notification.lipJRecipient
           - name: ordnance-survey-api-key
             alias: OS_POSTCODE_LOOKUP_API_KEY
           - name: notification-caseworker-spec-receiver
