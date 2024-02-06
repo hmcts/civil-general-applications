@@ -45,7 +45,8 @@ static Map<String, Object> secret(String secretName, String envVariable) {
 
 def secrets = [
   'civil-${env}': [
-    secret('microservicekey-civil-service', 'S2S_SECRET')
+    secret('microservicekey-civil-service', 'S2S_SECRET'),
+    secret('generic-docker-pact-broker-password', 'GENERIC_DOCKER_PACT_BROKER_YAML_PASS')
   ]
 ]
 
