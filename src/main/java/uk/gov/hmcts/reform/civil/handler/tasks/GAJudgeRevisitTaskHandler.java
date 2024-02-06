@@ -66,12 +66,12 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         return judgeReadyToRevisitWrittenRepCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
-                && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                                .getWrittenConcurrentRepresentationsBy())
             || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
-                && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                                .getSequentialApplicantMustRespondWithin()))
             .toList();
@@ -84,7 +84,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         return judgeReadyToRevisitDirectionOrderCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
                 .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
-                && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeOrder()
                                                .getDirectionsResponseByDate()))
                 .toList();
@@ -98,7 +98,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
             .filter(a -> (caseDetailsConverter.toCaseData(a)
                 .getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null
-                && LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionRequestMoreInfo()
                                                .getJudgeRequestMoreInfoByDate())))
             .toList();
