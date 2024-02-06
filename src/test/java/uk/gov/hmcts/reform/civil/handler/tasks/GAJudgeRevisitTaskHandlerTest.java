@@ -1,3 +1,4 @@
+
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import org.camunda.bpm.client.task.ExternalTask;
@@ -104,20 +105,20 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
-    void shouldNotEmitBusinessProcessEvent_whenDirectionOrderDateIsToday() {
+    void shouldEmitBusinessProcessEvent_whenDirectionOrderDateIsToday() {
         when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS))
             .thenReturn(List.of(caseDetailsDirectionOrder));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
-        verify(coreCaseDataService, times(0)).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenDirectionOrderDateIsToday() {
+    void shouldEmitBusinessProcessEvent_whenDirectionOrderDateIsPast() {
 
         CaseDetails caseDetailsDirectionOrderWithPastDate = caseDetailsDirectionOrder.toBuilder().data(
             Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
@@ -140,14 +141,23 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
-    void shouldNotEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsToday() {
-        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
-            .thenReturn(List.of(caseDetailsWrittenRepresentationC));
+    void shouldNotEmitBusinessProcessEvent_whenDirectionOrderDateIsFuture() {
+
+        CaseDetails caseDetailsDirectionOrderWithPastDate = caseDetailsDirectionOrder.toBuilder().data(
+            Map.of("judicialDecisionMakeOrder", GAJudicialMakeAnOrder.builder()
+                .directionsText("Test Direction")
+                .reasonForDecisionText("Test Reason")
+                .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING)
+                .directionsResponseByDate(LocalDate.now().plusDays(2))
+                .build())).state(AWAITING_DIRECTIONS_ORDER_DOCS.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS))
+            .thenReturn(List.of(caseDetailsDirectionOrderWithPastDate));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
-        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
-        verify(coreCaseDataService, times(0)).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
+        verify(coreCaseDataService, times(0)).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -155,6 +165,20 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsToday() {
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentationC));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsPast() {
 
         CaseDetails caseDetailsWrittenRepresentationConWithPastDate = caseDetailsWrittenRepresentationC.toBuilder().data(
             Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
@@ -175,21 +199,42 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
-    void shouldNotEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
+    void shouldNotEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsFuture() {
+
+        CaseDetails caseDetailsWrittenRepresentationConWithPastDate = caseDetailsWrittenRepresentationC.toBuilder().data(
+            Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
+                .writtenOption(CONCURRENT_REPRESENTATIONS)
+                .writtenConcurrentRepresentationsBy(LocalDate.now().plusDays(1))
+                .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentationConWithPastDate));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService, times(0)).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationS));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
-        verify(coreCaseDataService, times(0))
+        verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
+    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsPast() {
 
         CaseDetails caseDetailsWrittenRepresentationSeqWithPastDate = caseDetailsWrittenRepresentationS.toBuilder().data(
             Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
@@ -210,21 +255,42 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
-    void shouldNotEmitBusinessProcessEvent_whenRequestForInformationDateIsToday() {
+    void shouldNotEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsFuture() {
+
+        CaseDetails caseDetailsWrittenRepresentationSeqWithPastDate = caseDetailsWrittenRepresentationS.toBuilder().data(
+            Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
+                .writtenOption(SEQUENTIAL_REPRESENTATIONS)
+                .sequentialApplicantMustRespondWithin(LocalDate.now().plusDays(1))
+                .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentationSeqWithPastDate));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService, times(0))
+            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsToday() {
         when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
             .thenReturn(List.of(caseDetailRequestForInformation));
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
-        verify(coreCaseDataService, times(0)).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsToday() {
+    void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsPast() {
 
         CaseDetails caseDetailRequestForInformationWithPastDate = caseDetailRequestForInformation.toBuilder().data(
             Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
@@ -241,6 +307,29 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+
+    }
+
+    @Test
+    void shouldNotEmitBusinessProcessEvent_whenRequestForInformationDateIsFuture() {
+
+        CaseDetails caseDetailRequestForInformationWithPastDate = caseDetailRequestForInformation.toBuilder().data(
+            Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
+                   "judicialDecisionRequestMoreInfo", GAJudicialRequestMoreInfo.builder()
+                       .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                       .judgeRequestMoreInfoByDate(LocalDate.now().plusDays(1))
+                       .judgeRequestMoreInfoText("test").build()
+            )).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
+            .thenReturn(List.of(caseDetailRequestForInformationWithPastDate));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
+        verify(coreCaseDataService, times(0)).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
