@@ -66,20 +66,14 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         return judgeReadyToRevisitWrittenRepCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
-                && (LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                               .getWrittenConcurrentRepresentationsBy())
-                || LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
-                                               .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                               .getWrittenConcurrentRepresentationsBy()))
+                                               .getWrittenConcurrentRepresentationsBy()) >= 0)
             || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                 .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
-                && (LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
                                                 .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                .getSequentialApplicantMustRespondWithin())
-                || LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
-                                               .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                               .getSequentialApplicantMustRespondWithin())))
+                                                .getSequentialApplicantMustRespondWithin()) >= 0))
             .toList();
     }
 
@@ -90,12 +84,9 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         return judgeReadyToRevisitDirectionOrderCases.stream()
             .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
                 .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
-                && (LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
                                                 .getJudicialDecisionMakeOrder()
-                                                .getDirectionsResponseByDate())
-                    || LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
-                                               .getJudicialDecisionMakeOrder()
-                                               .getDirectionsResponseByDate())))
+                                                .getDirectionsResponseByDate()) >= 0))
                 .toList();
     }
 
@@ -107,12 +98,9 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
             .filter(a -> (caseDetailsConverter.toCaseData(a)
                 .getJudicialDecisionRequestMoreInfo()
                 .getJudgeRequestMoreInfoByDate() != null
-                && (LocalDate.now().isEqual(caseDetailsConverter.toCaseData(a)
+                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
                                                 .getJudicialDecisionRequestMoreInfo()
-                                                .getJudgeRequestMoreInfoByDate())
-                    || LocalDate.now().isAfter(caseDetailsConverter.toCaseData(a)
-                                               .getJudicialDecisionRequestMoreInfo()
-                                               .getJudgeRequestMoreInfoByDate()))))
+                                                .getJudgeRequestMoreInfoByDate()) >= 0)))
             .toList();
     }
 
