@@ -11,13 +11,6 @@ java:
     MANAGE_CASE_UI_BASE_URL: https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net
     SPRING_SECURITY_ENABLED: true
     OIDC_ISSUER: https://forgerock-am.service.core-compute-idam-aat2.internal:8443/openam/oauth2/realms/root/realms/hmcts
-    CMC_DB_HOST: ${SERVICE_NAME}-postgresql
-    CMC_DB_USERNAME: ${POSTGRES_USER}
-    CMC_DB_PASSWORD: ${POSTGRES_PASSWORD}
-    CMC_DB_CONNECTION_OPTIONS: '?sslmode=allow'
-    CMC_DB_NAME: cmc
-    CMC_DB_PORT: 5432
-    REFERENCE_DATABASE_MIGRATION: false
     TESTING_SUPPORT_ENABLED: true
     POLLING_EVENT_EMITTER_ENABLED: false
     RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false

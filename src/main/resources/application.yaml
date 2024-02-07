@@ -13,6 +13,8 @@ management:
       exposure:
         include: health, info, prometheus
   health:
+    db:
+      enabled: false
     case-document-am-api:
       enabled: true
 spring:
@@ -43,8 +45,6 @@ spring:
           oidc:
             client-id: internal
             client-secret: internal
-  flyway:
-    enabled: ${REFERENCE_DATABASE_MIGRATION:false}
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
@@ -175,12 +175,6 @@ spring:
   config:
     activate:
       on-profile: local
-
-  datasource:
-    driverClassName: org.postgresql.Driver
-    username: ${CMC_DB_USERNAME:ccd}
-    password: ${CMC_DB_PASSWORD:ccd}
-    url: jdbc:postgresql://${CMC_DB_HOST:localhost}:${CMC_DB_PORT:5050}/${CMC_DB_NAME:cmc}
 
 feign:
   client:
