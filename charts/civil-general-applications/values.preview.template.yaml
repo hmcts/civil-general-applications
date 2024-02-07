@@ -48,11 +48,8 @@ java:
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
-        - robotics-notification-sender
-        - robotics-notification-recipient
         - name: launch-darkly-sdk-key-non-prod
           alias: launch-darkly-sdk-key
-        - robotics-notification-multipartyrecipient
     civil-gen-apps:
       resourceGroup: civil
       secrets:
