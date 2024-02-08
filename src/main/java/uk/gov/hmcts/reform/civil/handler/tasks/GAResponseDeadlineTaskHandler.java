@@ -47,10 +47,18 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
     private List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
         List<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
+
         return awaitingResponseCases.stream()
-            .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
-                && now().isAfter(
-                caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate()))
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
+                        && now().isAfter(
+                        caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate());
+                } catch (Exception e) {
+                    log.error("GAResponseDeadlineTaskHandler failed: " + e);
+                }
+                return false;
+            })
             .toList();
     }
 

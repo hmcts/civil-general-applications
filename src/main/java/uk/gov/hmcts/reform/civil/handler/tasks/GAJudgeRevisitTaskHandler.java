@@ -56,7 +56,11 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
-        coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        try {
+            coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        } catch (Exception exception) {
+            log.error("GAJudgeRevisitTaskHandler failed: " + exception);
+        }
     }
 
     private List<CaseDetails> getWrittenRepCaseReadyToJudgeRevisit() {
