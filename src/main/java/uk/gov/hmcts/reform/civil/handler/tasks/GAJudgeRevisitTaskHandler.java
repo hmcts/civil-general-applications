@@ -99,12 +99,19 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
             .getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
 
         return judgeReadyToRevisitRequestForInfoCases.stream()
-            .filter(a -> (caseDetailsConverter.toCaseData(a)
-                .getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoByDate() != null
-                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
-                                                .getJudicialDecisionRequestMoreInfo()
-                                                .getJudgeRequestMoreInfoByDate()) >= 0)))
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a)
+                        .getJudicialDecisionRequestMoreInfo()
+                        .getJudgeRequestMoreInfoByDate() != null
+                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                                                          .getJudicialDecisionRequestMoreInfo()
+                                                          .getJudgeRequestMoreInfoByDate()) >= 0);
+                } catch (Exception e) {
+                    log.error("GAJudgeRevisitTaskHandler failed: " + e);
+                }
+                return false;
+            })
             .toList();
     }
 

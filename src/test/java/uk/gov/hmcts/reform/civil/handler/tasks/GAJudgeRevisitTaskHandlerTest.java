@@ -72,7 +72,7 @@ class GAJudgeRevisitTaskHandlerTest {
     private CaseDetails caseDetailsWrittenRepresentationC;
     private CaseDetails caseDetailRequestForInformation;
 
-    public static final String EXCEPTION_MESSAGE = "Unprocessable Entity";
+    public static final String EXCEPTION_MESSAGE = "Unprocessable Entity found";
     public static final String UNEXPECTED_RESPONSE_BODY = "Case data validation failed";
 
     @BeforeEach
@@ -114,6 +114,22 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         assertThat(e.getMessage()).contains(EXCEPTION_MESSAGE);
+    }
+
+    @Test
+    void throwException_whenUnprocessableEntity() {
+        CaseDetails caseDetailRequestForInformation = caseDetailsDirectionOrder.toBuilder().data(
+            Map.of("field", "outdatedField")).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
+            .thenReturn(List.of(caseDetailRequestForInformation));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
+        verify(coreCaseDataService, times(0)).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
     }
 
     private FeignException buildFeignExceptionWithUnprocessableEntity() {

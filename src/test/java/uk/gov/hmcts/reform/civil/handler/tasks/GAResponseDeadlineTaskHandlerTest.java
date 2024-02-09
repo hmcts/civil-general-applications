@@ -92,6 +92,21 @@ class GAResponseDeadlineTaskHandlerTest {
         assertThat(e.getMessage()).contains(EXCEPTION_MESSAGE);
     }
 
+    @Test
+    void throwException_whenUnprocessableEntity() {
+        CaseDetails caseDetailsRespondentResponse = CaseDetails.builder().id(1L).data(
+            Map.of("field", "outdatedField")).state(AWAITING_RESPONDENT_RESPONSE.toString()).build();
+
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
+            .thenReturn(List.of(caseDetailsRespondentResponse));
+
+        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(searchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
+        verifyNoInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+    }
+
     private FeignException buildFeignExceptionWithUnprocessableEntity() {
         return buildFeignException(422, UNEXPECTED_RESPONSE_BODY.getBytes(UTF_8));
     }
