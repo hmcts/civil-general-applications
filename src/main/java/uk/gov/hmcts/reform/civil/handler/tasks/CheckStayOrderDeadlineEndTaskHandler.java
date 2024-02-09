@@ -61,14 +61,9 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
                      + "and with Application type Stay claim and its end date is today "
                      + "for caseId: {}", caseId);
 
-        try {
-            coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
-                                               getUpdatedCaseDataMapper(updateCaseData(caseData)));
-            log.info("Checking state for caseId: {}", caseId);
-        } catch (Exception e) {
-            log.error("CheckStayOrderDeadlineEndTaskHandler Failed: " + e);
-        }
-
+        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_STAY_ORDER_DEADLINE,
+                                           getUpdatedCaseDataMapper(updateCaseData(caseData)));
+        log.info("Checking state for caseId: {}", caseId);
     }
 
     private CaseData updateCaseData(CaseData caseData) {

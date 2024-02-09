@@ -1,6 +1,8 @@
 
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import feign.FeignException;
+import feign.Request;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +24,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import static feign.Request.HttpMethod.GET;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -65,6 +72,9 @@ class GAJudgeRevisitTaskHandlerTest {
     private CaseDetails caseDetailsWrittenRepresentationC;
     private CaseDetails caseDetailRequestForInformation;
 
+    public static final String EXCEPTION_MESSAGE = "Unprocessable Entity";
+    public static final String UNEXPECTED_RESPONSE_BODY = "Case data validation failed";
+
     @BeforeEach
     void init() {
         caseDetailsDirectionOrder = CaseDetails.builder().id(1L).data(
@@ -91,6 +101,33 @@ class GAJudgeRevisitTaskHandlerTest {
                        .judgeRequestMoreInfoByDate(LocalDate.now())
                        .judgeRequestMoreInfoText("test").build()
             )).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+    }
+
+    @Test
+    void throwException_whenUnprocessableEntityIsFound() {
+        doThrow(buildFeignExceptionWithUnprocessableEntity()).when(coreCaseDataService)
+            .triggerEvent(any(), any());
+
+        Exception e = assertThrows(FeignException.class, () -> coreCaseDataService
+            .triggerEvent(any(), any()));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        assertThat(e.getMessage()).contains(EXCEPTION_MESSAGE);
+    }
+
+    private FeignException buildFeignExceptionWithUnprocessableEntity() {
+        return buildFeignException(422, UNEXPECTED_RESPONSE_BODY.getBytes(UTF_8));
+    }
+
+    private FeignException.FeignClientException buildFeignException(int status, byte[] body) {
+        return new FeignException.FeignClientException(
+            status,
+            EXCEPTION_MESSAGE,
+            Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+            body,
+            Map.of()
+        );
     }
 
     @Test

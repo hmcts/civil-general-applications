@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import feign.FeignException;
+import feign.Request;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +19,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static feign.Request.HttpMethod.GET;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -54,6 +61,8 @@ class GAResponseDeadlineTaskHandlerTest {
 
     private final LocalDateTime deadlineCrossed = LocalDateTime.now().minusDays(2);
     private final LocalDateTime deadlineInFuture = LocalDateTime.now().plusDays(2);
+    public static final String EXCEPTION_MESSAGE = "Unprocessable Entity";
+    public static final String UNEXPECTED_RESPONSE_BODY = "Case data validation failed";
 
     @BeforeEach
     void init() {
@@ -65,6 +74,36 @@ class GAResponseDeadlineTaskHandlerTest {
             Map.of("generalAppNotificationDeadlineDate", deadlineInFuture.toString())).build();
         caseDetails4 = CaseDetails.builder().id(4L).data(
             Map.of("generalAppNotificationDeadlineDate", EMPTY)).build();
+    }
+
+    @Test
+    void throwException_whenUnprocessableEntityIsFound() {
+        doThrow(buildFeignExceptionWithUnprocessableEntity()).when(coreCaseDataService)
+            .triggerEvent(any(), any());
+
+        when(searchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
+            .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
+
+        Exception e = assertThrows(FeignException.class, () -> coreCaseDataService
+            .triggerEvent(any(), any()));
+
+        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
+
+        assertThat(e.getMessage()).contains(EXCEPTION_MESSAGE);
+    }
+
+    private FeignException buildFeignExceptionWithUnprocessableEntity() {
+        return buildFeignException(422, UNEXPECTED_RESPONSE_BODY.getBytes(UTF_8));
+    }
+
+    private FeignException.FeignClientException buildFeignException(int status, byte[] body) {
+        return new FeignException.FeignClientException(
+            status,
+            EXCEPTION_MESSAGE,
+            Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
+            body,
+            Map.of()
+        );
     }
 
     @Test

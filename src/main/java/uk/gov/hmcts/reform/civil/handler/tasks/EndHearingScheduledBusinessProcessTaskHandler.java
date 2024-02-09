@@ -34,14 +34,9 @@ public class EndHearingScheduledBusinessProcessTaskHandler implements BaseExtern
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_HEARING_SCHEDULED_PROCESS_GASPEC);
-        try {
-            CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-            BusinessProcess businessProcess = data.getBusinessProcess();
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
-        } catch (Exception e) {
-            log.error("EndHearingScheduledBusinessProcessTaskHandler failed: " + e);
-        }
-
+        CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        BusinessProcess businessProcess = data.getBusinessProcess();
+        coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {
