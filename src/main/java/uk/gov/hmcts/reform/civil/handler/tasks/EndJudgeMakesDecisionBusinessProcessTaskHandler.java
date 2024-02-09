@@ -34,9 +34,13 @@ public class EndJudgeMakesDecisionBusinessProcessTaskHandler implements BaseExte
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_JUDGE_BUSINESS_PROCESS_GASPEC);
-        CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = data.getBusinessProcess();
-        coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+        try {
+            CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+            BusinessProcess businessProcess = data.getBusinessProcess();
+            coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+        } catch (Exception e) {
+            log.error("EndJudgeMakesDecisionBusinessProcessTaskHandler failed: " + e);
+        }
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

@@ -36,9 +36,14 @@ public class EndGeneralApplicationBusinessProcessTaskHandler implements BaseExte
             caseId = externalTaskInput.getCaseId();
         }
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId, END_BUSINESS_PROCESS_GASPEC);
-        CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = data.getBusinessProcess();
-        coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+        try {
+            CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+            BusinessProcess businessProcess = data.getBusinessProcess();
+            coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
+        } catch (Exception e) {
+            log.error("EndGeneralApplicationBusinessProcessTaskHandler failed: " + e);
+        }
+
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

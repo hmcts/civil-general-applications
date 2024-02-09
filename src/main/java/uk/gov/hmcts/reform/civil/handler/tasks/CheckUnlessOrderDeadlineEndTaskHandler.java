@@ -63,9 +63,14 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
                      + "and with Application type Unless Order and its end date is today "
                      + "for caseId: {}", caseId);
 
-        coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE,
-                                           getUpdatedCaseDataMapper(updateCaseData(caseData)));
-        log.info("Checking state for caseId: {}", caseId);
+        try {
+            coreCaseDataService.triggerGaEvent(caseId, END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE,
+                                               getUpdatedCaseDataMapper(updateCaseData(caseData)));
+            log.info("Checking state for caseId: {}", caseId);
+        } catch (Exception e) {
+            log.error("CheckUnlessOrderDeadlineEndTaskHandler failed: " + e);
+        }
+
     }
 
     private CaseData updateCaseData(CaseData caseData) {
