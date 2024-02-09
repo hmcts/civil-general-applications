@@ -44,11 +44,11 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
         try {
             coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         } catch (Exception e) {
-            log.error("GAResponseDeadlineTaskHandler failed: " + e);
+            log.error("Error in GAResponseDeadlineTaskHandler::fireEventForStateChange: " + e);
         }
     }
 
-    private List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
+    protected List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
         List<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
 
