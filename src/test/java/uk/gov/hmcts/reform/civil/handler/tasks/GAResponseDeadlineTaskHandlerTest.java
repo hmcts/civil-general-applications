@@ -103,7 +103,8 @@ class GAResponseDeadlineTaskHandlerTest {
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
         List<ILoggingEvent> logsList = listAppender.list;
-        assertEquals("Error in GAResponseDeadlineTaskHandler::fireEventForStateChange: feign.FeignException$FeignClientException: Unprocessable Entity",
+        assertEquals("Error in GAResponseDeadlineTaskHandler::fireEventForStateChange: "
+                         + "feign.FeignException$FeignClientException: Unprocessable Entity",
                      logsList.get(2).getMessage());
         assertEquals(Level.ERROR, logsList.get(2).getLevel());
         listAppender.stop();
@@ -115,23 +116,49 @@ class GAResponseDeadlineTaskHandlerTest {
         listAppender.start();
         logger.addAppender(listAppender);
 
-        CaseDetails caseDetailsRespondentResponse = CaseDetails.builder().id(9L).data(
-            Map.of("field", "outdatedField")).build();
-
-        caseDetails3 = CaseDetails.builder().id(3L).data(
-            Map.of("generalAppNotificationDeadlineDate", deadlineInFuture.toString(), "asf", "asdf")).build();
+        CaseDetails caseDetailsRespondentResponse = CaseDetails.builder().id(6L).data(
+            Map.of("generalAppConsentOrder", "maybe")).build();
 
         when(caseSearchService.getGeneralApplications(any()))
-            .thenReturn(List.of(caseDetailsRespondentResponse, caseDetails2, caseDetails3));
+            .thenReturn(List.of(caseDetailsRespondentResponse));
 
         gaResponseDeadlineTaskHandler.getAwaitingResponseCasesThatArePastDueDate();
 
         List<ILoggingEvent> logsList = listAppender.list;
-        assertEquals("GAResponseDeadlineTaskHandler failed: feign.FeignException$FeignClientException: Unprocessable Entity",
-                     logsList.get(2).getMessage());
-        assertEquals(Level.ERROR, logsList.get(2).getLevel());
+        assertEquals("GAResponseDeadlineTaskHandler failed: java.lang.IllegalArgumentException: "
+                         + "Cannot deserialize value of type `uk.gov.hmcts.reform.civil.enums.YesOrNo` "
+                         + "from String \"maybe\": not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+        listAppender.stop();
+    }
 
+    @Test
+    void shouldCatchException_andProceedFurther_withValidData() {
 
+        listAppender.start();
+        logger.addAppender(listAppender);
+
+        CaseDetails caseDetailsRespondentResponse = CaseDetails.builder().id(6L).data(
+            Map.of("generalAppConsentOrder", "maybe")).build();
+
+        when(caseSearchService.getGeneralApplications(any()))
+            .thenReturn(List.of(caseDetailsRespondentResponse, caseDetails1));
+
+        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("GAResponseDeadlineTaskHandler failed: java.lang.IllegalArgumentException: "
+                         + "Cannot deserialize value of type `uk.gov.hmcts.reform.civil.enums.YesOrNo` "
+                         + "from String \"maybe\": not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+        verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
+        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
     }
 
     private FeignException buildFeignExceptionWithUnprocessableEntity() {

@@ -1,12 +1,17 @@
 
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import feign.FeignException;
 import feign.Request;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +32,7 @@ import java.util.Map;
 import static feign.Request.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -75,6 +80,9 @@ class GAJudgeRevisitTaskHandlerTest {
     public static final String EXCEPTION_MESSAGE = "Unprocessable Entity found";
     public static final String UNEXPECTED_RESPONSE_BODY = "Case data validation failed";
 
+    Logger logger = (Logger) LoggerFactory.getLogger(GAJudgeRevisitTaskHandler.class);
+    ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+
     @BeforeEach
     void init() {
         caseDetailsDirectionOrder = CaseDetails.builder().id(1L).data(
@@ -105,31 +113,72 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void throwException_whenUnprocessableEntityIsFound() {
+        listAppender.start();
+        logger.addAppender(listAppender);
         doThrow(buildFeignExceptionWithUnprocessableEntity()).when(coreCaseDataService)
             .triggerEvent(any(), any());
 
-        Exception e = assertThrows(FeignException.class, () -> coreCaseDataService
-            .triggerEvent(any(), any()));
+        gaJudgeRevisitTaskHandler.fireEventForStateChange(CaseDetails.builder().id(1L).build());
 
-        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
-
-        assertThat(e.getMessage()).contains(EXCEPTION_MESSAGE);
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: "
+                         + "feign.FeignException$FeignClientException: Unprocessable Entity found",
+                     logsList.get(1).getMessage());
+        assertEquals(Level.ERROR, logsList.get(1).getLevel());
     }
 
     @Test
     void throwException_whenUnprocessableEntity() {
+        listAppender.start();
+        logger.addAppender(listAppender);
         CaseDetails caseDetailRequestForInformation = caseDetailsDirectionOrder.toBuilder().data(
-            Map.of("field", "outdatedField")).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+            Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
 
         when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
             .thenReturn(List.of(caseDetailRequestForInformation));
 
+        gaJudgeRevisitTaskHandler.getRequestForInformationCaseReadyToJudgeRevisit();
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("GAJudgeRevisitTaskHandler failed: java.lang.IllegalArgumentException: "
+                         + "Cannot deserialize value of type `uk.gov.hmcts.reform.civil.enums.YesOrNo` "
+                         + "from String \"maybe\": not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] "
+                         + "(through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+        listAppender.stop();
+    }
+
+    @Test
+    void shouldCatchException_andProceedFurther_withValidData() {
+        listAppender.start();
+        logger.addAppender(listAppender);
+        CaseDetails requestForInformation = caseDetailsDirectionOrder.toBuilder().data(
+            Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
+            .thenReturn(List.of(caseDetailRequestForInformation, requestForInformation));
+
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("GAJudgeRevisitTaskHandler failed: java.lang.IllegalArgumentException: "
+                         + "Cannot deserialize value of type `uk.gov.hmcts.reform.civil.enums.YesOrNo` "
+                         + "from String \"maybe\": not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] "
+                         + "(through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(2).getMessage());
+        assertEquals(Level.ERROR, logsList.get(2).getLevel());
+
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
-        verify(coreCaseDataService, times(0)).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
+        verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
+        listAppender.stop();
     }
 
     private FeignException buildFeignExceptionWithUnprocessableEntity() {

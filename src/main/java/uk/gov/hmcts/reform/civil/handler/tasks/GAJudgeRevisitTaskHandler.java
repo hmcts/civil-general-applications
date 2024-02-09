@@ -51,7 +51,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         requestForInformationCases.forEach(this::fireEventForStateChange);
     }
 
-    private void fireEventForStateChange(CaseDetails caseDetails) {
+    protected void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
@@ -59,7 +59,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         try {
             coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         } catch (Exception exception) {
-            log.error("GAJudgeRevisitTaskHandler failed: " + exception);
+            log.error("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: " + exception);
         }
     }
 
@@ -94,7 +94,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 .toList();
     }
 
-    private List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
+    protected List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = caseStateSearchService
             .getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
 
