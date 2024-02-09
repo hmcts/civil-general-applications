@@ -152,6 +152,117 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
+    void throwException_whenUnprocessableEntity_writtenRep() {
+        listAppender.start();
+        logger.addAppender(listAppender);
+        CaseDetails caseDetailsWrittenRepresentation = caseDetailsWrittenRepresentationC.toBuilder().data(
+            Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_WRITTEN_REPRESENTATIONS.toString())
+            .build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentation));
+
+        gaJudgeRevisitTaskHandler.getWrittenRepCaseReadyToJudgeRevisit();
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("Error GAJudgeRevisitTaskHandler::getWrittenRepCaseReadyToJudgeRevisit : "
+                         + "java.lang.IllegalArgumentException: Cannot deserialize value of type "
+                         + "`uk.gov.hmcts.reform.civil.enums.YesOrNo` from String \"maybe\": "
+                         + "not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+        listAppender.stop();
+    }
+
+    @Test
+    void shouldCatchException_andProceedFurther_withValidData_writtenRep() {
+        listAppender.start();
+        logger.addAppender(listAppender);
+        CaseDetails caseDetailsWrittenRepresentation = CaseDetails.builder().data(
+            Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_WRITTEN_REPRESENTATIONS.toString())
+            .build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentation, caseDetailsWrittenRepresentationC));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("Error GAJudgeRevisitTaskHandler::getWrittenRepCaseReadyToJudgeRevisit : "
+                         + "java.lang.IllegalArgumentException: Cannot deserialize value of type "
+                         + "`uk.gov.hmcts.reform.civil.enums.YesOrNo` from String \"maybe\": "
+                         + "not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+
+        listAppender.stop();
+    }
+
+    @Test
+    void throwException_whenUnprocessableEntity_directionOrder() {
+        listAppender.start();
+        logger.addAppender(listAppender);
+        CaseDetails caseDetailsDirectionOrderCase = caseDetailsDirectionOrder.toBuilder().data(
+                Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_DIRECTIONS_ORDER_DOCS.toString())
+            .build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS))
+            .thenReturn(List.of(caseDetailsDirectionOrderCase));
+
+        gaJudgeRevisitTaskHandler.getDirectionOrderCaseReadyToJudgeRevisit();
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("Error GAJudgeRevisitTaskHandler::getDirectionOrderCaseReadyToJudgeRevisit : "
+                         + "java.lang.IllegalArgumentException: Cannot deserialize value of type "
+                         + "`uk.gov.hmcts.reform.civil.enums.YesOrNo` from String \"maybe\": "
+                         + "not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(0).getMessage());
+        assertEquals(Level.ERROR, logsList.get(0).getLevel());
+        listAppender.stop();
+    }
+
+    @Test
+    void shouldCatchException_andProceedFurther_withValidData_directionOrder() {
+        listAppender.start();
+        logger.addAppender(listAppender);
+        CaseDetails caseDetailsDirectionOrderCase = CaseDetails.builder().data(
+                Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_DIRECTIONS_ORDER_DOCS.toString())
+            .build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS))
+            .thenReturn(List.of(caseDetailsDirectionOrderCase, caseDetailsDirectionOrder));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertEquals("Error GAJudgeRevisitTaskHandler::getDirectionOrderCaseReadyToJudgeRevisit : "
+                         + "java.lang.IllegalArgumentException: Cannot deserialize value of type "
+                         + "`uk.gov.hmcts.reform.civil.enums.YesOrNo` from String \"maybe\": "
+                         + "not one of the values accepted for Enum class: [No, Yes]\n"
+                         + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
+                         + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
+                     logsList.get(1).getMessage());
+        assertEquals(Level.ERROR, logsList.get(1).getLevel());
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
+        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+        listAppender.stop();
+    }
+
+    @Test
     void shouldCatchException_andProceedFurther_withValidData() {
         listAppender.start();
         logger.addAppender(listAppender);
