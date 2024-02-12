@@ -51,56 +51,79 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         requestForInformationCases.forEach(this::fireEventForStateChange);
     }
 
-    private void fireEventForStateChange(CaseDetails caseDetails) {
+    protected void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
-        coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        try {
+            coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        } catch (Exception exception) {
+            log.error("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: " + exception);
+        }
     }
 
-    private List<CaseDetails> getWrittenRepCaseReadyToJudgeRevisit() {
+    protected List<CaseDetails> getWrittenRepCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitWrittenRepCases = caseStateSearchService
             .getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
 
         return judgeReadyToRevisitWrittenRepCases.stream()
-            .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
-                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
-                                               .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                               .getWrittenConcurrentRepresentationsBy()) >= 0)
-            || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
-                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
-                                                .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                .getSequentialApplicantMustRespondWithin()) >= 0))
-            .toList();
+            .filter(a -> {
+                try {
+                    return (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
+                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                                                          .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                          .getWrittenConcurrentRepresentationsBy()) >= 0)
+                        || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                        .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
+                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                                                          .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
+                                                          .getSequentialApplicantMustRespondWithin()) >= 0);
+                } catch (Exception e) {
+                    log.error("Error GAJudgeRevisitTaskHandler::getWrittenRepCaseReadyToJudgeRevisit : " + e);
+                }
+                return false;
+            }).toList();
     }
 
-    private List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
+    protected List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitDirectionOrderCases = caseStateSearchService
             .getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
 
         return judgeReadyToRevisitDirectionOrderCases.stream()
-            .filter(a -> (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
-                .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
-                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
-                                                .getJudicialDecisionMakeOrder()
-                                                .getDirectionsResponseByDate()) >= 0))
-                .toList();
+            .filter(a -> {
+                try {
+                    return (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
+                        .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
+                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                                                          .getJudicialDecisionMakeOrder()
+                                                          .getDirectionsResponseByDate()) >= 0);
+                } catch (Exception e) {
+                    log.error("Error GAJudgeRevisitTaskHandler::getDirectionOrderCaseReadyToJudgeRevisit : " + e);
+                }
+                return false;
+            }).toList();
     }
 
-    private List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
+    protected List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
         List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = caseStateSearchService
             .getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
 
         return judgeReadyToRevisitRequestForInfoCases.stream()
-            .filter(a -> (caseDetailsConverter.toCaseData(a)
-                .getJudicialDecisionRequestMoreInfo()
-                .getJudgeRequestMoreInfoByDate() != null
-                && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
-                                                .getJudicialDecisionRequestMoreInfo()
-                                                .getJudgeRequestMoreInfoByDate()) >= 0)))
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a)
+                        .getJudicialDecisionRequestMoreInfo()
+                        .getJudgeRequestMoreInfoByDate() != null
+                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                                                          .getJudicialDecisionRequestMoreInfo()
+                                                          .getJudgeRequestMoreInfoByDate()) >= 0);
+                } catch (Exception e) {
+                    log.error("GAJudgeRevisitTaskHandler failed: " + e);
+                }
+                return false;
+            })
             .toList();
     }
 
