@@ -12,22 +12,29 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
+import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
 
 @Slf4j
@@ -39,6 +46,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -51,10 +59,25 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         addAdditionalDoc(caseDataBuilder, caseData);
+      //  setCategoryId(caseData.getGaAddlDoc(), caseDocumentElement -> caseDocumentElement.getValue().getDocumentLink(),AssignCategoryId.APPLICATIONS);
+        caseDataBuilder.uploadDocument(null);
+        caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
+     //   parentCaseUpdateHelper.updateParentWithGAState(updatedCaseData, updatedCaseData.getCcdState().toString());
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    public <T> void setCategoryId(List<Element<T>> documentUpload, Function<Element<T>,
+        Document> documentExtractor, String theID) {
+        if (documentUpload == null || documentUpload.isEmpty()) {
+            return;
+        }
+        documentUpload.forEach(document -> {
+            Document documentToAddId = documentExtractor.apply(document);
+            documentToAddId.setCategoryID(theID);
+        });
     }
 
     private void addAdditionalDoc(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData) {
