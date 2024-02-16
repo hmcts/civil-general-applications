@@ -70,4 +70,10 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String hearingNoticeTemplate;
+
+    @NotEmpty
+    private String applicantEvidenceUploadTemplate;
+
+    @NotEmpty
+    private String respondentEvidenceUploadTemplate;
 }

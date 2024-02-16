@@ -280,6 +280,10 @@ public class CaseData implements MappableObject {
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
     private final YesOrNo gaRespondentConsent;
+    private final String notificationText;
+    private final LocalDateTime caseDocumentUploadDate;
+    private final LocalDateTime caseDocumentUploadDateRes;
+
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
