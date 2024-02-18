@@ -92,7 +92,7 @@ allprojects {
       dependency group: 'org.springframework.security', name: 'spring-security-crypto', version: '5.8.3'
 
       // To prevent other libraries using conflicting versions
-      dependency group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.5'
+      dependency group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.12'
       // CVE-2021-29425
       dependency group: 'commons-io', name: 'commons-io', version: '2.11.0'
       dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
