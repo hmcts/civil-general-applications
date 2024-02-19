@@ -11,42 +11,42 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
-import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
+
     private static final String CONFIRMATION_MESSAGE = "### File has been uploaded successfully.";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(UPLOAD_ADDL_DOCUMENTS);
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+
+    private final IdamClient idamClient;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -57,61 +57,85 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        addAdditionalDoc(caseDataBuilder, caseData);
-      //  setCategoryId(caseData.getGaAddlDoc(), caseDocumentElement -> caseDocumentElement.getValue().getDocumentLink(),AssignCategoryId.APPLICATIONS);
+        if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
+            || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)) {
+            caseDataBuilder.isDocumentVisible(YesOrNo.YES);
+        }
+        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES)
+            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
+            caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
+            addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
+            caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
+        } else if (caseData.getIsMultiParty().equals(YesOrNo.NO)
+            && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))
+            || (caseData.getIsMultiParty().equals(YesOrNo.YES)
+            && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))))  {
+            caseDataBuilder.gaAddlDocRespondentSol(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSol(), "Respondent One"));
+            addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent One");
+            caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
+        } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
+            && (caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId().equals(userId))) {
+            caseDataBuilder.gaAddlDocRespondentSolTwo(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSolTwo(), "Respondent Two"));
+            addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent Two");
+            caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
+        }
+
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
-     //   parentCaseUpdateHelper.updateParentWithGAState(updatedCaseData, updatedCaseData.getCcdState().toString());
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
     }
 
-    public <T> void setCategoryId(List<Element<T>> documentUpload, Function<Element<T>,
-        Document> documentExtractor, String theID) {
-        if (documentUpload == null || documentUpload.isEmpty()) {
-            return;
+    private List<Element<CaseDocument>> addAdditionalDocsToCollection(CaseData caseData,
+                                                List<Element<CaseDocument>> documentToBeAddedToCollection, String role) {
+        List<Element<UploadDocumentByType>> addlDocumentsList = caseData.getUploadDocument();
+
+        if (Objects.isNull(documentToBeAddedToCollection)) {
+            documentToBeAddedToCollection = new ArrayList<>();
         }
-        documentUpload.forEach(document -> {
-            Document documentToAddId = documentExtractor.apply(document);
-            documentToAddId.setCategoryID(theID);
-        });
+        if (null == addlDocumentsList) {
+            return new ArrayList<>();
+        }
+        return addDocument(documentToBeAddedToCollection, addlDocumentsList, role);
     }
 
-    private void addAdditionalDoc(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData) {
-        List<Element<UploadDocumentByType>> additionalDocuments = caseData.getUploadDocument();
-        List<Element<CaseDocument>> newList = caseData.getGaAddlDoc();
-        if (Objects.isNull(newList)) {
-            newList = new ArrayList<>();
-        }
-        if (null == additionalDocuments) {
-            return;
-        }
-        List<Element<CaseDocument>> finalNewList = newList;
-        additionalDocuments.forEach(uploadDocumentByTypeElement -> {
+    private List<Element<CaseDocument>> addDocument(List<Element<CaseDocument>> documentToBeAddedToCollection, List<Element<UploadDocumentByType>> addlDocumentsList, String role) {
+
+        addlDocumentsList.forEach(uploadDocumentByTypeElement -> {
             if (null != uploadDocumentByTypeElement.getValue().getAdditionalDocument()) {
-                finalNewList.add(ElementUtils.element(CaseDocument.builder()
-                                                     .documentLink(uploadDocumentByTypeElement.getValue().getAdditionalDocument())
+                documentToBeAddedToCollection.add(ElementUtils.element(CaseDocument.builder()
+                                                          .documentLink(uploadDocumentByTypeElement.getValue().getAdditionalDocument())
                                                           .documentType(uploadDocumentByTypeElement.getValue().getDocumentType().getDisplayedValue())
-                                                     .documentName(uploadDocumentByTypeElement.getValue().getAdditionalDocument().getDocumentFileName())
-                                                     .createdDatetime(LocalDateTime.now()).build()));
-                assignCategoryId.assignCategoryIdToCollection(finalNewList,
+                                                          .documentName(uploadDocumentByTypeElement.getValue().getAdditionalDocument().getDocumentFileName())
+                                                          .createdBy(role)
+                                                          .createdDatetime(LocalDateTime.now()).build()));
+                assignCategoryId.assignCategoryIdToCollection(
+                    documentToBeAddedToCollection,
                                                               document -> document.getValue().getDocumentLink(),
-                                                              AssignCategoryId.APPLICATIONS);
+                    AssignCategoryId.APPLICATIONS);
             }
         });
+        return documentToBeAddedToCollection;
+    }
 
-        caseDataBuilder.gaAddlDoc(finalNewList);
+    private void addAdditionalDocToStaff(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData, String role) {
+        List<Element<CaseDocument>> addlDocumentsForStaff = addAdditionalDocsToCollection(caseData, caseData.getGaAddlDoc(), role);
+        caseDataBuilder.gaAddlDoc(addlDocumentsForStaff);
+        caseDataBuilder.gaAddlDocStaff(addlDocumentsForStaff);
+
     }
 
     private CallbackResponse submittedConfirmation(CallbackParams callbackParams) {
+        String body = "<br/> <br/>";
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(CONFIRMATION_MESSAGE)
+            .confirmationBody(body)
             .build();
     }
-
 
     @Override
     public List<CaseEvent> handledEvents() {

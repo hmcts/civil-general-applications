@@ -104,7 +104,15 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
     private final List<Element<CaseDocument>> gaRespondDoc;
+
     private final List<Element<CaseDocument>> gaAddlDoc;
+    private final List<Element<CaseDocument>> gaAddlDocStaff;
+    private final List<Element<CaseDocument>> gaAddlDocClaimant;
+    private final List<Element<CaseDocument>> gaAddlDocRespondentSol;
+    private final List<Element<CaseDocument>> gaAddlDocRespondentSolTwo;
+    private final LocalDateTime caseDocumentUploadDateRes;
+    private final LocalDateTime caseDocumentUploadDate;
+    private final YesOrNo isDocumentVisible;
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
     private final CaseLink caseLink;
