@@ -146,6 +146,7 @@ notifications:
   judgeApproveOrderToStrikeOutDamages: "073b4650-c4c5-478a-8824-3c495a8e29e5"
   judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
   hearingNoticeTemplate: "03763ce1-de17-4a9a-b1c6-d2e9ccffe9d7"
+  evidenceUploadTemplate: "7bf848bc-ff64-471e-b780-2961a010b6f0"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find

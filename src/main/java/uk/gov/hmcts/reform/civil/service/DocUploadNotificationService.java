@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.civil.service;
 
-import static java.util.Objects.nonNull;
-
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -21,10 +19,10 @@ public class DocUploadNotificationService implements NotificationData {
 
     public void notifyApplicantEvidenceUpload(CaseData caseData) throws NotificationException {
         String email = caseData.getGeneralAppApplnSolicitor().getEmail();
-        if (null != email && nonNull(caseData.getNotificationText())) {
+        if (null != email) {
             notificationService.sendMail(
                     email,
-                    notificationProperties.getApplicantEvidenceUploadTemplate(),
+                    notificationProperties.getEvidenceUploadTemplate(),
                     addProperties(caseData),
                     String.format(
                             REFERENCE_TEMPLATE_DOC_UPLOAD,
@@ -35,27 +33,24 @@ public class DocUploadNotificationService implements NotificationData {
     }
 
     public void notifyRespondentEvidenceUpload(CaseData caseData) throws NotificationException {
-        if (nonNull(caseData.getNotificationText())) {
-            caseData.getGeneralAppRespondentSolicitors().forEach(
-                    respondentSolicitor -> {
-                        notificationService.sendMail(
-                                respondentSolicitor.getValue().getEmail(),
-                                notificationProperties.getRespondentEvidenceUploadTemplate(),
-                                addProperties(caseData),
-                                String.format(
-                                        REFERENCE_TEMPLATE_DOC_UPLOAD,
-                                        caseData.getLegacyCaseReference()
-                                )
-                        );
-                    });
-        }
+        caseData.getGeneralAppRespondentSolicitors().forEach(
+                respondentSolicitor -> {
+                    notificationService.sendMail(
+                            respondentSolicitor.getValue().getEmail(),
+                            notificationProperties.getEvidenceUploadTemplate(),
+                            addProperties(caseData),
+                            String.format(
+                                    REFERENCE_TEMPLATE_DOC_UPLOAD,
+                                    caseData.getLegacyCaseReference()
+                            )
+                    );
+                });
     }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getLegacyCaseReference(),
-                UPLOADED_DOCUMENTS, caseData.getNotificationText()
+                CASE_REFERENCE, caseData.getLegacyCaseReference()
         );
     }
 }

@@ -72,8 +72,5 @@ public class NotificationsProperties {
     private String hearingNoticeTemplate;
 
     @NotEmpty
-    private String applicantEvidenceUploadTemplate;
-
-    @NotEmpty
-    private String respondentEvidenceUploadTemplate;
+    private String evidenceUploadTemplate;
 }

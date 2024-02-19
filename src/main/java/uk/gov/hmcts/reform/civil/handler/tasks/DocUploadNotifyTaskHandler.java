@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.service.search.EvidenceUploadNotificationSearch
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
@@ -24,7 +23,6 @@ public class DocUploadNotifyTaskHandler implements BaseExternalTaskHandler {
     private final EvidenceUploadNotificationSearchService caseSearchService;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final ObjectMapper mapper;
 
     @Override
     public void handleTask(ExternalTask externalTask) {
@@ -42,19 +40,8 @@ public class DocUploadNotifyTaskHandler implements BaseExternalTaskHandler {
                 + "for caseId: {}", caseId);
 
         coreCaseDataService.triggerGaEvent(caseId, GA_EVIDENCE_UPLOAD_CHECK,
-                getUpdatedCaseDataMapper(updateCaseData(caseData)));
+                Map.of());
         log.info("Checking state for caseId: {}", caseId);
-    }
-
-    private CaseData updateCaseData(CaseData caseData) {
-        caseData = caseData.toBuilder()
-                .notificationText(null)
-                .build();
-        return caseData;
-    }
-
-    private Map<String, Object> getUpdatedCaseDataMapper(CaseData caseData) {
-        return caseData.toMap(mapper);
     }
 
     @Override
