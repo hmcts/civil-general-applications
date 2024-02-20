@@ -62,6 +62,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
             || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)) {
             caseDataBuilder.isDocumentVisible(YesOrNo.YES);
+        } else {
+            caseDataBuilder.isDocumentVisible(YesOrNo.NO);
         }
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES)
             || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
