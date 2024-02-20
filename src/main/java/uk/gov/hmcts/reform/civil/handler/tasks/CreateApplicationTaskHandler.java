@@ -245,8 +245,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
         /* Urgent Application */
 
-        if (generalApplication.getGeneralAppUrgencyRequirement() != null) {
-            return generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency();
+        if (generalApplication.getGeneralAppUrgencyRequirement() != null
+            && generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency().equals(YES)) {
+            return NO;
         }
 
         return YES;
