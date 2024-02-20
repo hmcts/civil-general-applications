@@ -31,8 +31,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(classes = {
-        DocUploadNotifyHandler.class,
-        JacksonAutoConfiguration.class,
+    DocUploadNotifyHandler.class,
+    JacksonAutoConfiguration.class,
 })
 public class DocUploadNotifyHandlerTest extends BaseCallbackHandlerTest {
 

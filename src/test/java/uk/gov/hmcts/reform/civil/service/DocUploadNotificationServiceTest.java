@@ -35,8 +35,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(classes = {
-        DocUploadNotificationService.class,
-        JacksonAutoConfiguration.class
+    DocUploadNotificationService.class,
+    JacksonAutoConfiguration.class
 })
 public class DocUploadNotificationServiceTest {
 

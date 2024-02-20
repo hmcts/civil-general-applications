@@ -1,12 +1,10 @@
 package uk.gov.hmcts.reform.civil.service.tasklisteners;
 
-import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.handler.tasks.DocUploadNotifyTaskHandler;
 
 import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 @Component

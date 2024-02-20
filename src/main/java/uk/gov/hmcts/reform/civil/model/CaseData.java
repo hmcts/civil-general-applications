@@ -283,7 +283,6 @@ public class CaseData implements MappableObject {
     private final LocalDateTime caseDocumentUploadDate;
     private final LocalDateTime caseDocumentUploadDateRes;
 
-
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
             || businessProcess.getStatus() == null
