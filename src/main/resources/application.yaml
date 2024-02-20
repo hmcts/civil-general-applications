@@ -13,6 +13,8 @@ management:
       exposure:
         include: health, info, prometheus
   health:
+    db:
+      enabled: false
     case-document-am-api:
       enabled: true
 spring:
@@ -43,8 +45,6 @@ spring:
           oidc:
             client-id: internal
             client-secret: internal
-  flyway:
-    enabled: ${REFERENCE_DATABASE_MIGRATION:false}
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
@@ -145,7 +145,7 @@ notifications:
   judgeUncloakApplicationEmailTemplate: "251414bb-3f26-47c6-ba1d-d7254349c028"
   judgeApproveOrderToStrikeOutDamages: "073b4650-c4c5-478a-8824-3c495a8e29e5"
   judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
-  hearingNoticeTemplate: "03763ce1-de17-4a9a-b1c6-d2e9ccffe9d7"
+  hearingNoticeTemplate: "3122b710-2c42-4635-8bbc-e0ac72fc27f5"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
@@ -175,12 +175,6 @@ spring:
   config:
     activate:
       on-profile: local
-
-  datasource:
-    driverClassName: org.postgresql.Driver
-    username: ${CMC_DB_USERNAME:ccd}
-    password: ${CMC_DB_PASSWORD:ccd}
-    url: jdbc:postgresql://${CMC_DB_HOST:localhost}:${CMC_DB_PORT:5050}/${CMC_DB_NAME:cmc}
 
 feign:
   client:

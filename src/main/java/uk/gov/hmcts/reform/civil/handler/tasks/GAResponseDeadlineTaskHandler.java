@@ -41,16 +41,28 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state from "
                      + "AWAITING_RESPONDENT_RESPONSE to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
-        coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        try {
+            coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        } catch (Exception e) {
+            log.error("Error in GAResponseDeadlineTaskHandler::fireEventForStateChange: " + e);
+        }
     }
 
-    private List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
+    protected List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
         List<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
+
         return awaitingResponseCases.stream()
-            .filter(a -> caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
-                && now().isAfter(
-                caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate()))
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
+                        && now().isAfter(
+                        caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate());
+                } catch (Exception e) {
+                    log.error("GAResponseDeadlineTaskHandler failed: " + e);
+                }
+                return false;
+            })
             .toList();
     }
 

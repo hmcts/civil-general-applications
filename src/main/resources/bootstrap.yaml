@@ -13,14 +13,10 @@ spring:
         prd-admin-user-password: CIVIL_PRD_ADMIN_PASSWORD
         prd-admin-user-username: CIVIL_PRD_ADMIN_USERNAME
         AppInsightsInstrumentationKey: azure.application-insights.instrumentation-key
-        cmc-db-password-v11: CMC_DB_PASSWORD
         docmosis-api-key: docmosis.tornado.key
         civil-idam-client-secret: idam.client.secret
         gov-notify-api-key: GOV_NOTIFY_API_KEY
         sendgrid-api-key: SENDGRID_API_KEY
-        robotics-notification-sender: robotics.notification.sender
-        robotics-notification-recipient: robotics.notification.recipient
-        robotics-notification-multipartyrecipient: robotics.notification.multipartyrecipient
         launch-darkly-sdk-key: LAUNCH_DARKLY_SDK_KEY
         os-postcode-lookup-api-key: OS_POSTCODE_LOOKUP_API_KEY
 
