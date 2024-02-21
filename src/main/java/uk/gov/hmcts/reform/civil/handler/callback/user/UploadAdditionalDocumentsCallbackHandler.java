@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TO
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 
 @Slf4j
 @Service
@@ -60,12 +61,13 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
-            || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)) {
+            || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)
+            || (Objects.nonNull(caseData.getApplicationIsCloaked()) && caseData.getApplicationIsCloaked().equals(NO))) {
             caseDataBuilder.isDocumentVisible(YesOrNo.YES);
         } else {
             caseDataBuilder.isDocumentVisible(YesOrNo.NO);
         }
-        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES)
+        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
             || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
             caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
             addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");

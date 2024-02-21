@@ -124,6 +124,40 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
+        void shouldSetUpReadyBusinessProcessWhenJudgeCloakedApplication() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl("http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .applicationIsCloaked(NO)
+                .parentClaimantIsApplicant(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(UPLOAD_ADDL_DOCUMENTS.toString());
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
+        }
+
+        @Test
         void shouldSetUpReadyBusinessProcessWhenJudgeIsNotUncloakedAndInformOtherPartyIsYes() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
