@@ -290,8 +290,6 @@ public class CaseData implements MappableObject {
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
     private final YesOrNo gaRespondentConsent;
-    private final LocalDateTime caseDocumentUploadDate;
-    private final LocalDateTime caseDocumentUploadDateRes;
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
