@@ -26,7 +26,7 @@ public class DocUploadNotificationService implements NotificationData {
                     addProperties(caseData),
                     String.format(
                             REFERENCE_TEMPLATE_DOC_UPLOAD,
-                            caseData.getLegacyCaseReference()
+                            caseData.getCcdCaseReference()
                     )
             );
         }
@@ -41,7 +41,7 @@ public class DocUploadNotificationService implements NotificationData {
                             addProperties(caseData),
                             String.format(
                                     REFERENCE_TEMPLATE_DOC_UPLOAD,
-                                    caseData.getLegacyCaseReference()
+                                    caseData.getCcdCaseReference()
                             )
                     );
                 });
@@ -50,7 +50,7 @@ public class DocUploadNotificationService implements NotificationData {
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getLegacyCaseReference()
+                CASE_REFERENCE, caseData.getCcdCaseReference().toString()
         );
     }
 }

@@ -127,7 +127,7 @@ public class DocUploadNotificationServiceTest {
                         .respondent2OrganisationPolicy(OrganisationPolicy.builder()
                                 .organisation(Organisation.builder().organisationID("3").build())
                                 .build())
-                        .legacyCaseReference(CASE_REFERENCE.toString())
+                        .ccdCaseReference(CASE_REFERENCE)
                         .build();
             } else {
                 return new CaseDataBuilder()

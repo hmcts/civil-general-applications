@@ -46,13 +46,15 @@ public class DocUploadNotifyHandler extends CallbackHandler {
         try {
             docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
         } catch (Exception e) {
-            log.warn("Failed to send email notification to applicant for case '{}'", caseData.getCcdCaseReference().toString());
+            log.warn("Failed to send email notification to applicant for case '{}', {}",
+                    caseData.getCcdCaseReference().toString(), e.getMessage());
         }
         if (JudicialDecisionNotificationUtil.isWithNotice(caseData)) {
             try {
                 docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
             } catch (Exception e) {
-                log.warn("Failed to send email notification to respondent solicitor for case '{}'", caseData.getCcdCaseReference().toString());
+                log.warn("Failed to send email notification to respondent solicitor for case '{}', {}",
+                        caseData.getCcdCaseReference().toString(), e.getMessage());
             }
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
