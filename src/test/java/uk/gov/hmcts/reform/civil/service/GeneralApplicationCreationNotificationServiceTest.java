@@ -107,7 +107,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             CaseData caseData = getCaseData(true).toBuilder()
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
                 .generalAppPBADetails(GAPbaDetails.builder()
-                                          .fee(Fee.builder().code("FREE").build())
+                                          .fee(Fee.builder().code("PAID").build())
                                           .paymentDetails(PaymentDetails.builder().status(
                     PaymentStatus.SUCCESS).build()).build())
                 .build();
@@ -140,7 +140,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             CaseData caseData = getCaseData(false).toBuilder()
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                 .generalAppPBADetails(GAPbaDetails.builder()
-                                          .fee(Fee.builder().code("FREE").build())
+                                          .fee(Fee.builder().code("PAID").build())
                                           .paymentDetails(PaymentDetails.builder().status(
                                               PaymentStatus.SUCCESS).build()).build())
                 .build();
