@@ -61,8 +61,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                                                                     RS.getValue().getEmail(),
                                                                     notificationProperties
                                                                         .getGeneralApplicationRespondentEmailTemplate()
-                             )
-                );
+                             ));
         }
 
         /*
@@ -81,12 +80,11 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
                 respondentSolicitor
                     .forEach((RS) ->
-                                 sendNotificationToGeneralAppRespondent(updatedCaseData,
-                                                                        RS.getValue().getEmail(),
-                                                                        notificationProperties
-                                                                            .getUrgentGeneralAppRespondentEmailTemplate()
-                                 )
-                    );
+                                 sendNotificationToGeneralAppRespondent(
+                                     updatedCaseData,
+                                     RS.getValue().getEmail(),
+                                     notificationProperties
+                                         .getUrgentGeneralAppRespondentEmailTemplate()));
             }
         }
 
