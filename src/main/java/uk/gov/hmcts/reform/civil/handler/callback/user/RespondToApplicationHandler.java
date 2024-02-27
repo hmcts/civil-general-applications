@@ -78,7 +78,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
     private final GeneralAppLocationRefDataService locationRefDataService;
-    private UserInfo userInfo;
     private final CoreCaseDataService coreCaseDataService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
@@ -117,14 +116,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
             callbackKey(ABOUT_TO_SUBMIT), this::submitClaim,
             callbackKey(SUBMITTED), this::buildResponseConfirmation
         );
-    }
-
-    public UserInfo getUserInfo(String token) {
-
-        if (Objects.isNull(userInfo)) {
-            return idamClient.getUserInfo(token);
-        }
-        return userInfo;
     }
 
     private AboutToStartOrSubmitCallbackResponse applicationValidation(CallbackParams callbackParams) {
@@ -189,7 +180,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     public List<String> applicationExistsValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        userInfo = getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        UserInfo userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+
         List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
 
         List<String> errors = new ArrayList<>();
@@ -301,7 +293,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
-        userInfo = getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        UserInfo userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<Element<GARespondentResponse>> respondentsResponses =
             addResponse(buildResponse(caseData, userInfo), caseData.getRespondentsResponses());
@@ -317,8 +309,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondConsentDocument(null);
         caseDataBuilder.generalAppRespondDebtorDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
-
-        userInfo = null;
 
         CaseData updatedCaseData = caseDataBuilder.build();
 
