@@ -189,7 +189,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     public List<String> applicationExistsValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        UserInfo userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
 
         List<String> errors = new ArrayList<>();
