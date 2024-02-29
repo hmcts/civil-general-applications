@@ -110,6 +110,7 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> gaAddlDocClaimant;
     private final List<Element<CaseDocument>> gaAddlDocRespondentSol;
     private final List<Element<CaseDocument>> gaAddlDocRespondentSolTwo;
+    private final List<Element<CaseDocument>> gaAddlDocBundle;
     private final LocalDateTime caseDocumentUploadDateRes;
     private final LocalDateTime caseDocumentUploadDate;
     private final YesOrNo isDocumentVisible;

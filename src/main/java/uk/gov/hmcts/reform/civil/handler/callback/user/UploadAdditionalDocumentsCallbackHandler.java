@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -58,6 +59,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        caseData = buildBundleData(caseData);
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
@@ -92,6 +94,22 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    private CaseData buildBundleData(CaseData caseData) {
+        if (Objects.nonNull(caseData.getGaAddlDoc()) && !caseData.getGaAddlDoc().isEmpty()) {
+            List<Element<CaseDocument>> exBundle = caseData.getGaAddlDoc()
+                    .stream().filter(x->!x.getValue().getDocumentType()
+                            .equals(DocumentType.BUNDLE)).toList();
+            List<Element<CaseDocument>> bundle = caseData.getGaAddlDoc()
+                    .stream().filter(x->x.getValue().getDocumentType()
+                            .equals(DocumentType.BUNDLE)).toList();
+            if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
+                bundle.addAll(caseData.getGaAddlDocBundle());
+            }
+            return caseData.toBuilder().gaAddlDoc(exBundle).gaAddlDocBundle(bundle).build();
+        }
+        return caseData;
     }
 
     private List<Element<CaseDocument>> addAdditionalDocsToCollection(CaseData caseData,
