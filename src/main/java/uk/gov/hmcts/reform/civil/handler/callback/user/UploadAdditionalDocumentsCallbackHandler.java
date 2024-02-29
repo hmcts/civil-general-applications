@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -59,8 +60,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        caseData = buildBundleData(caseData);
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
+        caseData = buildBundleData(caseData, userId);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
             || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)
@@ -96,20 +97,44 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             .build();
     }
 
-    private CaseData buildBundleData(CaseData caseData) {
-        if (Objects.nonNull(caseData.getGaAddlDoc()) && !caseData.getGaAddlDoc().isEmpty()) {
-            List<Element<CaseDocument>> exBundle = caseData.getGaAddlDoc()
-                    .stream().filter(x->!x.getValue().getDocumentType()
-                            .equals(DocumentType.BUNDLE)).toList();
-            List<Element<CaseDocument>> bundle = caseData.getGaAddlDoc()
-                    .stream().filter(x->x.getValue().getDocumentType()
-                            .equals(DocumentType.BUNDLE)).toList();
+    private CaseData buildBundleData(CaseData caseData, String userId) {
+        String role = getRole(caseData, userId);
+        if (Objects.nonNull(caseData.getUploadDocument()) && Objects.nonNull(caseData.getUploadDocument())) {
+            List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
+                    .stream().filter(x->!x.getValue().getDocumentType().getDisplayedValue()
+                            .equals(DocumentType.BUNDLE)).collect(Collectors.toList());
+            List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
+                    .stream().filter(x->x.getValue().getDocumentType().getDisplayedValue()
+                            .equals(DocumentType.BUNDLE))
+                    .map(byType -> ElementUtils.element(CaseDocument.builder()
+                            .documentLink(byType.getValue().getAdditionalDocument())
+                            .documentType(byType.getValue().getDocumentType().getDisplayedValue())
+                            .documentName(byType.getValue().getAdditionalDocument().getDocumentFileName())
+                            .createdBy(role)
+                            .createdDatetime(LocalDateTime.now()).build()))
+                    .collect(Collectors.toList());
             if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
                 bundle.addAll(caseData.getGaAddlDocBundle());
             }
-            return caseData.toBuilder().gaAddlDoc(exBundle).gaAddlDocBundle(bundle).build();
+            return caseData.toBuilder().uploadDocument(exBundle).gaAddlDocBundle(bundle).build();
         }
         return caseData;
+    }
+
+    private String getRole(CaseData caseData, String userId) {
+        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
+                || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
+            return "Applicant";
+        } else if (caseData.getIsMultiParty().equals(YesOrNo.NO)
+                && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))
+                || (caseData.getIsMultiParty().equals(YesOrNo.YES)
+                && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))))  {
+            return "Respondent One";
+        } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
+                && (caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId().equals(userId))) {
+            return  "Respondent Two";
+        }
+        return null;
     }
 
     private List<Element<CaseDocument>> addAdditionalDocsToCollection(CaseData caseData,
