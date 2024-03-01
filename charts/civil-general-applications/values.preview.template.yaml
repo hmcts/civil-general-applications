@@ -192,7 +192,7 @@ ccd:
     postgresql:
       enabled: false
     ras:
-      enabled: false
+      enabled: true
     userProfileImporter:
       enabled: false
     userProfile:
@@ -325,6 +325,8 @@ xui-mo-webapp:
       SERVICES_MCA_PROXY_API: http://${SERVICE_NAME}-aac-manage-case-assignment
       CASE_TYPES: CIVIL,GENERALAPPLICATION
       SERVICES_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service
+      NODE_CONFIG_ENV: aat
+      NODE_ENV: aat
 
 camunda-bpm:
   enabled: true
