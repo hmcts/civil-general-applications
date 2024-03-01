@@ -302,7 +302,7 @@ xui-mo-webapp:
       MANAGE_ORG_LINK: https://xui-mo-${SERVICE_FQDN}
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_MCA_PROXY_API: http://aac-manage-case-assignment-aat.service.core-compute-aat.internal
-      CASE_TYPES: CARE_SUPERVISION_EPO
+      CASE_TYPES: CIVIL,GENERALAPPLICATION
 
 camunda-bpm:
   enabled: true
