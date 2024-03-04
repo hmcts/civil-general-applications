@@ -156,8 +156,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             if (null != uploadDocumentByTypeElement.getValue().getAdditionalDocument()) {
                 documentToBeAddedToCollection.add(ElementUtils.element(CaseDocument.builder()
                                                           .documentLink(uploadDocumentByTypeElement.getValue().getAdditionalDocument())
-                                                          .documentType(uploadDocumentByTypeElement.getValue().getDocumentType().getDisplayedValue())
-                                                          .documentName(uploadDocumentByTypeElement.getValue().getAdditionalDocument().getDocumentFileName())
+                                                          .documentName(uploadDocumentByTypeElement.getValue().getDocumentType())
                                                           .createdBy(role)
                                                           .createdDatetime(LocalDateTime.now()).build()));
                 assignCategoryId.assignCategoryIdToCollection(
