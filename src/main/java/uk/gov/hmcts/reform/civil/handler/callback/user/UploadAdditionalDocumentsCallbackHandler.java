@@ -101,18 +101,22 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String role = getRole(caseData, userId);
         if (Objects.nonNull(caseData.getUploadDocument()) && Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
-                    .stream().filter(x->!x.getValue().getDocumentType().getDisplayedValue()
-                            .equals(DocumentType.BUNDLE)).collect(Collectors.toList());
+                    .stream().filter(x->!x.getValue().getDocumentType().toLowerCase()
+                                    .contains(DocumentType.BUNDLE.name().toLowerCase()))
+                    .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
-                    .stream().filter(x->x.getValue().getDocumentType().getDisplayedValue()
-                            .equals(DocumentType.BUNDLE))
+                    .stream().filter(x->x.getValue().getDocumentType().toLowerCase()
+                            .contains(DocumentType.BUNDLE.name().toLowerCase()))
                     .map(byType -> ElementUtils.element(CaseDocument.builder()
                             .documentLink(byType.getValue().getAdditionalDocument())
-                            .documentType(byType.getValue().getDocumentType().getDisplayedValue())
-                            .documentName(byType.getValue().getAdditionalDocument().getDocumentFileName())
+                            .documentName(byType.getValue().getDocumentType())
                             .createdBy(role)
                             .createdDatetime(LocalDateTime.now()).build()))
                     .collect(Collectors.toList());
+            assignCategoryId.assignCategoryIdToCollection(
+                    bundle,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.APPLICATIONS);
             if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
                 bundle.addAll(caseData.getGaAddlDocBundle());
             }
