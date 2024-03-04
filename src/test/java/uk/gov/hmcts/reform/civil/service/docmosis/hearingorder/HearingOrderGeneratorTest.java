@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,22 +15,29 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -58,9 +66,23 @@ class HearingOrderGeneratorTest {
     private HearingOrderGenerator hearingOrderGenerator;
     @MockBean
     private IdamClient idamClient;
+    @MockBean
+    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
+
+    private static final List<LocationRefData> locationRefData = Arrays
+        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
+                LocationRefData.builder().epimmsId("2").venueName("London").build(),
+                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+
+    @BeforeEach
+    public void setUp() {
+
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+    }
 
     @Test
     void shouldGenerateHearingOrderDocument() {
+
         CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO).build();
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_ORDER)))
@@ -78,6 +100,29 @@ class HearingOrderGeneratorTest {
                                                                   eq(HEARING_ORDER));
     }
 
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatch() {
+
+        CaseData caseData = CaseDataBuilder.builder()
+            .hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
+            .build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class),
+                                                               eq(HEARING_ORDER)))
+            .thenReturn(new DocmosisDocument(HEARING_ORDER.getDocumentTitle(), bytes));
+
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, () -> hearingOrderGenerator.generate(caseData, BEARER_TOKEN));
+        String expectedMessage = "Court Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
     @Nested
     class GetTemplateData {
 
@@ -88,7 +133,7 @@ class HearingOrderGeneratorTest {
                 .isMultiParty(YES)
                 .build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(caseData);
+            var templateData = hearingOrderGenerator.getTemplateData(caseData, "auth");
 
             assertThatFieldsAreCorrect_HearingOrder(templateData, caseData);
         }
@@ -101,6 +146,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(YES, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
@@ -123,6 +169,7 @@ class HearingOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(NO)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -134,7 +181,7 @@ class HearingOrderGeneratorTest {
                                                            .orderWithoutNoticeDate(LocalDate.now()).build()).build();
 
             CaseData updateData = caseDataBuilder.build();
-            var templateData = hearingOrderGenerator.getTemplateData(updateData);
+            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_HearingOrder_Option2(templateData, updateData);
         }
@@ -149,6 +196,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
@@ -167,6 +215,7 @@ class HearingOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(NO)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("2").build())
                 .build();
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -177,7 +226,7 @@ class HearingOrderGeneratorTest {
 
             CaseData updateData = caseDataBuilder.build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(updateData);
+            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_HearingOrder_Option3(templateData, updateData);
         }
@@ -191,6 +240,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(NO, templateData.getIsMultiParty()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
                     .getHearingPreferencesPreferredType().getDisplayedValue()),
@@ -219,7 +269,7 @@ class HearingOrderGeneratorTest {
 
             CaseData updateData = caseDataBuilder.build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(updateData);
+            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_HearingOrder_Option3_1v1(templateData, updateData);
         }
@@ -232,6 +282,7 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(YES, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()

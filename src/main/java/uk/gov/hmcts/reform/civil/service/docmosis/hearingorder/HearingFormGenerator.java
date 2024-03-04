@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.HearingForm;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -42,10 +44,12 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final CoreCaseDataService coreCaseDataService;
+    private LocationRefData caseManagementLocationDetails;
+    private final GeneralAppLocationRefDataService locationRefDataService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        HearingForm templateData = getTemplateData(caseData);
+        HearingForm templateData = getTemplateData(caseData, authorisation);
         DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
@@ -60,7 +64,21 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     }
 
     @Override
-    public HearingForm getTemplateData(CaseData caseData) {
+    public HearingForm getTemplateData(CaseData caseData, String authorisation) {
+
+        List<LocationRefData> courtLocations = locationRefDataService.getCourtLocations(authorisation);
+        var matchingLocations =
+            courtLocations
+                .stream()
+                .filter(location -> location.getEpimmsId()
+                    .equals(caseData.getCaseManagementLocation().getBaseLocation())).toList();
+
+        if (!matchingLocations.isEmpty()) {
+            caseManagementLocationDetails = matchingLocations.get(0);
+        } else {
+            throw new IllegalArgumentException("Court Name is not found in location data");
+        }
+
         CaseDetails parentCase = coreCaseDataService
                 .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference()));
         CaseData parentCaseData = caseDetailsConverter.toCaseData(parentCase);
@@ -71,7 +89,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 && nonNull(caseData.getDefendant2PartyName());
 
         return HearingForm.builder()
-                .court(caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel())
+                .court(caseManagementLocationDetails.getVenueName())
                 .caseNumber(getCaseNumberFormatted(caseData))
                 .creationDate(getDateFormatted(LocalDate.now()))
                 .claimant(caseData.getClaimant1PartyName())

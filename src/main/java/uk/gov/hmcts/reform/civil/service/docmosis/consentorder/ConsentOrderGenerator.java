@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.docmosis.ConsentOrderForm;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.CONSENT_ORDER_FORM;
@@ -27,9 +30,24 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private LocationRefData caseManagementLocationDetails;
+    private final GeneralAppLocationRefDataService locationRefDataService;
 
     @Override
-    public ConsentOrderForm getTemplateData(CaseData caseData)  {
+    public ConsentOrderForm getTemplateData(CaseData caseData, String authorisation)  {
+
+        List<LocationRefData> courtLocations = locationRefDataService.getCourtLocations(authorisation);
+        var matchingLocations =
+            courtLocations
+                .stream()
+                .filter(location -> location.getEpimmsId()
+                    .equals(caseData.getCaseManagementLocation().getBaseLocation())).toList();
+
+        if (!matchingLocations.isEmpty()) {
+            caseManagementLocationDetails = matchingLocations.get(0);
+        } else {
+            throw new IllegalArgumentException("Court Name is not found in location data");
+        }
 
         ConsentOrderForm.ConsentOrderFormBuilder consentOrderFormBuilder =
             ConsentOrderForm.builder()
@@ -40,7 +58,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .orderDate(LocalDate.now())
-                .courtName(caseData.getLocationName())
+                .courtName(caseManagementLocationDetails.getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
@@ -58,7 +76,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        ConsentOrderForm templateData = getTemplateData(caseData);
+        ConsentOrderForm templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 

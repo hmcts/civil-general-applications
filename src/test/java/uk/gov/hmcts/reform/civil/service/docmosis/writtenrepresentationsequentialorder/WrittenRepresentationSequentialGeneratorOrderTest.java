@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequenti
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,14 +16,17 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -30,11 +34,14 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -65,6 +72,19 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
     private IdamClient idamClient;
     @Autowired
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
+    @MockBean
+    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
+
+    private static final List<LocationRefData> locationRefData = Arrays
+        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
+                LocationRefData.builder().epimmsId("2").venueName("London").build(),
+                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+
+    @BeforeEach
+    public void setUp() {
+
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+    }
 
     @Test
     void shouldGenerateWrittenRepresentationSequentialDocument() {
@@ -89,6 +109,30 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                                                                   eq(WRITTEN_REPRESENTATION_SEQUENTIAL));
     }
 
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatch() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .writtenRepresentationConcurrentApplication()
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
+            .build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class),
+                                                               eq(WRITTEN_REPRESENTATION_SEQUENTIAL)))
+            .thenReturn(new DocmosisDocument(WRITTEN_REPRESENTATION_SEQUENTIAL.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, ()
+                -> writtenRepresentationSequentailOrderGenerator.generate(caseData, BEARER_TOKEN));
+        String expectedMessage = "Court Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
     @Nested
     class GetTemplateData {
 
@@ -102,7 +146,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                     .getUserDetails(any()))
                     .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
-            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData);
+            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData, "auth");
 
             assertThatFieldsAreCorrect_WrittenRepresentationSequential(templateData, caseData);
         }
@@ -118,6 +162,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
                         caseData.getOrderCourtOwnInitiativeForWrittenRep()
@@ -133,8 +178,11 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData_Option2() {
-            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
-                .toBuilder().build();
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
+                .build()
+                .toBuilder()
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .build();
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_2)
                 .orderWithoutNoticeForWrittenRep(
@@ -151,7 +199,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                     .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData);
+                .getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option2(templateData, updateData);
         }
@@ -167,6 +215,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
                 () -> assertEquals(templateData.getApplicationType(), getApplicationType(caseData)),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
                     .getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " ".concat(
                     caseData.getOrderWithoutNoticeForWrittenRep()
@@ -180,7 +229,9 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData_Option3_1v1() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build()
-                .toBuilder().isMultiParty(YesOrNo.YES).build();
+                .toBuilder().isMultiParty(YesOrNo.YES)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("2").build())
+                .build();
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3)
                 .orderCourtOwnInitiativeForWrittenRep(
@@ -194,7 +245,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                     .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData);
+                .getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3(templateData, updateData);
         }
@@ -213,6 +264,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
                 () -> assertEquals(StringUtils.EMPTY, templateData.getJudicialByCourtsInitiativeForWrittenRep()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
                 () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
                 () -> assertEquals("John Doe", templateData.getJudgeNameTitle())
             );
@@ -238,7 +290,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData);
+                .getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3_1V1(templateData, updateData);
         }
