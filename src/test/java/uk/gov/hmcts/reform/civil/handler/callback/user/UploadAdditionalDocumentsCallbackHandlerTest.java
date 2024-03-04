@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.GAUploadAdditionalDocFixedList;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -20,7 +19,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
@@ -94,7 +92,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("Witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -128,7 +126,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -162,7 +160,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -195,7 +193,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -228,7 +226,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByRespondent = new ArrayList<>();
             uploadDocumentByRespondent.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                       .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -269,7 +267,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -315,7 +313,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -361,7 +359,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
@@ -369,7 +367,6 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                                                                               .build()).build()));
             List<Element<CaseDocument>> documentsCollection = new ArrayList<>();
             documentsCollection.add(element(CaseDocument.builder().createdBy("civil")
-                                                .documentType(DocumentType.WITNESS)
                                                 .documentLink(Document.builder()
                                                                   .documentFileName("witness_document.pdf")
                                                                   .documentUrl("http://dm-store:8080")
@@ -420,7 +417,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType(GAUploadAdditionalDocFixedList.WITNESS)
+                                                      .documentType("witness")
                                                       .additionalDocument(Document.builder()
                                                                               .documentFileName("witness_document.pdf")
                                                                               .documentUrl("http://dm-store:8080")
