@@ -66,7 +66,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         );
     }
 
-    AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
+    @Override
+    public AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
 
         return AssistedOrderForm.builder()
                 .caseNumber(caseData.getCcdCaseReference().toString())
