@@ -10,14 +10,21 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
@@ -32,6 +39,39 @@ public class DocmosisServiceTest {
     private DocmosisService docmosisService;
     @MockBean
     private IdamClient idamClient;
+    @MockBean
+    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
+
+    private static final List<LocationRefData> locationRefData = Arrays
+        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
+                LocationRefData.builder().epimmsId("2").venueName("London").build(),
+                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+
+    @Test
+    void shouldReturnLocationRefData() {
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+
+        CaseData caseData = CaseData.builder()
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("2").build()).build();
+        LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(locationRefData.getVenueName())
+            .isEqualTo("London");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatch() {
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+
+        CaseData caseData = CaseData.builder()
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build()).build();
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, ()
+                -> docmosisService.getCaseManagementLocationVenueName(caseData, "auth"));
+        String expectedMessage = "Court Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
 
     @Test
     void shouldRetunJudgeFullName() {

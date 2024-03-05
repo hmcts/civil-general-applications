@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.requestforinformation;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +19,10 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -56,20 +53,8 @@ class RequestForInformationGeneratorTest {
     private DocumentGeneratorService documentGeneratorService;
     @Autowired
     private RequestForInformationGenerator requestForInformationGenerator;
-
     @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateRequestForInformationDocument() {
@@ -77,6 +62,8 @@ class RequestForInformationGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
             .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         requestForInformationGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -96,6 +83,8 @@ class RequestForInformationGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
             .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Exception exception =
             assertThrows(IllegalArgumentException.class, ()
@@ -110,6 +99,8 @@ class RequestForInformationGeneratorTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetRequestForInformationData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
@@ -140,6 +131,8 @@ class RequestForInformationGeneratorTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetRequestForInformationData_1v1() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .defendant2PartyName(null)
                 .claimant2PartyName(null)

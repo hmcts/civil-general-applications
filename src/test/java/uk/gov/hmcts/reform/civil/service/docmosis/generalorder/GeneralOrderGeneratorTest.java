@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +26,6 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -35,7 +33,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -74,29 +72,17 @@ class GeneralOrderGeneratorTest {
     private IdamClient idamClient;
     @MockBean
     private DocmosisService docmosisService;
-    @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-
-    }
 
     @Test
     void shouldGenerateGeneralOrderDocument() {
-        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
         when(idamClient.getUserDetails(any()))
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
         generalOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
@@ -117,6 +103,8 @@ class GeneralOrderGeneratorTest {
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Exception exception =
             assertThrows(IllegalArgumentException.class, () -> generalOrderGenerator.generate(caseData, BEARER_TOKEN));
@@ -138,6 +126,8 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -180,6 +170,8 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -224,6 +216,8 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
@@ -239,7 +233,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
-                () -> assertEquals(templateData.getCourtName(), "London"),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -279,6 +273,8 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
@@ -290,7 +286,7 @@ class GeneralOrderGeneratorTest {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
-                () -> assertEquals(templateData.getCourtName(), "London"),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -327,6 +323,8 @@ class GeneralOrderGeneratorTest {
             CaseData updateData = caseDataBuilder.build();
 
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 

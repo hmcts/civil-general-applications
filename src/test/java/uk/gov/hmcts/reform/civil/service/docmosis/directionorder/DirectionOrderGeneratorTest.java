@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -90,12 +91,14 @@ class DirectionOrderGeneratorTest {
 
     @Test
     void shouldGenerateDirectionOrderDocument() {
-        CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
         when(idamClient.getUserDetails(any()))
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+        CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
         directionOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -117,6 +120,8 @@ class DirectionOrderGeneratorTest {
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Exception exception =
             assertThrows(IllegalArgumentException.class, ()
@@ -140,6 +145,8 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -184,6 +191,8 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
 
             var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -230,6 +239,8 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
@@ -288,6 +299,8 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
@@ -339,7 +352,8 @@ class DirectionOrderGeneratorTest {
                      .getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
-
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
             assertNull(templateData.getJudgeRecital());

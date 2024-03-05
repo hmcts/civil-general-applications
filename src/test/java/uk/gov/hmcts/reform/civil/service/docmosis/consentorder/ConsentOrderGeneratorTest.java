@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.consentorder;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +18,11 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -60,18 +58,7 @@ class ConsentOrderGeneratorTest {
     @Autowired
     ConsentOrderGenerator consentOrderGenerator;
     @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
+    private DocmosisService docmosisService;
 
     @Test
     void shouldThrowExceptionWhenNoLocationMatch() {
@@ -83,7 +70,8 @@ class ConsentOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(CONSENT_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(CONSENT_ORDER_FORM.getDocumentTitle(), bytes));
-
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
         Exception exception =
             assertThrows(IllegalArgumentException.class, ()
                 -> consentOrderGenerator.generate(caseData, BEARER_TOKEN));
@@ -98,7 +86,8 @@ class ConsentOrderGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(CONSENT_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(CONSENT_ORDER_FORM.getDocumentTitle(), bytes));
-
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
         consentOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
@@ -113,9 +102,9 @@ class ConsentOrderGeneratorTest {
     void whenCaseWorkerMakeDecision_ShouldGetConsentOrderData() {
         CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder().isMultiParty(YES)
             .build();
-
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
         var templateData = consentOrderGenerator.getTemplateData(caseData, "auth");
-
         assertThatFieldsAreCorrect_GeneralOrder(templateData, caseData);
     }
 
@@ -142,7 +131,8 @@ class ConsentOrderGeneratorTest {
             .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
             .isMultiParty(NO)
             .build();
-
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
         var templateData = consentOrderGenerator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_GeneralOrder_1v1(templateData, caseData);
     }

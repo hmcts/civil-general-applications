@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurre
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +24,6 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
@@ -34,7 +32,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -74,19 +72,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
     private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     @MockBean
     private DocmosisService docmosisService;
-    @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
 
     @Test
     void shouldGenerateWrittenRepresentationConcurrentDocument() {
@@ -96,6 +81,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                                                                eq(WRITTEN_REPRESENTATION_CONCURRENT)))
             .thenReturn(new DocmosisDocument(WRITTEN_REPRESENTATION_CONCURRENT.getDocumentTitle(), bytes));
 
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
         when(idamClient
                 .getUserDetails(any()))
@@ -126,6 +113,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
         when(idamClient
                  .getUserDetails(any()))
             .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Exception exception =
             assertThrows(IllegalArgumentException.class, () -> writtenRepresentationConcurrentOrderGenerator
@@ -140,6 +129,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationConcurrentData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().build()
                 .toBuilder()
                 .isMultiParty(YesOrNo.YES)
@@ -199,7 +190,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                         .orderWithoutNotice("abcd")
                         .orderWithoutNoticeDate(LocalDate.now()).build()).build();
             CaseData updateDate = caseDataBuilder.build();
-
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
             when(idamClient
                     .getUserDetails(any()))
@@ -247,6 +239,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3).build();
             CaseData updateDate = caseDataBuilder.build();
 
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
             when(idamClient
                     .getUserDetails(any()))
@@ -289,7 +283,8 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
             caseDataBuilder.judicialByCourtsInitiativeForWrittenRep(GAByCourtsInitiativeGAspec.OPTION_3).build();
             CaseData updateDate = caseDataBuilder.build();
-
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
             when(idamClient
                      .getUserDetails(any()))

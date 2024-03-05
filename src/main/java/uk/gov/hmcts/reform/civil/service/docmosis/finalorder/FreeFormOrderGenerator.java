@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.FreeFormOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
@@ -36,8 +34,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     private final DocumentGeneratorService documentGeneratorService;
     private final IdamClient idamClient;
     private String judgeNameTitle;
-    private LocationRefData caseManagementLocationDetails;
-    private final GeneralAppLocationRefDataService locationRefDataService;
+    private final DocmosisService docmosisService;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -63,19 +60,6 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     @Override
     public FreeFormOrder getTemplateData(CaseData caseData, String authorisation) {
 
-        List<LocationRefData> courtLocations = locationRefDataService.getCourtLocations(authorisation);
-        var matchingLocations =
-            courtLocations
-                .stream()
-                .filter(location -> location.getEpimmsId()
-                    .equals(caseData.getCaseManagementLocation().getBaseLocation())).toList();
-
-        if (!matchingLocations.isEmpty()) {
-            caseManagementLocationDetails = matchingLocations.get(0);
-        } else {
-            throw new IllegalArgumentException("Court Name is not found in location data");
-        }
-
         return FreeFormOrder.builder()
             .judgeNameTitle(judgeNameTitle)
             .caseNumber(caseData.getCcdCaseReference().toString())
@@ -84,7 +68,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
-            .courtName(caseManagementLocationDetails.getVenueName())
+            .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
             .siteName(caseData.getCaseManagementLocation().getSiteName())
             .address(caseData.getCaseManagementLocation().getAddress())
             .postcode(caseData.getCaseManagementLocation().getPostcode())

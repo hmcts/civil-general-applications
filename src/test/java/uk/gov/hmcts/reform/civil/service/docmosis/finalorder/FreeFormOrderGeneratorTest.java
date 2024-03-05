@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -31,8 +30,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -80,20 +78,8 @@ class FreeFormOrderGeneratorTest {
     private FreeFormOrderGenerator generator;
     @Autowired
     private ObjectMapper mapper;
-
     @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
+    private DocmosisService docmosisService;
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -109,6 +95,8 @@ class FreeFormOrderGeneratorTest {
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES).build()
                 .toBuilder()
@@ -138,6 +126,8 @@ class FreeFormOrderGeneratorTest {
         when(documentManagementService
                  .uploadDocument(any(), any()))
             .thenReturn(CASE_DOCUMENT);
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES).build()
             .toBuilder()
@@ -204,7 +194,8 @@ class FreeFormOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder()
             .finalOrderFreeForm().isMultiParty(YES).build().toBuilder()
             .build();
-
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
         FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_FreeFormOrder(templateDate, caseData);
     }
@@ -232,6 +223,8 @@ class FreeFormOrderGeneratorTest {
             .isMultiParty(NO)
             .build();
 
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
         FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
     }

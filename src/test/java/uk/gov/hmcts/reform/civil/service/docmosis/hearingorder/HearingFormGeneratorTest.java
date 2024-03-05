@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +21,14 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -77,20 +75,8 @@ class HearingFormGeneratorTest {
 
     @Autowired
     private HearingFormGenerator generator;
-
     @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
+    private DocmosisService docmosisService;
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -100,6 +86,8 @@ class HearingFormGeneratorTest {
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
@@ -134,6 +122,8 @@ class HearingFormGeneratorTest {
         when(documentManagementService
                  .uploadDocument(any(), any()))
             .thenReturn(CASE_DOCUMENT);
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
@@ -154,7 +144,7 @@ class HearingFormGeneratorTest {
             .build();
 
         var templateData = generator.getTemplateData(caseData, "auth");
-        assertThat(templateData.getCourt()).isEqualTo("Reading");
+        assertThat(templateData.getCourt()).isEqualTo("London");
     }
 
     @Test
@@ -165,6 +155,8 @@ class HearingFormGeneratorTest {
         when(documentManagementService
                  .uploadDocument(any(), any()))
             .thenReturn(CASE_DOCUMENT);
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");

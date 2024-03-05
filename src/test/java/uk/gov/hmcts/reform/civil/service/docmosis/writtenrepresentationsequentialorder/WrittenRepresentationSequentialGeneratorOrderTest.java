@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequenti
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +25,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
@@ -34,7 +33,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -73,18 +72,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
     @Autowired
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
     @MockBean
-    private GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
-
-    @BeforeEach
-    public void setUp() {
-
-        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
-    }
+    private DocmosisService docmosisService;
 
     @Test
     void shouldGenerateWrittenRepresentationSequentialDocument() {
@@ -98,6 +86,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
         when(idamClient
                 .getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         writtenRepresentationSequentailOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -124,6 +114,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
         when(idamClient
                  .getUserDetails(any()))
             .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
         Exception exception =
             assertThrows(IllegalArgumentException.class, ()
@@ -145,6 +137,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(idamClient
                     .getUserDetails(any()))
                     .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -178,6 +172,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
 
         @Test
         void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData_Option2() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication()
                 .build()
                 .toBuilder()
@@ -243,6 +239,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(idamClient
                     .getUserDetails(any()))
                     .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
                 .getTemplateData(updateData, "auth");
@@ -288,6 +286,8 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(idamClient
                      .getUserDetails(any()))
                 .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
                 .getTemplateData(updateData, "auth");
