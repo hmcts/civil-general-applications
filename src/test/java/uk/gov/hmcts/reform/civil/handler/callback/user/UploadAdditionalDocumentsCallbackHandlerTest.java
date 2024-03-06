@@ -443,6 +443,53 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.NO);
         }
+
+        @Test
+        void shouldPutBundleInBundleCollection() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                    .documentType("bundle")
+                    .additionalDocument(Document.builder()
+                            .documentFileName("witness_document.pdf")
+                            .documentUrl("http://dm-store:8080")
+                            .documentBinaryUrl("http://dm-store:8080/documents")
+                            .build()).build()));
+
+            List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                    .id("222")
+                    .email(DUMMY_EMAIL)
+                    .organisationIdentifier("2").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                    .id(STRING_CONSTANT)
+                    .email(DUMMY_EMAIL)
+                    .organisationIdentifier("3").build()));
+            CaseData caseData = CaseDataBuilder.builder()
+                    .atStateClaimDraft()
+                    .ccdCaseReference(1678356749555475L)
+                    .build().toBuilder()
+                    .respondent2SameLegalRepresentative(YesOrNo.NO)
+                    .generalAppConsentOrder(YES)
+                    .generalAppRespondentSolicitors(gaRespSolicitors)
+                    .parentClaimantIsApplicant(NO)
+                    .isMultiParty(YES)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("2").forename("GAApplnSolicitor")
+                            .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                    .uploadDocument(uploadDocumentByApplicant)
+                    .claimant1PartyName("Mr. John Rambo")
+                    .defendant1PartyName("Mr. Sole Trader")
+                    .build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(0);
+            assertThat(responseCaseData.getGaAddlDocBundle().size()).isEqualTo(1);
+        }
     }
 
     @Nested
