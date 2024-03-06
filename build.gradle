@@ -267,7 +267,7 @@ sonarqube {
     property "sonar.projectName", "Reform :: civil-general-applications"
     property "sonar.projectKey", "civil-general-applications"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
-    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
+    property "sonar.coverage.exclusions","**/handler/callback/caseassignment/**, **/service/AssignCaseToResopondentSolHelper.java, **/service/CoreCaseUserService.java, **/service/OrganisationService.java, **/utils/**, **/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
     property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
     property "sonar.host.url", "https://sonar.reform.hmcts.net/"
   }

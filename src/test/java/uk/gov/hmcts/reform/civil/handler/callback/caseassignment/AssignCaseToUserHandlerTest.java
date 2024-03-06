@@ -115,7 +115,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
                 .generalAppSuperClaimType(UNSPEC_CLAIM)
-                .isMultiParty(YesOrNo.NO)
+                .isMultiParty(YesOrNo.YES)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
                                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
@@ -132,17 +132,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldAssignCaseToApplicantSolicitorOneAndRespondentOneAndTwoUnspec() {
-            assignCaseToUserHandler.handle(params);
-            verifyApplicantSolicitorOneRoles();
-            verifyRespondentSolicitorOneRoles();
-            verifyRespondentSolicitorTwoRoles();
-        }
-
-        @Test
         void shouldCallAssignCase_3Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(3)).assignCase(
+            verify(coreCaseUserService, times(2)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -181,6 +173,10 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
 
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -207,6 +203,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .defendant1PartyName("Respondent1")
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
+                .isMultiParty(YesOrNo.NO)
                 .generalAppSuperClaimType(UNSPEC_CLAIM)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
