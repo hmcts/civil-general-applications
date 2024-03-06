@@ -8,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -27,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -71,6 +71,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .makeAppAvailableCheck(makeAppAvailableCheck).build();
 
         CaseData caseData = CaseDataBuilder.builder()
+            .isMultiParty(YesOrNo.NO)
             .generalAppRespondentSolicitors(getRespondentSolicitors())
             .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
@@ -85,7 +86,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         assertThat(response.getErrors()).isNull();
         assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
 
-        verify(coreCaseUserService, times(2)).assignCase(
+        verify(coreCaseUserService, times(1)).assignCase(
             any(),
             any(),
             any(),
@@ -97,6 +98,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     void shouldRespondWithStateChangedWhenApplicationUncloaked() {
 
         CaseData caseData = CaseDataBuilder.builder()
+            .isMultiParty(YesOrNo.NO)
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                 GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
             .generalAppRespondentSolicitors(getRespondentSolicitors())
@@ -112,7 +114,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         assertThat(response.getErrors()).isNull();
         assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
 
-        verify(coreCaseUserService, times(2)).assignCase(
+        verify(coreCaseUserService, times(1)).assignCase(
             any(),
             any(),
             any(),
@@ -167,7 +169,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         try {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         } catch (Exception e) {
-            assertEquals("java.lang.NullPointerException", e.toString());
+            assertThat(e.toString()).contains("java.lang.NullPointerException");
         }
     }
 

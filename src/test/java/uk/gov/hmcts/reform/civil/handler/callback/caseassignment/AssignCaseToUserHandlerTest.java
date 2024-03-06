@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
+import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
+import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -27,6 +30,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
+import uk.gov.hmcts.reform.civil.service.OrganisationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +42,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -55,6 +62,12 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private CoreCaseUserService coreCaseUserService;
 
+    @MockBean
+    private CaseAccessDataStoreApi caseAccessDataStoreApi;
+
+    @MockBean
+    private OrganisationService organisationService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -66,12 +79,15 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     public static final int RESPONDENT_TWO = 1;
     public static final String SPEC_CLAIM = "SPEC_CLAIM";
     public static final String UNSPEC_CLAIM = "UNSPEC_CLAIM";
+    public static final String STRING_NUM_CONSTANT = "this is a string";
 
     @Nested
     class AssignRolesUnspecCase {
         @BeforeEach
         void setup() {
-
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -99,6 +115,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
                 .generalAppSuperClaimType(UNSPEC_CLAIM)
+                .isMultiParty(YesOrNo.NO)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
                                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
@@ -142,6 +159,21 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             String actualMessage = exception.toString();
             assertTrue(actualMessage.contains(expectedMessage));
         }
+    }
+
+    private List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
+        return List.of(
+            CaseAssignedUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
+                .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
+            CaseAssignedUserRole.builder().caseDataId("1").userId("2")
+                .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
+            CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
+            CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
+            CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build()
+        );
     }
 
     @Nested
@@ -223,7 +255,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignRolesSpecCase {
         @BeforeEach
         void setup() {
-
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -247,6 +281,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                               .id("id")
                                               .email("TEST@gmail.com")
                                               .organisationIdentifier("Org1").build())
+                .isMultiParty(YesOrNo.YES)
                 .defendant1PartyName("Respondent1")
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
@@ -267,17 +302,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldAssignCaseToApplicantSolicitorOneAndRespondentOneAndTwoUnspec() {
-            assignCaseToUserHandler.handle(params);
-            verifyApplicantSolicitorOneSpecRoles();
-            verifyRespondentSolicitorOneSpecRoles();
-            verifyRespondentSolicitorTwoSpecRoles();
-        }
-
-        @Test
         void shouldCallAssignCase_3Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(3)).assignCase(
+            verify(coreCaseUserService, times(2)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -300,7 +327,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignRolesSpecCaseForWithoutNoticeApplication {
         @BeforeEach
         void setup() {
-
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -328,6 +357,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
                 .generalAppSuperClaimType(SPEC_CLAIM)
+                .isMultiParty(YesOrNo.NO)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
                                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
@@ -341,6 +371,22 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
             });
             params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
+
+        public List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
+
+            return List.of(
+                CaseAssignedUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
+                    .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("2")
+                    .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                    .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                    .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
+                CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                    .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build()
+            );
         }
 
         @Test

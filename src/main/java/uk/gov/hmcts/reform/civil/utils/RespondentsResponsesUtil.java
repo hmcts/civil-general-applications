@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.utils;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
@@ -25,13 +26,14 @@ public class RespondentsResponsesUtil {
         List<Element<GARespondentResponse>> respondentsResponses = updatedCaseData.getRespondentsResponses();
         int noOfDefendantSolicitors = caseData.getGeneralAppRespondentSolicitors().size();
 
-        if (noOfDefendantSolicitors == ONE_V_ONE
-            && respondentsResponses != null && respondentsResponses.size() == ONE_V_ONE) {
+        if ((noOfDefendantSolicitors == ONE_V_ONE
+            && respondentsResponses != null && respondentsResponses.size() == ONE_V_ONE)
+            || (updatedCaseData.getIsMultiParty().equals(YesOrNo.NO) && respondentsResponses != null)) {
             return true;
         }
 
-        if (noOfDefendantSolicitors == ONE_V_TWO && respondentsResponses != null) {
-            return respondentsResponses.size() == ONE_V_TWO;
+        if (noOfDefendantSolicitors >= ONE_V_TWO && respondentsResponses != null && updatedCaseData.getIsMultiParty().equals(YesOrNo.YES)) {
+            return respondentsResponses.size() >= ONE_V_TWO;
         }
 
         return false;

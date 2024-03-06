@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
@@ -27,19 +28,21 @@ public class AssignCaseToResopondentSolHelper {
             GASolicitorDetailsGAspec respondentSolicitor1 =
                 caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
 
-            coreCaseUserService
-                .assignCase(caseId, respondentSolicitor1.getId(),
-                            respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+            coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
+                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+        }
 
-            if (caseData.getGeneralAppRespondentSolicitors().size() > 1) {
-
-                GASolicitorDetailsGAspec respondentSolicitor2 =
+        if (caseData.getGeneralAppRespondentSolicitors().size() > 1 && caseData.getIsMultiParty().equals(YesOrNo.YES)) {
+            GASolicitorDetailsGAspec respondentSolicitor1 =
+                    caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+            GASolicitorDetailsGAspec respondentSolicitor2 =
                     caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
-
+            if (!(respondentSolicitor2.getOrganisationIdentifier() != null && respondentSolicitor2.getOrganisationIdentifier()
+                    .equalsIgnoreCase(respondentSolicitor1.getOrganisationIdentifier()))) {
                 coreCaseUserService
-                    .assignCase(caseId, respondentSolicitor2.getId(),
-                                respondentSolicitor2.getOrganisationIdentifier(),
-                                RESPONDENTSOLICITORTWO);
+                        .assignCase(caseId, respondentSolicitor2.getId(),
+                                    respondentSolicitor2.getOrganisationIdentifier(),
+                                    RESPONDENTSOLICITORTWO);
             }
         }
     }
