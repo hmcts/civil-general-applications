@@ -56,6 +56,12 @@ class CoreCaseUserServiceTest {
     @Autowired
     private CoreCaseUserService service;
 
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private OrganisationService organisationService;
+
     @BeforeEach
     void init() {
         clearInvocations(authTokenGenerator);
