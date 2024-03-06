@@ -65,7 +65,7 @@ public class TestingSupportController {
     }
 
     /*Check if Camunda Event CREATE_GENERAL_APPLICATION_CASE is Finished
-    if so, generalApplicationsDetails object will be populated with GA case reference*/
+    if so, generalApplicationsDetails object will be populated with GA case references*/
     @GetMapping("/testing-support/case/{caseId}/business-process/ga")
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
