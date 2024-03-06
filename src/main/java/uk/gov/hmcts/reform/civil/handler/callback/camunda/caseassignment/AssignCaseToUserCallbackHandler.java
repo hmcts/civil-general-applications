@@ -92,7 +92,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             List<String> unAssignedUserIds = getUnAssignedUserIds(mainCaseAssignedUserIds, childCaseAssignedUserIds);
 
             for (String id : unAssignedUserIds) {
-                String orgId = organisationService.findOrganisationByUserId(authToken, id)
+                String orgId = organisationService.findOrganisationByUserId(id)
                     .map(Organisation::getOrganisationIdentifier).orElse(null);
                 if (orgId != null && orgId.equals(applicantSolicitor.getOrganisationIdentifier())) {
 
@@ -115,7 +115,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 List<String> unAssignedRespUserIds = getUnAssignedUserIds(mainCaseAssignedUserIds, childCaseAppAssignedUserIds);
                 for (CaseAssignedUserRole assignedUserRoleElement : assignedMainCaseUserRoles) {
                     String userId = assignedUserRoleElement.getUserId();
-                    String organisationId = organisationService.findOrganisationByUserId(authToken, userId)
+                    String organisationId = organisationService.findOrganisationByUserId(userId)
                         .map(Organisation::getOrganisationIdentifier).orElse(null);
                     if (unAssignedRespUserIds.contains(userId) && organisationId != null
                         && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
