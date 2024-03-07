@@ -110,18 +110,17 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 List<CaseAssignedUserRole> assignedGaCaseUserRoles = coreCaseUserService.getUserRoles(caseId).getCaseAssignedUserRoles();
                 List<String> childCaseAppAssignedUserIds = assignedGaCaseUserRoles.stream().map(CaseAssignedUserRole::getUserId).toList();
                 List<String> unAssignedRespUserIds = getUnAssignedUserIds(mainCaseAssignedUserIds, childCaseAppAssignedUserIds);
-                for (CaseAssignedUserRole assignedUserRoleElement : assignedMainCaseUserRoles) {
-                    String userId = assignedUserRoleElement.getUserId();
-                    String organisationId = organisationService.findOrganisationByUserId(userId)
+                for (String id : unAssignedRespUserIds) {
+                    String organisationId = organisationService.findOrganisationByUserId(id)
                         .map(Organisation::getOrganisationIdentifier).orElse(null);
-                    if (unAssignedRespUserIds.contains(userId) && organisationId != null
+                    if (organisationId != null
                         && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
                                                                .getOrganisationIdentifier())) {
-                        assignRoleToChildCase(RESPONDENTSOLICITORONE, caseId, userId, organisationId);
-                    } else if (unAssignedRespUserIds.contains(userId) && organisationId != null
+                        assignRoleToChildCase(RESPONDENTSOLICITORONE, caseId, id, organisationId);
+                    } else if (organisationId != null
                         && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(1).getValue()
                                                               .getOrganisationIdentifier())) {
-                        assignRoleToChildCase(RESPONDENTSOLICITORTWO, caseId, userId, organisationId);
+                        assignRoleToChildCase(RESPONDENTSOLICITORTWO, caseId, id, organisationId);
                     }
                 }
             }
