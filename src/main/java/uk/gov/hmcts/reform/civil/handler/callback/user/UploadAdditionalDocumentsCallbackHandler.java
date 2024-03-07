@@ -99,7 +99,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CaseData buildBundleData(CaseData caseData, String userId) {
         String role = getRole(caseData, userId);
-        if (Objects.nonNull(caseData.getUploadDocument()) && Objects.nonNull(caseData.getUploadDocument())) {
+        if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
                     .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
                                     .contains(DocumentType.BUNDLE.name().toLowerCase()))
