@@ -42,12 +42,11 @@ public class CoreCaseUserService {
         }
     }
 
-    public void assignCaseToUser(CaseRole caseRole, String caseId, String userId,  String organisationId, String authToken) {
+    public void assignCaseToUser(CaseRole caseRole, String caseId, String userId,  String organisationId) {
 
         String caaAccessToken = getCaaAccessToken();
-        String orgId = getOrganisationId(authToken);
         if (!userHasAnyCaseRole(caseId, userId, caseRole.getFormattedName())) {
-            assignUserToChildCaseForRole(caseId, userId, orgId,  caseRole.getFormattedName(), caaAccessToken);
+            assignUserToChildCaseForRole(caseId, userId, organisationId,  caseRole.getFormattedName(), caaAccessToken);
         }
 
     }

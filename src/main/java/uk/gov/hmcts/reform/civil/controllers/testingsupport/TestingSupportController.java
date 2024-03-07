@@ -178,7 +178,7 @@ public class TestingSupportController {
         String userId = userService.getUserInfo(authorisation).getUid();
         String organisationId = organisationService.findOrganisation(authorisation)
             .map(Organisation::getOrganisationIdentifier).orElse(null);
-        coreCaseUserService.assignCaseToUser(caseRole, caseId, userId, organisationId, authorisation);
+        coreCaseUserService.assignCaseToUser(caseRole, caseId, userId, organisationId);
 
     }
 
@@ -190,5 +190,5 @@ public class TestingSupportController {
             .map(Organisation::getOrganisationIdentifier).orElse(null);
 
     }
-    
+
 }
