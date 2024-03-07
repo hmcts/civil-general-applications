@@ -73,7 +73,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         String caseId = caseData.getCcdCaseReference().toString();
         String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         List<String> errors = new ArrayList<>();
 
@@ -128,6 +127,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                     }
                 }
             }
+
+            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
