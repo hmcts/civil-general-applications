@@ -190,6 +190,5 @@ public class TestingSupportController {
             .map(Organisation::getOrganisationIdentifier).orElse(null);
 
     }
-
-
+    
 }
