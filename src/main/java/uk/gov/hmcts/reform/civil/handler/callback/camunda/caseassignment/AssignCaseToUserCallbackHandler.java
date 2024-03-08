@@ -86,14 +86,16 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 }
             }
 
-            caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getOrganisationIdentifier(), applicantSolicitor.getOrganisationIdentifier()));
+            caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getOrganisationIdentifier(),
+                                                                                         applicantSolicitor.getOrganisationIdentifier()));
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
              * */
             if ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
                 && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-                || (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
+                || (caseData.getGeneralAppRespondentAgreement() != null
+                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
             }
