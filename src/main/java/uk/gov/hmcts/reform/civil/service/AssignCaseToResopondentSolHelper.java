@@ -5,7 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
@@ -17,7 +20,6 @@ public class AssignCaseToResopondentSolHelper {
     private final CoreCaseUserService coreCaseUserService;
 
     private static final int FIRST_SOLICITOR = 0;
-    private static final int SECOND_SOLICITOR = 1;
 
     public void assignCaseToRespondentSolicitor(CaseData caseData, String caseId) {
 
@@ -35,14 +37,16 @@ public class AssignCaseToResopondentSolHelper {
         if (caseData.getGeneralAppRespondentSolicitors().size() > 1 && caseData.getIsMultiParty().equals(YesOrNo.YES)) {
             GASolicitorDetailsGAspec respondentSolicitor1 =
                     caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
-            GASolicitorDetailsGAspec respondentSolicitor2 =
-                    caseData.getGeneralAppRespondentSolicitors().get(SECOND_SOLICITOR).getValue();
-            if (!(respondentSolicitor2.getOrganisationIdentifier() != null && respondentSolicitor2.getOrganisationIdentifier()
-                    .equalsIgnoreCase(respondentSolicitor1.getOrganisationIdentifier()))) {
-                coreCaseUserService
-                        .assignCase(caseId, respondentSolicitor2.getId(),
-                                    respondentSolicitor2.getOrganisationIdentifier(),
+            List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
+            for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
+                if (!(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
+                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                    coreCaseUserService
+                        .assignCase(caseId, respSolElement.getValue().getId(),
+                                    respSolElement.getValue().getOrganisationIdentifier(),
                                     RESPONDENTSOLICITORTWO);
+                }
+
             }
         }
     }

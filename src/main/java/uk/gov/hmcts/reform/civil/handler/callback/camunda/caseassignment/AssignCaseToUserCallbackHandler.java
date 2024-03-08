@@ -117,9 +117,10 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                         && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
                                                                .getOrganisationIdentifier())) {
                         assignRoleToChildCase(RESPONDENTSOLICITORONE, caseId, id, organisationId);
-                    } else if (organisationId != null
-                        && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(1).getValue()
-                                                              .getOrganisationIdentifier())) {
+                    } else if (organisationId != null && caseData.getIsMultiParty().equals(YES)
+                        && !(organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
+                                                                                      .getOrganisationIdentifier()))
+                        && !(organisationId.equalsIgnoreCase(applicantSolicitor.getOrganisationIdentifier()))) {
                         assignRoleToChildCase(RESPONDENTSOLICITORTWO, caseId, id, organisationId);
                     }
                 }
