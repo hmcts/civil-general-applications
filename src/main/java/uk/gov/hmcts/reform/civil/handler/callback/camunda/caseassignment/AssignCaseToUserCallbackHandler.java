@@ -83,7 +83,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                         .assignCase(caseId, respSolElement.getValue().getId(),
                                     respSolElement.getValue().getOrganisationIdentifier(),
                                     APPLICANTSOLICITORONE);
-                    caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getId(), respSolElement.getValue().getId()));
                 }
             }
 
