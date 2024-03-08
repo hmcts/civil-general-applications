@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -84,6 +85,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                     APPLICANTSOLICITORONE);
                 }
             }
+
+            caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getOrganisationIdentifier(), applicantSolicitor.getOrganisationIdentifier()));
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
