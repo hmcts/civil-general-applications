@@ -97,6 +97,10 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             }
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+            List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
+                .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
+                    .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
+            caseDataBuilder.generalAppRespondentSolicitors(respondentSolicitorsList);
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
