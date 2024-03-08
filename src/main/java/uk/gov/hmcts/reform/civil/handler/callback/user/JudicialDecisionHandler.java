@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeG
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -48,6 +49,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurren
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -216,7 +218,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         + "this order was made, you may apply to set aside, vary, or stay the order."
         + " Any such application must be made by 4pm on";
 
-    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+    private static final int PLUS_7DAYS = 7;
 
     private final ObjectMapper objectMapper;
 
@@ -228,6 +230,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
     private final WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
+    private final DeadlinesCalculator deadlinesCalculator;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -422,8 +425,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     .isOrderProcessedByStayScheduler(NO)
                     .isOrderProcessedByUnlessScheduler(NO).orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
                     .orderWithoutNotice(ORDER_WITHOUT_NOTICE)
-                    .orderWithoutNoticeDate(localDatePlus7days)
-                    .orderCourtOwnInitiativeDate(localDatePlus7days)
+                    .orderWithoutNoticeDate(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                        LocalDateTime.now(), PLUS_7DAYS))
+                    .orderCourtOwnInitiativeDate(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                        LocalDateTime.now(), PLUS_7DAYS))
                     .showJudgeRecitalText(List.of(FinalOrderShowToggle.SHOW));
         }
 
@@ -648,21 +653,34 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.caseNameHmctsInternal(getAllPartyNames(caseData));
         caseDataBuilder.judicialDecisionRequestMoreInfo(
-            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(localDatePlus7days).build());
+            GAJudicialRequestMoreInfo.builder().judgeRequestMoreInfoByDate(deadlinesCalculator
+                                                                               .getJudicialOrderDeadlineDate(
+                                                                                   LocalDateTime.now(), PLUS_7DAYS))
+                .build());
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                                                    .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                                                   .onInitiativeSelectionDate(localDatePlus7days)
+                                                   .onInitiativeSelectionDate(deadlinesCalculator
+                                                                                  .getJudicialOrderDeadlineDate(
+                                                                                      LocalDateTime.now(), PLUS_7DAYS))
                                                    .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                                                .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                                               .withoutNoticeSelectionDate(localDatePlus7days)
+                                               .withoutNoticeSelectionDate(deadlinesCalculator
+                                                                               .getJudicialOrderDeadlineDate(
+                                                                                   LocalDateTime.now(), PLUS_7DAYS))
                                                .build());
         caseDataBuilder.judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
-                        .writtenConcurrentRepresentationsBy(LocalDate.now().plusDays(14))
-                        .writtenSequentailRepresentationsBy(LocalDate.now().plusDays(14))
-                        .sequentialApplicantMustRespondWithin(LocalDate.now().plusDays(21)).build());
+                        .writtenConcurrentRepresentationsBy(deadlinesCalculator
+                                                                .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                              14))
+                        .writtenSequentailRepresentationsBy(deadlinesCalculator
+                                                                .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                              14))
+                        .sequentialApplicantMustRespondWithin(deadlinesCalculator
+                                                                  .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                                21)).build());
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
@@ -921,10 +939,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
         caseDataBuilder.orderCourtOwnInitiativeForWrittenRep(GAOrderCourtOwnInitiativeGAspec
                         .builder()
                         .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
-                        .orderCourtOwnInitiativeDate(localDatePlus7days)
+                        .orderCourtOwnInitiativeDate(deadlinesCalculator
+                                                         .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                       PLUS_7DAYS
+                                                         ))
                         .build())
                 .orderWithoutNoticeForWrittenRep(GAOrderWithoutNoticeGAspec
-                        .builder().orderWithoutNoticeDate(localDatePlus7days)
+                        .builder().orderWithoutNoticeDate(deadlinesCalculator
+                                                              .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                            PLUS_7DAYS
+                                                              ))
                         .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
@@ -1014,10 +1038,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
                         .builder()
                         .orderCourtOwnInitiative(ORDER_COURT_OWN_INITIATIVE)
-                        .orderCourtOwnInitiativeDate(localDatePlus7days).build())
+                        .orderCourtOwnInitiativeDate(deadlinesCalculator
+                                                         .getJudicialOrderDeadlineDate(LocalDateTime.now(), PLUS_7DAYS))
+                                                           .build())
                 .orderWithoutNoticeListForHearing(GAOrderWithoutNoticeGAspec
                         .builder()
-                        .orderWithoutNoticeDate(localDatePlus7days)
+                        .orderWithoutNoticeDate(deadlinesCalculator
+                                                    .getJudicialOrderDeadlineDate(LocalDateTime.now(), PLUS_7DAYS))
                         .orderWithoutNotice(ORDER_WITHOUT_NOTICE).build())
                 .build();
 
