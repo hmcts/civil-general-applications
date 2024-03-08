@@ -73,6 +73,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         CaseData caseData = CaseDataBuilder.builder()
             .isMultiParty(YesOrNo.NO)
             .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org1").build())
             .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
@@ -99,6 +101,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         CaseData caseData = CaseDataBuilder.builder()
             .isMultiParty(YesOrNo.NO)
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                          .email("test@gmail.com").organisationIdentifier("org1").build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                 GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
             .generalAppRespondentSolicitors(getRespondentSolicitors())

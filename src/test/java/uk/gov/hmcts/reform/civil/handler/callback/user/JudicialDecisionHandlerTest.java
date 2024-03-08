@@ -3018,7 +3018,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldSetUpReadyBusinessProcess() {
-            CaseData caseData = getApplicationBusinessProcess().toBuilder().isMultiParty(NO).build();
+            CaseData caseData = getApplicationBusinessProcess().toBuilder().isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -3031,7 +3034,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldSetUpReadyWhenPreferredTypeNotInPerson() {
-            CaseData caseData = getApplicationWithPreferredTypeNotInPerson().toBuilder().isMultiParty(NO).build();
+            CaseData caseData = getApplicationWithPreferredTypeNotInPerson().toBuilder()
+                .isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build()).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -3047,6 +3053,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData caseData = getApplicationBusinessProcess()
                 .toBuilder().isMultiParty(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
                 .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                                         .judgeHearingCourtLocationText1("test")
                                                         .judgeHearingTimeEstimateText1("test")
@@ -3068,7 +3076,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
-                .generalAppRespondentSolicitors(getRespondentSolicitors()).build();
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -3081,6 +3092,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldCallAssignCase_3Times() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .build();
 
@@ -3148,6 +3161,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .judicialOrderMadeWithUncloakApplication(YES)
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(getMakeAppVisible()).build())
                 .build();

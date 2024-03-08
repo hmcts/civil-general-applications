@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
@@ -27,6 +28,9 @@ public class AssignCaseToResopondentSolHelper {
          * Assign case respondent solicitors if judge uncloak the application
          * */
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+
+            caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getOrganisationIdentifier(),
+                                                                                         caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()));
             GASolicitorDetailsGAspec respondentSolicitor1 =
                 caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
             coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
