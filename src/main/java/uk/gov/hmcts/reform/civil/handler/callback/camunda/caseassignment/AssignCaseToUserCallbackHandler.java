@@ -6,19 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.prd.model.Organisation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +27,6 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Service
@@ -70,8 +66,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
-        String parentCaseId = caseData.getGeneralAppParentCaseLink().getCaseReference();
-
         List<String> errors = new ArrayList<>();
 
         try {
@@ -81,49 +75,26 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
-
-            List<CaseAssignedUserRole> assignedMainCaseUserRoles = coreCaseUserService.getUserRoles(parentCaseId).getCaseAssignedUserRoles();
-            List<CaseAssignedUserRole> assignedChildCaseUserRoles = coreCaseUserService.getUserRoles(caseId).getCaseAssignedUserRoles();
-            List<String> childCaseAssignedUserIds = assignedChildCaseUserRoles.stream().map(CaseAssignedUserRole::getUserId).toList();
-            List<String> mainCaseAssignedUserIds = assignedMainCaseUserRoles.stream().map(CaseAssignedUserRole::getUserId).toList();
-            List<String> unAssignedUserIds = getUnAssignedUserIds(mainCaseAssignedUserIds, childCaseAssignedUserIds);
-
-            for (String id : unAssignedUserIds) {
-                String orgId = organisationService.findOrganisationByUserId(id)
-                    .map(Organisation::getOrganisationIdentifier).orElse(null);
-                if (orgId != null && orgId.equals(applicantSolicitor.getOrganisationIdentifier())) {
-
-                    assignRoleToChildCase(APPLICANTSOLICITORONE, caseId, id, orgId);
-                    caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getId(), id));
+            List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
+            for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
+                if ((applicantSolicitor.getOrganisationIdentifier() != null && applicantSolicitor.getOrganisationIdentifier()
+                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                    coreCaseUserService
+                        .assignCase(caseId, respSolElement.getValue().getId(),
+                                    respSolElement.getValue().getOrganisationIdentifier(),
+                                    APPLICANTSOLICITORONE);
+                    caseData.getGeneralAppRespondentSolicitors().removeIf(user -> Objects.equals(user.getValue().getId(), respSolElement.getValue().getId()));
                 }
-
             }
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
              * */
-            if (ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
-                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
+            if ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+                || (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
-
-                List<CaseAssignedUserRole> assignedGaCaseUserRoles = coreCaseUserService.getUserRoles(caseId).getCaseAssignedUserRoles();
-                List<String> childCaseAppAssignedUserIds = assignedGaCaseUserRoles.stream().map(CaseAssignedUserRole::getUserId).toList();
-                List<String> unAssignedRespUserIds = getUnAssignedUserIds(mainCaseAssignedUserIds, childCaseAppAssignedUserIds);
-                for (String id : unAssignedRespUserIds) {
-                    String organisationId = organisationService.findOrganisationByUserId(id)
-                        .map(Organisation::getOrganisationIdentifier).orElse(null);
-                    if (organisationId != null
-                        && organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
-                                                               .getOrganisationIdentifier())) {
-                        assignRoleToChildCase(RESPONDENTSOLICITORONE, caseId, id, organisationId);
-                    } else if (organisationId != null && caseData.getIsMultiParty().equals(YES)
-                        && !(organisationId.equalsIgnoreCase(caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
-                                                                                      .getOrganisationIdentifier()))
-                        && !(organisationId.equalsIgnoreCase(applicantSolicitor.getOrganisationIdentifier()))) {
-                        assignRoleToChildCase(RESPONDENTSOLICITORTWO, caseId, id, organisationId);
-                    }
-                }
             }
 
             CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -136,15 +107,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             log.error(e.toString());
             throw e;
         }
-    }
-
-    private List<String> getUnAssignedUserIds(List<String> mainCaseAssignedUserIds, List<String> childCaseAssignedUserIds) {
-        return mainCaseAssignedUserIds.stream().filter(mainCaseUserId -> childCaseAssignedUserIds
-            .parallelStream().noneMatch(childCaseUserId -> childCaseUserId.equals(mainCaseUserId))).toList();
-    }
-
-    private void assignRoleToChildCase(CaseRole caseAssignedUserRole, String caseId, String userId, String orgId) {
-        coreCaseUserService.assignCaseToUser(caseAssignedUserRole, caseId, userId, orgId);
     }
 
 }

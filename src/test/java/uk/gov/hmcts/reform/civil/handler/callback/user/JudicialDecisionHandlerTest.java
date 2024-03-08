@@ -3078,7 +3078,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_2Times() {
+        void shouldCallAssignCase_3Times() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
@@ -3089,7 +3089,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
-            verify(coreCaseUserService, times(1)).assignCase(
+            verify(coreCaseUserService, times(3)).assignCase(
                 any(),
                 any(),
                 any(),

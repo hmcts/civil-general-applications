@@ -35,7 +35,7 @@ public class CoreCaseUserService {
     public void assignCase(String caseId, String userId, String organisationId, CaseRole caseRole) {
         String caaAccessToken = getCaaAccessToken();
 
-        if (!userWithCaseRoleExistsOnCase(caseId, caaAccessToken, caseRole)) {
+        if (!userHasCaseRole(caseId, caaAccessToken, caseRole)) {
             assignUserToCaseForRole(caseId, userId, organisationId, caseRole, caaAccessToken);
         } else {
             log.info("Case already have the user with {} role", caseRole.getFormattedName());

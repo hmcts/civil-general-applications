@@ -86,7 +86,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         assertThat(response.getErrors()).isNull();
         assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
 
-        verify(coreCaseUserService, times(1)).assignCase(
+        verify(coreCaseUserService, times(2)).assignCase(
             any(),
             any(),
             any(),
@@ -114,7 +114,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         assertThat(response.getErrors()).isNull();
         assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.toString());
 
-        verify(coreCaseUserService, times(1)).assignCase(
+        verify(coreCaseUserService, times(2)).assignCase(
             any(),
             any(),
             any(),
@@ -200,7 +200,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .email("test@gmail.com").organisationIdentifier("org2").build();
 
         GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-            .email("test@gmail.com").organisationIdentifier("org2").build();
+            .email("test@gmail.com").organisationIdentifier("org3").build();
 
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));

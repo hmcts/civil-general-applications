@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
@@ -132,9 +133,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_3Times() {
+        void shouldCallAssignCase_4Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(2)).assignCase(
+            verify(coreCaseUserService, times(4)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -204,6 +205,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
                 .isMultiParty(YesOrNo.NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
                 .generalAppSuperClaimType(UNSPEC_CLAIM)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
@@ -279,6 +281,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                               .email("TEST@gmail.com")
                                               .organisationIdentifier("Org1").build())
                 .isMultiParty(YesOrNo.YES)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
                 .defendant1PartyName("Respondent1")
                 .claimant2PartyName("Applicant2")
                 .defendant2PartyName("Respondent2")
@@ -299,9 +302,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_3Times() {
+        void shouldCallAssignCase_4Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(2)).assignCase(
+            verify(coreCaseUserService, times(4)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -355,6 +358,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .defendant2PartyName("Respondent2")
                 .generalAppSuperClaimType(SPEC_CLAIM)
                 .isMultiParty(YesOrNo.NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
                                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
@@ -395,7 +399,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldCallAssignCase_3Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1)).assignCase(
+            verify(coreCaseUserService, times(4)).assignCase(
                 any(),
                 any(),
                 any(),

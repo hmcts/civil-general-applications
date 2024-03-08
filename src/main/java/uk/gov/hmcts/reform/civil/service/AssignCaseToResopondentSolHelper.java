@@ -29,17 +29,18 @@ public class AssignCaseToResopondentSolHelper {
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
             GASolicitorDetailsGAspec respondentSolicitor1 =
                 caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
-
             coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
-                                respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
-        }
-
-        if (caseData.getGeneralAppRespondentSolicitors().size() > 1 && caseData.getIsMultiParty().equals(YesOrNo.YES)) {
-            GASolicitorDetailsGAspec respondentSolicitor1 =
-                    caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+                                           respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
             List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
             for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
-                if (!(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
+                if ((respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
+                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                    coreCaseUserService
+                        .assignCase(caseId, respSolElement.getValue().getId(),
+                                    respSolElement.getValue().getOrganisationIdentifier(),
+                                    RESPONDENTSOLICITORONE);
+                } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
+                    && !(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
                     .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
                     coreCaseUserService
                         .assignCase(caseId, respSolElement.getValue().getId(),
