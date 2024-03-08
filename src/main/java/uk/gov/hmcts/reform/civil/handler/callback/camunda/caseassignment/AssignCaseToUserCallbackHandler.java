@@ -26,6 +26,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Service
@@ -69,29 +70,32 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
         try {
 
-            GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
+            if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
+                GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
 
-            coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                                           applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
-            );
-            List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
-            for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
-                if ((applicantSolicitor.getOrganisationIdentifier() != null && applicantSolicitor.getOrganisationIdentifier()
-                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
-                    coreCaseUserService
-                        .assignCase(caseId, respSolElement.getValue().getId(),
-                                    respSolElement.getValue().getOrganisationIdentifier(),
-                                    APPLICANTSOLICITORONE);
+                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                                               applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+                );
+                List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
+                for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
+                    if ((applicantSolicitor.getOrganisationIdentifier() != null && applicantSolicitor.getOrganisationIdentifier()
+                        .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                        coreCaseUserService
+                            .assignCase(caseId, respSolElement.getValue().getId(),
+                                        respSolElement.getValue().getOrganisationIdentifier(),
+                                        APPLICANTSOLICITORONE);
+                    }
                 }
             }
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
              * */
-            if ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
+            if (!caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)
+                && ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
                 && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
                 || (caseData.getGeneralAppRespondentAgreement() != null
-                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))) {
+                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
             }

@@ -133,9 +133,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_4Times() {
+        void shouldCallAssignCase_3Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(4)).assignCase(
+            verify(coreCaseUserService, times(3)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -219,7 +219,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
             });
-            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            params = callbackParamsOfPendingState(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         }
 
         @Test
@@ -302,9 +302,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_4Times() {
+        void shouldCallAssignCase_3Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(4)).assignCase(
+            verify(coreCaseUserService, times(3)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -358,7 +358,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .defendant2PartyName("Respondent2")
                 .generalAppSuperClaimType(SPEC_CLAIM)
                 .isMultiParty(YesOrNo.NO)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
                 .civilServiceUserRoles(IdamUserDetails.builder()
                                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
@@ -371,7 +371,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
             });
-            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            params = callbackParamsOfPendingState(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         }
 
         public List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
@@ -397,9 +397,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_3Times() {
+        void shouldCallAssignCase_1Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(4)).assignCase(
+            verify(coreCaseUserService, times(1)).assignCase(
                 any(),
                 any(),
                 any(),
