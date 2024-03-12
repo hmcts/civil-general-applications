@@ -122,6 +122,26 @@ class CoreCaseUserServiceTest {
             );
         }
 
+        @Test
+        void shouldNotAssignChildCaseToUser_WhenSameUserWithRequestedCaseRoleAlreadyExist() {
+            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
+                    .userId(USER_ID)
+                    .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
+                    .build();
+
+            when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
+                    .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
+                            .build());
+
+            service.assignCaseToUser(CaseRole.APPLICANTSOLICITORONE, CASE_ID, USER_ID, ORG_ID);
+
+            verify(caseAccessDataStoreApi, never()).addCaseUserRoles(
+                    CAA_USER_AUTH_TOKEN,
+                    SERVICE_AUTH_TOKEN,
+                    getAddCaseAssignedUserRolesRequest(CaseRole.RESPONDENTSOLICITORONE)
+            );
+        }
+
         private AddCaseAssignedUserRolesRequest getAddCaseAssignedUserRolesRequest(CaseRole caseRole) {
             CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
                 = CaseAssignedUserRoleWithOrganisation.builder()
