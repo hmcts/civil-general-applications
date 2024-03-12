@@ -11,6 +11,8 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -70,6 +72,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_WITH_GA_STATE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
@@ -382,8 +385,45 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, NO).getCaseDetails()))
                 .thenReturn(getParentCaseDataBeforeUpdate(NO, NO));
 
-            var response = handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
-            assertThat(response).isNotNull();
+            AboutToStartOrSubmitCallbackResponse response
+                    = (AboutToStartOrSubmitCallbackResponse) handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
+            assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.name());
+        }
+
+        @Test
+        void shouldNotReturn_Application_Submitted_Awaiting_Judicial_Decision_3Def_1Response() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id2")
+                    .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .gaRespondentDetails("id")
+                    .build();
+            GARespondentResponse respondent2Response = GARespondentResponse.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .gaRespondentDetails("id2")
+                    .build();
+            respondentsResponses.add(element(respondent1Response));
+            respondentsResponses.add(element(respondent2Response));
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols).getRequest().getCaseDetails()))
+                    .thenReturn(getCaseMulti(respondentSols, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, NO).getCaseDetails()))
+                    .thenReturn(getParentCaseDataBeforeUpdate(NO, NO));
+
+            AboutToStartOrSubmitCallbackResponse response
+                    = (AboutToStartOrSubmitCallbackResponse) handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
+            assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.name());
         }
 
         @Test

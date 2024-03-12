@@ -240,7 +240,7 @@ class CoreCaseUserServiceTest {
 
         @Test
         void shouldReturnUserRoles_getUserRoles() {
-            assertThat(service.getUserRoles(CASE_ID).getCaseAssignedUserRoles().size()).isEqualTo(2);
+            assertThat(service.getUserRoles(CASE_ID).getCaseAssignedUserRoles()).hasSize(2);
         }
 
         @Test
