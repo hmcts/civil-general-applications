@@ -51,17 +51,6 @@ public class CoreCaseUserService {
 
     }
 
-    private String getOrganisationId(String authorisation) {
-        String id = null;
-        try {
-            id = organisationService.findOrganisation(authorisation)
-                .map(Organisation::getOrganisationIdentifier).orElse(null);
-        } catch (Exception e) {
-            log.error("Error getting organisation id", e);
-        }
-        return id;
-    }
-
     public void removeCreatorRoleCaseAssignment(String caseId, String userId, String organisationId) {
 
         String caaAccessToken = getCaaAccessToken();
@@ -85,7 +74,7 @@ public class CoreCaseUserService {
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
     }
 
-    public boolean userHasAnyCaseRole(String caseId, String userId,    String caseRole) {
+    public boolean userHasAnyCaseRole(String caseId, String userId, String caseRole) {
         CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
             getCaaAccessToken(),
             authTokenGenerator.generate(),

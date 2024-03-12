@@ -108,6 +108,20 @@ class CoreCaseUserServiceTest {
             );
         }
 
+        @Test
+        void shouldAssignChildCaseToUser_WhenSameUserWithRequestedCaseRoleDoesNotExist() {
+            when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
+                    .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of()).build());
+
+            service.assignCaseToUser(CaseRole.APPLICANTSOLICITORONE, CASE_ID, USER_ID, ORG_ID);
+
+            verify(caseAccessDataStoreApi).addCaseUserRoles(
+                    CAA_USER_AUTH_TOKEN,
+                    SERVICE_AUTH_TOKEN,
+                    getAddCaseAssignedUserRolesRequest(CaseRole.APPLICANTSOLICITORONE)
+            );
+        }
+
         private AddCaseAssignedUserRolesRequest getAddCaseAssignedUserRolesRequest(CaseRole caseRole) {
             CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
                 = CaseAssignedUserRoleWithOrganisation.builder()
@@ -205,6 +219,11 @@ class CoreCaseUserServiceTest {
         }
 
         @Test
+        void shouldReturnUserRoles_getUserRoles() {
+            assertThat(service.getUserRoles(CASE_ID).getCaseAssignedUserRoles().size()).isEqualTo(2);
+        }
+
+        @Test
         void shouldReturnTrue_whenCaseRoleAssignedToUser() {
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID, CaseRole.RESPONDENTSOLICITORONE)).isTrue();
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID2, CaseRole.RESPONDENTSOLICITORTWO)).isTrue();
@@ -217,6 +236,20 @@ class CoreCaseUserServiceTest {
         }
 
         @Test
+        void shouldReturnTrue_whenAnyCaseRoleAssignedToUser() {
+            assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID,
+                    CaseRole.RESPONDENTSOLICITORONE.getFormattedName())).isTrue();
+            assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID2,
+                    CaseRole.RESPONDENTSOLICITORTWO.getFormattedName())).isTrue();
+
+            verify(caseAccessDataStoreApi, times(2)).getUserRoles(
+                    CAA_USER_AUTH_TOKEN,
+                    SERVICE_AUTH_TOKEN,
+                    List.of(CASE_ID)
+            );
+        }
+
+        @Test
         void shouldReturnFalse_whenCaseRoleNotAssignedToUser() {
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID, CaseRole.RESPONDENTSOLICITORTWO)).isFalse();
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID2, CaseRole.RESPONDENTSOLICITORONE)).isFalse();
@@ -225,6 +258,20 @@ class CoreCaseUserServiceTest {
                 CAA_USER_AUTH_TOKEN,
                 SERVICE_AUTH_TOKEN,
                 List.of(CASE_ID)
+            );
+        }
+
+        @Test
+        void shouldReturnFalse_whenAnyCaseRoleNotAssignedToUser() {
+            assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID,
+                    CaseRole.RESPONDENTSOLICITORTWO.getFormattedName())).isFalse();
+            assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID2,
+                    CaseRole.RESPONDENTSOLICITORONE.getFormattedName())).isFalse();
+
+            verify(caseAccessDataStoreApi, times(2)).getUserRoles(
+                    CAA_USER_AUTH_TOKEN,
+                    SERVICE_AUTH_TOKEN,
+                    List.of(CASE_ID)
             );
         }
     }
