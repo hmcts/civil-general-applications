@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -42,11 +43,13 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -419,6 +422,98 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             String expectedMessage = "java.lang.NullPointerException";
             String actualMessage = exception.toString();
             assertTrue(actualMessage.contains(expectedMessage));
+        }
+    }
+
+    @Nested
+    class AssignRoles1V3 {
+
+        Map<String, Object> dataMap;
+
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                    .thenReturn(CaseAssignedUserRolesResource.builder()
+                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email("test@gmail.com").organisationIdentifier("org3").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email("test@gmail.com").organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent3 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+            respondentSols.add(element(respondent3));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                            .types(singletonList(SUMMARY_JUDGEMENT))
+                            .build())
+                    .claimant1PartyName("Applicant1")
+                    .generalAppRespondentSolicitors(respondentSols)
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                            .builder()
+                            .id("id")
+                            .email("TEST@gmail.com")
+                            .organisationIdentifier("Org1").build())
+                    .isMultiParty(YesOrNo.YES)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                    .defendant1PartyName("Respondent1")
+                    .claimant2PartyName("Applicant2")
+                    .defendant2PartyName("Respondent2")
+                    .generalAppSuperClaimType(SPEC_CLAIM)
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                    .civilServiceUserRoles(IdamUserDetails.builder()
+                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                            .email("applicant@someorg.com")
+                            .build())
+                    .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                    .build();
+
+            generalApplication = builder.build();
+
+            dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+        }
+
+        @Test
+        void shouldCallAssignCaseApp_1TimePending() {
+            params = callbackParamsOfPendingState(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            AboutToStartOrSubmitCallbackResponse response
+                    = (AboutToStartOrSubmitCallbackResponse)
+                    assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(1)).assignCase(
+                    any(),
+                    any(),
+                    any(),
+                    eq(APPLICANTSOLICITORONE)
+            );
+        }
+
+        @Test
+        void shouldCallAssignCaseResp_4TimesNoPending() {
+            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            //resp1 sol1 has been assigned twice, one at line 36 then in for loop
+            AboutToStartOrSubmitCallbackResponse response
+                    = (AboutToStartOrSubmitCallbackResponse)
+                    assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(2)).assignCase(
+                    any(),
+                    any(),
+                    any(),
+                    eq(RESPONDENTSOLICITORONE)
+            );
+            verify(coreCaseUserService, times(2)).assignCase(
+                    any(),
+                    any(),
+                    any(),
+                    eq(RESPONDENTSOLICITORTWO)
+            );
         }
     }
 
