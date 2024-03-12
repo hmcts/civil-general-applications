@@ -374,7 +374,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .build();
             GARespondentResponse respondent2Response = GARespondentResponse.builder()
                 .generalAppRespondent1Representative(YES)
-                .gaRespondentDetails("id2")
+                .gaRespondentDetails("id3")
                 .build();
             respondentsResponses.add(element(respondent1Response));
             respondentsResponses.add(element(respondent2Response));
