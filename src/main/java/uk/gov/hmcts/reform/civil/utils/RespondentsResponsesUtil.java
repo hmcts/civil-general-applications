@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 
@@ -33,7 +34,22 @@ public class RespondentsResponsesUtil {
         }
 
         if (noOfDefendantSolicitors >= ONE_V_TWO && respondentsResponses != null && updatedCaseData.getIsMultiParty().equals(YesOrNo.YES)) {
-            return respondentsResponses.size() >= ONE_V_TWO;
+
+            List<Element<GASolicitorDetailsGAspec>> resp1SolList = updatedCaseData.getGeneralAppRespondentSolicitors().stream()
+                .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
+                .equals(caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier())).toList();
+            List<Element<GARespondentResponse>> resp1ResponseSolList = updatedCaseData.getRespondentsResponses().stream()
+                .filter(gaRespondent1ResponseElement -> resp1SolList.parallelStream().anyMatch(resp1Sol -> resp1Sol.getValue().getId()
+                .equals(gaRespondent1ResponseElement.getValue().getGaRespondentDetails()))).toList();
+            List<Element<GASolicitorDetailsGAspec>> resp2SolList = updatedCaseData.getGeneralAppRespondentSolicitors().stream()
+                .filter(gaRespondentSolElement -> !(gaRespondentSolElement.getValue().getOrganisationIdentifier()
+                .equals(caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier()))).toList();
+            List<Element<GARespondentResponse>> resp2ResponseSolList = updatedCaseData.getRespondentsResponses().stream()
+                .filter(gaRespondent2ResponseElement -> resp2SolList.parallelStream().anyMatch(resp2Sol -> resp2Sol.getValue().getId()
+                .equals(gaRespondent2ResponseElement.getValue().getGaRespondentDetails()))).toList();
+            if (!resp1ResponseSolList.isEmpty() && !resp2ResponseSolList.isEmpty()) {
+                return true;
+            }
         }
 
         return false;

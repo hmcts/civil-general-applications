@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 
 import java.util.ArrayList;
@@ -39,10 +40,12 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final ObjectMapper mapper;
 
     private final OrganisationService organisationService;
+    private final GeneralAppFeesService generalAppFeesService;
     private static final List<CaseEvent> EVENTS = List.of(ASSIGN_GA_ROLES);
     public static final String TASK_ID = "AssigningOfRoles";
 
     private final CoreCaseUserService coreCaseUserService;
+
     private final CaseDetailsConverter caseDetailsConverter;
 
     @Override
@@ -90,12 +93,14 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
+             * Assign case to
              * */
-            if (!caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)
+            if ((!caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)
                 && ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
                 && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
                 || (caseData.getGeneralAppRespondentAgreement() != null
-                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)))) {
+                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))))
+                || (generalAppFeesService.isFreeApplication(caseData))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
             }
