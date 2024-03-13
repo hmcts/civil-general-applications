@@ -81,6 +81,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
     private CallbackParams params;
     private GeneralApplication generalApplication;
+    private GeneralApplication generalApplicationWithNotice;
 
     public static final Long CASE_ID = 1594901956117591L;
     public static final int RESPONDENT_ONE = 0;
@@ -429,6 +430,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignRoles1V3 {
 
         Map<String, Object> dataMap;
+        Map<String, Object> dataMapWithNotice;
 
         @BeforeEach
         void setup() {
@@ -475,10 +477,57 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                     .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
                     .build();
 
-            generalApplication = builder.build();
+            GeneralApplication.GeneralApplicationBuilder builderWithNotice = GeneralApplication.builder();
+            builderWithNotice.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .isMultiParty(YesOrNo.YES)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType(SPEC_CLAIM)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
 
+            generalApplicationWithNotice = builderWithNotice.build();
+            generalApplication = builder.build();
+            dataMapWithNotice = objectMapper.convertValue(generalApplicationWithNotice, new TypeReference<>() {
+            });
             dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
             });
+        }
+
+        @Test
+        void shouldCallAssignCaseResp_4TimeAwaitingPayment() {
+            params = callbackParamsOf(dataMapWithNotice, CallbackType.ABOUT_TO_SUBMIT);
+            AboutToStartOrSubmitCallbackResponse response
+                = (AboutToStartOrSubmitCallbackResponse)
+                assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(2)).assignCase(
+                any(),
+                any(),
+                any(),
+                eq(RESPONDENTSOLICITORONE)
+            );
+            verify(coreCaseUserService, times(2)).assignCase(
+                any(),
+                any(),
+                any(),
+                eq(RESPONDENTSOLICITORTWO)
+            );
         }
 
         @Test

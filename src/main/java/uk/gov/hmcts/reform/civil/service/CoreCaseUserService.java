@@ -27,8 +27,6 @@ public class CoreCaseUserService {
     private final CaseAccessDataStoreApi caseAccessDataStoreApi;
     private final IdamClient idamClient;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
-    private final UserService userService;
-    private final OrganisationService organisationService;
     private final AuthTokenGenerator authTokenGenerator;
 
     public void assignCase(String caseId, String userId, String organisationId, CaseRole caseRole) {
@@ -39,15 +37,6 @@ public class CoreCaseUserService {
         } else {
             log.info("Case already have the user with {} role", caseRole.getFormattedName());
         }
-    }
-
-    public void assignCaseToUser(CaseRole caseRole, String caseId, String userId,  String organisationId) {
-
-        String caaAccessToken = getCaaAccessToken();
-        if (!userHasAnyCaseRole(caseId, userId, caseRole.getFormattedName())) {
-            assignUserToChildCaseForRole(caseId, userId, organisationId,  caseRole.getFormattedName(), caaAccessToken);
-        }
-
     }
 
     public void removeCreatorRoleCaseAssignment(String caseId, String userId, String organisationId) {
@@ -89,25 +78,6 @@ public class CoreCaseUserService {
         return idamClient.getAccessToken(
             crossAccessUserConfiguration.getUserName(),
             crossAccessUserConfiguration.getPassword()
-        );
-    }
-
-    public void assignUserToChildCaseForRole(String caseId, String userId, String organisationId,
-                                        String caseRole, String caaAccessToken) {
-        CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
-            = CaseAssignedUserRoleWithOrganisation.builder()
-            .caseDataId(caseId)
-            .userId(userId)
-            .caseRole(caseRole)
-            .organisationId(organisationId)
-            .build();
-
-        caseAccessDataStoreApi.addCaseUserRoles(
-            caaAccessToken,
-            authTokenGenerator.generate(),
-            AddCaseAssignedUserRolesRequest.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
-                .build()
         );
     }
 
@@ -168,5 +138,4 @@ public class CoreCaseUserService {
         return userRoles.getCaseAssignedUserRoles().stream()
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
     }
-
 }

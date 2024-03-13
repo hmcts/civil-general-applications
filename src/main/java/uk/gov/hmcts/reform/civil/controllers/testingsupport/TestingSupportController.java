@@ -178,7 +178,7 @@ public class TestingSupportController {
         String userId = userService.getUserInfo(authorisation).getUid();
         String organisationId = organisationService.findOrganisation(authorisation)
             .map(Organisation::getOrganisationIdentifier).orElse(null);
-        coreCaseUserService.assignCaseToUser(caseRole, caseId, userId, organisationId);
+        coreCaseUserService.assignCase(caseId, userId, organisationId, caseRole);
 
     }
 

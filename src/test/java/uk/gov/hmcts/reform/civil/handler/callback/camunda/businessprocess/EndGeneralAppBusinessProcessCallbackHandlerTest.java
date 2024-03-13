@@ -352,7 +352,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
-        void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_3Def_1Response() {
+        void shouldReturn_Awaiting_respondent_response_3Def_1Response() {
 
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
@@ -424,6 +424,76 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             AboutToStartOrSubmitCallbackResponse response
                     = (AboutToStartOrSubmitCallbackResponse) handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
             assertThat(response.getState()).isEqualTo(AWAITING_RESPONDENT_RESPONSE.name());
+        }
+
+        @Test
+        void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_3Def_2Response() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id2")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent3 = GASolicitorDetailsGAspec.builder().id("id3")
+                .email(DUMMY_EMAIL).organisationIdentifier("org3").build();
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+            respondentSols.add(element(respondent3));
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id")
+                .build();
+            GARespondentResponse respondent2Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id3")
+                .build();
+            respondentsResponses.add(element(respondent1Response));
+            respondentsResponses.add(element(respondent2Response));
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols).getRequest().getCaseDetails()))
+                .thenReturn(getCaseMulti(respondentSols, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, NO));
+
+            var response = handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
+            assertThat(response).isNotNull();
+        }
+
+        @Test
+        void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_2Def_1Response() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id2")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id")
+                .build();
+
+            respondentsResponses.add(element(respondent1Response));
+
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(NO, NO).getRequest().getCaseDetails()))
+                .thenReturn(getCase(respondentSols, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, NO));
+
+            var response = handler.handle(getCallbackParams(NO, NO));
+            assertThat(response).isNotNull();
         }
 
         @Test
@@ -868,6 +938,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                         .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
                                         .build())
                 .respondentsResponses(respondentsResponses)
+                .isMultiParty(NO)
                 .generalAppRespondent1Representative(
                     GARespondentRepresentative.builder()
                         .generalAppRespondent1Representative(YES)
