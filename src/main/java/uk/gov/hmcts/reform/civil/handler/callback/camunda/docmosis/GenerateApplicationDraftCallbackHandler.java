@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.docmosis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -31,6 +32,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
@@ -111,13 +113,15 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            assignCategoryId.assignCategoryIdToCaseDocument(gaDraftDocument, AssignCategoryId.APPLICATIONS);
+
+            log.info("GenerateApplicationDraftCallbackHandler::createPDFdocument: Draft Document CategoryId {}",
+                     gaDraftDocument.getDocumentLink().getCategoryID());
+
             List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
             draftApplicationList.addAll(wrapElements(gaDraftDocument));
 
-            assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS);
             caseDataBuilder.gaDraftDocument(draftApplicationList);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
