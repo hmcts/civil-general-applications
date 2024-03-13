@@ -340,14 +340,17 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                 .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
-            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id3")
                 .email("test@gmail.com").organisationIdentifier("org2").build();
 
-            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id2")
                 .email("test@gmail.com").organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent3 = GASolicitorDetailsGAspec.builder().id("id1")
+                .email("test@gmail.com").organisationIdentifier("Org1").build();
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
+            respondentSols.add(element(respondent3));
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()
@@ -407,7 +410,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldCallAssignCase_1Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1)).assignCase(
+            verify(coreCaseUserService, times(2)).assignCase(
                 any(),
                 any(),
                 any(),

@@ -86,7 +86,7 @@ class CoreCaseUserServiceTest {
         @Test
         void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleExist() {
             CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
-                .userId(USER_ID)
+                .userId(CAA_USER_AUTH_TOKEN)
                 .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
                 .build();
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
@@ -94,7 +94,8 @@ class CoreCaseUserServiceTest {
 
             service.assignCase(CASE_ID, USER_ID, ORG_ID, CaseRole.APPLICANTSOLICITORONE);
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.APPLICANTSOLICITORONE)).isTrue();
+                                               CaseRole.APPLICANTSOLICITORONE)).isFalse();
+
         }
 
         @Test

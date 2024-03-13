@@ -93,7 +93,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
-             * Assign case to
+             * Assign case to Respondent Solicitors only after the payment is made by Applicant.
+             * If the Application is Free Application, then assign the respondent roles during Initiation of GA
              * */
             if ((!caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)
                 && ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
