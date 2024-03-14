@@ -45,8 +45,7 @@ public class DeadlinesCalculator {
     /*
      * Order dates are required to be pre-populated as follows
      *
-     * if an order is being made on/before 4pm (current date) calculate the any follow-up date/s from current date
-     * if an order is being made after 4pm (current date) calculate any follow-up date/s from current date+1day
+     * calculate the any follow-up date/s from Next day
      * When the date calculation (result) fall on a non-working day (i.e. a bank holiday/weekend/privilege day)
      * - Then automatically move any calculated follow-up date/s to the next working/business day
      *
