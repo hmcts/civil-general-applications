@@ -70,6 +70,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
         List<String> errors = new ArrayList<>();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         try {
 
@@ -89,6 +90,12 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                         APPLICANTSOLICITORONE);
                     }
                 }
+
+                List<Element<GASolicitorDetailsGAspec>>  applicantAddlSolList = caseData.getGeneralAppRespondentSolicitors().stream()
+                    .filter(userOrgId -> (userOrgId.getValue().getOrganisationIdentifier()
+                        .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor()
+                                              .getOrganisationIdentifier()))).toList();
+                caseDataBuilder.generalAppApplicantAddlSolicitors(applicantAddlSolList);
             }
 
             /*
@@ -106,12 +113,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
             }
 
-            CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-            List<Element<GASolicitorDetailsGAspec>>  applicantAddlSolList = caseData.getGeneralAppRespondentSolicitors().stream()
-                .filter(userOrgId -> (userOrgId.getValue().getOrganisationIdentifier()
-                    .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor()
-                                          .getOrganisationIdentifier()))).toList();
-            caseDataBuilder.generalAppApplicantAddlSolicitors(applicantAddlSolList);
             List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
                 .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
                     .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
