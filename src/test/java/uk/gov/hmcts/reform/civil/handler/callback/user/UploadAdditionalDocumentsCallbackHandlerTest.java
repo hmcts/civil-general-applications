@@ -276,7 +276,15 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
             gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id("id11")
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
                                              .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id("id3")
                                              .email(DUMMY_EMAIL)
                                              .organisationIdentifier("2").build()));
             gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
@@ -326,7 +334,19 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                                              .email(DUMMY_EMAIL)
                                              .organisationIdentifier("2").build()));
             gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id("id1")
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id("id3")
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
                                              .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("3").build()));
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id("id33")
                                              .email(DUMMY_EMAIL)
                                              .organisationIdentifier("3").build()));
             CaseData caseData = CaseDataBuilder.builder()
