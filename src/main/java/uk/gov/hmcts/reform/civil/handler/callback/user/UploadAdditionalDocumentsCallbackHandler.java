@@ -70,7 +70,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         }
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
             || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
-            || (caseData.getGeneralAppApplicantAddlSolicitors() != null && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
+            || (caseData.getGeneralAppApplicantAddlSolicitors() != null
+            && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
             .equals(userId)).toList().size() == 1)) {
             caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
             addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
