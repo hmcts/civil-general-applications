@@ -76,14 +76,6 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isCaseFileViewEnabled()).isEqualTo(toggleStat);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void shouldReturnCorrectValue_whenGAR2isEnabled(boolean value) {
-
-        givenToggle("isGeneralApplicationR2Enabled", value);
-        assertThat(featureToggleService.isGeneralApplicationR2Enabled()).isEqualTo(value);
-    }
-
     @Test
     void shouldCallBoolVariation_whenIsMultipartyEnabledInvoked() {
         var multipartyFeatureKey = "multiparty";

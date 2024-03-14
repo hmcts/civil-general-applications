@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -30,7 +29,6 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
     private final NotificationsProperties notificationProperties;
-    private final FeatureToggleService featureToggleService;
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
@@ -67,25 +65,22 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         /*
         * Send email to Respondent if application is urgent, with notice and fee is paid
         * */
+        boolean isUrgentApplnNotificationCriteriaSatisfied
+            = isUrgentApplnNotificationCriteriaSatisfied(updatedCaseData);
 
-        if (featureToggleService.isGeneralApplicationR2Enabled()) {
-            boolean isUrgentApplnNotificationCriteriaSatisfied
-                = isUrgentApplnNotificationCriteriaSatisfied(updatedCaseData);
+        if (isUrgentApplnNotificationCriteriaSatisfied
+            && isFeePaid(updatedCaseData)) {
 
-            if (isUrgentApplnNotificationCriteriaSatisfied
-                && isFeePaid(updatedCaseData)) {
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
+                .getGeneralAppRespondentSolicitors();
 
-                List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
-                    .getGeneralAppRespondentSolicitors();
-
-                respondentSolicitor
-                    .forEach((RS) ->
-                                 sendNotificationToGeneralAppRespondent(
-                                     updatedCaseData,
-                                     RS.getValue().getEmail(),
-                                     notificationProperties
-                                         .getUrgentGeneralAppRespondentEmailTemplate()));
-            }
+            respondentSolicitor
+                .forEach((RS) ->
+                             sendNotificationToGeneralAppRespondent(
+                                 updatedCaseData,
+                                 RS.getValue().getEmail(),
+                                 notificationProperties
+                                     .getUrgentGeneralAppRespondentEmailTemplate()));
         }
 
         return caseData;

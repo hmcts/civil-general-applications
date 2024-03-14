@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsPro
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -65,9 +64,6 @@ public class GeneralApplicationCreationNotificationServiceTest {
     @MockBean
     private NotificationsProperties notificationsProperties;
 
-    @MockBean
-    private FeatureToggleService featureToggleService;
-
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
@@ -83,7 +79,6 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 .thenReturn("general-application-respondent-template-id");
             when(notificationsProperties.getUrgentGeneralAppRespondentEmailTemplate())
                 .thenReturn("general-application-respondent-template-id");
-            when(featureToggleService.isGeneralApplicationR2Enabled()).thenReturn(true);
         }
 
         @Test
