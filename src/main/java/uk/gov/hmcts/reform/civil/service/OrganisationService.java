@@ -48,4 +48,14 @@ public class OrganisationService {
             return Optional.empty();
         }
     }
+
+    public Optional<Organisation> findOrganisationByUserId(String userId) {
+        try {
+            String authToken = idamClient.getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            return ofNullable(organisationApi.findOrganisationByUserId(authToken, authTokenGenerator.generate(), userId));
+        } catch (FeignException.NotFound ex) {
+            log.error("Organisation not found", ex);
+            return Optional.empty();
+        }
+    }
 }
