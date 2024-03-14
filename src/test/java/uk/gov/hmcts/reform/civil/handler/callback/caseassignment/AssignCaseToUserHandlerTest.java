@@ -193,9 +193,12 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
                 .email("test@gmail.com").organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec addlApplicant1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org1").build();
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
+            respondentSols.add(element(addlApplicant1));
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()
@@ -237,9 +240,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_3Times() {
+        void shouldCallAssignCase_2Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1)).assignCase(
+            verify(coreCaseUserService, times(2)).assignCase(
                 any(),
                 any(),
                 any(),

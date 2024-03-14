@@ -69,11 +69,13 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             caseDataBuilder.isDocumentVisible(YesOrNo.NO);
         }
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
-            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
+            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
+            || (caseData.getGeneralAppApplicantAddlSolicitors() != null && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
+            .equals(userId)).toList().size() == 1)) {
             caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
             addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
             caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
-        } else {
+        } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
             List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
                 .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
                     .equals(caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier())).toList();
