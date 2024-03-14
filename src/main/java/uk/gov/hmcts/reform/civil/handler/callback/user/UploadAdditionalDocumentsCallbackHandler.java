@@ -45,6 +45,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private static final String CONFIRMATION_MESSAGE = "### File has been uploaded successfully.";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(UPLOAD_ADDL_DOCUMENTS);
+    private static final String BUNDLE = "bundle";
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -102,11 +103,11 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
                     .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
-                                    .contains(DocumentType.BUNDLE.name().toLowerCase()))
+                                    .contains(BUNDLE))
                     .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
                     .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
-                            .contains(DocumentType.BUNDLE.name().toLowerCase()))
+                            .contains(BUNDLE))
                     .map(byType -> ElementUtils.element(CaseDocument.builder()
                             .documentLink(byType.getValue().getAdditionalDocument())
                             .documentName(byType.getValue().getDocumentType())
