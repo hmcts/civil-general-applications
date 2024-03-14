@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
@@ -103,6 +104,15 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
     private final List<Element<CaseDocument>> gaRespondDoc;
+
+    private final List<Element<CaseDocument>> gaAddlDoc;
+    private final List<Element<CaseDocument>> gaAddlDocStaff;
+    private final List<Element<CaseDocument>> gaAddlDocClaimant;
+    private final List<Element<CaseDocument>> gaAddlDocRespondentSol;
+    private final List<Element<CaseDocument>> gaAddlDocRespondentSolTwo;
+    private final LocalDateTime caseDocumentUploadDateRes;
+    private final LocalDateTime caseDocumentUploadDate;
+    private final YesOrNo isDocumentVisible;
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
     private final CaseLink caseLink;
@@ -280,6 +290,8 @@ public class CaseData implements MappableObject {
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
     private final YesOrNo gaRespondentConsent;
+
+    private final List<Element<UploadDocumentByType>> uploadDocument;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
