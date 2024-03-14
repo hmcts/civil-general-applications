@@ -1052,6 +1052,7 @@ public class CaseDataBuilder {
                                                  .judgeRequestMoreInfoText("test").build())
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .applicationIsCloaked(isCloak)
+            .isMultiParty(NO)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 

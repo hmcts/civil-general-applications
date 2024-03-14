@@ -3036,7 +3036,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldSetUpReadyBusinessProcess() {
-            CaseData caseData = getApplicationBusinessProcess();
+            CaseData caseData = getApplicationBusinessProcess().toBuilder().isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -3049,7 +3052,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldSetUpReadyWhenPreferredTypeNotInPerson() {
-            CaseData caseData = getApplicationWithPreferredTypeNotInPerson();
+            CaseData caseData = getApplicationWithPreferredTypeNotInPerson().toBuilder()
+                .isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build()).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -3064,7 +3070,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldClearJudicialHearingLabelText() {
 
             CaseData caseData = getApplicationBusinessProcess()
-                .toBuilder().judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                .toBuilder().isMultiParty(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                                         .judgeHearingCourtLocationText1("test")
                                                         .judgeHearingTimeEstimateText1("test")
                                                         .hearingPreferencesPreferredTypeLabel1("test")
@@ -3085,7 +3094,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldUncloakApplication_WhenJudgeUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
-                .generalAppRespondentSolicitors(getRespondentSolicitors()).build();
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -3095,9 +3107,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldCallAssignCase_2Times() {
+        void shouldCallAssignCase_3Times() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .build();
 
@@ -3106,7 +3120,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(NO);
-            verify(coreCaseUserService, times(2)).assignCase(
+            verify(coreCaseUserService, times(3)).assignCase(
                 any(),
                 any(),
                 any(),
@@ -3117,14 +3131,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldThrowExceptionIfSolicitorsAreNull() {
             CaseData caseData = CaseDataBuilder.builder()
-                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES).build();
+                .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YES)
+                .isMultiParty(NO).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             try {
                 var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             } catch (Exception e) {
-                assertEquals("java.lang.NullPointerException", e.toString());
+                assertThat(e.toString()).contains("java.lang.NullPointerException");
             }
         }
 
@@ -3132,6 +3147,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldApplicationRemainSame_WhenJudgeNotUncloaked_RequestMoreInformationApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES)
+                .isMultiParty(NO)
                 .generalAppRespondentSolicitors(getRespondentSolicitors()).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -3145,6 +3161,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void shouldBeUncloaked_WhenRequestMoreInformation_WithNoticeApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES, null)
+                .isMultiParty(NO)
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .build();
 
@@ -3161,6 +3178,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialOrderMadeWithUncloakApplication(YES)
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .isMultiParty(NO)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(getMakeAppVisible()).build())
                 .build();
