@@ -8,6 +8,7 @@ import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -93,10 +94,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                 createGeneralApplicationCase(generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
-                /*
-                 * Respondent Agreement is No and without notice application.
-                 * Application should be visible to solicitor who initiates the ga
-                 * */
 
                 withoutNoticeNoConsent(generalApplication, caseData);
 
@@ -218,9 +215,42 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private void createGeneralApplicationCase(GeneralApplication generalApplication) {
         Map<String, Object> map = generalApplication.toMap(mapper);
+        map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
 
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+    }
+
+    private YesOrNo checkVisibility(GeneralApplication generalApplication) {
+        /*
+         * Respondent Agreement is No and without notice application.
+         * Application should be visible to solicitor who initiates the ga
+         * */
+        if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+            && NO.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))) {
+            return NO;
+        }
+        /*
+         * Respondent Agreement is NO and with notice.
+         * Application should be visible to all solicitors
+         * Consent order should be visible to all solicitors
+         * */
+        if ((generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)
+            && ofNullable(generalApplication.getGeneralAppInformOtherParty()).isPresent()
+            && YES.equals(generalApplication.getGeneralAppInformOtherParty().getIsWithNotice()))
+            || generalApplication.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+            return YES;
+        }
+
+        /* Urgent Application */
+
+        if (generalApplication.getGeneralAppUrgencyRequirement() != null
+            && generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency().equals(YES)) {
+            return NO;
+        }
+
+        return YES;
     }
 
     @Override

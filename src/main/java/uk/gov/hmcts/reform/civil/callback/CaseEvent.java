@@ -73,7 +73,10 @@ public enum CaseEvent {
     migrateCase(CAMUNDA), // NOSONAR
     APPROVE_CONSENT_ORDER(USER),
     TRIGGER_LOCATION_UPDATE(USER),
-    TRIGGER_TASK_RECONFIG(USER);
+    TRIGGER_TASK_RECONFIG(USER),
+
+    UPLOAD_ADDL_DOCUMENTS(USER);
+
     private final UserType userType;
 
     public boolean isCamundaEvent() {
