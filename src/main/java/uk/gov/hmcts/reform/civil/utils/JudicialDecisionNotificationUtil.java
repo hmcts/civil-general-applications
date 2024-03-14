@@ -282,8 +282,8 @@ public class JudicialDecisionNotificationUtil {
     }
 
     public static boolean isNonUrgent(CaseData caseData) {
-        return caseData
-                .getGeneralAppUrgencyRequirement()
+        return caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement()
                 .getGeneralAppUrgency() == NO;
     }
 }

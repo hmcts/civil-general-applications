@@ -33,6 +33,7 @@ class OrganisationServiceTest {
     private static final String PRD_ADMIN_AUTH_TOKEN = "Bearer token";
     private static final String SERVICE_AUTH_TOKEN = "Bearer service-token";
     private static final String ORG_ID = "ORG ID";
+    private static final String USER_ID = "USER ID";
 
     private final FeignException notFoundFeignException = new FeignException.NotFound(
         "not found message",
@@ -61,6 +62,7 @@ class OrganisationServiceTest {
     void setUp() {
         given(organisationApi.findUserOrganisation(any(), any())).willReturn(expectedOrganisation);
         given(organisationApi.findOrganisationById(any(), any(), any())).willReturn(expectedOrganisation);
+        given(organisationApi.findOrganisationByUserId(any(), any(), any())).willReturn(expectedOrganisation);
         given(authTokenGenerator.generate()).willReturn(SERVICE_AUTH_TOKEN);
         when(idamClient.getAccessToken(userConfig.getUsername(), userConfig.getPassword())).thenReturn(
             PRD_ADMIN_AUTH_TOKEN);
@@ -106,6 +108,28 @@ class OrganisationServiceTest {
 
             verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
             verify(organisationApi).findOrganisationById(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, ORG_ID);
+            assertThat(organisation).isEmpty();
+        }
+    }
+
+    @Nested
+    class FindOrganisationByUserId {
+        @Test
+        void shouldReturnOrganisation_whenInvoked() {
+            var organisation = organisationService.findOrganisationByUserId(USER_ID);
+
+            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(organisationApi).findOrganisationByUserId(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID);
+            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisation));
+        }
+
+        @Test
+        void shouldReturnEmptyOptional_whenOrganisationNotFound() {
+            given(organisationApi.findOrganisationByUserId(any(), any(), any())).willThrow(notFoundFeignException);
+            var organisation = organisationService.findOrganisationByUserId(USER_ID);
+
+            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(organisationApi).findOrganisationByUserId(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID);
             assertThat(organisation).isEmpty();
         }
     }
