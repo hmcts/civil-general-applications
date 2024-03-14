@@ -39,6 +39,7 @@ public class GeneralApplication implements MappableObject {
     private List<Element<Document>> generalAppEvidenceDocument;
     private LocalDateTime generalAppDateDeadline;
     private YesOrNo isMultiParty;
+    private YesOrNo isDocumentVisible;
     private YesOrNo parentClaimantIsApplicant;
     private String gaApplicantDisplayName;
     private CaseLink caseLink;
@@ -84,6 +85,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppEvidenceDocument") List<Element<Document>> generalAppEvidenceDocument,
                        @JsonProperty("generalAppDateDeadline") LocalDateTime generalAppDateDeadline,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
+                       @JsonProperty("isDocumentVisible") YesOrNo isDocumentVisible,
                        @JsonProperty("parentClaimantIsApplicant") YesOrNo parentClaimantIsApplicant,
                        @JsonProperty("gaApplicantDisplayName") String gaApplicantDisplayName,
                        @JsonProperty("caseLink") CaseLink caseLink,
@@ -124,6 +126,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppEvidenceDocument = generalAppEvidenceDocument;
         this.generalAppDateDeadline = generalAppDateDeadline;
         this.isMultiParty = isMultiParty;
+        this.isDocumentVisible = isDocumentVisible;
         this.parentClaimantIsApplicant = parentClaimantIsApplicant;
         this.gaApplicantDisplayName = gaApplicantDisplayName;
         this.caseLink = caseLink;
