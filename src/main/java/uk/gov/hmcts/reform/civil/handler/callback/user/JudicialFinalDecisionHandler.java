@@ -12,10 +12,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -23,18 +19,23 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoiceList;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AppealTypeChoices;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFurtherHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHeardRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderDateHeard;
+import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,11 +84,12 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private static final String POPULATE_FINAL_ORDER_FORM_VALUES = "populate-finalOrder-form-values";
     private static final String POPULATE_FINAL_ORDER_PREVIEW_DOC = "populate-final-order-preview-doc";
 
-    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+    private static final int PLUS_7DAYS = 7;
 
     private final ObjectMapper objectMapper;
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
+    private final DeadlinesCalculator deadlinesCalculator;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -164,44 +166,74 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
         caseDataBuilder.orderOnCourtInitiative(FreeFormOrderValues.builder()
                 .onInitiativeSelectionTextArea(ON_INITIATIVE_SELECTION_TEST)
-                .onInitiativeSelectionDate(localDatePlus7days)
+                .onInitiativeSelectionDate(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                    LocalDateTime.now(), PLUS_7DAYS))
                 .build());
         caseDataBuilder.orderWithoutNotice(FreeFormOrderValues.builder()
                 .withoutNoticeSelectionTextArea(WITHOUT_NOTICE_SELECTION_TEXT)
-                .withoutNoticeSelectionDate(localDatePlus7days)
+                .withoutNoticeSelectionDate(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                    LocalDateTime.now(), PLUS_7DAYS))
                 .build());
 
         caseDataBuilder.orderMadeOnOwnInitiative(DetailTextWithDate.builder().detailText(ON_INITIATIVE_SELECTION_TEST)
-                                                     .date(localDatePlus7days).build());
+                                                     .date(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                                                         LocalDateTime.now(), PLUS_7DAYS)).build());
         caseDataBuilder.orderMadeOnWithOutNotice(DetailTextWithDate.builder().detailText(WITHOUT_NOTICE_SELECTION_TEXT)
-                                                     .date(localDatePlus7days).build());
+                                                     .date(deadlinesCalculator.getJudicialOrderDeadlineDate(
+                                                         LocalDateTime.now(), PLUS_7DAYS)).build());
 
         caseDataBuilder.assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder()
                                                               .singleDateSelection(AssistedOrderDateHeard.builder().singleDate(LocalDate.now()).build())
                                                              .build()).build();
         caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails.builder()
                                                                .datesToAvoid(NO).build());
-        LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
-        caseDataBuilder.assistedOrderMakeAnOrderForCosts(AssistedOrderCost.builder()
-                                                             .assistedOrderAssessmentThirdDropdownDate(localDatePlus14days)
-                                                             .assistedOrderCostsFirstDropdownDate(localDatePlus14days)
-                                                             .makeAnOrderForCostsYesOrNo(NO).build())
+        caseDataBuilder
+            .assistedOrderMakeAnOrderForCosts(
+                AssistedOrderCost
+                    .builder()
+                    .assistedOrderAssessmentThirdDropdownDate(
+                        deadlinesCalculator
+                            .getJudicialOrderDeadlineDate(LocalDateTime.now(), 14))
+                    .assistedOrderCostsFirstDropdownDate(
+                        deadlinesCalculator
+                            .getJudicialOrderDeadlineDate(LocalDateTime.now(), 14))
+                    .makeAnOrderForCostsYesOrNo(NO).build())
             .publicFundingCostsProtection(NO);
 
-        caseDataBuilder.assistedOrderAppealDetails(AssistedOrderAppealDetails.builder()
+        caseDataBuilder
+            .assistedOrderAppealDetails(
+                AssistedOrderAppealDetails
+                    .builder()
+                    .appealTypeChoicesForGranted(
+                        AppealTypeChoices
+                            .builder()
+                            .appealChoiceOptionA(AppealTypeChoiceList.builder()
+                                                     .appealGrantedRefusedDate(
+                                                         deadlinesCalculator
+                                                             .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                           21)).build())
+                            .appealChoiceOptionB(AppealTypeChoiceList.builder()
+                                                     .appealGrantedRefusedDate(
+                                                         deadlinesCalculator
+                                                             .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                           21)).build())
+                            .build())
+                    .appealTypeChoicesForRefused(
+                        AppealTypeChoices
+                            .builder()
+                            .appealChoiceOptionA(
+                                AppealTypeChoiceList
+                                    .builder()
+                                    .appealGrantedRefusedDate(deadlinesCalculator
+                                                                  .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                                21)).build())
+                            .appealChoiceOptionB(
+                                AppealTypeChoiceList.builder()
+                                    .appealGrantedRefusedDate(deadlinesCalculator
+                                                                  .getJudicialOrderDeadlineDate(LocalDateTime.now(),
+                                                                                                21)).build())
+                            .build()).build());
 
-                                                       .appealTypeChoicesForGranted(AppealTypeChoices.builder()
-                                                                              .appealChoiceOptionA(AppealTypeChoiceList.builder()
-                                                                                                       .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
-                                                                              .appealChoiceOptionB(AppealTypeChoiceList.builder()
-                                                                                                       .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
-                                                                              .build())
-                                                       .appealTypeChoicesForRefused(AppealTypeChoices.builder()
-                                                                                        .appealChoiceOptionA(AppealTypeChoiceList.builder()
-                                                                                                                 .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
-                                                                                        .appealChoiceOptionB(AppealTypeChoiceList.builder()
-                                                                                                                 .appealGrantedRefusedDate(LocalDate.now().plusDays(21)).build())
-                                                                                        .build()).build());
         caseDataBuilder.assistedOrderRepresentation(AssistedOrderHeardRepresentation.builder()
                                                         .claimantDefendantRepresentation(ClaimantDefendantRepresentation.builder()
                                                                                              .claimantPartyName(caseData.getClaimant1PartyName())
@@ -216,13 +248,18 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
 
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         DynamicList dynamicLocationList = getLocationsFromList(locationRefDataService.getCourtLocations(authToken));
-        caseDataBuilder.assistedOrderFurtherHearingDetails(AssistedOrderFurtherHearingDetails
-                                                               .builder()
-                                                               .hearingLocationList(populateHearingLocation(caseData))
-                                                               .alternativeHearingLocation(dynamicLocationList)
-                                                               .datesToAvoidDateDropdown(AssistedOrderDateHeard.builder()
-                                                                                             .datesToAvoidDates(localDatePlus7days)
-                                                                                             .build()).build());
+        caseDataBuilder.assistedOrderFurtherHearingDetails(
+            AssistedOrderFurtherHearingDetails
+                .builder()
+                .hearingLocationList(populateHearingLocation(caseData))
+                .alternativeHearingLocation(dynamicLocationList)
+                .datesToAvoidDateDropdown(
+                    AssistedOrderDateHeard.builder()
+                        .datesToAvoidDates(deadlinesCalculator
+                                               .getJudicialOrderDeadlineDate(
+                                                   LocalDateTime.now(), PLUS_7DAYS))
+                        .build()).build());
+
         caseDataBuilder.assistedOrderGiveReasonsYesNo(NO)
             .assistedOrderOrderedThatText(caseData.getGeneralAppDetailsOfOrder()).build();
 
