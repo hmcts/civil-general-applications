@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +32,13 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHe
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +46,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -69,6 +73,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objMapper;
     @MockBean
     private GeneralAppLocationRefDataService locationRefDataService;
+    @MockBean
+    private DeadlinesCalculator deadlinesCalculator;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
             + "any party affected by the order may apply to set aside, vary, or stay the order."
@@ -77,6 +83,23 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             + "this order was made, you may apply to set aside, vary, or stay the order."
             + " Any such application must be made by 4pm on";
     private static final String ORDERED_TEXT = "order test";
+    private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+    private static LocalDate localDatePlus14days = LocalDate.now().plusDays(14);
+    private static LocalDate localDatePlus21days = LocalDate.now().plusDays(21);
+
+    @BeforeEach
+    void setUp() {
+
+        when(deadlinesCalculator
+                 .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(7)))
+            .thenReturn(localDatePlus7days);
+        when(deadlinesCalculator
+                 .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(14)))
+            .thenReturn(localDatePlus14days);
+        when(deadlinesCalculator
+                 .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(21)))
+            .thenReturn(localDatePlus21days);
+    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {

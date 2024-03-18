@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
-import uk.gov.hmcts.reform.ccd.model.Organisation;
-import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -129,10 +127,11 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         String caseId = caseData.getCcdCaseReference().toString();
         List<String> errors = new ArrayList<>();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
         try {
 
             if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
+                GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
+
                 coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
                                                applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
                 );
@@ -168,8 +167,9 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 || (generalAppFeesService.isFreeApplication(caseData))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
-
             }
+
+
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
