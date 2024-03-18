@@ -171,12 +171,15 @@ public class CaseData implements MappableObject {
     private final List<Element<Document>> gaDirectionDocList;
     private final List<Element<Document>> generalAppAddlnInfoUpload;
     private final List<Element<Document>> gaAddlnInfoList;
-
+    @Deprecated
     private final List<Element<Document>> gaRespDocument;
 
     private final List<Element<Document>> gaRespDocStaff;
+    @Deprecated
     private final List<Element<Document>> gaRespDocClaimant;
+    @Deprecated
     private final List<Element<Document>> gaRespDocRespondentSol;
+    @Deprecated
     private final List<Element<Document>> gaRespDocRespondentSolTwo;
 
     private final String gaRespondentDetails;
