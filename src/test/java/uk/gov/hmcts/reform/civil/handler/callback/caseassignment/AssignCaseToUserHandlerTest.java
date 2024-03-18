@@ -40,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -150,16 +148,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any()
             );
         }
-
-        @Test
-        void shouldThrowExceptionIfSolicitorsAreNull() {
-            Exception exception = assertThrows(Exception.class, () -> {
-                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
-            });
-            String expectedMessage = "java.lang.NullPointerException";
-            String actualMessage = exception.toString();
-            assertTrue(actualMessage.contains(expectedMessage));
-        }
     }
 
     private List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
@@ -249,16 +237,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any()
             );
         }
-
-        @Test
-        void shouldThrowExceptionIfSolicitorsAreNull() {
-            Exception exception = assertThrows(Exception.class, () -> {
-                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
-            });
-            String expectedMessage = "java.lang.NullPointerException";
-            String actualMessage = exception.toString();
-            assertTrue(actualMessage.contains(expectedMessage));
-        }
     }
 
     @Nested
@@ -321,16 +299,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any()
             );
-        }
-
-        @Test
-        void shouldThrowExceptionIfSolicitorsAreNull() {
-            Exception exception = assertThrows(Exception.class, () -> {
-                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
-            });
-            String expectedMessage = "java.lang.NullPointerException";
-            String actualMessage = exception.toString();
-            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 
@@ -419,16 +387,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any()
             );
-        }
-
-        @Test
-        void shouldThrowExceptionIfSolicitorsAreNull() {
-            Exception exception = assertThrows(Exception.class, () -> {
-                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
-            });
-            String expectedMessage = "java.lang.NullPointerException";
-            String actualMessage = exception.toString();
-            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
@@ -55,8 +56,61 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
+            callbackKey(ABOUT_TO_START), this::assignOrgPolicy,
             callbackKey(ABOUT_TO_SUBMIT), this::assignSolicitorCaseRole
         );
+    }
+
+    private CallbackResponse assignOrgPolicy(CallbackParams callbackParams) {
+
+        CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        try {
+            if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
+                GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
+                caseDataBuilder.applicant1OrganisationPolicy(OrganisationPolicy.builder()
+                                                                 .organisation(Organisation.builder()
+                                                                                   .organisationID(applicantSolicitor.getOrganisationIdentifier())
+                                                                                   .build())
+                                                                 .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
+
+            }
+            List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
+                .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
+                    .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
+            if ((!caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)
+                && ((ofNullable(caseData.getGeneralAppInformOtherParty()).isPresent()
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+                || (caseData.getGeneralAppRespondentAgreement() != null
+                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))))
+                || (generalAppFeesService.isFreeApplication(caseData))) {
+
+                List<Element<GASolicitorDetailsGAspec>>  respondent2SolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
+                    .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
+                        .equalsIgnoreCase(respondentSolicitorsList.get(0).getValue().getOrganisationIdentifier()))).toList();
+
+                caseDataBuilder.respondent1OrganisationPolicy(OrganisationPolicy.builder()
+                                                                  .organisation(Organisation.builder()
+                                                                                    .organisationID(respondentSolicitorsList.get(0).getValue().getOrganisationIdentifier())
+                                                                                    .build())
+                                                                  .orgPolicyCaseAssignedRole(RESPONDENTSOLICITORONE.getFormattedName()).build());
+
+                if (!respondent2SolicitorsList.isEmpty()) {
+                    caseDataBuilder.respondent2OrganisationPolicy(OrganisationPolicy.builder()
+                                                                      .organisation(Organisation.builder()
+                                                                                        .organisationID(respondent2SolicitorsList.get(0).getValue().getOrganisationIdentifier())
+                                                                                        .build())
+                                                                      .orgPolicyCaseAssignedRole(RESPONDENTSOLICITORTWO.getFormattedName()).build());
+                }
+            }
+            caseDataBuilder.generalAppRespondentSolicitors(respondentSolicitorsList);
+            return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper))
+                .build();
+
+        } catch (Exception e) {
+            log.error(e.toString());
+            throw e;
+        }
     }
 
     @Override
@@ -75,20 +129,14 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         String caseId = caseData.getCcdCaseReference().toString();
         List<String> errors = new ArrayList<>();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
+        GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
         try {
 
             if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
-                GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
-
                 coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
                                                applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
                 );
-                caseDataBuilder.applicant1OrganisationPolicy(OrganisationPolicy.builder()
-                                                                 .organisation(Organisation.builder()
-                                                                                   .organisationID(applicantSolicitor.getOrganisationIdentifier())
-                                                                                   .build())
-                                                                 .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
+
                 List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors();
                 for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
                     if ((applicantSolicitor.getOrganisationIdentifier() != null && applicantSolicitor.getOrganisationIdentifier()
@@ -107,11 +155,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 caseDataBuilder.generalAppApplicantAddlSolicitors(applicantAddlSolList);
             }
 
-            List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
-                .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
-                    .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
-            caseDataBuilder.generalAppRespondentSolicitors(respondentSolicitorsList);
-
             /*
              * Don't assign the case to respondent solicitors if GA is without notice
              * Assign case to Respondent Solicitors only after the payment is made by Applicant.
@@ -125,23 +168,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 || (generalAppFeesService.isFreeApplication(caseData))) {
 
                 assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
-                List<Element<GASolicitorDetailsGAspec>>  respondent2SolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
-                    .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
-                        .equalsIgnoreCase(respondentSolicitorsList.get(0).getValue().getOrganisationIdentifier()))).toList();
 
-                caseDataBuilder.respondent1OrganisationPolicy(OrganisationPolicy.builder()
-                                                                  .organisation(Organisation.builder()
-                                                                                    .organisationID(respondentSolicitorsList.get(0).getValue().getOrganisationIdentifier())
-                                                                                    .build())
-                                                                  .orgPolicyCaseAssignedRole(RESPONDENTSOLICITORONE.getFormattedName()).build());
-                if (!respondent2SolicitorsList.isEmpty()) {
-                    caseDataBuilder.respondent2OrganisationPolicy(OrganisationPolicy.builder()
-                                                                      .organisation(Organisation.builder()
-                                                                                        .organisationID(respondent2SolicitorsList.get(0).getValue().getOrganisationIdentifier())
-                                                                                        .build())
-                                                                      .orgPolicyCaseAssignedRole(RESPONDENTSOLICITORTWO.getFormattedName()).build());
-
-                }
             }
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
