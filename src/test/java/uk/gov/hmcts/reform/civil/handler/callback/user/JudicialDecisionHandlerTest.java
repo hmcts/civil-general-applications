@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -2601,7 +2600,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT.getDocumentLink());
         }
 
-        @Disabled
         @Test
         void shouldGenerateDirectionOrderDocument() {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
@@ -2616,7 +2614,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(updatedData.getJudicialMakeOrderDocPreview())
-                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+                .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT.getDocumentLink());
         }
 
         @Test
