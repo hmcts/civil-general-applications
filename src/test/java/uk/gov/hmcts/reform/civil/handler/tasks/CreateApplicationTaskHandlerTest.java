@@ -43,7 +43,6 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,12 +52,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
@@ -240,10 +239,6 @@ public class CreateApplicationTaskHandlerTest {
                                                    .hasAgreed(isRespAgreed).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .organisationIdentifier(organisationIdentifier).build())
-                .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(Organisation.builder()
-                                                                                            .organisationID(organisationIdentifier).build())
-                                                  .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName())
-                                                  .build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                 .isWithNotice(isWithoutNotice)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
@@ -463,10 +458,7 @@ public class CreateApplicationTaskHandlerTest {
             )).thenReturn(caseDataContent);
 
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
-            Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
-            Map<String, Object> assignedUsersOrgId = new HashMap<>();
-            assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-            supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
+
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -478,23 +470,16 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
-
-            map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
-                .organisation(Organisation.builder()
-                                  .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
-                                  .build())
-                .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
-
             map.put("parentCaseReference", CASE_ID);
             map.put("applicationTypes", GA_CASE_TYPES);
 
-            when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
+            when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
             verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-            verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
+            verify(coreCaseDataService).createGeneralAppCase(map);
 
             verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
@@ -550,8 +535,6 @@ public class CreateApplicationTaskHandlerTest {
                                                    .hasAgreed(isGeneralAppAgreed).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .organisationIdentifier(organisationIdentifier).build())
-                .applicant1OrganisationPolicy(OrganisationPolicy.builder().orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName())
-                                                  .organisation(Organisation.builder().organisationID(organisationIdentifier).build()).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                 .isWithNotice(isWithoutNotice)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
@@ -615,7 +598,7 @@ public class CreateApplicationTaskHandlerTest {
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
             verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-            //verify(coreCaseDataService).createGeneralAppCase(anyMap(), anyMap());
+            verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
             verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
         }
 
@@ -647,10 +630,6 @@ public class CreateApplicationTaskHandlerTest {
             )).thenReturn(caseDataContent);
 
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
-            Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
-            Map<String, Object> assignedUsersOrgId = new HashMap<>();
-            assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-            supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -662,22 +641,15 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
-
-            map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
-                .organisation(Organisation.builder()
-                                  .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
-                                  .build())
-                .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
-
             map.put("parentCaseReference", CASE_ID);
             map.put("applicationTypes", GA_CASE_TYPES);
+            when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
-            when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
-            //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
+            verify(coreCaseDataService).createGeneralAppCase(map);
 
         }
 
@@ -694,7 +666,6 @@ public class CreateApplicationTaskHandlerTest {
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
                 .generalAppDateDeadline(DUMMY_DATE)
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("org1").build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
@@ -785,10 +756,7 @@ public class CreateApplicationTaskHandlerTest {
         )).thenReturn(caseDataContent);
 
         when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
-        Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
-        Map<String, Object> assignedUsersOrgId = new HashMap<>();
-        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-        supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
+
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(
             "generalAppNotificationDeadlineDate",
@@ -797,22 +765,15 @@ public class CreateApplicationTaskHandlerTest {
         );
         map.put(
             "isDocumentVisible", generalApplication.getIsDocumentVisible());
-        map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
-            .organisation(Organisation.builder()
-                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
-                              .build())
-            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
-
         map.put("parentCaseReference", CASE_ID);
         map.put("applicationTypes", GA_CASE_TYPES);
-
-        when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
+        when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-        //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
+        verify(coreCaseDataService).createGeneralAppCase(map);
 
         verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
@@ -846,10 +807,6 @@ public class CreateApplicationTaskHandlerTest {
             .addApplicant2(addApplicant2)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                          .organisationIdentifier("org1").build())
-            .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(Organisation.builder().organisationID("org1").build())
-                                              .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build())
             .generalApplicationsDetails(generalApplicationsDetailsList)
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
@@ -878,11 +835,6 @@ public class CreateApplicationTaskHandlerTest {
 
         when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
-        Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
-        Map<String, Object> assignedUsersOrgId = new HashMap<>();
-        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-        supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
-
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(
             "generalAppNotificationDeadlineDate",
@@ -892,21 +844,16 @@ public class CreateApplicationTaskHandlerTest {
 
         map.put(
             "isDocumentVisible", generalApplication.getIsDocumentVisible());
-        map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
-            .organisation(Organisation.builder()
-                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
-                              .build())
-            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
         map.put("parentCaseReference", CASE_ID);
         map.put("applicationTypes", GA_CASE_TYPES);
 
-        when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
+        when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-        //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
+        verify(coreCaseDataService).createGeneralAppCase(map);
 
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 

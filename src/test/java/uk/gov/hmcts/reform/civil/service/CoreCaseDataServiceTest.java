@@ -32,9 +32,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
@@ -258,8 +256,8 @@ class CoreCaseDataServiceTest {
         void shouldStartAndSubmitEvent_WhenCalled() {
 
             GeneralApplication generalApplication = GeneralApplication.builder().build();
-            Map<String, java.util.Map<String, Object>> supplementaryMap = new HashMap<>();
-            service.createGeneralAppCase(generalApplication.toMap(objectMapper), supplementaryMap);
+
+            service.createGeneralAppCase(generalApplication.toMap(objectMapper));
 
             verify(coreCaseDataApi).startForCaseworker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
                 JURISDICTION, GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION

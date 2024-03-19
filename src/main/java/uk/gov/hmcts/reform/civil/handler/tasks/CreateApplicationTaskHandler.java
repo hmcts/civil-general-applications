@@ -7,8 +7,6 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.ccd.model.Organisation;
-import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -23,7 +21,6 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +28,6 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -110,7 +106,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                    respondentSpecficGADetails,
                                                    respondentTwoSpecficGADetails,
                                                    judgeApplications)));
-
     }
 
     private void withoutNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
@@ -224,20 +219,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
         map.put("applicationTypes", String.join(", ", getTypesString(generalApplication)));
         map.put("parentCaseReference", caseId);
-        map.put("applicant1OrganisationPolicy", getApplicantOrgPolicy(generalApplication));
-        Map<String, Object> assignedUsersOrgId = new HashMap<>();
-        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-        Map<String, Map<String, Object>> supplementaryDataGa = new HashMap<>();
-        supplementaryDataGa.put("orgs_assigned_users", assignedUsersOrgId);
-        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map, supplementaryDataGa);
-    }
-
-    private OrganisationPolicy getApplicantOrgPolicy(GeneralApplication generalApplication) {
-        return OrganisationPolicy.builder()
-            .organisation(Organisation.builder()
-                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
-                              .build())
-            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build();
+        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
     }
 
     private String getTypesString(final GeneralApplication generalApplication) {
