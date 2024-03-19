@@ -49,7 +49,6 @@ import java.util.Map;
 
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -467,8 +466,7 @@ public class CreateApplicationTaskHandlerTest {
             Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
             Map<String, Object> assignedUsersOrgId = new HashMap<>();
             assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-            supplementaryMap.put("supplementary_data_updates",
-                                 singletonMap("orgs_assigned_users", assignedUsersOrgId));
+            supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -652,8 +650,7 @@ public class CreateApplicationTaskHandlerTest {
             Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
             Map<String, Object> assignedUsersOrgId = new HashMap<>();
             assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-            supplementaryMap.put("supplementary_data_updates",
-                                 singletonMap("orgs_assigned_users", assignedUsersOrgId));
+            supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -791,8 +788,7 @@ public class CreateApplicationTaskHandlerTest {
         Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
         Map<String, Object> assignedUsersOrgId = new HashMap<>();
         assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-        supplementaryMap.put("supplementary_data_updates",
-                             singletonMap("orgs_assigned_users", assignedUsersOrgId));
+        supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(
             "generalAppNotificationDeadlineDate",
@@ -885,8 +881,7 @@ public class CreateApplicationTaskHandlerTest {
         Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
         Map<String, Object> assignedUsersOrgId = new HashMap<>();
         assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
-        supplementaryMap.put("supplementary_data_updates",
-                                singletonMap("orgs_assigned_users", assignedUsersOrgId));
+        supplementaryMap.put("orgs_assigned_users", assignedUsersOrgId);
 
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(

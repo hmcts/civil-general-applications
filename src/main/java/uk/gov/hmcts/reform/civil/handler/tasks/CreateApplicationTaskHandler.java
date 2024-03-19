@@ -30,7 +30,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.singletonMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
@@ -229,8 +228,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         Map<String, Object> assignedUsersOrgId = new HashMap<>();
         assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
         Map<String, Map<String, Object>> supplementaryDataGa = new HashMap<>();
-        supplementaryDataGa.put("supplementary_data_updates",
-                                singletonMap("orgs_assigned_users", assignedUsersOrgId));
+        supplementaryDataGa.put("orgs_assigned_users", assignedUsersOrgId);
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map, supplementaryDataGa);
     }
 
