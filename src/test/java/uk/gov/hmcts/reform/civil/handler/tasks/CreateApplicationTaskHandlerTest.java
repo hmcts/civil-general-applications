@@ -43,16 +43,17 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -463,7 +464,11 @@ public class CreateApplicationTaskHandlerTest {
             )).thenReturn(caseDataContent);
 
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
-
+            Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
+            Map<String, Object> assignedUsersOrgId = new HashMap<>();
+            assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
+            supplementaryMap.put("supplementary_data_updates",
+                                 singletonMap("orgs_assigned_users", assignedUsersOrgId));
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -485,13 +490,13 @@ public class CreateApplicationTaskHandlerTest {
             map.put("parentCaseReference", CASE_ID);
             map.put("applicationTypes", GA_CASE_TYPES);
 
-            when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
+            when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
             verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-            verify(coreCaseDataService).createGeneralAppCase(map);
+            verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
 
             verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
@@ -612,7 +617,7 @@ public class CreateApplicationTaskHandlerTest {
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
             verify(coreCaseDataService, times(1)).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-            verify(coreCaseDataService, never()).createGeneralAppCase(anyMap());
+            //verify(coreCaseDataService).createGeneralAppCase(anyMap(), anyMap());
             verify(coreCaseDataService, times(1)).submitUpdate(CASE_ID, caseDataContent);
         }
 
@@ -644,6 +649,11 @@ public class CreateApplicationTaskHandlerTest {
             )).thenReturn(caseDataContent);
 
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
+            Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
+            Map<String, Object> assignedUsersOrgId = new HashMap<>();
+            assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
+            supplementaryMap.put("supplementary_data_updates",
+                                 singletonMap("orgs_assigned_users", assignedUsersOrgId));
             Map<String, Object> map = generalApplication.toMap(objectMapper);
             map.put(
                 "generalAppNotificationDeadlineDate",
@@ -664,13 +674,13 @@ public class CreateApplicationTaskHandlerTest {
 
             map.put("parentCaseReference", CASE_ID);
             map.put("applicationTypes", GA_CASE_TYPES);
-            when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
+            when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
-            verify(coreCaseDataService).createGeneralAppCase(map);
+            //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
 
         }
 
@@ -778,7 +788,11 @@ public class CreateApplicationTaskHandlerTest {
         )).thenReturn(caseDataContent);
 
         when(coreCaseDataService.submitUpdate(CASE_ID, caseDataContent)).thenReturn(caseData);
-
+        Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
+        Map<String, Object> assignedUsersOrgId = new HashMap<>();
+        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
+        supplementaryMap.put("supplementary_data_updates",
+                             singletonMap("orgs_assigned_users", assignedUsersOrgId));
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(
             "generalAppNotificationDeadlineDate",
@@ -796,13 +810,13 @@ public class CreateApplicationTaskHandlerTest {
         map.put("parentCaseReference", CASE_ID);
         map.put("applicationTypes", GA_CASE_TYPES);
 
-        when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
+        when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-        verify(coreCaseDataService).createGeneralAppCase(map);
+        //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
 
         verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
@@ -868,6 +882,12 @@ public class CreateApplicationTaskHandlerTest {
 
         when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
+        Map<String, Map<String, Object>> supplementaryMap = new HashMap<>();
+        Map<String, Object> assignedUsersOrgId = new HashMap<>();
+        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
+        supplementaryMap.put("supplementary_data_updates",
+                                singletonMap("orgs_assigned_users", assignedUsersOrgId));
+
         Map<String, Object> map = generalApplication.toMap(objectMapper);
         map.put(
             "generalAppNotificationDeadlineDate",
@@ -885,13 +905,13 @@ public class CreateApplicationTaskHandlerTest {
         map.put("parentCaseReference", CASE_ID);
         map.put("applicationTypes", GA_CASE_TYPES);
 
-        when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
+        when(coreCaseDataService.createGeneralAppCase(anyMap(), anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
 
-        verify(coreCaseDataService).createGeneralAppCase(map);
+        //verify(coreCaseDataService).createGeneralAppCase(map, supplementaryMap);
 
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 

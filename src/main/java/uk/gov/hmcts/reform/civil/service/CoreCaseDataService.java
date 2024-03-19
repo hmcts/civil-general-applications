@@ -46,9 +46,9 @@ public class CoreCaseDataService {
         submitUpdate(caseId.toString(), caseDataContentFromStartEventResponse(startEventResponse, contentModified));
     }
 
-    public CaseData createGeneralAppCase(Map<String, Object> caseDataMap) {
+    public CaseData createGeneralAppCase(Map<String, Object> caseDataMap,   Map<String, Map<String, Object>> supplementaryDataCivil) {
         var startEventResponse = startCaseForCaseworker(GENERAL_APPLICATION_CREATION.name());
-        return submitForCaseWorker(caseDataContent(startEventResponse, caseDataMap));
+        return submitForCaseWorker(caseDataContent(startEventResponse, caseDataMap, supplementaryDataCivil));
     }
 
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
@@ -280,7 +280,7 @@ public class CoreCaseDataService {
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
-    private CaseDataContent caseDataContent(StartEventResponse startEventResponse, Map<String, Object> caseDataMap) {
+    private CaseDataContent caseDataContent(StartEventResponse startEventResponse, Map<String, Object> caseDataMap, Map<String, Map<String, Object>> supplementaryDataCivil) {
         Map<String, Object> data = startEventResponse.getCaseDetails().getData();
         data.putAll(caseDataMap);
 
@@ -288,6 +288,7 @@ public class CoreCaseDataService {
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId()).build())
             .data(data)
+            .supplementaryDataRequest(supplementaryDataCivil)
             .build();
     }
 }

@@ -23,12 +23,14 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonMap;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
@@ -109,6 +111,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                                                    respondentSpecficGADetails,
                                                    respondentTwoSpecficGADetails,
                                                    judgeApplications)));
+
     }
 
     private void withoutNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
@@ -223,8 +226,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         map.put("applicationTypes", String.join(", ", getTypesString(generalApplication)));
         map.put("parentCaseReference", caseId);
         map.put("applicant1OrganisationPolicy", getApplicantOrgPolicy(generalApplication));
-
-        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+        Map<String, Object> assignedUsersOrgId = new HashMap<>();
+        assignedUsersOrgId.put(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier(), 1);
+        Map<String, Map<String, Object>> supplementaryDataGa = new HashMap<>();
+        supplementaryDataGa.put("supplementary_data_updates",
+                                singletonMap("orgs_assigned_users", assignedUsersOrgId));
+        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map, supplementaryDataGa);
     }
 
     private OrganisationPolicy getApplicantOrgPolicy(GeneralApplication generalApplication) {
