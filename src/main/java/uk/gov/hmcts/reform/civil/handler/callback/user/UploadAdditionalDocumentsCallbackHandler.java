@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -68,22 +69,28 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             caseDataBuilder.isDocumentVisible(YesOrNo.NO);
         }
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
-            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
+            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
+            || (caseData.getGeneralAppApplicantAddlSolicitors() != null
+            && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
+            .equals(userId)).toList().size() == 1)) {
             caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
             addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
             caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
-        } else if (caseData.getIsMultiParty().equals(YesOrNo.NO)
-            && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))
-            || (caseData.getIsMultiParty().equals(YesOrNo.YES)
-            && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))))  {
-            caseDataBuilder.gaAddlDocRespondentSol(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSol(), "Respondent One"));
-            addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent One");
-            caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
-        } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
-            && (caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId().equals(userId))) {
-            caseDataBuilder.gaAddlDocRespondentSolTwo(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSolTwo(), "Respondent Two"));
-            addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent Two");
-            caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
+        } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
+            List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
+                .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
+                    .equals(caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier())).toList();
+
+            if (resp1SolList.stream().filter(respSolicitorUser -> respSolicitorUser.getValue().getId().equals(userId)).toList().size() == 1) {
+                caseDataBuilder.gaAddlDocRespondentSol(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSol(),
+                                                                                     "Respondent One"));
+                addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent One");
+                caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
+            } else {
+                caseDataBuilder.gaAddlDocRespondentSolTwo(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSolTwo(), "Respondent Two"));
+                addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent Two");
+                caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
+            }
         }
 
         caseDataBuilder.uploadDocument(null);

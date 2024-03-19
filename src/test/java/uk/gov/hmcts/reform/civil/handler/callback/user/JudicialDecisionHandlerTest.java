@@ -83,6 +83,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -197,6 +198,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class AboutToStartCallbackHandling {
+
+        @BeforeEach
+        void setUp() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+        }
+
         YesOrNo hasRespondentResponseVul = NO;
 
         @Test
@@ -1594,6 +1601,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
 
             when(writtenRepresentationSequentailOrderGenerator.generate(any(), any()))
                 .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
@@ -2047,6 +2055,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class MidEventForMakeAnOrderOption {
+
+        @BeforeEach
+        void setUp() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
+        }
 
         private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
 
@@ -2507,6 +2521,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
             when(generalOrderGenerator.generate(any(), any()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             when(directionOrderGenerator.generate(any(), any()))
@@ -2716,6 +2732,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
             when(time.now()).thenReturn(responseDate);
             when(deadlinesCalculator.calculateApplicantResponseDeadline(
                 any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
@@ -3741,6 +3759,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent2));
 
         return respondentSols;
+    }
+
+    public boolean checkIf4pmOrAfter(LocalDateTime dateOfService) {
+        return dateOfService.getHour() >= 16;
     }
 }
 
