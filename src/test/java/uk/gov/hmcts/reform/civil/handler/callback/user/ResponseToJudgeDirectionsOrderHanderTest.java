@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -20,18 +21,28 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.STRING_CONSTANT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @SpringBootTest(classes = {
     ResponseToJudgeDirectionsOrder.class,
@@ -50,10 +61,25 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     AssignCategoryId assignCategoryId;
+    @MockBean
+    IdamClient idamClient;
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
     private static final String TEST_STRING = "anyValue";
+
+    private static final String DUMMY_EMAIL = "test@gmail.com";
+    private static final String APP_UID = "9";
+
+    @BeforeEach
+    public void setUp() throws IOException {
+
+        when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
+                .sub(DUMMY_EMAIL)
+                .uid(APP_UID)
+                .build());
+
+    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -62,22 +88,20 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
 
     @Test
     void shouldPopulateDocListAndReturnNullWrittenRepUpload() {
-
         List<Element<Document>> generalAppDirOrderUpload = new ArrayList<>();
-        List<Element<Document>> gaDirectionDocList = new ArrayList<>();
 
         Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
-            .documentBinaryUrl(TEST_STRING)
-            .documentHash(TEST_STRING).build();
+                .documentBinaryUrl(TEST_STRING)
+                .documentHash(TEST_STRING).build();
 
         Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
-            .documentBinaryUrl(TEST_STRING)
-            .documentHash(TEST_STRING).build();
+                .documentBinaryUrl(TEST_STRING)
+                .documentHash(TEST_STRING).build();
 
         generalAppDirOrderUpload.add(element(document1));
         generalAppDirOrderUpload.add(element(document2));
-
-        CaseData caseData = getCase(generalAppDirOrderUpload, gaDirectionDocList);
+        CaseData caseData = getCase(generalAppDirOrderUpload,
+                null);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -87,8 +111,9 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         var responseCaseData = getCaseData(response);
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppDirOrderUpload()).isEqualTo(null);
-        assertThat(responseCaseData.getGaDirectionDocList().size()).isEqualTo(2);
-        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
     }
 
     @Test
@@ -112,7 +137,8 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         gaDirectionDocList.add(element(document1));
         gaDirectionDocList.add(element(document2));
 
-        CaseData caseData = getCase(generalAppDirOrderUpload, gaDirectionDocList);
+        CaseData caseData = getCase(generalAppDirOrderUpload,
+                DocUploadUtils.prepareDocuments(gaDirectionDocList, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_DIRECTIONS));
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -122,8 +148,9 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         var responseCaseData = getCaseData(response);
         assertThat(response).isNotNull();
         assertThat(responseCaseData.getGeneralAppDirOrderUpload()).isEqualTo(null);
-        assertThat(responseCaseData.getGaDirectionDocList().size()).isEqualTo(4);
-        assertThat(responseCaseData.getGaRespDocument().size()).isEqualTo(4);
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(4);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
@@ -132,12 +159,14 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
     }
 
     private CaseData getCase(List<Element<Document>> generalAppDirOrderUpload,
-                             List<Element<Document>> gaDirectionDocList) {
+                             List<Element<CaseDocument>> gaAddlDoc) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
-        return CaseData.builder()
+        return CaseData.builder().parentClaimantIsApplicant(YES)
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                    .email("abc@gmail.com").id(APP_UID).build())
             .generalAppDirOrderUpload(generalAppDirOrderUpload)
-            .gaDirectionDocList(gaDirectionDocList)
+            .gaAddlDoc(gaAddlDoc)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()
                     .generalAppRespondent1Representative(YES)

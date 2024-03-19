@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class DocUploadUtils {
 
@@ -46,6 +47,9 @@ public class DocUploadUtils {
     public static void addDocumentToAddl(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
                                  List<Element<Document>> source, String role, CaseEvent event,
                                  boolean updateScheduler) {
+        if (Objects.isNull(source) || source.isEmpty()) {
+            return;
+        }
         caseDataBuilder.isDocumentVisible(DocUploadUtils.isDocumentVisible(caseData));
         List<Element<CaseDocument>> docs = prepareDocuments(source, role, event);
         addToAddl(caseData, caseDataBuilder, docs, role, event, updateScheduler);
@@ -103,11 +107,13 @@ public class DocUploadUtils {
         if (Objects.isNull(target)) {
             target = new ArrayList<>();
         }
-        target.addAll(source);
+        List<UUID> ids = target.stream().map(Element::getId).toList();
+        List<Element<CaseDocument>> newDocs = source.stream().filter(doc -> !ids.contains(doc.getId())).toList();
+        target.addAll(newDocs);
         return target;
     }
 
-    private static List<Element<CaseDocument>> prepareDocuments(List<Element<Document>> source,
+    public static List<Element<CaseDocument>> prepareDocuments(List<Element<Document>> source,
                                                               String role, CaseEvent event) {
         String documentType = getDocumentType(event);
         return source.stream()
