@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -148,6 +150,16 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any()
             );
         }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+            Exception exception = assertThrows(Exception.class, () -> {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
+            });
+            String expectedMessage = "java.lang.NullPointerException";
+            String actualMessage = exception.toString();
+            assertTrue(actualMessage.contains(expectedMessage));
+        }
     }
 
     private List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
@@ -175,7 +187,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                 .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
 
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
-            List<Element<GASolicitorDetailsGAspec>> applicantAddlSol = new ArrayList<>();
+
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
                 .email("test@gmail.com").organisationIdentifier("org2").build();
 
@@ -186,7 +198,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
-            applicantAddlSol.add(element(addlApplicant1));
+            respondentSols.add(element(addlApplicant1));
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()
@@ -195,7 +207,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .claimant1PartyName("Applicant1")
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .generalAppRespondentSolicitors(respondentSols)
-                .generalAppApplicantAddlSolicitors(applicantAddlSol)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec
                                               .builder()
                                               .id("id")
@@ -237,6 +248,16 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any()
             );
+        }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+            Exception exception = assertThrows(Exception.class, () -> {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
+            });
+            String expectedMessage = "java.lang.NullPointerException";
+            String actualMessage = exception.toString();
+            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 
@@ -300,6 +321,16 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any()
             );
+        }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+            Exception exception = assertThrows(Exception.class, () -> {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
+            });
+            String expectedMessage = "java.lang.NullPointerException";
+            String actualMessage = exception.toString();
+            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 
@@ -382,12 +413,22 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldCallAssignCase_1Times() {
             assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1)).assignCase(
+            verify(coreCaseUserService, times(2)).assignCase(
                 any(),
                 any(),
                 any(),
                 any()
             );
+        }
+
+        @Test
+        void shouldThrowExceptionIfSolicitorsAreNull() {
+            Exception exception = assertThrows(Exception.class, () -> {
+                assignCaseToUserHandler.handle(getCaseDateWithNoSolicitor(SPEC_CLAIM));
+            });
+            String expectedMessage = "java.lang.NullPointerException";
+            String actualMessage = exception.toString();
+            assertTrue(actualMessage.contains(expectedMessage));
         }
     }
 

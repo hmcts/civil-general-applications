@@ -7,6 +7,8 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.model.Organisation;
+import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -217,8 +220,17 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         Map<String, Object> map = generalApplication.toMap(mapper);
         map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
+        map.put("applicant1OrganisationPolicy", getApplicantOrgPolicy(generalApplication));
 
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+    }
+
+    private OrganisationPolicy getApplicantOrgPolicy(GeneralApplication generalApplication) {
+        return OrganisationPolicy.builder()
+            .organisation(Organisation.builder()
+                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
+                              .build())
+            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build();
     }
 
     private YesOrNo checkVisibility(GeneralApplication generalApplication) {

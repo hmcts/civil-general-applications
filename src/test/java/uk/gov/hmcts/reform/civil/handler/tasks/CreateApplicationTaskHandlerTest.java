@@ -58,6 +58,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLICATION_CASE;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.SUMMARY_JUDGEMENT;
@@ -238,6 +239,10 @@ public class CreateApplicationTaskHandlerTest {
                                                    .hasAgreed(isRespAgreed).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .organisationIdentifier(organisationIdentifier).build())
+                .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(Organisation.builder()
+                                                                                            .organisationID(organisationIdentifier).build())
+                                                  .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName())
+                                                  .build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                 .isWithNotice(isWithoutNotice)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
@@ -469,6 +474,11 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
+            map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
+                .organisation(Organisation.builder()
+                                  .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
+                                  .build())
+                .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
             when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
@@ -532,6 +542,8 @@ public class CreateApplicationTaskHandlerTest {
                                                    .hasAgreed(isGeneralAppAgreed).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .organisationIdentifier(organisationIdentifier).build())
+                .applicant1OrganisationPolicy(OrganisationPolicy.builder().orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName())
+                                                  .organisation(Organisation.builder().organisationID(organisationIdentifier).build()).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                 .isWithNotice(isWithoutNotice)
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
@@ -638,6 +650,11 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
+            map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
+                .organisation(Organisation.builder()
+                                  .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
+                                  .build())
+                .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
             when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
@@ -662,6 +679,7 @@ public class CreateApplicationTaskHandlerTest {
                                                 .reasonsForWithoutNotice(STRING_CONSTANT)
                                                 .build())
                 .generalAppDateDeadline(DUMMY_DATE)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("org1").build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
                                                   .generalAppUrgency(YES)
@@ -761,6 +779,11 @@ public class CreateApplicationTaskHandlerTest {
         );
         map.put(
             "isDocumentVisible", generalApplication.getIsDocumentVisible());
+        map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
+            .organisation(Organisation.builder()
+                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
+                              .build())
+            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
@@ -802,6 +825,10 @@ public class CreateApplicationTaskHandlerTest {
             .addApplicant2(addApplicant2)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                          .organisationIdentifier("org1").build())
+            .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(Organisation.builder().organisationID("org1").build())
+                                              .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build())
             .generalApplicationsDetails(generalApplicationsDetailsList)
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
@@ -839,6 +866,11 @@ public class CreateApplicationTaskHandlerTest {
 
         map.put(
             "isDocumentVisible", generalApplication.getIsDocumentVisible());
+        map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
+            .organisation(Organisation.builder()
+                              .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
+                              .build())
+            .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
