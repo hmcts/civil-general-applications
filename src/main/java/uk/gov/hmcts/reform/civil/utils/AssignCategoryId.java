@@ -21,7 +21,6 @@ public class AssignCategoryId {
     public <T> void assignCategoryIdToCollection(List<Element<T>> documentUpload, Function<Element<T>, Document> documentExtractor, String theID) {
 
         if (documentUpload == null) {
-            log.info("AssignCategoryId::assignCategoryIdToCollection: No document present");
             return;
         }
         documentUpload.forEach(document -> documentExtractor.apply(document).setCategoryID(theID));
