@@ -95,7 +95,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
-                createGeneralApplicationCase(generalApplication);
+                createGeneralApplicationCase(caseId, generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
 
                 withoutNoticeNoConsent(generalApplication, caseData);
@@ -216,10 +216,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         }
     }
 
-    private void createGeneralApplicationCase(GeneralApplication generalApplication) {
+    private void createGeneralApplicationCase(String caseId, GeneralApplication generalApplication) {
         Map<String, Object> map = generalApplication.toMap(mapper);
         map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
+        map.put("applicationTypes", String.join(", ", getTypesString(generalApplication)));
+        map.put("parentCaseReference", caseId);
         map.put("applicant1OrganisationPolicy", getApplicantOrgPolicy(generalApplication));
 
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
@@ -231,6 +233,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                               .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
                               .build())
             .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build();
+    }
+
+    private String getTypesString(final GeneralApplication generalApplication) {
+        List<String> types = generalApplication.getGeneralAppType()
+                .getTypes().stream().map(GeneralApplicationTypes::getDisplayedValue).toList();
+        return String.join(", ", types);
     }
 
     private YesOrNo checkVisibility(GeneralApplication generalApplication) {

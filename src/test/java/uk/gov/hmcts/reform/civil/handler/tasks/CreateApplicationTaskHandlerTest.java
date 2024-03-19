@@ -80,6 +80,7 @@ public class CreateApplicationTaskHandlerTest {
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String CASE_ID = "1";
     private static final String GA_ID = "2";
+    private static final String GA_CASE_TYPES = "Summary judgment";
     private static final String GENERAL_APPLICATIONS = "generalApplications";
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
@@ -474,11 +475,15 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
+
             map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
                 .organisation(Organisation.builder()
                                   .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
                                   .build())
                 .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
+
+            map.put("parentCaseReference", CASE_ID);
+            map.put("applicationTypes", GA_CASE_TYPES);
 
             when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
@@ -650,12 +655,15 @@ public class CreateApplicationTaskHandlerTest {
                 generalApplication
                     .getIsDocumentVisible()
             );
+
             map.put("applicant1OrganisationPolicy", OrganisationPolicy.builder()
                 .organisation(Organisation.builder()
                                   .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
                                   .build())
                 .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
+            map.put("parentCaseReference", CASE_ID);
+            map.put("applicationTypes", GA_CASE_TYPES);
             when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
             when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
@@ -785,6 +793,9 @@ public class CreateApplicationTaskHandlerTest {
                               .build())
             .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
+        map.put("parentCaseReference", CASE_ID);
+        map.put("applicationTypes", GA_CASE_TYPES);
+
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
@@ -871,6 +882,8 @@ public class CreateApplicationTaskHandlerTest {
                               .organisationID(generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier())
                               .build())
             .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
+        map.put("parentCaseReference", CASE_ID);
+        map.put("applicationTypes", GA_CASE_TYPES);
 
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
