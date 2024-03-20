@@ -9,4 +9,8 @@ public interface TemplateDataGenerator<T> {
     default T getTemplateData(CaseData caseData) throws IOException {
         return null;
     }
+
+    default T getTemplateData(CaseData caseData, String authorisation) throws IOException {
+        return null;
+    }
 }

@@ -38,7 +38,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
         UserDetails userDetails = idamClient.getUserDetails(authorisation);
         judgeNameTitle = userDetails.getFullName();
 
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docTemplate = getDocmosisTemplate();
 
@@ -61,7 +61,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -72,7 +72,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

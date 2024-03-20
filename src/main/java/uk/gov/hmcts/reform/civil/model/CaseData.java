@@ -295,6 +295,8 @@ public class CaseData implements MappableObject {
     private final AssistedOrderGiveReasonsDetails assistedOrderGiveReasonsDetails;
     private final GARespondentDebtorOfferGAspec gaRespondentDebtorOffer;
     private final YesOrNo gaRespondentConsent;
+    private final String applicationTypes;
+    private final String parentCaseReference;
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
 

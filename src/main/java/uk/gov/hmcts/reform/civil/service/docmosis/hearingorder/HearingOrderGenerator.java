@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -32,11 +33,12 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentGeneratorService documentGeneratorService;
     private String judgeNameTitle;
     private final IdamClient idamClient;
+    private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
         UserDetails userDetails = idamClient.getUserDetails(authorisation);
         judgeNameTitle = userDetails.getFullName();
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
@@ -59,7 +61,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -77,7 +79,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
