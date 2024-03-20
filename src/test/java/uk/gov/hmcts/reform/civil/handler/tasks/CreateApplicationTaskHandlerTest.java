@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -43,8 +44,10 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.time.LocalDate.EPOCH;
 import static java.util.Collections.singletonList;
@@ -84,6 +87,7 @@ public class CreateApplicationTaskHandlerTest {
     private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
     private static final LocalDateTime DUMMY_DATE = LocalDateTime.parse("2022-02-22T15:59:59");
+    private static final UUID DOC_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 
     List<Element<GeneralApplicationsDetails>> generalApplicationsDetailsList = Lists.newArrayList();
     List<Element<GeneralApplicationsDetails>>  gaDetailsMasterCollection = Lists.newArrayList();
@@ -269,8 +273,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, NO, NO, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
@@ -281,8 +285,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentOneSolListForWithoutNoticeAppln() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO, NO, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, NO, NO, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
@@ -294,8 +298,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentSolListForWithoutNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO, YES, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, NO, YES, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
@@ -307,8 +311,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentTwoSolListForWithoutNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, NO, YES, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent2", NO, NO, YES, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
@@ -324,8 +328,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithNoticeApplnFor1v1Scenario() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, YES, NO, NO, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("applicant", YES, YES, NO, NO, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
@@ -337,8 +341,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, YES, YES, NO, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("applicant", YES, YES, YES, NO, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
@@ -349,8 +353,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentOneSolListForWithoutNoticeAppln1v1Scenario() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO, NO, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, NO, NO, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
@@ -361,8 +365,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentOneSolListForWithoutNoticeApplnMultiParty() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO, YES, NO, NO);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, NO, YES, NO, NO, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
@@ -373,8 +377,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentOneSolListForWithNoticeAppln1v1Scenario() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, YES, NO, NO, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, YES, NO, NO, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
@@ -385,8 +389,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentTwoSolListForWithNoticeApplnVisibleToAllCollections() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, YES, YES, NO, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent2", NO, YES, YES, NO, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
@@ -398,8 +402,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentSolListForWithOutNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, NO, YES, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, NO, YES, YES, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
@@ -411,8 +415,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentSolListForWithNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent1", NO, YES, YES, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent1", NO, YES, YES, YES, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
@@ -424,8 +428,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, YES, YES, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("applicant", YES, YES, YES, YES, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
@@ -437,7 +441,7 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddApplicantSolListForWithoutNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("applicant", YES, NO, YES, YES, YES);
+                getGeneralApplication("applicant", YES, NO, YES, YES, YES, null);
             CaseData caseData = buildOnlyData(generalApplication, NO, NO).toBuilder()
                 .respondent1OrganisationPolicy(OrganisationPolicy.builder().organisation(null).build())
                 .respondent1OrganisationIDCopy("respondent1").build();
@@ -495,8 +499,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentTwoSolListForWithNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, YES, YES, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent2", NO, YES, YES, YES, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
@@ -508,8 +512,8 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldAddRespondentTwoSolListForWithoutNoticeApplnAndGeneralRespAgreed() {
             GeneralApplication generalApplication =
-                getGeneralApplication("respondent2", NO, NO, YES, YES, YES);
-            CaseData data = buildData(generalApplication, NO, NO);
+                getGeneralApplication("respondent2", NO, NO, YES, YES, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(1);
@@ -522,7 +526,8 @@ public class CreateApplicationTaskHandlerTest {
                                                          YesOrNo parentClaimantIsApplicant,
                                                          YesOrNo isWithoutNotice, YesOrNo isMultiParty,
                                                          YesOrNo isGeneralAppAgreed,
-                                                         YesOrNo isDocumentVisible) {
+                                                         YesOrNo isDocumentVisible,
+                                                         List<Element<Document>> generalAppEvidenceDocument) {
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
 
             builder.generalAppType(GAApplicationType.builder()
@@ -547,6 +552,7 @@ public class CreateApplicationTaskHandlerTest {
                                                   .build())
                 .isMultiParty(isMultiParty)
                 .isDocumentVisible(isDocumentVisible)
+                .generalAppEvidenceDocument(generalAppEvidenceDocument)
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
@@ -562,7 +568,7 @@ public class CreateApplicationTaskHandlerTest {
         @Test
         void shouldTriggerCCDEvent() {
             GeneralApplication generalApplication = getGeneralApplication();
-            CaseData data = buildData(generalApplication, NO, NO);
+            CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
@@ -783,12 +789,19 @@ public class CreateApplicationTaskHandlerTest {
     }
 
     public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
-                                                    YesOrNo respondent2SameLegalRepresentative) {
+                              YesOrNo respondent2SameLegalRepresentative,
+                              boolean addEvidenceDoc) {
         generalApplications = getGeneralApplications(generalApplication);
         generalApplicationsDetailsList = Lists.newArrayList();
         gaDetailsMasterCollection = Lists.newArrayList();
         gaDetailsRespondentSolList = Lists.newArrayList();
         gaDetailsRespondentSolTwoList = Lists.newArrayList();
+        Element<Document> same = Element.<Document>builder()
+                .id(DOC_ID)
+                .value(Document.builder().documentUrl("string").build()).build();
+        List<Element<Document>> generalAppEvidenceDocument = addEvidenceDoc ? (new ArrayList<>() {{
+            add(same);
+        }}) : null;
 
         CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
             .respondent1OrganisationPolicy(OrganisationPolicy
@@ -812,7 +825,8 @@ public class CreateApplicationTaskHandlerTest {
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
             .businessProcess(BusinessProcess.builder().status(STARTED)
                                  .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
-
+        caseData = caseData.toBuilder()
+                .generalAppEvidenceDocument(generalAppEvidenceDocument).build();
         VariableMap variables = Variables.createVariables();
         variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
         variables.putValue(FLOW_FLAGS, Map.of());
@@ -852,8 +866,9 @@ public class CreateApplicationTaskHandlerTest {
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-
-        verify(coreCaseDataService).createGeneralAppCase(map);
+        if (!addEvidenceDoc) {
+            verify(coreCaseDataService).createGeneralAppCase(map);
+        }
 
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
 

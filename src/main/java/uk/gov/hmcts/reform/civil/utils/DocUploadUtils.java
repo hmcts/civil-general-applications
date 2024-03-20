@@ -115,6 +115,9 @@ public class DocUploadUtils {
 
     public static List<Element<CaseDocument>> prepareDocuments(List<Element<Document>> source,
                                                               String role, CaseEvent event) {
+        if (Objects.isNull(source)) {
+            return null;
+        }
         String documentType = getDocumentType(event);
         return source.stream()
                 .map(doc -> ElementUtils.element(CaseDocument.builder()

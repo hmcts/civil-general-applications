@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -14,13 +15,17 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -219,6 +224,15 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
         map.put("applicationTypes", String.join(", ", getTypesString(generalApplication)));
         map.put("parentCaseReference", caseId);
+        List<Element<CaseDocument>> addlDoc =
+                DocUploadUtils.prepareDocuments(generalApplication.getGeneralAppEvidenceDocument(),
+                        DocUploadUtils.APPLICANT, CaseEvent.INITIATE_GENERAL_APPLICATION);
+        if (Objects.nonNull(addlDoc)) {
+            map.put("gaAddlDoc", addlDoc);
+            map.put("gaAddlDocStaff", addlDoc);
+            map.put("gaAddlDocClaimant", addlDoc);
+            map.put("generalAppEvidenceDocument", null);
+        }
         generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
     }
 
