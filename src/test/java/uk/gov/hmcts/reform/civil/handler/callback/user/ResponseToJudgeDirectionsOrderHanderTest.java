@@ -60,8 +60,6 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
     @Autowired
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
-    AssignCategoryId assignCategoryId;
-    @MockBean
     IdamClient idamClient;
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -73,12 +71,10 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
 
     @BeforeEach
     public void setUp() throws IOException {
-
         when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
                 .sub(DUMMY_EMAIL)
                 .uid(APP_UID)
                 .build());
-
     }
 
     @Test
