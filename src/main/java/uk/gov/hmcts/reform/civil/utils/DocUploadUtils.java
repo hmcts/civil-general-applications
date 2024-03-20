@@ -28,7 +28,7 @@ public class DocUploadUtils {
                                                      boolean updateScheduler) {
         caseDataBuilder.isDocumentVisible(DocUploadUtils.isDocumentVisible(caseData));
         List<Element<CaseDocument>> docs = prepareUploadDocumentByType(source, role, event);
-        addToAddl(caseData, caseDataBuilder, docs, role, event, updateScheduler);
+        addToAddl(caseData, caseDataBuilder, docs, role, updateScheduler);
     }
 
     private static List<Element<CaseDocument>> prepareUploadDocumentByType(List<Element<UploadDocumentByType>> source,
@@ -52,11 +52,11 @@ public class DocUploadUtils {
         }
         caseDataBuilder.isDocumentVisible(DocUploadUtils.isDocumentVisible(caseData));
         List<Element<CaseDocument>> docs = prepareDocuments(source, role, event);
-        addToAddl(caseData, caseDataBuilder, docs, role, event, updateScheduler);
+        addToAddl(caseData, caseDataBuilder, docs, role, updateScheduler);
     }
 
     public static void addToAddl(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
-                                 List<Element<CaseDocument>> tobeAdded, String role, CaseEvent event,
+                                 List<Element<CaseDocument>> tobeAdded, String role,
                                  boolean updateScheduler) {
         if (role.equals(DocUploadUtils.APPLICANT)) {
             caseDataBuilder.gaAddlDocClaimant(addDocuments(tobeAdded, caseData.getGaAddlDocClaimant()));
