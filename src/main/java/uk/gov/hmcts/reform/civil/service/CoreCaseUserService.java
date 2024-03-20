@@ -32,7 +32,7 @@ public class CoreCaseUserService {
     public void assignCase(String caseId, String userId, String organisationId, CaseRole caseRole) {
         String caaAccessToken = getCaaAccessToken();
 
-        if (!userWithCaseRoleExistsOnCase(caseId, caaAccessToken, caseRole)) {
+        if (!userHasCaseRole(caseId, caaAccessToken, caseRole)) {
             assignUserToCaseForRole(caseId, userId, organisationId, caseRole, caaAccessToken);
         } else {
             log.info("Case already have the user with {} role", caseRole.getFormattedName());
@@ -62,6 +62,18 @@ public class CoreCaseUserService {
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
     }
 
+    public boolean userHasAnyCaseRole(String caseId, String userId, String caseRole) {
+        CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
+            getCaaAccessToken(),
+            authTokenGenerator.generate(),
+            List.of(caseId)
+        );
+
+        return userRoles.getCaseAssignedUserRoles().stream()
+            .filter(c -> c.getUserId().equals(userId))
+            .anyMatch(c -> c.getCaseRole().equals(caseRole));
+    }
+
     private String getCaaAccessToken() {
         return idamClient.getAccessToken(
             crossAccessUserConfiguration.getUserName(),
@@ -86,6 +98,16 @@ public class CoreCaseUserService {
                 .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
                 .build()
         );
+    }
+
+    public CaseAssignedUserRolesResource getUserRoles(String caseId) {
+
+        return caseAccessDataStoreApi.getUserRoles(
+            getCaaAccessToken(),
+            authTokenGenerator.generate(),
+            List.of(caseId)
+        );
+
     }
 
     private void removeCreatorAccess(String caseId, String userId, String organisationId, String caaAccessToken) {
