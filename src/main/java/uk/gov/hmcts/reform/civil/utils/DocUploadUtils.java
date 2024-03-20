@@ -134,6 +134,8 @@ public class DocUploadUtils {
                 return "Additional information";
             case RESPOND_TO_JUDGE_DIRECTIONS:
                 return "Directions Order Documents";
+            case RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION:
+                return "Written representation";
             default:
                 return "Unsupported event";
         }

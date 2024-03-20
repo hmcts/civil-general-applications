@@ -134,7 +134,8 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         gaDirectionDocList.add(element(document2));
 
         CaseData caseData = getCase(generalAppDirOrderUpload,
-                DocUploadUtils.prepareDocuments(gaDirectionDocList, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_DIRECTIONS));
+                DocUploadUtils.prepareDocuments(gaDirectionDocList, DocUploadUtils.APPLICANT,
+                        RESPOND_TO_JUDGE_DIRECTIONS));
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
