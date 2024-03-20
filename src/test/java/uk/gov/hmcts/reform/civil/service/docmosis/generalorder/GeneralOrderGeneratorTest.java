@@ -17,11 +17,13 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
@@ -35,8 +37,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -70,12 +75,14 @@ class GeneralOrderGeneratorTest {
 
     @Test
     void shouldGenerateGeneralOrderDocument() {
-        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
         when(idamClient.getUserDetails(any()))
             .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
         generalOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
@@ -84,6 +91,27 @@ class GeneralOrderGeneratorTest {
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
                                                                   eq(GENERAL_ORDER));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatch() {
+
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build()).build();
+
+        when(idamClient.getUserDetails(any()))
+            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
+            .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, () -> generalOrderGenerator.generate(caseData, BEARER_TOKEN));
+        String expectedMessage = "Court Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+
     }
 
     @Nested
@@ -98,8 +126,10 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
-            var templateData = generalOrderGenerator.getTemplateData(caseData);
+            var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
             assertThatFieldsAreCorrect_GeneralOrder(templateData, caseData);
         }
@@ -116,6 +146,7 @@ class GeneralOrderGeneratorTest {
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(YesOrNo.YES, templateData.getReasonAvailable()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
                 () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
                     .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
                     + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
@@ -139,8 +170,10 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
-            var templateData = generalOrderGenerator.getTemplateData(caseData);
+            var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
             assertThatFieldsAreCorrect_GeneralOrder_1v1(templateData, caseData);
         }
@@ -151,6 +184,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
                 () -> assertEquals(NO, templateData.getIsMultiParty()),
                 () -> assertNull(templateData.getDefendant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()));
@@ -182,8 +216,10 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
-            var templateData = generalOrderGenerator.getTemplateData(updateData);
+            var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_GeneralOrder_Option2(templateData, updateData);
         }
@@ -197,6 +233,7 @@ class GeneralOrderGeneratorTest {
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
                 () -> assertEquals(templateData.getGeneralOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getOrderText()),
                 () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
@@ -236,8 +273,10 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
 
-            var templateData = generalOrderGenerator.getTemplateData(updateData);
+            var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
             assertThatFieldsAreCorrect_GeneralOrder_Option3(templateData, updateData);
         }
@@ -247,6 +286,7 @@ class GeneralOrderGeneratorTest {
             Assertions.assertAll(
                 "GeneralOrderDocument data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -283,8 +323,10 @@ class GeneralOrderGeneratorTest {
             CaseData updateData = caseDataBuilder.build();
 
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
 
-            var templateData = generalOrderGenerator.getTemplateData(updateData);
+            var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
             assertNull(templateData.getJudgeRecital());
             assertEquals("", templateData.getReasonForDecision());

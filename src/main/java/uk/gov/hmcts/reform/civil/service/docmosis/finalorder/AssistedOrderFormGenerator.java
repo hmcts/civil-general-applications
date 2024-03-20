@@ -66,7 +66,8 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         );
     }
 
-    AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
+    @Override
+    public AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
 
         return AssistedOrderForm.builder()
                 .caseNumber(caseData.getCcdCaseReference().toString())
@@ -74,8 +75,10 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .isMultiParty(caseData.getIsMultiParty())
                 .defendant1Name(caseData.getDefendant1PartyName())
-                .defendant2Name(caseData.getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
-                .courtLocation(caseData.getLocationName())
+                .defendant2Name(caseData
+                                    .getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
+                .courtLocation(docmosisService
+                                   .getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

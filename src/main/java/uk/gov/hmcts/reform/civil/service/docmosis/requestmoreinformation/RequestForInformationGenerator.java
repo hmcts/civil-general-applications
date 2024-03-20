@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -25,9 +26,10 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
@@ -49,7 +51,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -59,7 +61,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
