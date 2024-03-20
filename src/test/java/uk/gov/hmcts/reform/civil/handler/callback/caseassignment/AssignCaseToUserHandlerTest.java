@@ -317,6 +317,131 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Nested
+    class AssignRolesSpecCaseWithoutNotice {
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .isMultiParty(YesOrNo.YES)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType(SPEC_CLAIM)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+
+            generalApplication = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
+
+        @Test
+        void shouldCallAssignCase_3Times() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(0)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+    }
+
+    @Nested
+    class AssignRolesSpecCaseWithNotice {
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignedUserRolesResource.builder()
+                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(SUMMARY_JUDGEMENT))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .isMultiParty(YesOrNo.YES)
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType(SPEC_CLAIM)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+
+            generalApplication = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOf(dataMap, CallbackType.SUBMITTED);
+        }
+
+        @Test
+        void shouldCallAssignCase_3Times() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(3)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
+            );
+        }
+    }
+
+    @Nested
     class AssignRolesSpecCaseForWithoutNoticeApplication {
         @BeforeEach
         void setup() {
