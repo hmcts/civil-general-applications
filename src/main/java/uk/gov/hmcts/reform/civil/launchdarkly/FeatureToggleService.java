@@ -48,11 +48,6 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
-    public boolean isGeneralApplicationR2Enabled() {
-        return internalClient
-            .boolVariation("isGeneralApplicationR2Enabled", createLDUser().build(), false);
-    }
-
     public LDUser.Builder createLDUser() {
         return new LDUser.Builder("civil-service")
             .custom("timestamp", String.valueOf(System.currentTimeMillis()))
