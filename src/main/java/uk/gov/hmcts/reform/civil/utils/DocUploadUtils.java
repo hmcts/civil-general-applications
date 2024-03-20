@@ -23,16 +23,20 @@ public class DocUploadUtils {
     public static final String RESPONDENT_ONE = "Respondent One";
     public static final String RESPONDENT_TWO = "Respondent Two";
 
+    private DocUploadUtils() {
+
+    }
+
     public static void addUploadDocumentByTypeToAddl(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
-                                                     List<Element<UploadDocumentByType>> source, String role, CaseEvent event,
+                                                     List<Element<UploadDocumentByType>> source, String role,
                                                      boolean updateScheduler) {
         caseDataBuilder.isDocumentVisible(DocUploadUtils.isDocumentVisible(caseData));
-        List<Element<CaseDocument>> docs = prepareUploadDocumentByType(source, role, event);
+        List<Element<CaseDocument>> docs = prepareUploadDocumentByType(source, role);
         addToAddl(caseData, caseDataBuilder, docs, role, updateScheduler);
     }
 
     private static List<Element<CaseDocument>> prepareUploadDocumentByType(List<Element<UploadDocumentByType>> source,
-                                                                           final String role, final CaseEvent event) {
+                                                                           final String role) {
         return source.stream()
                 .map(uploadDocumentByTypeElement -> ElementUtils.element(CaseDocument.builder()
                         .documentLink(uploadDocumentByTypeElement.getValue()

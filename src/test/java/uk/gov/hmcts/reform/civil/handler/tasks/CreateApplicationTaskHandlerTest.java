@@ -800,8 +800,9 @@ public class CreateApplicationTaskHandlerTest {
                 .id(DOC_ID)
                 .value(Document.builder().documentUrl("string").build()).build();
         List<Element<Document>> generalAppEvidenceDocument = addEvidenceDoc ? (new ArrayList<>() {{
-            add(same);
-        }}) : null;
+                add(same);
+            }
+        }) : null;
 
         CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
             .respondent1OrganisationPolicy(OrganisationPolicy
