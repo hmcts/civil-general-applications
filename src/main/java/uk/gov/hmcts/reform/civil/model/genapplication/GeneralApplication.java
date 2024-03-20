@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -66,7 +65,6 @@ public class GeneralApplication implements MappableObject {
     private YesOrNo generalAppVaryJudgementType;
     private Document generalAppN245FormUpload;
     private GAHearingDateGAspec generalAppHearingDate;
-    private OrganisationPolicy applicant1OrganisationPolicy;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -114,8 +112,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,
                        @JsonProperty("generalAppVaryJudgementType") YesOrNo generalAppVaryJudgementType,
                        @JsonProperty("generalAppN245FormUpload") Document generalAppN245FormUpload,
-                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate,
-                       @JsonProperty("applicant1OrganisationPolicy") OrganisationPolicy applicant1OrganisationPolicy) {
+                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -158,7 +155,6 @@ public class GeneralApplication implements MappableObject {
         this.generalAppVaryJudgementType = generalAppVaryJudgementType;
         this.generalAppN245FormUpload = generalAppN245FormUpload;
         this.generalAppHearingDate = generalAppHearingDate;
-        this.applicant1OrganisationPolicy = applicant1OrganisationPolicy;
     }
 
     @JsonIgnore

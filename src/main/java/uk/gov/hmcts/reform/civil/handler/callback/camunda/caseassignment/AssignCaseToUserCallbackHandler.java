@@ -152,12 +152,15 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
             List<Element<GASolicitorDetailsGAspec>> addlApplicantSolList = caseData.getGeneralAppApplicantAddlSolicitors();
-            for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
-                coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
-                                               addlApplicantSolElement.getValue().getOrganisationIdentifier(),
-                                               APPLICANTSOLICITORONE
-                );
+            if (!addlApplicantSolList.isEmpty()) {
+                for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
+                    coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
+                                                   addlApplicantSolElement.getValue().getOrganisationIdentifier(),
+                                                   APPLICANTSOLICITORONE
+                    );
+                }
             }
+
         }
 
         /*
