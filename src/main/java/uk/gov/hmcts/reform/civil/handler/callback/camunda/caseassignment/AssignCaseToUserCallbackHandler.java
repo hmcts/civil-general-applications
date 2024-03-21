@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -152,7 +153,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                            applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
             );
             List<Element<GASolicitorDetailsGAspec>> addlApplicantSolList = caseData.getGeneralAppApplicantAddlSolicitors();
-            if (!addlApplicantSolList.isEmpty()) {
+            if (Objects.nonNull(addlApplicantSolList) && !addlApplicantSolList.isEmpty()) {
                 for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
                     coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
                                                    addlApplicantSolElement.getValue().getOrganisationIdentifier(),
