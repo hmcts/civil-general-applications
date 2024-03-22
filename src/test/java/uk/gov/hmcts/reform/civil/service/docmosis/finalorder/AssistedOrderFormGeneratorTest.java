@@ -2085,7 +2085,6 @@ class AssistedOrderFormGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
-        when(docmosisService.getJudgeNameTitle(any())).thenReturn("Mr.Judge");
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
             .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
         Exception exception =
@@ -2102,12 +2101,13 @@ class AssistedOrderFormGeneratorTest {
             .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
-        when(docmosisService.getJudgeNameTitle(any())).thenReturn("Mr.Judge");
+
         CaseData caseData = getSampleGeneralApplicationCaseData(NO).toBuilder()
             .caseManagementLocation(GACaseLocation.builder().siteName("testing")
                                         .address("london court")
                                         .baseLocation("1")
                                         .postcode("BA 117").build())
+            .judgeTitle("John Doe")
             .claimant2PartyName(null).build();
 
         generator.generate(caseData, BEARER_TOKEN);
@@ -2128,6 +2128,7 @@ class AssistedOrderFormGeneratorTest {
         assertThat(templateData.getClaimant2Name()).isNull();
         assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
         assertThat(templateData.getDefendant2Name()).isNull();
+        assertThat(templateData.getJudgeNameTitle()).isEqualTo("John Doe");
     }
 
     @Test
@@ -2135,7 +2136,7 @@ class AssistedOrderFormGeneratorTest {
 
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
-        when(docmosisService.getJudgeNameTitle(any())).thenReturn("Mr.Judge");
+
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
             .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
         CaseData caseData = getSampleGeneralApplicationCaseData(YES).toBuilder()
@@ -2143,6 +2144,7 @@ class AssistedOrderFormGeneratorTest {
                                         .address("london court")
                                         .baseLocation("2")
                                         .postcode("BA 117").build())
+            .judgeTitle("John Doe")
             .claimant2PartyName(null).build();
         generator.generate(caseData, BEARER_TOKEN);
 
@@ -2158,6 +2160,7 @@ class AssistedOrderFormGeneratorTest {
         assertThat(templateData.getClaimant2Name()).isEqualTo(caseData.getClaimant2PartyName());
         assertThat(templateData.getIsMultiParty()).isEqualTo(YES);
         assertThat(templateData.getCourtLocation()).isEqualTo("London");
+        assertThat(templateData.getJudgeNameTitle()).isEqualTo(caseData.getJudgeTitle());
         assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
         assertThat(templateData.getDefendant2Name()).isEqualTo(caseData.getDefendant2PartyName());
     }

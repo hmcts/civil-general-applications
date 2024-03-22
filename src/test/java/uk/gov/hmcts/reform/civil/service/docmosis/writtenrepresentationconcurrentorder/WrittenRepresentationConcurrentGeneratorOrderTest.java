@@ -28,8 +28,6 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -66,8 +64,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
     private DocumentGeneratorService documentGeneratorService;
     @MockBean
     private ListGeneratorService listGeneratorService;
-    @MockBean
-    private IdamClient idamClient;
     @Autowired
     private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
     @MockBean
@@ -84,9 +80,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
             .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-        when(idamClient
-                .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
         writtenRepresentationConcurrentOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -110,9 +103,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             .thenReturn(new DocmosisDocument(WRITTEN_REPRESENTATION_CONCURRENT.getDocumentTitle(), bytes));
 
         when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
             .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
@@ -137,9 +128,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 .build();
 
             when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
-            when(idamClient
-                    .getUserDetails(any()))
-                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationConcurrentOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -151,6 +139,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             Assertions.assertAll(
                 "Written Representation Concurrent Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -193,9 +182,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
-            when(idamClient
-                    .getUserDetails(any()))
-                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
                 .getTemplateData(updateDate, "auth");
@@ -208,6 +194,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             Assertions.assertAll(
                 "Written Representation Concurrent Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -242,9 +229,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
-            when(idamClient
-                    .getUserDetails(any()))
-                    .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
                 .getTemplateData(updateDate, "auth");
@@ -257,6 +241,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             Assertions.assertAll(
                 "Written Representation Concurrent Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -286,9 +271,6 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
                 .getTemplateData(updateDate, "auth");
@@ -301,6 +283,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             Assertions.assertAll(
                 "Written Representation Concurrent Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertNull(templateData.getClaimant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),

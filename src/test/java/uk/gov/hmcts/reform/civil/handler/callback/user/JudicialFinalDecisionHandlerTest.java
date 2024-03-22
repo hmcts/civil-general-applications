@@ -36,6 +36,8 @@ import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -75,6 +77,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private GeneralAppLocationRefDataService locationRefDataService;
     @MockBean
     private DeadlinesCalculator deadlinesCalculator;
+    @MockBean
+    private IdamClient idamClient;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
             + "any party affected by the order may apply to set aside, vary, or stay the order."
@@ -93,6 +97,9 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(7)))
             .thenReturn(localDatePlus7days);
+        when(idamClient
+                 .getUserDetails(any()))
+            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(14)))
             .thenReturn(localDatePlus14days);
@@ -118,6 +125,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response.getData().get("caseNameHmctsInternal")
                 .toString()).isEqualTo("Mr. John Rambo v Mr. Sole Trader");
+        assertThat(response.getData().get("judgeTitle")
+                       .toString()).isEqualTo("John Doe");
     }
 
     @Test
