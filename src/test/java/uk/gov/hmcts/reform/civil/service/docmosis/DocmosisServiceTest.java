@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -37,8 +35,6 @@ public class DocmosisServiceTest {
 
     @Autowired
     private DocmosisService docmosisService;
-    @MockBean
-    private IdamClient idamClient;
     @MockBean
     private GeneralAppLocationRefDataService generalAppLocationRefDataService;
 
@@ -71,16 +67,6 @@ public class DocmosisServiceTest {
         String expectedMessage = "Court Name is not found in location data";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
-    }
-
-    @Test
-    void shouldRetunJudgeFullName() {
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
-
-        assertThat(docmosisService.getJudgeNameTitle("auth")).isEqualTo("John Doe");
-
     }
 
     @Test

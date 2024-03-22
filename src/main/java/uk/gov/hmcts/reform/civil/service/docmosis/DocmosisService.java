@@ -8,8 +8,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,13 +19,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @SuppressWarnings("unchecked")
 public class DocmosisService {
 
-    private final IdamClient idamInfo;
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
-
-    public String getJudgeNameTitle(String authorisation) {
-        UserDetails userDetails = idamInfo.getUserDetails(authorisation);
-        return userDetails.getFullName();
-    }
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = generalAppLocationRefDataService

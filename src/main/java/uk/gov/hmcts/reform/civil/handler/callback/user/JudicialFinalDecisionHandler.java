@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -158,8 +158,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder()
                 .caseNameHmctsInternal(getAllPartyNames(caseData));
-        UserDetails userDetails = idamClient.getUserDetails(callbackParams.getParams().get(BEARER_TOKEN).toString());
-        caseDataBuilder.judgeTitle(userDetails.getFullName());
+        UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        caseDataBuilder.judgeTitle(String.join(" ", userDetails.getName(), userDetails.getFamilyName()));
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();

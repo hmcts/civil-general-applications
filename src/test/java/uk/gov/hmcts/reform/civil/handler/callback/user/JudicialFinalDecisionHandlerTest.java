@@ -37,7 +37,7 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -98,8 +98,8 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(7)))
             .thenReturn(localDatePlus7days);
         when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+                 .getUserInfo(any()))
+            .thenReturn(UserInfo.builder().name("John").familyName("Doe").build());
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(14)))
             .thenReturn(localDatePlus14days);

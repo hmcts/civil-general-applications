@@ -70,7 +70,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.Request
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -208,8 +208,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         void setUp() {
             when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
             when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
+                     .getUserInfo(any()))
+                .thenReturn(UserInfo.builder().name("John").familyName("Doe").build());
         }
 
         YesOrNo hasRespondentResponseVul = NO;
