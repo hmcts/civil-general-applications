@@ -99,7 +99,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .thenReturn(localDatePlus7days);
         when(idamClient
                  .getUserInfo(any()))
-            .thenReturn(UserInfo.builder().name("John").familyName("Doe").build());
+            .thenReturn(UserInfo.builder().name("John Doe").build());
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(14)))
             .thenReturn(localDatePlus14days);

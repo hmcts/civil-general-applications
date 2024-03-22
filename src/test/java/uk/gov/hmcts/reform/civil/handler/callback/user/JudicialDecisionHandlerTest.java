@@ -209,7 +209,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
             when(idamClient
                      .getUserInfo(any()))
-                .thenReturn(UserInfo.builder().name("John").familyName("Doe").build());
+                .thenReturn(UserInfo.builder().name("John Doe").build());
         }
 
         YesOrNo hasRespondentResponseVul = NO;
