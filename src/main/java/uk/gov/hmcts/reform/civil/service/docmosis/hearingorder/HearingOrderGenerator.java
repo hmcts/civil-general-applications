@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,13 +29,10 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
-    private String judgeNameTitle;
-    private final IdamClient idamClient;
     private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        judgeNameTitle = userDetails.getFullName();
+
         JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
@@ -65,7 +60,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
-                .judgeNameTitle(judgeNameTitle)
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .isMultiParty(caseData.getIsMultiParty())
                 .claimant1Name(caseData.getClaimant1PartyName())

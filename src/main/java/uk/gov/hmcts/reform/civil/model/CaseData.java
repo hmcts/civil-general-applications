@@ -293,6 +293,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo gaRespondentConsent;
     private final String applicationTypes;
     private final String parentCaseReference;
+    private final String judgeTitle;
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
