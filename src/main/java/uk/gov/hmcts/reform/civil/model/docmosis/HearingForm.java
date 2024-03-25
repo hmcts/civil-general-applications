@@ -14,6 +14,7 @@ public class HearingForm implements MappableObject {
 
     private final String caseNumber;
     private final String court;
+    private final String hearingLocationVenue;
     private final String creationDate;
     private final String claimant;
     private final String defendant;

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +55,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 class HearingOrderGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
+    private static final String POST_CODE = "HKP D212";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @MockBean
@@ -66,6 +68,12 @@ class HearingOrderGeneratorTest {
     private IdamClient idamClient;
     @MockBean
     private DocmosisService docmosisService;
+
+    @BeforeEach
+    void setUp() {
+        when(docmosisService.populateJudicialHearingLocationVenueName(any(), any()))
+            .thenReturn(POST_CODE);
+    }
 
     @Test
     void shouldGenerateHearingOrderDocument() {
@@ -152,7 +160,8 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections()),
                 () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
                 () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
-                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode())
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals(templateData.getHearingLocationVenue(), POST_CODE)
             );
         }
 
@@ -200,7 +209,8 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getEstimatedHearingLength(),
                                    caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()),
                 () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),
-                () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections())
+                () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections()),
+                () -> assertEquals(templateData.getHearingLocationVenue(), POST_CODE)
             );
         }
 

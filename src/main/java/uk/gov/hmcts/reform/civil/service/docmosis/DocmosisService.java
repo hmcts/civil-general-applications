@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -23,6 +24,14 @@ public class DocmosisService {
 
     private final IdamClient idamInfo;
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
+    private final List<LocationRefData> courtLocations;
+
+    public List<LocationRefData> getCourtLocations(String authorisation) {
+        if (courtLocations.isEmpty()) {
+            return generalAppLocationRefDataService.getCourtLocations(authorisation);
+        }
+        return courtLocations;
+    }
 
     public String getJudgeNameTitle(String authorisation) {
         UserDetails userDetails = idamInfo.getUserDetails(authorisation);
@@ -30,8 +39,7 @@ public class DocmosisService {
     }
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
-        List<LocationRefData> courtLocations = generalAppLocationRefDataService
-            .getCourtLocations(authorisation);
+        List<LocationRefData> courtLocations = getCourtLocations(authorisation);
         var matchingLocations =
             courtLocations
                 .stream()
@@ -43,6 +51,37 @@ public class DocmosisService {
         } else {
             throw new IllegalArgumentException("Court Name is not found in location data");
         }
+    }
+
+    public String populateJudicialHearingLocationVenueName(CaseData caseData, String authorisation) {
+        List<LocationRefData> hearingLocations = getCourtLocations(authorisation);
+        if (Objects.nonNull(caseData.getJudicialListForHearing().getHearingPreferencesPreferredType())
+            && caseData.getJudicialListForHearing().getHearingPreferencesPreferredType()
+            .equals(GAJudicialHearingType.IN_PERSON)) {
+
+            String judicialHearingLocationPostCode = getJudicialHearingLocationPostCode(caseData);
+
+            var matchingLocation =
+                hearingLocations
+                    .stream()
+                    .filter(location -> location.getPostcode()
+                        .equals(judicialHearingLocationPostCode)).findAny();
+
+            if (!matchingLocation.isEmpty()) {
+                return matchingLocation.get().getVenueName();
+            }
+        }
+        throw new IllegalArgumentException("Venue Name is not found in location data");
+
+    }
+
+    private String getJudicialHearingLocationPostCode(CaseData caseData) {
+
+        String hearingLocation = caseData.getJudicialListForHearing().getHearingPreferredLocation().getValue()
+            .getLabel();
+
+        return hearingLocation.substring(hearingLocation.lastIndexOf("-") + 2);
+
     }
 
     public YesOrNo reasonAvailable(CaseData caseData) {

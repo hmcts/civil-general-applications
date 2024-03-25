@@ -80,6 +80,8 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .hearingLocationVenue(docmosisService
+                                          .populateJudicialHearingLocationVenueName(caseData, authorisation))
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

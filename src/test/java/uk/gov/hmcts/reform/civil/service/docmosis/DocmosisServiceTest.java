@@ -7,11 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -35,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 })
 public class DocmosisServiceTest {
 
+    private static final String POST_CODE = "ABC EDF";
     @Autowired
     private DocmosisService docmosisService;
     @MockBean
@@ -43,9 +48,52 @@ public class DocmosisServiceTest {
     private GeneralAppLocationRefDataService generalAppLocationRefDataService;
 
     private static final List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").postcode("E456 DiX0").build(),
+                LocationRefData.builder().epimmsId("2").venueName("London").postcode(POST_CODE).build(),
+                LocationRefData.builder().epimmsId("3").venueName("Manchester").postcode("d15 4567L").build());
+
+    @Test
+    void shouldReturnVenueName() {
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+        List<DynamicListElement> listItems = Arrays.asList(DynamicListElement.builder().code("code").label("label").build());
+
+        DynamicListElement selectedLocation = DynamicListElement
+            .builder().label("Court - London - EPIMMDS CODE - " + POST_CODE).build();
+
+        CaseData caseData = CaseData.builder()
+            .judicialListForHearing(
+                GAJudgesHearingListGAspec.builder()
+                    .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                    .hearingPreferredLocation(
+                        DynamicList.builder().value(selectedLocation).listItems(listItems).build()).build()).build();
+
+        String venueName = docmosisService.populateJudicialHearingLocationVenueName(caseData, "auth");
+        assertThat(venueName)
+            .isEqualTo("London");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatchForVenuePostCode() {
+        when(generalAppLocationRefDataService.getCourtLocations(any())).thenReturn(locationRefData);
+        List<DynamicListElement> listItems = Arrays.asList(DynamicListElement.builder().code("code").label("label").build());
+
+        DynamicListElement selectedLocation = DynamicListElement
+            .builder().label("Court - London - EPIMMDS CODE - D08 EXIP").build();
+
+        CaseData caseData = CaseData.builder()
+            .judicialListForHearing(
+                GAJudgesHearingListGAspec.builder()
+                    .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                    .hearingPreferredLocation(
+                        DynamicList.builder().value(selectedLocation).listItems(listItems).build()).build()).build();
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, ()
+                -> docmosisService.populateJudicialHearingLocationVenueName(caseData, "auth"));
+        String expectedMessage = "Venue Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
 
     @Test
     void shouldReturnLocationRefData() {

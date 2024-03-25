@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ class HearingFormGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    private static final String POST_CODE = "HKP D212";
 
     private static final String templateName = "Application_Hearing_Notice_%s.pdf";
     private static final String fileName_application = String.format(templateName,
@@ -77,6 +79,12 @@ class HearingFormGeneratorTest {
     private HearingFormGenerator generator;
     @MockBean
     private DocmosisService docmosisService;
+
+    @BeforeEach
+    void setUp() {
+        when(docmosisService.populateJudicialHearingLocationVenueName(any(), any()))
+            .thenReturn(POST_CODE);
+    }
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -145,6 +153,7 @@ class HearingFormGeneratorTest {
 
         var templateData = generator.getTemplateData(caseData, "auth");
         assertThat(templateData.getCourt()).isEqualTo("London");
+        assertThat(templateData.getHearingLocationVenue()).isEqualTo(POST_CODE);
     }
 
     @Test

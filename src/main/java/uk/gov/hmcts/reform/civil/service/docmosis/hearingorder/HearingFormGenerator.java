@@ -75,6 +75,8 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
 
         return HearingForm.builder()
             .court(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+            .hearingLocationVenue(docmosisService
+                                      .populateJudicialHearingLocationVenueName(caseData, authorisation))
             .caseNumber(getCaseNumberFormatted(caseData))
             .creationDate(getDateFormatted(LocalDate.now()))
             .claimant(caseData.getClaimant1PartyName())
