@@ -145,6 +145,7 @@ class HearingFormGeneratorTest {
 
         var templateData = generator.getTemplateData(caseData, "auth");
         assertThat(templateData.getCourt()).isEqualTo("London");
+        assertThat(templateData.getJudgeHearingLocation()).isEqualTo("sitename - location name - D12 8997");
     }
 
     @Test
