@@ -33,6 +33,8 @@ import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,6 +92,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
     private final DeadlinesCalculator deadlinesCalculator;
+    private final IdamClient idamClient;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -155,6 +158,8 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder()
                 .caseNameHmctsInternal(getAllPartyNames(caseData));
+        UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
+        caseDataBuilder.judgeTitle(userDetails.getName());
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();

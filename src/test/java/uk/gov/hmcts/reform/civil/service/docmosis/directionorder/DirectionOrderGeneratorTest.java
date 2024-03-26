@@ -30,8 +30,6 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -69,8 +67,6 @@ class DirectionOrderGeneratorTest {
     private DocumentGeneratorService documentGeneratorService;
     @Autowired
     private DirectionOrderGenerator directionOrderGenerator;
-    @MockBean
-    private IdamClient idamClient;
     @Autowired
     private ObjectMapper mapper;
     @MockBean
@@ -92,8 +88,6 @@ class DirectionOrderGeneratorTest {
     @Test
     void shouldGenerateDirectionOrderDocument() {
 
-        when(idamClient.getUserDetails(any()))
-            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
@@ -116,8 +110,6 @@ class DirectionOrderGeneratorTest {
             .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
             .build();
 
-        when(idamClient.getUserDetails(any()))
-            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
@@ -158,6 +150,7 @@ class DirectionOrderGeneratorTest {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -204,6 +197,7 @@ class DirectionOrderGeneratorTest {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertNull(templateData.getClaimant2Name()),
                 () -> assertEquals(templateData.getCourtName(), "Manchester"),
@@ -252,6 +246,7 @@ class DirectionOrderGeneratorTest {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -292,9 +287,6 @@ class DirectionOrderGeneratorTest {
 
             CaseData updateCaseData = caseDataBuilder.build();
 
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.YES);
             when(docmosisService.populateJudgeReason(any())).thenReturn("Test Reason");
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
@@ -312,6 +304,7 @@ class DirectionOrderGeneratorTest {
             Assertions.assertAll(
                 "Direction Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -348,9 +341,6 @@ class DirectionOrderGeneratorTest {
 
             CaseData updateCaseData = caseDataBuilder.build();
 
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());

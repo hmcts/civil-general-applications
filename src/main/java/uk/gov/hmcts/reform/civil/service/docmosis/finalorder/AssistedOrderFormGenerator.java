@@ -83,7 +83,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .receivedDate(LocalDate.now())
-                .judgeNameTitle(docmosisService.getJudgeNameTitle(authorisation))
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .isOrderMade(caseData.getAssistedOrderMadeSelection())
                 .isSingleDate(checkIsSingleDate(caseData))
                 .orderMadeSingleDate(getOrderMadeSingleDate(caseData))

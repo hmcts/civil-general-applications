@@ -24,8 +24,6 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,9 +69,6 @@ class FreeFormOrderGeneratorTest {
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
 
-    @MockBean
-    private IdamClient idamClient;
-
     @Autowired
     private FreeFormOrderGenerator generator;
     @Autowired
@@ -88,10 +83,6 @@ class FreeFormOrderGeneratorTest {
                         any(MappableObject.class), eq(DocmosisTemplates.FREE_FORM_ORDER)))
                 .thenReturn(new DocmosisDocument(
                         DocmosisTemplates.FREE_FORM_ORDER.getDocumentTitle(), bytes));
-
-        when(idamClient
-                .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
@@ -119,10 +110,6 @@ class FreeFormOrderGeneratorTest {
                      any(MappableObject.class), eq(DocmosisTemplates.FREE_FORM_ORDER)))
             .thenReturn(new DocmosisDocument(
                 DocmosisTemplates.FREE_FORM_ORDER.getDocumentTitle(), bytes));
-
-        when(idamClient
-                 .getUserDetails(any()))
-            .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
         when(documentManagementService
                  .uploadDocument(any(), any()))
             .thenReturn(CASE_DOCUMENT);
@@ -205,6 +192,7 @@ class FreeFormOrderGeneratorTest {
         Assertions.assertAll(
             "GeneralOrderDocument data should be as expected",
             () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(freeFormOrder.getJudgeNameTitle(), caseData.getJudgeTitle()),
             () -> assertEquals(freeFormOrder.getClaimant2Name(), caseData.getClaimant2PartyName()),
             () -> assertEquals(freeFormOrder.getCourtName(), "London"),
             () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -234,6 +222,7 @@ class FreeFormOrderGeneratorTest {
         Assertions.assertAll(
             "GeneralOrderDocument data should be as expected",
             () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
+            () -> assertEquals(freeFormOrder.getJudgeNameTitle(), caseData.getJudgeTitle()),
             () -> assertNull(freeFormOrder.getClaimant2Name()),
             () -> assertEquals(freeFormOrder.getCourtName(), "Manchester"),
             () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),

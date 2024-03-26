@@ -27,8 +27,6 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 
@@ -68,13 +66,10 @@ class DismissalOrderGeneratorTest {
     private ObjectMapper mapper;
     @MockBean
     private DocmosisService docmosisService;
-    @MockBean
-    private IdamClient idamClient;
 
     @Test
     void shouldGenerateDismissalOrderDocument() {
-        when(idamClient.getUserDetails(any()))
-            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
+
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DISMISSAL_ORDER)))
             .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
@@ -96,8 +91,6 @@ class DismissalOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication()
             .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build()).build();
 
-        when(idamClient.getUserDetails(any()))
-            .thenReturn(UserDetails.builder().surname("Mark").forename("Joe").build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DISMISSAL_ORDER)))
             .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
@@ -138,6 +131,7 @@ class DismissalOrderGeneratorTest {
             Assertions.assertAll(
                 "Dismissal Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -177,6 +171,7 @@ class DismissalOrderGeneratorTest {
             Assertions.assertAll(
                 "Dismissal Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertNull(templateData.getClaimant2Name()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
@@ -312,9 +307,6 @@ class DismissalOrderGeneratorTest {
 
             when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
             when(docmosisService.populateJudgeReason(any())).thenReturn("");
-            when(idamClient
-                     .getUserDetails(any()))
-                .thenReturn(UserDetails.builder().forename("John").surname("Doe").build());
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
