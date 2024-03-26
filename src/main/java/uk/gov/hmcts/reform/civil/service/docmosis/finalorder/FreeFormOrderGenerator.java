@@ -9,12 +9,11 @@ import uk.gov.hmcts.reform.civil.model.docmosis.FreeFormOrder;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,17 +30,13 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
-    private final IdamClient idamClient;
-    private String judgeNameTitle;
-
+    private final DocmosisService docmosisService;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(" d MMMM yyyy");
     private static final String FILE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        judgeNameTitle = userDetails.getFullName();
 
-        FreeFormOrder templateData = getTemplateData(caseData);
+        FreeFormOrder templateData = getTemplateData(caseData, authorisation);
         DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
@@ -56,17 +51,17 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     }
 
     @Override
-    public FreeFormOrder getTemplateData(CaseData caseData) {
+    public FreeFormOrder getTemplateData(CaseData caseData, String authorisation) {
 
         return FreeFormOrder.builder()
-            .judgeNameTitle(judgeNameTitle)
+            .judgeNameTitle(caseData.getJudgeTitle())
             .caseNumber(caseData.getCcdCaseReference().toString())
             .caseName(caseData.getCaseNameHmctsInternal())
             .receivedDate(getDateFormatted(LocalDate.now()))
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
-            .courtName(caseData.getLocationName())
+            .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
             .siteName(caseData.getCaseManagementLocation().getSiteName())
             .address(caseData.getCaseManagementLocation().getAddress())
             .postcode(caseData.getCaseManagementLocation().getPostcode())

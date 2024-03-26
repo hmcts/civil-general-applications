@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -27,9 +28,10 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
+    private final DocmosisService docmosisService;
 
     @Override
-    public ConsentOrderForm getTemplateData(CaseData caseData)  {
+    public ConsentOrderForm getTemplateData(CaseData caseData, String authorisation)  {
 
         ConsentOrderForm.ConsentOrderFormBuilder consentOrderFormBuilder =
             ConsentOrderForm.builder()
@@ -40,7 +42,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .orderDate(LocalDate.now())
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
@@ -58,7 +60,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        ConsentOrderForm templateData = getTemplateData(caseData);
+        ConsentOrderForm templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 

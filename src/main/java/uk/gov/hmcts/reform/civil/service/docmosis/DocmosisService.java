@@ -6,9 +6,10 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 
+import java.util.List;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
@@ -18,11 +19,22 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 @SuppressWarnings("unchecked")
 public class DocmosisService {
 
-    private final IdamClient idamInfo;
+    private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
 
-    public String getJudgeNameTitle(String authorisation) {
-        UserDetails userDetails = idamInfo.getUserDetails(authorisation);
-        return userDetails.getFullName();
+    public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
+        List<LocationRefData> courtLocations = generalAppLocationRefDataService
+            .getCourtLocations(authorisation);
+        var matchingLocations =
+            courtLocations
+                .stream()
+                .filter(location -> location.getEpimmsId()
+                    .equals(caseData.getCaseManagementLocation().getBaseLocation())).toList();
+
+        if (!matchingLocations.isEmpty()) {
+            return matchingLocations.get(0);
+        } else {
+            throw new IllegalArgumentException("Court Name is not found in location data");
+        }
     }
 
     public YesOrNo reasonAvailable(CaseData caseData) {

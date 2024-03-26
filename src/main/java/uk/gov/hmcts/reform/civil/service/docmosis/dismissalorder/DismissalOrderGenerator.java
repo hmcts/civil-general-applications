@@ -13,8 +13,6 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,16 +25,12 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMI
 public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
     private final DocumentManagementService docManagementService;
-    private final IdamClient idamClient;
     private final DocumentGeneratorService docGeneratorService;
     private final DocmosisService docmosisService;
-    private String judgeNameTitle;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        judgeNameTitle = userDetails.getFullName();
 
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
@@ -59,18 +53,18 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
-                .judgeNameTitle(judgeNameTitle)
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .isMultiParty(caseData.getIsMultiParty())
                 .claimant1Name(caseData.getClaimant1PartyName())
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

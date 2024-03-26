@@ -12,9 +12,9 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
@@ -43,9 +43,6 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
     @Autowired
     private AssignCategoryId assignCategoryId;
 
-    @MockBean
-    private FeatureToggleService featureToggleService;
-
     @Test
     void shouldReturnCorrectActivityId_whenRequested() {
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
@@ -56,7 +53,10 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
 
     @Test
     void shouldGenerateHearingNoticeDocument_whenAboutToSubmitEventIsCalled() {
-        when(hearingFormGenerator.generate(any(), any())).thenReturn(CaseDocument.builder().build());
+        CaseDocument caseDocument = CaseDocument.builder()
+            .documentLink(Document.builder().documentUrl("doc").build()).build();
+
+        when(hearingFormGenerator.generate(any(), any())).thenReturn(caseDocument);
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
             .build();
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);

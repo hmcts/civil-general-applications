@@ -10,13 +10,12 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,15 +31,13 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
-    private final IdamClient idamClient;
-    private String judgeNameTitle;
+
+    private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
-        judgeNameTitle = userDetails.getFullName();
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
             docmosisTemplate
@@ -59,13 +56,13 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         String collect = listGeneratorService.applicationType(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
-                .judgeNameTitle(judgeNameTitle)
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
                 .isMultiParty(caseData.getIsMultiParty())
@@ -80,7 +77,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
                 .responseDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                           .getSequentialApplicantMustRespondWithin())
                 .submittedOn(LocalDate.now())
-                .courtName(caseData.getLocationName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

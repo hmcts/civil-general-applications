@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -70,6 +69,8 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,6 +85,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -161,9 +163,6 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private HearingOrderGenerator hearingOrderGenerator;
 
     @MockBean
-    private FeatureToggleService featureToggleService;
-
-    @MockBean
     private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
 
     @MockBean
@@ -171,6 +170,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private FreeFormOrderGenerator gaFreeFormOrderGenerator;
+
+    @MockBean
+    private IdamClient idamClient;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -201,6 +203,15 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class AboutToStartCallbackHandling {
+
+        @BeforeEach
+        void setUp() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+            when(idamClient
+                     .getUserInfo(any()))
+                .thenReturn(UserInfo.builder().name("John Doe").build());
+        }
+
         YesOrNo hasRespondentResponseVul = NO;
 
         @Test
@@ -217,12 +228,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             assertThat(response).isNotNull();
+            assertThat(response.getData().get("judgeTitle").toString()).isEqualTo("John Doe");
             GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
 
             assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
                 .isEqualTo(String.format(expecetedJudicialTimeEstimateText, getHearingOrderApplnAndResp(types, NO, YES)
                     .getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()));
-
             assertThat(responseCaseData.getHearingPreferencesPreferredTypeLabel1())
                 .isEqualTo(String.format(expecetedJudicialPreferrenceText, getHearingOrderApplnAndResp(types, NO, YES)
                     .getGeneralAppHearingDetails().getHearingPreferencesPreferredType().getDisplayedValue()));
@@ -1598,6 +1609,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
 
             when(writtenRepresentationSequentailOrderGenerator.generate(any(), any()))
                 .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
@@ -2051,6 +2063,12 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class MidEventForMakeAnOrderOption {
+
+        @BeforeEach
+        void setUp() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
+        }
 
         private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
 
@@ -2511,6 +2529,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
             when(generalOrderGenerator.generate(any(), any()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             when(directionOrderGenerator.generate(any(), any()))
@@ -2618,7 +2638,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(updatedData.getJudicialMakeOrderDocPreview())
-                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT.getDocumentLink());
+                .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT.getDocumentLink());
         }
 
         @Test
@@ -2720,6 +2740,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
         @BeforeEach
         void setup() {
+            when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
+
             when(time.now()).thenReturn(responseDate);
             when(deadlinesCalculator.calculateApplicantResponseDeadline(
                 any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
@@ -3745,6 +3767,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent2));
 
         return respondentSols;
+    }
+
+    public boolean checkIf4pmOrAfter(LocalDateTime dateOfService) {
+        return dateOfService.getHour() >= 16;
     }
 }
 

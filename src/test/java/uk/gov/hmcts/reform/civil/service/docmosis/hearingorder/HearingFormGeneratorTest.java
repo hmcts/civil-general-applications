@@ -12,13 +12,16 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
 
@@ -29,9 +32,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -69,6 +75,8 @@ class HearingFormGeneratorTest {
 
     @Autowired
     private HearingFormGenerator generator;
+    @MockBean
+    private DocmosisService docmosisService;
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -78,6 +86,8 @@ class HearingFormGeneratorTest {
         when(documentManagementService
                 .uploadDocument(any(), any()))
                 .thenReturn(CASE_DOCUMENT);
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
@@ -102,6 +112,78 @@ class HearingFormGeneratorTest {
 
         verify(documentManagementService)
                 .uploadDocument(any(), any());
+    }
+
+    @Test
+    void whenJudgeMakeDecision_shouldGetHearingFormData() {
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_APPLICATION)))
+            .thenReturn(new DocmosisDocument(HEARING_APPLICATION.getDocumentTitle(), bytes));
+
+        when(documentManagementService
+                 .uploadDocument(any(), any()))
+            .thenReturn(CASE_DOCUMENT);
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        refMap.put("respondentSolicitor2Reference", "resp2ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseData mainCaseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+            true,
+            true,
+            true, true).build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(mainCaseData);
+        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(
+            anyLong()
+        )).thenReturn(caseDetails);
+        CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES)
+            .build();
+
+        var templateData = generator.getTemplateData(caseData, "auth");
+        assertThat(templateData.getCourt()).isEqualTo("London");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoLocationMatch() {
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(HEARING_APPLICATION)))
+            .thenReturn(new DocmosisDocument(HEARING_APPLICATION.getDocumentTitle(), bytes));
+
+        when(documentManagementService
+                 .uploadDocument(any(), any()))
+            .thenReturn(CASE_DOCUMENT);
+        doThrow(new IllegalArgumentException("Court Name is not found in location data"))
+            .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
+
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        refMap.put("respondentSolicitor2Reference", "resp2ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseData mainCaseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                true,
+                true,
+                true, true).build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(mainCaseData);
+        CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(
+            anyLong()
+        )).thenReturn(caseDetails);
+
+        CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES)
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
+            .build();
+
+        Exception exception =
+            assertThrows(IllegalArgumentException.class, ()
+                -> generator.generate(caseData, BEARER_TOKEN));
+        String expectedMessage = "Court Name is not found in location data";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
