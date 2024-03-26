@@ -135,16 +135,21 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private String getRole(CaseData caseData, String userId) {
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
-                || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))) {
+                || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
+                || (caseData.getGeneralAppApplicantAddlSolicitors() != null
+                && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
+                .equals(userId)).toList().size() == 1)) {
             return "Applicant";
-        } else if (caseData.getIsMultiParty().equals(YesOrNo.NO)
-                && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))
-                || (caseData.getIsMultiParty().equals(YesOrNo.YES)
-                && (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getId().equals(userId))))  {
-            return "Respondent One";
-        } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
-                && (caseData.getGeneralAppRespondentSolicitors().get(1).getValue().getId().equals(userId))) {
-            return  "Respondent Two";
+        } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
+            String orgID = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier();
+            List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
+                    .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
+                            .equals(orgID)).toList();
+            if (resp1SolList.stream().filter(respSolicitorUser -> respSolicitorUser.getValue().getId().equals(userId)).toList().size() == 1) {
+                return "Respondent One";
+            } else {
+                return "Respondent Two";
+            }
         }
         return null;
     }
