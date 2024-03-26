@@ -36,4 +36,8 @@
     <notes>All latest jars has got the vulnerablities. will upgrade later when that is fixed</notes>
     <cve>CVE-2023-5072</cve>
   </suppress>
+  <suppress>
+    <notes>postgresql-42.5.3.jar</notes>
+    <cve>CVE-2024-1597</cve>
+  </suppress>
 </suppressions>
