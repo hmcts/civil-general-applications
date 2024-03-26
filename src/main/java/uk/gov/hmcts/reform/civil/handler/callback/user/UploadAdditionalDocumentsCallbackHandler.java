@@ -81,9 +81,10 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
             caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
         } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
+            String orgID = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier();
             List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
                 .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
-                    .equals(caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier())).toList();
+                    .equals(orgID)).toList();
 
             if (resp1SolList.stream().filter(respSolicitorUser -> respSolicitorUser.getValue().getId().equals(userId)).toList().size() == 1) {
                 caseDataBuilder.gaAddlDocRespondentSol(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSol(),
