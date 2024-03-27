@@ -35,7 +35,7 @@ public class DocUploadUtils {
         addToAddl(caseData, caseDataBuilder, docs, role, updateScheduler);
     }
 
-    private static List<Element<CaseDocument>> prepareUploadDocumentByType(List<Element<UploadDocumentByType>> source,
+    public static List<Element<CaseDocument>> prepareUploadDocumentByType(List<Element<UploadDocumentByType>> source,
                                                                            final String role) {
         return source.stream()
                 .map(uploadDocumentByTypeElement -> ElementUtils.element(CaseDocument.builder()
