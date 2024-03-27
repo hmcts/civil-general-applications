@@ -15,6 +15,9 @@ public class NotificationsProperties {
     private String generalApplicationRespondentEmailTemplate;
 
     @NotEmpty
+    private String urgentGeneralAppRespondentEmailTemplate;
+
+    @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
 
     @NotEmpty

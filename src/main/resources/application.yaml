@@ -127,6 +127,7 @@ reference:
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
+  urgentGeneralAppRespondentEmailTemplate: "3ae23a46-a83b-4768-a066-198e80958cea"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
   writtenRepConcurrentRepresentationApplicantEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
   writtenRepConcurrentRepresentationRespondentEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
