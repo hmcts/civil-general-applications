@@ -54,6 +54,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,6 +97,11 @@ public class CaseDataBuilder {
     public static final String CUSTOMER_REFERENCE = "12345";
 
     private static final String JUDGES_DECISION = "MAKE_DECISION";
+    List<DynamicListElement> listItems = Arrays.asList(DynamicListElement.builder()
+                                                           .code("code").label("label").build());
+
+    DynamicListElement selectedLocation = DynamicListElement
+        .builder().label("sitename - location name - D12 8997").build();
 
     private static final String HEARING_SCHEDULED = "HEARING_SCHEDULED_GA";
     private static final Fee FEE108 = Fee.builder().calculatedAmountInPence(
@@ -799,6 +805,13 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .judgeTitle("John Doe")
+            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                        .hearingPreferredLocation(DynamicList.builder()
+                                                                      .value(selectedLocation).listItems(listItems)
+                                                                      .build())
+                                        .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                        .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
+                                        .build())
             .judicialByCourtsInitiativeListForHearing(GAByCourtsInitiativeGAspec.OPTION_1)
             .orderCourtOwnInitiativeListForHearing(GAOrderCourtOwnInitiativeGAspec
                                                        .builder()
@@ -822,10 +835,6 @@ public class CaseDataBuilder {
                                 .build())
             .judicialDecision(GAJudicialDecision.builder().decision(LIST_FOR_A_HEARING).build())
             .judicialHearingGOHearingReqText("test")
-            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
-                                        .hearingPreferencesPreferredType(GAJudicialHearingType.VIDEO)
-                                        .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
-                                        .build())
             .submittedOn(APPLICATION_SUBMITTED_DATE);
     }
 
@@ -851,6 +860,13 @@ public class CaseDataBuilder {
         respondentSols.add(element(respondent2));
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
+            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                        .hearingPreferredLocation(DynamicList.builder()
+                                                                      .value(selectedLocation).listItems(listItems)
+                                                                      .build())
+                                        .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                        .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
+                                        .build())
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")

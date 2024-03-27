@@ -9,10 +9,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.common.DynamicList;
+import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -28,7 +31,9 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentMan
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +58,11 @@ class HearingFormGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
+    List<DynamicListElement> listItems = Arrays.asList(DynamicListElement.builder()
+                                                           .code("code").label("label").build());
+
+    DynamicListElement selectedLocation = DynamicListElement
+        .builder().label("sitename - location name - D12 8997").build();
 
     private static final String templateName = "Application_Hearing_Notice_%s.pdf";
     private static final String fileName_application = String.format(templateName,
@@ -141,10 +151,19 @@ class HearingFormGeneratorTest {
             anyLong()
         )).thenReturn(caseDetails);
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES)
+            .gaHearingNoticeDetail(GAHearingNoticeDetail
+                                       .builder()
+                                       .hearingDuration(GAHearingDuration.OTHER)
+                                       .channel(GAJudicialHearingType.IN_PERSON)
+                                       .hearingLocation(
+                                           DynamicList.builder()
+                                               .value(selectedLocation).listItems(listItems)
+                                               .build()).build())
             .build();
 
         var templateData = generator.getTemplateData(caseData, "auth");
         assertThat(templateData.getCourt()).isEqualTo("London");
+        assertThat(templateData.getJudgeHearingLocation()).isEqualTo("sitename - location name - D12 8997");
     }
 
     @Test
