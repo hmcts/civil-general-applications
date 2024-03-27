@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 
 import java.util.List;
@@ -45,8 +46,8 @@ public abstract class CallbackHandler {
     }
 
     public boolean isEventAlreadyProcessed(BusinessProcess businessProcess) {
-        if (camundaActivityId().equals(DEFAULT)) {
-
+        if (camundaActivityId().equals(DEFAULT) || (businessProcess != null && camundaActivityId().equals(businessProcess.getActivityId()) && businessProcess.getStatus().equals(
+            BusinessProcessStatus.STARTED))) {
             return false;
         }
 
