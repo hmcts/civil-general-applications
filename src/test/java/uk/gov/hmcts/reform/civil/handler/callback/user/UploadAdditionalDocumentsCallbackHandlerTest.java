@@ -474,7 +474,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
-            assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(3);
+            assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(2);
         }
 
         @Test

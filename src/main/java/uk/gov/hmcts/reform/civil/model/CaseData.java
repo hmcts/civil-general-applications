@@ -166,17 +166,22 @@ public class CaseData implements MappableObject {
     private final String judicialApplicanSequentialDateText;
     private final String judicialConcurrentDateText;
     private final List<Element<Document>> generalAppWrittenRepUpload;
+    @Deprecated
     private final List<Element<Document>> gaWrittenRepDocList;
     private final List<Element<Document>> generalAppDirOrderUpload;
     private final List<Element<Document>> gaDirectionDocList;
     private final List<Element<Document>> generalAppAddlnInfoUpload;
+    @Deprecated
     private final List<Element<Document>> gaAddlnInfoList;
-
+    @Deprecated
     private final List<Element<Document>> gaRespDocument;
-
+    @Deprecated
     private final List<Element<Document>> gaRespDocStaff;
+    @Deprecated
     private final List<Element<Document>> gaRespDocClaimant;
+    @Deprecated
     private final List<Element<Document>> gaRespDocRespondentSol;
+    @Deprecated
     private final List<Element<Document>> gaRespDocRespondentSolTwo;
 
     private final String gaRespondentDetails;

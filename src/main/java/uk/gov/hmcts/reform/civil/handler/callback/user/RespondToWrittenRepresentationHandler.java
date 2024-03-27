@@ -12,16 +12,14 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -33,7 +31,7 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final AssignCategoryId assignCategoryId;
+    private final IdamClient idamClient;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
 
@@ -48,15 +46,11 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
     private CallbackResponse submitClaim(CallbackParams callbackParams) {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        List<Element<Document>> addWrittenResponseList = addWrittenRepresentationResponse(caseData);
-        assignCategoryId.assignCategoryIdToCollection(addWrittenResponseList, Element::getValue,
-                AssignCategoryId.APPLICATIONS
-        );
-        caseDataBuilder.gaWrittenRepDocList(addWrittenResponseList);
-        if (!addWrittenResponseList.isEmpty()) {
-            caseDataBuilder.gaRespDocument(addWrittenResponseList);
-        }
+        String role = DocUploadUtils.getUserRole(caseData, userId);
+        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
+                caseData.getGeneralAppWrittenRepUpload(), role, CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION, false);
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
@@ -64,15 +58,6 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
-    }
-
-    private List<Element<Document>> addWrittenRepresentationResponse(CaseData caseData) {
-        List<Element<Document>> newWrittenRepDocList =
-            ofNullable(caseData.getGaWrittenRepDocList()).orElse(newArrayList());
-
-        newWrittenRepDocList.addAll(caseData.getGeneralAppWrittenRepUpload());
-
-        return newWrittenRepDocList;
     }
 
     @Override

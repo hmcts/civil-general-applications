@@ -12,16 +12,14 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.Document;
-import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -33,7 +31,7 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final AssignCategoryId assignCategoryId;
+    private final IdamClient idamClient;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -48,15 +46,11 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private CallbackResponse submitClaim(CallbackParams callbackParams) {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        List<Element<Document>> addAddInfoResponseList = addAddlnInfoResponse(caseData);
-        assignCategoryId.assignCategoryIdToCollection(addAddInfoResponseList, Element::getValue,
-                AssignCategoryId.APPLICATIONS
-        );
-        caseDataBuilder.gaAddlnInfoList(addAddInfoResponseList);
-        if (!addAddInfoResponseList.isEmpty()) {
-            caseDataBuilder.gaRespDocument(addAddInfoResponseList);
-        }
+        String role = DocUploadUtils.getUserRole(caseData, userId);
+        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
+                caseData.getGeneralAppAddlnInfoUpload(), role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false);
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
@@ -64,15 +58,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
-    }
-
-    private List<Element<Document>> addAddlnInfoResponse(CaseData caseData) {
-        List<Element<Document>> newAddlnInfoDocList =
-            ofNullable(caseData.getGaAddlnInfoList()).orElse(newArrayList());
-
-        newAddlnInfoDocList.addAll(caseData.getGeneralAppAddlnInfoUpload());
-
-        return newAddlnInfoDocList;
     }
 
     @Override
