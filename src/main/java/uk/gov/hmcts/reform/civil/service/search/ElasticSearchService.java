@@ -18,10 +18,10 @@ import static java.math.RoundingMode.UP;
 @RequiredArgsConstructor
 public abstract class ElasticSearchService {
 
-    private final CoreCaseDataService coreCaseDataService;
+    protected final CoreCaseDataService coreCaseDataService;
 
-    private static final int START_INDEX = 0;
-    private static final int ES_DEFAULT_SEARCH_LIMIT = 10;
+    protected static final int START_INDEX = 0;
+    protected static final int ES_DEFAULT_SEARCH_LIMIT = 10;
 
     public List<CaseDetails> getGeneralApplications(CaseState caseState) {
         SearchResult searchResult = coreCaseDataService.searchGeneralApplication(query(START_INDEX, caseState));
@@ -76,7 +76,7 @@ public abstract class ElasticSearchService {
 
     abstract Query queryForBusinessProcessStatus(int startIndex, BusinessProcessStatus processStatus);
 
-    private int calculatePages(SearchResult searchResult) {
+    protected int calculatePages(SearchResult searchResult) {
         return new BigDecimal(searchResult.getTotal()).divide(new BigDecimal(ES_DEFAULT_SEARCH_LIMIT), UP).intValue();
     }
 }
