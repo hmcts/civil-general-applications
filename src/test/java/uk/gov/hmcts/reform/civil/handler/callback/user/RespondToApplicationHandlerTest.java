@@ -117,7 +117,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
                                                                  .sub(DUMMY_EMAIL)
-                                                                 .uid(STRING_CONSTANT)
+                                                                 .uid(DEF_UID)
                                                                  .build());
 
         Document document = Document.builder().documentUrl("url").documentFileName("file").build();
@@ -156,6 +156,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     public static final LocalDate UNAVAILABILITY_DATE_TO_INVALID = TRIAL_DATE_FROM_INVALID.minusDays(10L);
     public static final String PAYMENT_DATE_CANNOT_BE_IN_PAST =
         "The date entered cannot be in the past.";
+    private static final String APP_UID = "9";
+    private static final String DEF_UID = "10";
+    private static final String DEF2_UID = "11";
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -592,9 +595,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response_test() {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
-        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id(DEF_UID)
             .email("test@gmail.com").organisationIdentifier("org2").build();
-        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id(DEF2_UID)
             .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
         respondentSols.add(element(respondent2));
         respondentSols.add(element(respondent1));
@@ -779,16 +782,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getGeneralAppRespondDocument()).isNull();
         assertThat(responseCaseData.getGeneralAppRespondReason()).isNull();
         assertThat(responseCaseData.getGeneralAppRespondent1Representative().getGeneralAppRespondent1Representative()).isNull();
-        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getCategoryID())
-                .isEqualTo(AssignCategoryId.APPLICATIONS);
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentUrl())
-                .isEqualTo("url");
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentFileName())
-                .isEqualTo("file");
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
     }
 
     @Test
@@ -832,16 +828,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getGeneralAppRespondConsentDocument()).isNull();
         assertThat(responseCaseData.getGeneralAppRespondConsentReason()).isNull();
         assertThat(responseCaseData.getGaRespondentConsent()).isNull();
-        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getCategoryID())
-                .isEqualTo(AssignCategoryId.APPLICATIONS);
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentUrl())
-                .isEqualTo("url");
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentFileName())
-                .isEqualTo("file");
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
     }
 
     @Test
@@ -889,16 +878,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
                 .getGaRespondentResponseReason()).isEqualTo(expectedReason);
         assertThat(responseCaseData.getGeneralAppRespondDebtorDocument()).isNull();
-        assertThat(responseCaseData.getGaRespondDoc()).isNotNull();
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getCategoryID())
-                .isEqualTo(AssignCategoryId.APPLICATIONS);
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentUrl())
-                .isEqualTo("url");
-        assertThat(responseCaseData.getGaRespondDoc()
-                .get(0).getValue().getDocumentLink().getDocumentFileName())
-                .isEqualTo("file");
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
     }
 
     @Test
@@ -1092,6 +1074,11 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     private CaseData getCaseWithPreferredTypeInPersonLocationNull() {
         return CaseData.builder()
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .parentClaimantIsApplicant(YES)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                        .email("abc@gmail.com").id(APP_UID).build())
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
             .defendant2PartyName("Defendant Two")
             .defendant1PartyName("Defendant One")
             .claimant1PartyName("Claimant One")
@@ -1157,10 +1144,28 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
         respondentsResponses.add(element(GARespondentResponse.builder()
                                              .generalAppRespondent1Representative(NO)
-                                             .gaRespondentDetails("1234").build()));
-        return CaseData.builder()
+                                             .gaRespondentDetails(DEF_UID).build()));
+        return CaseData.builder().parentClaimantIsApplicant(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                        .email("abc@gmail.com").id(APP_UID).build())
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
             .respondentsResponses(respondentsResponses)
             .build();
+    }
+
+    private List<Element<GASolicitorDetailsGAspec>> getRespondentSolicitors() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id(DEF_UID)
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+        GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id(DEF2_UID)
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        respondentSols.add(element(respondent2));
+
+        return respondentSols;
     }
 
     private CaseData getCase(CaseState state) {
@@ -1193,6 +1198,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                     .types(types).build())
             .parentClaimantIsApplicant(NO)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                        .email("abc@gmail.com").id(APP_UID).build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
             .businessProcess(BusinessProcess
                                  .builder()
                                  .camundaEvent(CAMUNDA_EVENT)
@@ -1213,6 +1221,10 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         first.ifPresent(dynamicListTest::setValue);
 
         return CaseData.builder()
+                .parentClaimantIsApplicant(YES)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                        .email("abc@gmail.com").id(APP_UID).build())
             .generalAppRespondentSolicitors(respondentSols)
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferredLocation(
@@ -1256,6 +1268,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         return CaseData.builder()
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                        .email("abc@gmail.com").id(APP_UID).build())
             .generalAppRespondentSolicitors(respondentSols)
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferredLocation(

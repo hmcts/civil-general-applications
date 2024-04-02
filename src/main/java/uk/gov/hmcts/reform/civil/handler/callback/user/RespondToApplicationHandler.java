@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAspec;
@@ -33,15 +32,13 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
-import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
-import uk.gov.hmcts.reform.civil.utils.ElementUtils;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -294,7 +291,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         UserInfo userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
-
+        String userId = userInfo.getUid();
         List<Element<GARespondentResponse>> respondentsResponses =
             addResponse(buildResponse(caseData, userInfo), caseData.getRespondentsResponses());
 
@@ -304,7 +301,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.gaRespondentConsent(null);
         caseDataBuilder.generalAppRespondReason(null);
         caseDataBuilder.generalAppRespondConsentReason(null);
-        addResponseDoc(caseDataBuilder, caseData);
+        String role = DocUploadUtils.getUserRole(caseData, userId);
+        addResponseDoc(caseDataBuilder, caseData, role);
         caseDataBuilder.generalAppRespondDocument(null);
         caseDataBuilder.generalAppRespondConsentDocument(null);
         caseDataBuilder.generalAppRespondDebtorDocument(null);
@@ -317,7 +315,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
             .build();
     }
 
-    private void addResponseDoc(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData) {
+    private void addResponseDoc(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData, String role) {
         List<Element<Document>> documents = caseData.getGeneralAppRespondDocument();
         if (Objects.isNull(documents)) {
             documents = caseData.getGeneralAppRespondConsentDocument();
@@ -325,22 +323,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         if (Objects.isNull(documents)) {
             documents = caseData.getGeneralAppRespondDebtorDocument();
         }
-        if (Objects.nonNull(documents)) {
-            List<Element<CaseDocument>> newList = caseData.getGaRespondDoc();
-            if (Objects.isNull(newList)) {
-                newList = new ArrayList<>();
-            }
-            newList.addAll(
-                    documents.stream()
-                            .map(doc -> ElementUtils.element(CaseDocument.builder()
-                                    .documentLink(doc.getValue()
-                                            .toBuilder().categoryID(AssignCategoryId.APPLICATIONS)
-                                            .build())
-                                    .documentName(doc.getValue().getDocumentFileName())
-                                    .createdDatetime(LocalDateTime.now()).build()))
-                            .toList());
-            caseDataBuilder.gaRespondDoc(newList);
-        }
+        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
+                documents, role, CaseEvent.RESPOND_TO_APPLICATION, false);
     }
 
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData, UserInfo userInfo) {
