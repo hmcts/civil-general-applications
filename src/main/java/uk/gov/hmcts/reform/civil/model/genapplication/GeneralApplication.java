@@ -36,6 +36,7 @@ public class GeneralApplication implements MappableObject {
     private GAHearingDetails generalAppHearingDetails;
     private GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
+    private List<Element<GASolicitorDetailsGAspec>> generalAppApplicantAddlSolicitors;
     private List<Element<Document>> generalAppEvidenceDocument;
     private LocalDateTime generalAppDateDeadline;
     private YesOrNo isMultiParty;
@@ -82,6 +83,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppApplnSolicitor") GASolicitorDetailsGAspec generalAppApplnSolicitor,
                        @JsonProperty("generalAppRespondentSolicitors") List<Element<GASolicitorDetailsGAspec>>
                            generalAppRespondentSolicitors,
+                       @JsonProperty("generalAppApplicantAddlSolicitors") List<Element<GASolicitorDetailsGAspec>>
+                           generalAppApplicantAddlSolicitors,
                        @JsonProperty("generalAppEvidenceDocument") List<Element<Document>> generalAppEvidenceDocument,
                        @JsonProperty("generalAppDateDeadline") LocalDateTime generalAppDateDeadline,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
@@ -123,6 +126,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppHearingDetails = generalAppHearingDetails;
         this.generalAppApplnSolicitor = generalAppApplnSolicitor;
         this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
+        this.generalAppApplicantAddlSolicitors = generalAppApplicantAddlSolicitors;
         this.generalAppEvidenceDocument = generalAppEvidenceDocument;
         this.generalAppDateDeadline = generalAppDateDeadline;
         this.isMultiParty = isMultiParty;

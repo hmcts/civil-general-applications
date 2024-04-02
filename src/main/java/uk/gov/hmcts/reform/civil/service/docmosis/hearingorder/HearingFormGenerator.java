@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
@@ -42,10 +43,11 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final CoreCaseDataService coreCaseDataService;
+    private final DocmosisService docmosisService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        HearingForm templateData = getTemplateData(caseData);
+        HearingForm templateData = getTemplateData(caseData, authorisation);
         DocmosisTemplates template = getTemplate();
         DocmosisDocument document =
                 documentGeneratorService.generateDocmosisDocument(templateData, template);
@@ -60,7 +62,8 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     }
 
     @Override
-    public HearingForm getTemplateData(CaseData caseData) {
+    public HearingForm getTemplateData(CaseData caseData, String authorisation) {
+
         CaseDetails parentCase = coreCaseDataService
                 .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference()));
         CaseData parentCaseData = caseDetailsConverter.toCaseData(parentCase);
@@ -71,30 +74,30 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 && nonNull(caseData.getDefendant2PartyName());
 
         return HearingForm.builder()
-                .court(caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel())
-                .caseNumber(getCaseNumberFormatted(caseData))
-                .creationDate(getDateFormatted(LocalDate.now()))
-                .claimant(caseData.getClaimant1PartyName())
-                .claimantReference(getReference(parentCase, "applicantSolicitor1Reference"))
-                .defendant(caseData.getDefendant1PartyName())
-                .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
-                .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
-                .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
-                .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
-                .applicationDate(getDateFormatted(caseData
-                        .getGaHearingNoticeApplication().getHearingNoticeApplicationDate()))
-                .hearingDuration(getHearingDurationString(caseData))
-                .additionalInfo(caseData.getGaHearingNoticeInformation())
-                .applicant(caseData.getApplicantPartyName())
-                .claimant1exists(claimant1exists)
-                .defendant1exists(defendant1exists)
-                .claimant2exists(claimant2exists)
-                .defendant2exists(defendant2exists)
-                .claimant2(nonNull(caseData.getClaimant2PartyName()) ? caseData.getClaimant2PartyName() : null)
-                .defendant2(nonNull(caseData.getDefendant2PartyName()) ? caseData.getDefendant2PartyName() : null)
-                .claimant2Reference(getReference(parentCase, "applicantSolicitor1Reference"))
-                .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"))
-                .build();
+            .court(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+            .caseNumber(getCaseNumberFormatted(caseData))
+            .creationDate(getDateFormatted(LocalDate.now()))
+            .claimant(caseData.getClaimant1PartyName())
+            .claimantReference(getReference(parentCase, "applicantSolicitor1Reference"))
+            .defendant(caseData.getDefendant1PartyName())
+            .defendantReference(getReference(parentCase, "respondentSolicitor1Reference"))
+            .hearingDate(getDateFormatted(caseData.getGaHearingNoticeDetail().getHearingDate()))
+            .hearingTime(getHearingTimeFormatted(caseData.getGaHearingNoticeDetail().getHearingTimeHourMinute()))
+            .hearingType(caseData.getGaHearingNoticeDetail().getChannel().getDisplayedValue())
+            .applicationDate(getDateFormatted(caseData.getGaHearingNoticeApplication()
+                                                  .getHearingNoticeApplicationDate()))
+            .hearingDuration(getHearingDurationString(caseData))
+            .additionalInfo(caseData.getGaHearingNoticeInformation())
+            .applicant(caseData.getApplicantPartyName())
+            .claimant1exists(claimant1exists)
+            .defendant1exists(defendant1exists)
+            .claimant2exists(claimant2exists)
+            .defendant2exists(defendant2exists)
+            .claimant2(nonNull(caseData.getClaimant2PartyName()) ? caseData.getClaimant2PartyName() : null)
+            .defendant2(nonNull(caseData.getDefendant2PartyName()) ? caseData.getDefendant2PartyName() : null)
+            .claimant2Reference(getReference(parentCase, "applicantSolicitor1Reference"))
+            .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"))
+            .build();
     }
 
     protected String getCaseNumberFormatted(CaseData caseData) {
