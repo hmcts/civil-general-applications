@@ -10,8 +10,10 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -124,6 +127,7 @@ class HearingOrderGeneratorTest {
             Assertions.assertAll(
                 "Hearing Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeHearingLocation(), "sitename - location name - D12 8997"),
                 () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
@@ -154,6 +158,10 @@ class HearingOrderGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(NO)
+                .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                            .hearingPreferencesPreferredType(GAJudicialHearingType.PAPER_HEARING)
+                                            .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
+                                            .build())
                 .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
                 .build();
 
@@ -177,6 +185,7 @@ class HearingOrderGeneratorTest {
                 "Hearing Order Document data should be as expected",
                 () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
                 () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getJudgeHearingLocation(), null),
                 () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
                 () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
