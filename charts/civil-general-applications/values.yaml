@@ -21,6 +21,12 @@ java:
   image: 'hmctspublic.azurecr.io/civil/general-applications:latest'
   ingressHost: civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: civil
+  autoscaling:
+    enabled: true
+    enabledForDevMode: false
+    maxReplicas: 5
+    cpu:
+      enabled: false
   environment:
     LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
     IDAM_CLIENT_ID: civil-general-applications
