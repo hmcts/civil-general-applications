@@ -126,7 +126,6 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
 
-    private static final String STRING_CONSTANT = "1234";
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String DUMMY_EMAIL = "test@gmail.com";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -785,6 +784,67 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
         assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
         assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getDocumentName()).isEqualTo("Respond evidence");
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getCreatedBy()).isEqualTo("Respondent One");
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getDocumentLink().getCategoryID()).isEqualTo("applications");
+    }
+
+    @Test
+    void shouldReturn_No_WhenRespondIsNotAcceptedByRespondentTWO() {
+        when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
+                .sub(DUMMY_EMAIL)
+                .uid(DEF2_UID)
+                .build());
+        // Civil Claim Case Data
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(civil))
+                .thenReturn(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL));
+
+        CaseData caseData = getCaseWithPreferredTypeInPersonLocationNull();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+                .defendant2PartyName("Defendant Two")
+                .defendant1PartyName("Defendant One")
+                .claimant1PartyName("Claimant One")
+                .claimant2PartyName("Claimant Two")
+                .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build())
+                .generalAppRespondReason("reason")
+                .generalAppRespondent1Representative(GARespondentRepresentative.builder()
+                        .generalAppRespondent1Representative(NO).build())
+                .generalAppRespondDocument(documents);
+
+
+        // GA Case Data
+        CaseDetails ga = CaseDetails.builder().id(456L).build();
+        when(coreCaseDataService.getCase(456L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(ga))
+                .thenReturn(caseDataBuilder.build());
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
+        callbackParamsBuilder.request(CallbackRequest.builder().caseDetails(ga).build());
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(callbackParamsBuilder.build());
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getRespondentsResponses().get(0).getValue()
+                .getGeneralAppRespondent1Representative()).isEqualTo(NO);
+        assertThat(responseCaseData.getRespondentsResponses().get(0)
+                .getValue().getGaRespondentResponseReason()).isEqualTo("reason");
+        assertThat(responseCaseData.getGeneralAppRespondDocument()).isNull();
+        assertThat(responseCaseData.getGeneralAppRespondReason()).isNull();
+        assertThat(responseCaseData.getGeneralAppRespondent1Representative().getGeneralAppRespondent1Representative()).isNull();
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getDocumentName()).isEqualTo("Respond evidence");
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getCreatedBy()).isEqualTo("Respondent Two");
+        assertThat(responseCaseData.getGaAddlDoc().get(0).getValue().getDocumentLink().getCategoryID()).isEqualTo("applications");
     }
 
     @Test
@@ -1160,7 +1220,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
                 .email("test@gmail.com").organisationIdentifier("org2").build();
 
         GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id(DEF2_UID)
-                .email("test@gmail.com").organisationIdentifier("org2").build();
+                .email("test@gmail.com").organisationIdentifier("org3").build();
 
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
