@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -75,6 +76,10 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .judgeHearingLocation(caseData.getJudicialListForHearing()
+                                          .getHearingPreferencesPreferredType() == GAJudicialHearingType.IN_PERSON
+                                          ? caseData.getJudicialListForHearing()
+                    .getHearingPreferredLocation().getValue().getLabel() : null)
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

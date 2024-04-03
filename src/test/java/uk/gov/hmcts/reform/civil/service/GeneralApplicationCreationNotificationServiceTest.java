@@ -10,13 +10,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
@@ -73,6 +77,74 @@ public class GeneralApplicationCreationNotificationServiceTest {
         void setup() {
             when(notificationsProperties.getGeneralApplicationRespondentEmailTemplate())
                 .thenReturn("general-application-respondent-template-id");
+            when(notificationsProperties.getUrgentGeneralAppRespondentEmailTemplate())
+                .thenReturn("general-application-respondent-template-id");
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFee() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), any(), any(), any()
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFeePaid() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                    PaymentStatus.SUCCESS).build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), any(), any(), any()
+            );
+        }
+
+        @Test
+        void notificationShouldNotSendIfGa_NonUrgent_WithNoticeAndFreeFee() {
+            CaseData caseData = getCaseData(false).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        void notificationShouldNotSendIfGa_NonUrgent_WithNoticeAndFeePaid() {
+            CaseData caseData = getCaseData(false).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                                              PaymentStatus.SUCCESS).build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
         }
 
         @Test

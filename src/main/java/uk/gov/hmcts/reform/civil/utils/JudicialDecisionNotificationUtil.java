@@ -261,6 +261,18 @@ public class JudicialDecisionNotificationUtil {
         return false;
     }
 
+    public static boolean isUrgentApplnNotificationCriteriaSatisfied(CaseData caseData) {
+
+        if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+
+            var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
+            return isWithNotice(caseData)
+                && !isNonUrgent(caseData)
+                && !(StringUtils.isEmpty(recipient));
+        }
+        return false;
+    }
+
     public static boolean isWithNotice(CaseData caseData) {
         // Check if the judge uncloaks the application, in addition
         return (caseData.getApplicationIsUncloakedOnce() != null
