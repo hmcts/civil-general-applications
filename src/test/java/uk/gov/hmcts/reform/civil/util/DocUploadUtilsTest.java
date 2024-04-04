@@ -181,7 +181,7 @@ public class DocUploadUtilsTest {
     @CsvSource({
         "INITIATE_GENERAL_APPLICATION,Supporting evidence",
         "RESPOND_TO_JUDGE_ADDITIONAL_INFO,Additional information",
-        "RESPOND_TO_JUDGE_DIRECTIONS,Directions Order Documents",
+        "RESPOND_TO_JUDGE_DIRECTIONS,Directions order",
         "RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,Written representation",
         "RESPOND_TO_APPLICATION,Respond evidence",
         "LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,Unsupported event"

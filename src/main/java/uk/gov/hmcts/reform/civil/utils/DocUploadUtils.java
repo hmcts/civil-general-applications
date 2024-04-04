@@ -141,7 +141,7 @@ public class DocUploadUtils {
             case RESPOND_TO_JUDGE_ADDITIONAL_INFO:
                 return "Additional information";
             case RESPOND_TO_JUDGE_DIRECTIONS:
-                return "Directions Order Documents";
+                return "Directions order";
             case RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION:
                 return "Written representation";
             case RESPOND_TO_APPLICATION:
