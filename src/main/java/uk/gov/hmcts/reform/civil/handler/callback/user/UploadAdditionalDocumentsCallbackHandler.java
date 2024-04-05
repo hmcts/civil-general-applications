@@ -11,21 +11,18 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
-import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +33,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TO
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 
 @Slf4j
 @Service
@@ -64,38 +60,9 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         caseData = buildBundleData(caseData, userId);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-        if (JudicialDecisionNotificationUtil.isWithNotice(caseData) || JudicialDecisionNotificationUtil.isNonUrgent(caseData)
-            || JudicialDecisionNotificationUtil.isGeneralAppConsentOrder(caseData)
-            || (Objects.nonNull(caseData.getApplicationIsCloaked()) && caseData.getApplicationIsCloaked().equals(NO))) {
-            caseDataBuilder.isDocumentVisible(YesOrNo.YES);
-        } else {
-            caseDataBuilder.isDocumentVisible(YesOrNo.NO);
-        }
-        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
-            || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
-            || (caseData.getGeneralAppApplicantAddlSolicitors() != null
-            && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
-            .equals(userId)).toList().size() == 1)) {
-            caseDataBuilder.gaAddlDocClaimant(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocClaimant(), "Applicant"));
-            addAdditionalDocToStaff(caseDataBuilder, caseData, "Applicant");
-            caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
-        } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
-            String orgID = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier();
-            List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
-                .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
-                    .equals(orgID)).toList();
-
-            if (resp1SolList.stream().filter(respSolicitorUser -> respSolicitorUser.getValue().getId().equals(userId)).toList().size() == 1) {
-                caseDataBuilder.gaAddlDocRespondentSol(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSol(),
-                                                                                     "Respondent One"));
-                addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent One");
-                caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
-            } else {
-                caseDataBuilder.gaAddlDocRespondentSolTwo(addAdditionalDocsToCollection(caseData, caseData.getGaAddlDocRespondentSolTwo(), "Respondent Two"));
-                addAdditionalDocToStaff(caseDataBuilder, caseData, "Respondent Two");
-                caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
-            }
-        }
+        String role = DocUploadUtils.getUserRole(caseData, userId);
+        DocUploadUtils.addUploadDocumentByTypeToAddl(caseData, caseDataBuilder,
+                caseData.getUploadDocument(), role, true);
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
@@ -106,11 +73,11 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     }
 
     private CaseData buildBundleData(CaseData caseData, String userId) {
-        String role = getRole(caseData, userId);
+        String role = DocUploadUtils.getUserRole(caseData, userId);
         if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
                     .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
-                                    .contains(BUNDLE))
+                            .contains(BUNDLE))
                     .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
                     .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
@@ -131,65 +98,6 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             return caseData.toBuilder().uploadDocument(exBundle).gaAddlDocBundle(bundle).build();
         }
         return caseData;
-    }
-
-    private String getRole(CaseData caseData, String userId) {
-        if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
-                || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))
-                || (caseData.getGeneralAppApplicantAddlSolicitors() != null
-                && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
-                .equals(userId)).toList().size() == 1)) {
-            return "Applicant";
-        } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
-            String orgID = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier();
-            List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
-                    .filter(gaRespondentSolElement -> gaRespondentSolElement.getValue().getOrganisationIdentifier()
-                            .equals(orgID)).toList();
-            if (resp1SolList.stream().filter(respSolicitorUser -> respSolicitorUser.getValue().getId().equals(userId)).toList().size() == 1) {
-                return "Respondent One";
-            } else {
-                return "Respondent Two";
-            }
-        }
-        return null;
-    }
-
-    private List<Element<CaseDocument>> addAdditionalDocsToCollection(CaseData caseData,
-                                                List<Element<CaseDocument>> documentToBeAddedToCollection, String role) {
-        List<Element<UploadDocumentByType>> addlDocumentsList = caseData.getUploadDocument();
-
-        if (Objects.isNull(documentToBeAddedToCollection)) {
-            documentToBeAddedToCollection = new ArrayList<>();
-        }
-        if (null == addlDocumentsList) {
-            return new ArrayList<>();
-        }
-        return addDocument(documentToBeAddedToCollection, addlDocumentsList, role);
-    }
-
-    private List<Element<CaseDocument>> addDocument(List<Element<CaseDocument>> documentToBeAddedToCollection, List<Element<UploadDocumentByType>> addlDocumentsList, String role) {
-
-        addlDocumentsList.forEach(uploadDocumentByTypeElement -> {
-            if (null != uploadDocumentByTypeElement.getValue().getAdditionalDocument()) {
-                documentToBeAddedToCollection.add(ElementUtils.element(CaseDocument.builder()
-                                                          .documentLink(uploadDocumentByTypeElement.getValue().getAdditionalDocument())
-                                                          .documentName(uploadDocumentByTypeElement.getValue().getDocumentType())
-                                                          .createdBy(role)
-                                                          .createdDatetime(LocalDateTime.now()).build()));
-                assignCategoryId.assignCategoryIdToCollection(
-                    documentToBeAddedToCollection,
-                                                              document -> document.getValue().getDocumentLink(),
-                    AssignCategoryId.APPLICATIONS);
-            }
-        });
-        return documentToBeAddedToCollection;
-    }
-
-    private void addAdditionalDocToStaff(CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData, String role) {
-        List<Element<CaseDocument>> addlDocumentsForStaff = addAdditionalDocsToCollection(caseData, caseData.getGaAddlDoc(), role);
-        caseDataBuilder.gaAddlDoc(addlDocumentsForStaff);
-        caseDataBuilder.gaAddlDocStaff(addlDocumentsForStaff);
-
     }
 
     private CallbackResponse submittedConfirmation(CallbackParams callbackParams) {
