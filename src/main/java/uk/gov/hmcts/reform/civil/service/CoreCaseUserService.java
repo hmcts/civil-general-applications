@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
 import uk.gov.hmcts.reform.ccd.model.AddCaseAssignedUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
@@ -34,6 +35,16 @@ public class CoreCaseUserService {
 
         if (!userHasCaseRole(caseId, caaAccessToken, caseRole)) {
             assignUserToCaseForRole(caseId, userId, organisationId, caseRole, caaAccessToken);
+        } else {
+            log.info("Case already have the user with {} role", caseRole.getFormattedName());
+        }
+    }
+
+    public void assignCaseForLip(String caseId, String userId, CaseRole caseRole) {
+        String caaAccessToken = getCaaAccessToken();
+
+        if (!userHasCaseRole(caseId, caaAccessToken, caseRole)) {
+            assignUserToCaseRoleForLip(caseId, userId, caseRole, caaAccessToken);
         } else {
             log.info("Case already have the user with {} role", caseRole.getFormattedName());
         }
@@ -96,6 +107,24 @@ public class CoreCaseUserService {
             authTokenGenerator.generate(),
             AddCaseAssignedUserRolesRequest.builder()
                 .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+                .build()
+        );
+    }
+
+    public void assignUserToCaseRoleForLip(String caseId, String userId,
+                                           CaseRole caseRole, String caaAccessToken) {
+        CaseAssignedUserRole caseAssignedUserRole
+            = CaseAssignedUserRole.builder()
+            .caseDataId(caseId)
+            .userId(userId)
+            .caseRole(caseRole.getFormattedName())
+            .build();
+
+        caseAccessDataStoreApi.addCaseUserRolesForLip(
+            caaAccessToken,
+            authTokenGenerator.generate(),
+            CaseAssignedUserRolesResource.builder()
+                .caseAssignedUserRoles(List.of(caseAssignedUserRole))
                 .build()
         );
     }

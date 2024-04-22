@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     SolicitorEmailValidation.class,
+    GaForLipService.class,
     JacksonAutoConfiguration.class,
 })
 public class SolicitorEmailValidationTest {
@@ -44,7 +46,15 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1() {
+        CaseData caseData = solicitorEmailValidation
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+            .isEqualTo(DUMMY_EMAIL);
+    }
+
+    @Test
+    void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1_LIP() {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
 
@@ -54,7 +64,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
@@ -66,7 +75,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGARespondentEmailAndCivilRespondentEmail_1V1() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
@@ -80,7 +88,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_2V1() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
@@ -92,7 +99,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGARespondentEmailAndCivilRespondentEmail_2V1() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
@@ -106,7 +112,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V2() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(YES));
@@ -118,7 +123,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGARespondent1EmailAndCivilRespondentEmail_1V2() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
@@ -133,7 +137,6 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchIfThereIsChangeInGARespondent2EmailAndCivilRespondentEmail_1V2() {
-
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
@@ -194,6 +197,9 @@ public class SolicitorEmailValidationTest {
 
         return new CaseDataBuilder()
             .isMultiParty(isMultiParty)
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(NO)
+            .isGaRespondentTwoLip(NO)
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id").forename("Applicant One")
                                           .email(DUMMY_EMAIL).organisationIdentifier("1").build())
             .generalAppRespondentSolicitors(respondentSols)

@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.service.tasklisteners.GaForLipService;
+import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 
@@ -117,7 +117,6 @@ public class SolicitorEmailValidation {
             /*GA for LIP*/
             caseDataBuilder.generalAppRespondentSolicitors(gaCaseData.getGeneralAppRespondentSolicitors());
         }
-
 
         return caseDataBuilder.build();
     }

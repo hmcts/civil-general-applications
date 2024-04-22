@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.civil.service.tasklisteners.GaForLipService;
+import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
