@@ -143,10 +143,11 @@ class CoreCaseUserServiceTest {
             when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of()).build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
 
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.DEFENDANT)).isFalse();
+                                               CaseRole.RESPONDENT
+            )).isFalse();
 
             verify(caseAccessDataStoreApi, times(1))
                 .addCaseUserRolesForLip(any(), any(), any());
@@ -163,7 +164,7 @@ class CoreCaseUserServiceTest {
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
                                 .build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
 
             verify(caseAccessDataStoreApi, never()).addCaseUserRoles(
                 any(),
@@ -176,14 +177,15 @@ class CoreCaseUserServiceTest {
         void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleExist() {
             CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
                 .userId(CAA_USER_AUTH_TOKEN)
-                .caseRole(CaseRole.DEFENDANT.getFormattedName())
+                .caseRole(CaseRole.RESPONDENT.getFormattedName())
                 .build();
             when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole)).build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.DEFENDANT)).isFalse();
+                                               CaseRole.RESPONDENT
+            )).isFalse();
 
         }
 

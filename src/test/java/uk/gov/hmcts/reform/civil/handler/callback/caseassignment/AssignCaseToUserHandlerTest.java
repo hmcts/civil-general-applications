@@ -323,7 +323,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             verify(coreCaseUserService, times(1))
                 .assignCaseForLip(CASE_ID.toString(),
                             generalApplication.getGeneralAppRespondentSolicitors().get(0).getValue().getId(),
-                            CaseRole.DEFENDANT);
+                            CaseRole.RESPONDENT);
         }
     }
 
@@ -528,7 +528,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         void shouldHaveDefendantRole() {
             var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
             assertThat(response.getData().get("respondent1OrganisationPolicy"))
-                .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");
+                .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[RESPONDENT]");
         }
     }
 
