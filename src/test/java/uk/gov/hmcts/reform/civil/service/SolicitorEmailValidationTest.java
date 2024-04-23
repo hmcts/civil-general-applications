@@ -54,6 +54,26 @@ public class SolicitorEmailValidationTest {
     }
 
     @Test
+    void shouldMatchRespondentOneEmailId_LRvsLIP() {
+        CaseData caseData = solicitorEmailValidation
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO)
+                .toBuilder().isGaRespondentOneLip(YES).build());
+
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+            .isEqualTo(DUMMY_EMAIL);
+    }
+
+    @Test
+    void shouldMatchRespondentTwoEmailID_LRvsLIP() {
+        CaseData caseData = solicitorEmailValidation
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO)
+                .toBuilder().isGaRespondentTwoLip(YES).build());
+
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+            .isEqualTo(DUMMY_EMAIL);
+    }
+
+    @Test
     void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1_LIP() {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
