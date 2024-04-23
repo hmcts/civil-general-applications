@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.citizen.events;
 
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
 
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -30,7 +30,7 @@ public class CaseEventService {
             authTokenGenerator.generate(),
             userId,
             JURISDICTION,
-            CASE_TYPE,
+            GENERAL_APPLICATION_CASE_TYPE,
             caseId,
             event.name()
         );
@@ -39,7 +39,7 @@ public class CaseEventService {
 //                authTokenGenerator.generate(),
 //                userId,
 //                JURISDICTION,
-//                CASE_TYPE,
+//                GENERAL_APPLICATION_CASE_TYPE,
 //                caseId,
 //                event.name()
 //        );
@@ -58,7 +58,7 @@ public class CaseEventService {
                 authTokenGenerator.generate(),
                 params.getUserId(),
                 JURISDICTION,
-                CASE_TYPE,
+                GENERAL_APPLICATION_CASE_TYPE,
                 params.getCaseId(),
                 true,
                 caseDataContent
@@ -68,7 +68,7 @@ public class CaseEventService {
 //                authTokenGenerator.generate(),
 //                params.getUserId(),
 //                JURISDICTION,
-//                CASE_TYPE,
+//                GENERAL_APPLICATION_CASE_TYPE,
 //                params.getCaseId(),
 //                true,
 //                caseDataContent
