@@ -23,8 +23,6 @@ public class AssignCaseToResopondentSolHelper {
 
     private static final int FIRST_SOLICITOR = 0;
 
-    private final GaForLipService gaForLipService;
-
     public void assignCaseToRespondentSolicitor(CaseData caseData, String caseId) {
 
         /*
@@ -32,7 +30,7 @@ public class AssignCaseToResopondentSolHelper {
          * */
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
 
-            if (!gaForLipService.isGaForLip(caseData)) {
+            if (!GaForLipService.isGaForLip(caseData)) {
 
                 List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
                     .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
