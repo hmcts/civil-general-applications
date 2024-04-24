@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +35,26 @@ import org.springframework.web.bind.annotation.RestController;
 )
 public class CasesController {
 
+    private final CoreCaseDataService coreCaseDataService;
     private final CaseEventService caseEventService;
+
+    @GetMapping(path = {
+            "/{caseId}",
+    })
+    @Operation(summary = "get case by id from CCD")
+    public ResponseEntity<CaseDetails> getCaseId(
+            @PathVariable("caseId") Long caseId,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
+    ) {
+        log.info(
+                "Received CaseId: {}",
+                caseId
+        );
+
+        var caseDetailsResponse = coreCaseDataService.getCase(caseId, authorisation);
+
+        return new ResponseEntity<>(caseDetailsResponse, HttpStatus.OK);
+    }
 
     @PostMapping(path = "/{caseId}/citizen/{submitterId}/event")
     @Operation(summary = "Submits event")

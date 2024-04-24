@@ -203,7 +203,7 @@ public class CoreCaseDataService {
         }
     }
 
-    private CaseDetails getCase(Long caseId, String userToken) {
+    public CaseDetails getCase(Long caseId, String userToken) {
         return coreCaseDataApi.getCase(userToken, authTokenGenerator.generate(), caseId.toString());
     }
 
