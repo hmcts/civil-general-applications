@@ -5,12 +5,15 @@ set -eu
 selected_service=${@}
 
 echo "params: ${selected_service}"
-echo "CIVIL_GENERAL_APPLICATIONS_URL: ${CIVIL_GENERAL_APPLICATIONS_URL}"
+echo "CIVIL_SERVICE_URL: ${CIVIL_SERVICE_URL}"
 echo "URL: ${URL}"
 
-service_base_urls=${CIVIL_GENERAL_APPLICATIONS_URL}
+service_base_urls=${CIVIL_SERVICE_URL}
 if [[ "${selected_service}" == 'manage-case' ]]; then
   service_base_urls=${URL}
+fi
+if [[ "${selected_service}" == 'definition-store' ]]; then
+  service_base_urls=${CCD_DEFINITION_STORE_API_BASE_URL}
 fi
 
 echo "service_base_urls: ${service_base_urls}"
