@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
 
+import static java.util.Collections.emptyList;
+
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.civil.model.citizenui.dto.EventDto;
+import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 import uk.gov.hmcts.reform.civil.service.citizen.events.EventSubmissionParams;
@@ -13,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +42,19 @@ public class CasesController {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseEventService caseEventService;
+
+    @PostMapping(path = "/")
+    @Operation(summary = "get list of the cases from CCD")
+    public ResponseEntity<SearchResult> getCaseList(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                    @RequestBody String searchString) {
+
+        log.info("Received getCaseList");
+
+        Query query = new Query(QueryBuilders
+                .wrapperQuery(searchString), emptyList(), 0);
+        SearchResult claims = coreCaseDataService.searchGeneralApplication(query, authorization);
+        return new ResponseEntity<>(claims, HttpStatus.OK);
+    }
 
     @GetMapping(path = {
             "/{caseId}",

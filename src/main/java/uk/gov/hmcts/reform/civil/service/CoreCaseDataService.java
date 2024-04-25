@@ -182,7 +182,7 @@ public class CoreCaseDataService {
         }
     }
 
-    private SearchResult searchGeneralApplication(Query query, String userToken) {
+    public SearchResult searchGeneralApplication(Query query, String userToken) {
         return coreCaseDataApi.searchCases(
                 userToken,
                 authTokenGenerator.generate(),
