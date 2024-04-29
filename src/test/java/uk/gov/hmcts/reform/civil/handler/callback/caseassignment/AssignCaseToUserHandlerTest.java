@@ -311,26 +311,11 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(data, CallbackType.SUBMITTED);
         }
 
-        /*@Test
-        public void shouldAssignDefendantRoleToRespondent() {
-            assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1)).assignCaseForLip(any(), any(), any());
-        }*/
-
         @Test
         public void shouldAssignDefendantRoleToRespondent() {
             assignCaseToUserHandler.handle(params);
             verify(coreCaseUserService, times(1)).assignCase(any(), any(), any(), any());
         }
-
-        /*@Test
-        public void shouldCallAssignCaseWithDefendantRole() {
-            assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(1))
-                .assignCaseForLip(CASE_ID.toString(),
-                            generalApplication.getGeneralAppRespondentSolicitors().get(0).getValue().getId(),
-                            CaseRole.RESPONDENT);
-        }*/
 
         @Test
         public void shouldCallAssignCaseWithDefendantRole() {

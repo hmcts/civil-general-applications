@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -130,75 +129,6 @@ class CoreCaseUserServiceTest {
 
             return AddCaseAssignedUserRolesRequest.builder()
                 .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
-                .build();
-        }
-
-    }
-
-    @Nested
-    class AssignCaseForLip {
-
-        @Test
-        void shouldAssignCaseToUser_WhenSameUserWithRequestedCaseRoleDoesNotExistLip() {
-            when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of()).build());
-
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
-
-            assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.DEFENDANT
-            )).isFalse();
-
-            verify(caseAccessDataStoreApi, times(1))
-                .addCaseUserRolesForLip(any(), any(), any());
-        }
-
-        @Test
-        void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleAlreadyExist() {
-            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
-                .userId(USER_ID)
-                .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
-                .build();
-
-            when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
-                                .build());
-
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
-
-            verify(caseAccessDataStoreApi, never()).addCaseUserRoles(
-                any(),
-                any(),
-                any()
-            );
-        }
-
-        @Test
-        void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleExist() {
-            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
-                .userId(CAA_USER_AUTH_TOKEN)
-                .caseRole(CaseRole.DEFENDANT.getFormattedName())
-                .build();
-            when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole)).build());
-
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
-            assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.DEFENDANT
-            )).isFalse();
-
-        }
-
-        private CaseAssignedUserRolesResource getCaseAssignedUserRolesLip(CaseRole caseRole) {
-            CaseAssignedUserRole caseAssignedUserRole
-                = CaseAssignedUserRole.builder()
-                .caseDataId(CASE_ID)
-                .userId(USER_ID)
-                .caseRole(caseRole.getFormattedName())
-                .build();
-
-            return CaseAssignedUserRolesResource.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRole))
                 .build();
         }
 
