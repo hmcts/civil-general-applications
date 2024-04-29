@@ -60,7 +60,8 @@ public class AssignCaseToResopondentSolHelper {
                 /* GA for Lip*/
                 GASolicitorDetailsGAspec respondentSolicitor1
                     = caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
-                coreCaseUserService.assignCaseForLip(caseId, respondentSolicitor1.getId(), RESPONDENT);
+                // coreCaseUserService.assignCaseForLip(caseId, respondentSolicitor1.getId(), RESPONDENT);
+                coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(), null, RESPONDENT);
             }
         }
     }
