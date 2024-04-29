@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
@@ -142,7 +142,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                     /* GA for Lip*/
                     caseDataBuilder.respondent1OrganisationPolicy(
                         OrganisationPolicy.builder()
-                            .orgPolicyCaseAssignedRole(RESPONDENT.getFormattedName()).build());
+                            .orgPolicyCaseAssignedRole(DEFENDANT.getFormattedName()).build());
                 }
 
             }

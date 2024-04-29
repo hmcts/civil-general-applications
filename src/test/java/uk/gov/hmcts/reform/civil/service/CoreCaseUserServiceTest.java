@@ -143,10 +143,10 @@ class CoreCaseUserServiceTest {
             when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of()).build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
 
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.RESPONDENT
+                                               CaseRole.DEFENDANT
             )).isFalse();
 
             verify(caseAccessDataStoreApi, times(1))
@@ -164,7 +164,7 @@ class CoreCaseUserServiceTest {
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
                                 .build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
 
             verify(caseAccessDataStoreApi, never()).addCaseUserRoles(
                 any(),
@@ -177,14 +177,14 @@ class CoreCaseUserServiceTest {
         void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleExist() {
             CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
                 .userId(CAA_USER_AUTH_TOKEN)
-                .caseRole(CaseRole.RESPONDENT.getFormattedName())
+                .caseRole(CaseRole.DEFENDANT.getFormattedName())
                 .build();
             when(caseAccessDataStoreApi.getUserRoles(any(), any(), any()))
                 .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole)).build());
 
-            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.RESPONDENT);
+            service.assignCaseForLip(CASE_ID, USER_ID, CaseRole.DEFENDANT);
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.RESPONDENT
+                                               CaseRole.DEFENDANT
             )).isFalse();
 
         }

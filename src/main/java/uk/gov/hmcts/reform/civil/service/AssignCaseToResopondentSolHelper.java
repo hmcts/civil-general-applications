@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 
@@ -61,7 +61,7 @@ public class AssignCaseToResopondentSolHelper {
                 GASolicitorDetailsGAspec respondentSolicitor1
                     = caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
                 // coreCaseUserService.assignCaseForLip(caseId, respondentSolicitor1.getId(), RESPONDENT);
-                coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(), null, RESPONDENT);
+                coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(), null, DEFENDANT);
             }
         }
     }
