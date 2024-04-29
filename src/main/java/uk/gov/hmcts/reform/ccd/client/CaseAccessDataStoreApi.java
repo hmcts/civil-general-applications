@@ -34,17 +34,6 @@ public interface CaseAccessDataStoreApi {
         @RequestBody AddCaseAssignedUserRolesRequest caseRoleRequest
     );
 
-    @PostMapping(
-        value = "/case-users",
-        consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    @ResponseBody
-    AddCaseAssignedUserRolesResponse addCaseUserRolesForLip(
-        @RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @RequestBody CaseAssignedUserRolesResource caseRoleRequest
-    );
-
     @GetMapping(
         value = "/case-users",
         produces = MediaType.APPLICATION_JSON_VALUE

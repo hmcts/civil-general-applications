@@ -1,16 +1,5 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-
-import static java.util.Collections.emptyList;
-
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.civil.model.citizenui.dto.EventDto;
-import uk.gov.hmcts.reform.civil.model.search.Query;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
-import uk.gov.hmcts.reform.civil.service.citizen.events.EventSubmissionParams;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,6 +18,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.civil.model.citizenui.dto.EventDto;
+import uk.gov.hmcts.reform.civil.model.search.Query;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
+import uk.gov.hmcts.reform.civil.service.citizen.events.EventSubmissionParams;
+
+import static java.util.Collections.emptyList;
 
 @Tag(name = "Cases Controller")
 @Slf4j
@@ -57,7 +55,7 @@ public class CasesController {
     }
 
     @GetMapping(path = {
-            "/{caseId}",
+        "/{caseId}",
     })
     @Operation(summary = "get case by id from CCD")
     public ResponseEntity<CaseDetails> getCaseId(
@@ -77,8 +75,8 @@ public class CasesController {
     @PostMapping(path = "/{caseId}/citizen/{submitterId}/event")
     @Operation(summary = "Submits event")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "401", description = "Not Authorized")})
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "401", description = "Not Authorized")})
     public ResponseEntity<CaseDetails> submitEvent(
             @PathVariable("submitterId") String submitterId,
             @PathVariable("caseId") String caseId,
