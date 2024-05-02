@@ -50,8 +50,7 @@ public class CasesController {
 
         Query query = new Query(QueryBuilders
                 .wrapperQuery(searchString), emptyList(), 0);
-        //TODO add token
-        SearchResult claims = coreCaseDataService.searchGeneralApplication(query);
+        SearchResult claims = coreCaseDataService.searchGeneralApplication(query, authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
     }
 
