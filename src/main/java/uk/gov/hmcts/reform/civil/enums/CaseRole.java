@@ -13,10 +13,6 @@ public enum CaseRole {
 
     private String formattedName;
 
-    public boolean isProfessionalRole() {
-        return !(this == CLAIMANT || this == DEFENDANT);
-    }
-
     CaseRole() {
         this.formattedName = String.format("[%s]", name());
     }
