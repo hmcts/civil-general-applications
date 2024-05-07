@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
-import uk.gov.hmcts.reform.civil.service.citizen.events.EventSubmissionParams;
+import uk.gov.hmcts.reform.civil.model.EventSubmissionParams;
 
 import java.util.Map;
 
