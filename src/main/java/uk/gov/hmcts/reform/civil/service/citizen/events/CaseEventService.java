@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.civil.service.citizen.events;
 
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
@@ -11,12 +11,11 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class CaseEventService {
 
@@ -24,7 +23,7 @@ public class CaseEventService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CoreCaseDataService coreCaseDataService;
 
-    private StartEventResponse startEvent(String authorisation, String userId, String caseId, CaseEvent event) {
+    public StartEventResponse startEvent(String authorisation, String userId, String caseId, CaseEvent event) {
         return coreCaseDataApi.startEventForCitizen(
             authorisation,
             authTokenGenerator.generate(),
