@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
+@EqualsAndHashCode
 public class Fee {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -32,4 +34,5 @@ public class Fee {
     public String formData() {
         return "£" + this.toPounds();
     }
+
 }
