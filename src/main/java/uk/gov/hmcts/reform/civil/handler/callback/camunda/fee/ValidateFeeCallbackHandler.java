@@ -71,7 +71,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
         }
         Fee caseDataFee = caseData.getGeneralAppPBADetails().getFee();
         if (!caseDataFee.equals(latestfee)) {
-            log.info("Fees not equal - latest fee {} for General Application with value: {} and version {} with casedata fee {} with amount : {} and version {} ",
+            log.info("Fees not equal - latest fee {} for General Application with value: {} with casedata fee {} with amount : {} ",
                 latestfee.getCode(), latestfee.getCalculatedAmountInPence(), latestfee.getVersion(), caseData.getGeneralAppPBADetails().getFee().getCode(),
                 caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence(), caseData.getGeneralAppPBADetails().getFee().getVersion());
             return List.of(ERROR_MESSAGE_FEE_CHANGED);
