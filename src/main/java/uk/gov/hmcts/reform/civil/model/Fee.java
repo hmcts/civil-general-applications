@@ -8,10 +8,10 @@ import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Data
 @Builder
-@EqualsAndHashCode
 public class Fee {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -35,4 +35,20 @@ public class Fee {
         return "£" + this.toPounds();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Fee fee = (Fee) o;
+        return Objects.equals(calculatedAmountInPence, fee.calculatedAmountInPence) && Objects.equals(code, fee.code);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(calculatedAmountInPence, code);
+    }
 }
