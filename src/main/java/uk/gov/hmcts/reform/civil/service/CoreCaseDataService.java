@@ -53,6 +53,8 @@ public class CoreCaseDataService {
 
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        log.info("CoreCaseDataService::systemUpdateUser::UserId{}", systemUpdateUser.getUserId());
+        log.info("CoreCaseDataService::systemUpdateUser::UserToken{}", systemUpdateUser.getUserToken());
         try {
             return startUpdate(caseId, eventName, systemUpdateUser);
         } catch (Exception e) {
