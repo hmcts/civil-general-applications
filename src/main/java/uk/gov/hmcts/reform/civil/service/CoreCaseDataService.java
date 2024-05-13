@@ -5,11 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.client.model.*;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.SystemUpdateUserConfiguration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -20,9 +16,7 @@ import uk.gov.hmcts.reform.civil.service.data.UserAuthContent;
 import java.util.HashMap;
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
-import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
+import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.*;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERAL_APPLICATION_CREATION;
 
 @Slf4j
@@ -53,8 +47,6 @@ public class CoreCaseDataService {
 
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
-        log.info("CoreCaseDataService::systemUpdateUser::UserId{}", systemUpdateUser.getUserId());
-        log.info("CoreCaseDataService::systemUpdateUser::UserToken{}", systemUpdateUser.getUserToken());
         try {
             return startUpdate(caseId, eventName, systemUpdateUser);
         } catch (Exception e) {
