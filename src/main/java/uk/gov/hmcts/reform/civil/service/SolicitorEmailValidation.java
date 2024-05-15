@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 
@@ -103,12 +104,17 @@ public class SolicitorEmailValidation {
         // GA Respondent solicitor
         List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
 
-        gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
-            .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
+        if (!GaForLipService.isGaForLip(gaCaseData)) {
+            gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
+                .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
 
-        caseDataBuilder.generalAppRespondentSolicitors(generalAppRespondentSolicitors.isEmpty()
-                                                           ? gaCaseData.getGeneralAppRespondentSolicitors()
-                                                           : generalAppRespondentSolicitors);
+            caseDataBuilder.generalAppRespondentSolicitors(generalAppRespondentSolicitors.isEmpty()
+                                                               ? gaCaseData.getGeneralAppRespondentSolicitors()
+                                                               : generalAppRespondentSolicitors);
+        } else {
+            /*GA for LIP*/
+            caseDataBuilder.generalAppRespondentSolicitors(gaCaseData.getGeneralAppRespondentSolicitors());
+        }
 
         return caseDataBuilder.build();
     }

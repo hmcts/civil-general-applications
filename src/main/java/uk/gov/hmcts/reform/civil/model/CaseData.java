@@ -304,6 +304,11 @@ public class CaseData implements MappableObject {
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
+    // GA for LIP
+    private final YesOrNo isGaApplicantLip;
+    private final YesOrNo isGaRespondentOneLip;
+    private final YesOrNo isGaRespondentTwoLip;
+
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
             || businessProcess.getStatus() == null
