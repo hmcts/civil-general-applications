@@ -29,6 +29,7 @@ public class FeesPaymentService {
     private final PaymentStatusService paymentStatusService;
     private final UpdatePaymentStatusService updatePaymentStatusService;
     @Value("${cui-front-end.url}") String cuiFrontEndUrl;
+
     public CardPaymentStatusResponse createGovPaymentRequest(String caseReference, String authorization) {
 
         log.info("Creating gov Payment request url for caseId {}", caseReference);
