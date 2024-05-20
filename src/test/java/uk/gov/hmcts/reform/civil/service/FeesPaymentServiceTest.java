@@ -133,7 +133,7 @@ class FeesPaymentServiceTest {
     @SneakyThrows
     void shouldNotCreateGovPayPaymentUrlForMissingServiceRequest() {
         CaseData caseData = CaseData.builder().ccdCaseReference(1701090368574910L)
-            .generalAppPBADetails(GAPbaDetails.builder().serviceReqReference("2023-1701090705688")
+            .generalAppPBADetails(GAPbaDetails.builder()
                                       .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
                                       .build())
             .build();

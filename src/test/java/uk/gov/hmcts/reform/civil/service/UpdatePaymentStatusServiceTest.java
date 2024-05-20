@@ -79,7 +79,6 @@ class UpdatePaymentStatusServiceTest {
 
     }
 
-
     private CaseDetails buildCaseDetails(CaseData caseData) {
         return CaseDetails.builder()
             .data(objectMapper.convertValue(
