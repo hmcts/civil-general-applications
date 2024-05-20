@@ -66,6 +66,11 @@ public class GeneralApplication implements MappableObject {
     private Document generalAppN245FormUpload;
     private GAHearingDateGAspec generalAppHearingDate;
 
+    // GA for LIP
+    private final YesOrNo isGaApplicantLip;
+    private final YesOrNo isGaRespondentOneLip;
+    private final YesOrNo isGaRespondentTwoLip;
+
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
                        @JsonProperty("generalAppRespondentAgreement")
@@ -112,7 +117,10 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,
                        @JsonProperty("generalAppVaryJudgementType") YesOrNo generalAppVaryJudgementType,
                        @JsonProperty("generalAppN245FormUpload") Document generalAppN245FormUpload,
-                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
+                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate,
+                       @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
+                       @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
+                       @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -155,6 +163,9 @@ public class GeneralApplication implements MappableObject {
         this.generalAppVaryJudgementType = generalAppVaryJudgementType;
         this.generalAppN245FormUpload = generalAppN245FormUpload;
         this.generalAppHearingDate = generalAppHearingDate;
+        this.isGaApplicantLip = isGaApplicantLip;
+        this.isGaRespondentOneLip = isGaRespondentOneLip;
+        this.isGaRespondentTwoLip = isGaRespondentTwoLip;
     }
 
     @JsonIgnore

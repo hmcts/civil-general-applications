@@ -42,8 +42,9 @@ public class AssignCaseSupportController {
                            @PathVariable("caseId") String caseId,
                            @PathVariable("caseRole") Optional<CaseRole> caseRole) {
         String userId = idamClient.getUserInfo(authorisation).getUid();
+        boolean isCitizen = !caseRole.map(CaseRole::isProfessionalRole).orElse(false);
 
-        String organisationId = organisationService.findOrganisation(authorisation)
+        String organisationId = isCitizen ? null : organisationService.findOrganisation(authorisation)
             .map(Organisation::getOrganisationIdentifier).orElse(null);
 
         coreCaseUserService.assignCase(

@@ -143,6 +143,9 @@ public class CaseDataBuilder {
     protected List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
 
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    protected YesOrNo isGaRespondentOneLip;
+    protected YesOrNo isGaApplicantLip;
+    protected YesOrNo isGaRespondentTwoLip;
     private YesOrNo isMultiParty;
     protected YesOrNo addApplicant2;
     protected List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
@@ -251,6 +254,21 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder isGaRespondentOneLip(YesOrNo isGaRespondentOneLip) {
+        this.isGaRespondentOneLip = isGaRespondentOneLip;
+        return this;
+    }
+
+    public CaseDataBuilder isGaApplicantLip(YesOrNo isGaApplicantLip) {
+        this.isGaApplicantLip = isGaApplicantLip;
+        return this;
+    }
+
+    public CaseDataBuilder isGaRespondentTwoLip(YesOrNo isGaRespondentTwoLip) {
+        this.isGaRespondentTwoLip = isGaRespondentTwoLip;
+        return this;
+    }
+
     public CaseDataBuilder gaInformOtherParty(GAInformOtherParty gaInformOtherParty) {
         this.gaInformOtherParty = gaInformOtherParty;
         return this;
@@ -334,6 +352,9 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .isGaRespondentOneLip(isGaRespondentOneLip)
+            .isGaRespondentTwoLip(isGaRespondentTwoLip)
+            .isGaApplicantLip(isGaApplicantLip)
             .isMultiParty(isMultiParty)
             .addApplicant2(addApplicant2)
             .respondentSolTwoGaAppDetails(respondentSolTwoGaAppDetails)
