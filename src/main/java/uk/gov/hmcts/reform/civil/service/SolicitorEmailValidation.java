@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.utils.GaForLipService;
@@ -97,14 +98,13 @@ public class SolicitorEmailValidation {
 
         // GA Applicant solicitor
         CaseData.CaseDataBuilder caseDataBuilder = gaCaseData.toBuilder();
-
-        caseDataBuilder.generalAppApplnSolicitor(checkIfOrgIDMatch(gaCaseData.getGeneralAppApplnSolicitor(),
+        if (!GaForLipService.isGaForLip(gaCaseData)) {
+            caseDataBuilder.generalAppApplnSolicitor(checkIfOrgIDMatch(gaCaseData.getGeneralAppApplnSolicitor(),
                                                                    civilCaseData, gaCaseData));
 
-        // GA Respondent solicitor
-        List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
+            // GA Respondent solicitor
+            List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
 
-        if (!GaForLipService.isGaForLip(gaCaseData)) {
             gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
                 .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
 
@@ -112,10 +112,54 @@ public class SolicitorEmailValidation {
                                                                ? gaCaseData.getGeneralAppRespondentSolicitors()
                                                                : generalAppRespondentSolicitors);
         } else {
-            /*GA for LIP*/
-            caseDataBuilder.generalAppRespondentSolicitors(gaCaseData.getGeneralAppRespondentSolicitors());
+            validateLipEmail(civilCaseData, gaCaseData, caseDataBuilder);
         }
 
         return caseDataBuilder.build();
+    }
+
+    private void validateLipEmail(CaseData civilCaseData, CaseData gaCaseData,
+                                  CaseData.CaseDataBuilder caseDataBuilder) {
+        if (gaCaseData.getIsGaApplicantLip().equals(YES)) {
+            if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
+                checkApplicantLip(gaCaseData, caseDataBuilder,
+                        civilCaseData.getClaimantUserDetails());
+            } else {
+                checkApplicantLip(gaCaseData, caseDataBuilder,
+                        civilCaseData.getDefendantUserDetails());
+            }
+        }
+        if (gaCaseData.getIsGaRespondentOneLip().equals(YES)) {
+            if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
+                checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getDefendantUserDetails());
+            } else {
+                checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getClaimantUserDetails());
+            }
+        }
+    }
+
+    private void checkApplicantLip(CaseData gaCaseData,
+                                   CaseData.CaseDataBuilder caseDataBuilder,
+                                   IdamUserDetails userDetails) {
+        if (!userDetails.getEmail()
+                .equals(gaCaseData.getGeneralAppApplnSolicitor().getEmail())) {
+            caseDataBuilder.generalAppApplnSolicitor(updateSolDetails(
+                    userDetails.getEmail(),
+                    gaCaseData.getGeneralAppApplnSolicitor()));
+        }
+    }
+
+    private void checkRespondentsLip(CaseData gaCaseData,
+                                     CaseData.CaseDataBuilder caseDataBuilder,
+                                     IdamUserDetails userDetails) {
+        List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
+        /*GA for Lip is 1v1*/
+        if (!userDetails.getEmail()
+                .equals(gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail())) {
+            generalAppRespondentSolicitors.add(element(updateSolDetails(
+                    userDetails.getEmail(),
+                    gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue())));
+            caseDataBuilder.generalAppRespondentSolicitors(generalAppRespondentSolicitors);
+        }
     }
 }

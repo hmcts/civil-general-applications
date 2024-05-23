@@ -7,13 +7,13 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class AssignCaseToResopondentSolHelper {
          * */
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
 
-            if (!GaForLipService.isGaForLip(caseData)) {
+            if (caseData.getIsGaRespondentOneLip().equals(NO)) {
 
                 List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
                     .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()

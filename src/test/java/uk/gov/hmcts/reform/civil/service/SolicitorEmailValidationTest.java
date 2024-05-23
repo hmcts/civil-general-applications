@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -34,12 +35,15 @@ public class SolicitorEmailValidationTest {
     private SolicitorEmailValidation solicitorEmailValidation;
 
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
+    private static final String CLAIM_CL_LIP_EMAIL = "hmcts.civil.cl@gmail.com";
+    private static final String CLAIM_DEF_LIP_EMAIL = "hmcts.civil.def@gmail.com";
 
     @Test
     void shouldMatchIfThereIsNoChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
 
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, null, null),
+                    getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
     }
@@ -47,7 +51,8 @@ public class SolicitorEmailValidationTest {
     @Test
     void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1() {
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, null, null),
+                    getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
             .isEqualTo(DUMMY_EMAIL);
@@ -56,27 +61,58 @@ public class SolicitorEmailValidationTest {
     @Test
     void shouldMatchRespondentOneEmailId_LRvsLIP() {
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO)
-                .toBuilder().isGaRespondentOneLip(YES).build());
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, null, CLAIM_DEF_LIP_EMAIL),
+                    getGaCaseData(NO, YES, NO, YES));
 
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
-            .isEqualTo(DUMMY_EMAIL);
+            .isEqualTo(CLAIM_DEF_LIP_EMAIL);
     }
 
     @Test
-    void shouldMatchRespondentTwoEmailID_LRvsLIP() {
+    void shouldMatchApplicantEmailId_LIPvsLR() {
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO)
-                .toBuilder().isGaRespondentTwoLip(YES).build());
+                .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, CLAIM_CL_LIP_EMAIL, null),
+                        getGaCaseData(NO, YES, YES, NO));
+        assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(CLAIM_CL_LIP_EMAIL);
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+                .isEqualTo(DUMMY_EMAIL);
+    }
+
+    @Test
+    void shouldMatchRespondentOneEmailId_LIPvsLR_DEF() {
+        CaseData caseData = solicitorEmailValidation
+                .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, CLAIM_CL_LIP_EMAIL, null),
+                        getGaCaseData(NO, NO, NO, YES));
 
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
-            .isEqualTo(DUMMY_EMAIL);
+                .isEqualTo(CLAIM_CL_LIP_EMAIL);
+    }
+
+    @Test
+    void shouldMatchALlEmailId_LIPvsLIP() {
+        CaseData caseData = solicitorEmailValidation
+                .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, CLAIM_CL_LIP_EMAIL, CLAIM_DEF_LIP_EMAIL),
+                        getGaCaseData(NO, YES, YES, YES));
+        assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(CLAIM_CL_LIP_EMAIL);
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+                .isEqualTo(CLAIM_DEF_LIP_EMAIL);
+    }
+
+    @Test
+    void shouldMatchALlEmailId_LIPvsLIP_DEF() {
+        CaseData caseData = solicitorEmailValidation
+                .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, CLAIM_CL_LIP_EMAIL, CLAIM_DEF_LIP_EMAIL),
+                        getGaCaseData(NO, NO, YES, YES));
+        assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(CLAIM_DEF_LIP_EMAIL);
+        assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
+                .isEqualTo(CLAIM_CL_LIP_EMAIL);
     }
 
     @Test
     void shouldMatchIfThereIsNoChangeInGARespondentEmailAndCivilRespondentEmail_1V1_LIP() {
         CaseData caseData = solicitorEmailValidation
-            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+            .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, null, DUMMY_EMAIL),
+                    getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
             .isEqualTo(DUMMY_EMAIL);
@@ -86,7 +122,8 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
-                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL, null, null),
+                    getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
@@ -98,8 +135,8 @@ public class SolicitorEmailValidationTest {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
-                                 "civilrespondent1@gmail.com", DUMMY_EMAIL
-                ), getGaCaseData(NO));
+                                 "civilrespondent1@gmail.com", DUMMY_EMAIL, null, null
+                ), getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
@@ -110,7 +147,8 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_2V1() {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
-                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(NO));
+                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL, null, null),
+                    getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
@@ -122,8 +160,8 @@ public class SolicitorEmailValidationTest {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
-                                 "civilrespondent1@gmail.com", DUMMY_EMAIL
-                ), getGaCaseData(NO));
+                                 "civilrespondent1@gmail.com", DUMMY_EMAIL, null, null
+                ), getGaCaseData(NO, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
@@ -134,7 +172,8 @@ public class SolicitorEmailValidationTest {
     void shouldMatchIfThereIsChangeInGAApplicantEmailAndCivilApplicantEmail_1V2() {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
-                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL), getGaCaseData(YES));
+                getCivilCaseData("civilApplicant@gmail.com", DUMMY_EMAIL, DUMMY_EMAIL, null, null),
+                    getGaCaseData(YES, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo("civilApplicant@gmail.com");
         assertThat(caseData.getGeneralAppRespondentSolicitors().stream().findFirst().get().getValue().getEmail())
@@ -146,8 +185,8 @@ public class SolicitorEmailValidationTest {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
-                                 "civilrespondent1@gmail.com", DUMMY_EMAIL
-                ), getGaCaseData(YES));
+                                 "civilrespondent1@gmail.com", DUMMY_EMAIL, null, null
+                ), getGaCaseData(YES, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
         assertThat(checkIfThereIsMatchOrgIdAndEmailId(caseData.getGeneralAppRespondentSolicitors(),
@@ -160,8 +199,8 @@ public class SolicitorEmailValidationTest {
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(
                 getCivilCaseData(DUMMY_EMAIL,
-                                 DUMMY_EMAIL, "civilrespondent2@gmail.com"
-                ), getGaCaseData(YES));
+                                 DUMMY_EMAIL, "civilrespondent2@gmail.com", null, null
+                ), getGaCaseData(YES, YES, NO, NO));
 
         assertThat(caseData.getGeneralAppApplnSolicitor().getEmail()).isEqualTo(DUMMY_EMAIL);
         assertThat(checkIfThereIsMatchOrgIdAndEmailId(caseData.getGeneralAppRespondentSolicitors(),
@@ -178,9 +217,13 @@ public class SolicitorEmailValidationTest {
                                                                         .equals(email));
     }
 
-    private CaseData getCivilCaseData(String applicantEmail, String respondent1SolEmail, String respondent2SolEmail) {
+    private CaseData getCivilCaseData(String applicantEmail,
+                                      String respondent1SolEmail,
+                                      String respondent2SolEmail,
+                                      String lipClEmail,
+                                      String lipDefEmail) {
 
-        return new CaseDataBuilder()
+        CaseData caseData = new CaseDataBuilder()
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id").forename("GAApplnSolicitor")
                                           .email(DUMMY_EMAIL).organisationIdentifier("1").build())
             .respondentSolicitor1EmailAddress(respondent1SolEmail)
@@ -200,9 +243,23 @@ public class SolicitorEmailValidationTest {
                                                .organisation(Organisation.builder().organisationID("3").build())
                                                .build())
             .build();
+        var builder = caseData.toBuilder();
+        if (Objects.nonNull(lipClEmail)) {
+            builder.claimantUserDetails(IdamUserDetails.builder()
+                    .id("123")
+                    .email(lipClEmail)
+                    .build());
+        }
+        if (Objects.nonNull(lipDefEmail)) {
+            builder.defendantUserDetails(IdamUserDetails.builder()
+                    .id("1")
+                    .email(lipDefEmail)
+                    .build());
+        }
+        return builder.build();
     }
 
-    private CaseData getGaCaseData(YesOrNo isMultiParty) {
+    private CaseData getGaCaseData(YesOrNo isMultiParty, YesOrNo parentClaimantIsApplicant, YesOrNo isLipApp, YesOrNo isLipResp) {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
@@ -215,7 +272,7 @@ public class SolicitorEmailValidationTest {
         respondentSols.add(element(respondent1));
         respondentSols.add(element(respondent2));
 
-        return new CaseDataBuilder()
+        CaseData caseData =  new CaseDataBuilder()
             .isMultiParty(isMultiParty)
             .isGaRespondentOneLip(NO)
             .isGaApplicantLip(NO)
@@ -223,8 +280,16 @@ public class SolicitorEmailValidationTest {
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id").forename("Applicant One")
                                           .email(DUMMY_EMAIL).organisationIdentifier("1").build())
             .generalAppRespondentSolicitors(respondentSols)
-            .parentClaimantIsApplicant(YES)
+            .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .build();
+        var builder = caseData.toBuilder();
+        if (isLipApp.equals(YES)) {
+            builder.isGaApplicantLip(YES);
+        }
+        if (isLipResp.equals(YES)) {
+            builder.isGaRespondentOneLip(YES);
+        }
+        return builder.build();
     }
 }

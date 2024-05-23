@@ -308,6 +308,8 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
+    private final IdamUserDetails claimantUserDetails;
+    private final IdamUserDetails defendantUserDetails;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
