@@ -98,7 +98,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             return notificationProperties
                     .getLipGeneralAppRespondentEmailTemplate();
         } else {
-            return urgent? notificationProperties
+            return urgent ? notificationProperties
                     .getUrgentGeneralAppRespondentEmailTemplate() : notificationProperties
                     .getGeneralApplicationRespondentEmailTemplate();
         }
