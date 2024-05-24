@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -120,7 +121,8 @@ public class SolicitorEmailValidation {
 
     private void validateLipEmail(CaseData civilCaseData, CaseData gaCaseData,
                                   CaseData.CaseDataBuilder caseDataBuilder) {
-        if (gaCaseData.getIsGaApplicantLip().equals(YES)) {
+        if (Objects.nonNull(gaCaseData.getIsGaApplicantLip())
+                && gaCaseData.getIsGaApplicantLip().equals(YES)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkApplicantLip(gaCaseData, caseDataBuilder,
                         civilCaseData.getClaimantUserDetails());
@@ -129,7 +131,8 @@ public class SolicitorEmailValidation {
                         civilCaseData.getDefendantUserDetails());
             }
         }
-        if (gaCaseData.getIsGaRespondentOneLip().equals(YES)) {
+        if (Objects.nonNull(gaCaseData.getIsGaRespondentOneLip())
+            && gaCaseData.getIsGaRespondentOneLip().equals(YES)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getDefendantUserDetails());
             } else {

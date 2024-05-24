@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -57,8 +58,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                 .forEach((RS) ->
                              sendNotificationToGeneralAppRespondent(updatedCaseData,
                                                                     RS.getValue().getEmail(),
-                                                                    notificationProperties
-                                                                        .getGeneralApplicationRespondentEmailTemplate()
+                                     getTemplate(updatedCaseData, false)
                              ));
         }
 
@@ -79,8 +79,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                              sendNotificationToGeneralAppRespondent(
                                  updatedCaseData,
                                  RS.getValue().getEmail(),
-                                 notificationProperties
-                                     .getUrgentGeneralAppRespondentEmailTemplate()));
+                                 getTemplate(updatedCaseData, true)));
         }
 
         return caseData;
@@ -91,6 +90,18 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             && (caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE")
             || (caseData.getGeneralAppPBADetails().getPaymentDetails() != null
             && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)));
+    }
+
+    private String getTemplate(CaseData caseData, boolean urgent) {
+        if (Objects.nonNull(caseData.getIsGaRespondentOneLip())
+            && caseData.getIsGaRespondentOneLip().equals(YES)) {
+            return notificationProperties
+                    .getLipGeneralAppRespondentEmailTemplate();
+        } else {
+            return urgent? notificationProperties
+                    .getUrgentGeneralAppRespondentEmailTemplate() : notificationProperties
+                    .getGeneralApplicationRespondentEmailTemplate();
+        }
     }
 
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
@@ -109,12 +120,21 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
+        String lipRespName = "";
+        if (Objects.nonNull(caseData.getIsGaRespondentOneLip())
+                && caseData.getIsGaRespondentOneLip().equals(YES)) {
+            lipRespName = caseData
+                    .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
+                    + " " + caseData
+                    .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+        }
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
-                                         .getGeneralAppNotificationDeadlineDate(), DATE)
+                                         .getGeneralAppNotificationDeadlineDate(), DATE),
+            GA_LIP_RESP_NAME, lipRespName
         );
     }
 

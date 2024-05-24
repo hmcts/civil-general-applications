@@ -3,10 +3,13 @@ package uk.gov.hmcts.reform.civil.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
@@ -31,8 +34,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,6 +69,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
 
     @MockBean
     private NotificationsProperties notificationsProperties;
+    @Captor
+    ArgumentCaptor<Map<String, String>> argumentCaptor;
 
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
@@ -79,6 +87,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 .thenReturn("general-application-respondent-template-id");
             when(notificationsProperties.getUrgentGeneralAppRespondentEmailTemplate())
                 .thenReturn("general-application-respondent-template-id");
+            when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
+                    .thenReturn("general-application-respondent-template-lip-id");
         }
 
         @Test
@@ -148,6 +158,26 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                    .isGaRespondentOneLip(YES)
+                    .generalAppPBADetails(GAPbaDetails.builder()
+                            .fee(Fee.builder().code("PAID").build())
+                            .paymentDetails(PaymentDetails.builder().status(
+                                    PaymentStatus.SUCCESS).build()).build())
+                    .build();
+
+            when(solicitorEmailValidation
+                    .validateSolicitorEmail(any(), any()))
+                    .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                    any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
+            );
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("LipF LipS");
+        }
+
+        @Test
         void notificationShouldSendWhenInvoked() {
             CaseData caseData = getCaseData(true);
 
@@ -158,7 +188,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             verify(notificationService, times(2)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-respondent-template-id",
-                getNotificationDataMap(),
+                getNotificationDataMap(false),
                 "general-application-respondent-notification-" + CASE_REFERENCE
             );
         }
@@ -192,12 +222,13 @@ public class GeneralApplicationCreationNotificationServiceTest {
             verifyNoInteractions(notificationService);
         }
 
-        private Map<String, String> getNotificationDataMap() {
+        private Map<String, String> getNotificationDataMap(boolean isLip) {
             return Map.of(
                 NotificationData.APPLICANT_REFERENCE, "claimant",
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
-                NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
+                NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
+                    NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : ""
             );
         }
 
@@ -206,7 +237,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).organisationIdentifier("2").build();
+                .email(DUMMY_EMAIL).organisationIdentifier("2").forename("LipF").surname(Optional.of("LipS")).build();
 
             GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
                 .email(DUMMY_EMAIL).organisationIdentifier("3").build();
