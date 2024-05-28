@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
-import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
