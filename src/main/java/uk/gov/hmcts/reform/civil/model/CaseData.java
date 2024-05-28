@@ -301,6 +301,7 @@ public class CaseData implements MappableObject {
     private final String applicationTypes;
     private final String parentCaseReference;
     private final String judgeTitle;
+    private final YesOrNo generalAppAskForCosts;
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
