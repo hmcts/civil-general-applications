@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -467,6 +468,56 @@ class CoreCaseDataServiceTest {
             verify(coreCaseDataApi, times(2)).getCase(
                     anyString(), anyString(), anyString()
             );
+        }
+    }
+
+    @Nested
+    class CitizenEvents {
+
+        private static final String EVENT_ID = "CREATE_LIP_APPLICATION";
+        private static final String JURISDICTION = "CIVIL";
+        private static final String EVENT_TOKEN = "eventToken";
+        private static final String CASE_ID = "1";
+        private static final String USER_ID = "User1";
+        private static final String GENERAL_APPLICATION_CASE_TYPE = "GENERALAPPLICATION";
+
+        private final CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
+            .build();
+
+        private final CaseDetails caseDetails = CaseDetailsBuilder.builder()
+            .createdDate(LocalDateTime.now())
+            .data(caseData)
+            .build();
+
+        @Test
+        void shouldCreateCase_WhenInvoked() {
+            CaseDetails expectedCaseDetails = CaseDetails.builder().id(1L).build();
+            when(coreCaseDataApi.startForCitizen(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
+                                                  GENERAL_APPLICATION_CASE_TYPE, EVENT_ID
+            )).thenReturn(buildStartEventResponse());
+            when(coreCaseDataApi.submitForCitizen(eq(USER_AUTH_TOKEN), eq(SERVICE_AUTH_TOKEN), eq(USER_ID), eq(JURISDICTION),
+                                                  eq(GENERAL_APPLICATION_CASE_TYPE), anyBoolean(), any(CaseDataContent.class)
+            )).thenReturn(expectedCaseDetails);
+
+
+            CaseDetails caseDetails = service.submitEventForCitizen(USER_AUTH_TOKEN, USER_ID, CaseEvent.CREATE_LIP_APPLICATION, "draft", Map.of());
+
+            assertThat(caseDetails).isEqualTo(expectedCaseDetails);
+        }
+
+        @Test
+        void shouldNotCreateCaseIfNotDraft_WhenInvoked() {
+            CaseDetails caseDetails = service.submitEventForCitizen(USER_AUTH_TOKEN, USER_ID, CaseEvent.CREATE_LIP_APPLICATION, "123", Map.of());
+
+            assertThat(caseDetails).isNull();
+        }
+
+        private StartEventResponse buildStartEventResponse() {
+            return StartEventResponse.builder()
+                .eventId(EVENT_ID)
+                .token(EVENT_TOKEN)
+                .caseDetails(caseDetails)
+                .build();
         }
     }
 }

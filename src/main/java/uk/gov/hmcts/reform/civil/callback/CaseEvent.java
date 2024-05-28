@@ -76,7 +76,9 @@ public enum CaseEvent {
     TRIGGER_LOCATION_UPDATE(USER),
     TRIGGER_TASK_RECONFIG(USER),
 
-    UPLOAD_ADDL_DOCUMENTS(USER);
+    UPLOAD_ADDL_DOCUMENTS(USER),
+
+    CREATE_LIP_APPLICATION(USER);
 
     private final UserType userType;
 
