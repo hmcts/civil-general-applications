@@ -65,7 +65,11 @@ public class CaseEventServiceTest {
         given(authTokenGenerator.generate()).willReturn(EVENT_TOKEN);
         given(coreCaseDataApi.startEventForCitizen(any(), any(), any(), any(), any(), any(), any()))
             .willReturn(RESPONSE);
+        given(coreCaseDataApi.startForCitizen(any(), any(), any(), any(), any(), any()))
+            .willReturn(RESPONSE);
         given(coreCaseDataApi.submitEventForCitizen(any(), any(), any(), any(), any(), any(), anyBoolean(), any()))
+            .willReturn(CASE_DETAILS);
+        given(coreCaseDataApi.submitForCitizen(any(), any(), any(), any(), any(), anyBoolean(), any()))
             .willReturn(CASE_DETAILS);
     }
 
@@ -78,6 +82,25 @@ public class CaseEventServiceTest {
                                                                    .updates(Maps.newHashMap())
                                                                    .event(CaseEvent.RESPOND_TO_APPLICATION)
                                                                    .caseId(CASE_ID)
+                                                                   .userId(USER_ID)
+                                                                   .authorisation(AUTHORISATION)
+                                                                   .build());
+        assertThat(caseDetails).isEqualTo(CASE_DETAILS);
+
+        StartEventResponse startEventResponse = caseEventService
+            .startEvent(AUTHORISATION, USER_ID, CASE_ID, CaseEvent.RESPOND_TO_APPLICATION);
+        assertThat(startEventResponse).isEqualTo(RESPONSE);
+    }
+
+    @Test
+    void shouldSubmitEventForNewApplicationSuccessfully() {
+        when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+
+        CaseDetails caseDetails = caseEventService.submitEvent(EventSubmissionParams
+                                                                   .builder()
+                                                                   .updates(Maps.newHashMap())
+                                                                   .event(CaseEvent.RESPOND_TO_APPLICATION)
+                                                                   .caseId(DRAFT)
                                                                    .userId(USER_ID)
                                                                    .authorisation(AUTHORISATION)
                                                                    .build());
