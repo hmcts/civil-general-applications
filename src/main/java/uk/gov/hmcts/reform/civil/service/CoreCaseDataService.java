@@ -36,7 +36,6 @@ public class CoreCaseDataService {
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseDetailsConverter caseDetailsConverter;
     private static final String RETRY_MSG = "retry with fresh token";
-    private static final String DRAFT_CLAIM_ID = "draft";
 
     public void triggerEvent(Long caseId, CaseEvent eventName) {
         triggerEvent(caseId, eventName, Map.of());
@@ -279,34 +278,6 @@ public class CoreCaseDataService {
                 caseDataContent
         );
         return caseDetailsConverter.toCaseData(caseDetails);
-    }
-
-    public CaseDetails submitEventForCitizen(String authorisation, String submitterId, CaseEvent event, String caseId, Map<String, Object> updates) {
-        if (DRAFT_CLAIM_ID.equals(caseId)) {
-            StartEventResponse eventResponse = startEventForCitizen(authorisation, submitterId, event);
-            CaseDataContent caseDataContent = caseDataContentFromStartEventResponse(eventResponse, updates);
-            return coreCaseDataApi.submitForCitizen(authorisation,
-                                                    authTokenGenerator.generate(),
-                                                    submitterId,
-                                                    JURISDICTION,
-                                                    GENERAL_APPLICATION_CASE_TYPE,
-                                                    true, caseDataContent
-            );
-        } else {
-            // TODO: Implement for events other than case creation
-            return null;
-        }
-    }
-
-    private StartEventResponse startEventForCitizen(String authorisation, String userId, CaseEvent event) {
-        return coreCaseDataApi.startForCitizen(
-            authorisation,
-            authTokenGenerator.generate(),
-            userId,
-            JURISDICTION,
-            GENERAL_APPLICATION_CASE_TYPE,
-            event.name()
-        );
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, Map<String, Object> caseDataMap) {
