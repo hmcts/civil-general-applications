@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.civil.utils;
 
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import java.util.Objects;
+
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 public class GaForLipService {
@@ -11,9 +13,13 @@ public class GaForLipService {
     }
 
     public static boolean isGaForLip(CaseData caseData) {
-        return caseData.getIsGaApplicantLip().equals(YES)
-            || caseData.getIsGaRespondentOneLip().equals(YES)
-            || (caseData.getIsMultiParty().equals(YES) && caseData.getIsGaRespondentTwoLip().equals(YES));
+        return (Objects.nonNull(caseData.getIsGaApplicantLip())
+            && caseData.getIsGaApplicantLip().equals(YES))
+            || (Objects.nonNull(caseData.getIsGaRespondentOneLip())
+            && caseData.getIsGaRespondentOneLip().equals(YES))
+            || (caseData.getIsMultiParty().equals(YES)
+            && Objects.nonNull(caseData.getIsGaRespondentTwoLip())
+            && caseData.getIsGaRespondentTwoLip().equals(YES));
 
     }
 }
