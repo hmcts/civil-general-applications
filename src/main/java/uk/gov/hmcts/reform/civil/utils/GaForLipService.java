@@ -13,13 +13,21 @@ public class GaForLipService {
     }
 
     public static boolean isGaForLip(CaseData caseData) {
-        return (Objects.nonNull(caseData.getIsGaApplicantLip())
-            && caseData.getIsGaApplicantLip().equals(YES))
-            || (Objects.nonNull(caseData.getIsGaRespondentOneLip())
-            && caseData.getIsGaRespondentOneLip().equals(YES))
+        return isLipApp(caseData)
+            || isLipResp(caseData)
             || (caseData.getIsMultiParty().equals(YES)
             && Objects.nonNull(caseData.getIsGaRespondentTwoLip())
             && caseData.getIsGaRespondentTwoLip().equals(YES));
 
+    }
+
+    public static boolean isLipApp(CaseData caseData) {
+        return Objects.nonNull(caseData.getIsGaApplicantLip())
+                && caseData.getIsGaApplicantLip().equals(YES);
+    }
+
+    public static boolean isLipResp(CaseData caseData) {
+        return Objects.nonNull(caseData.getIsGaRespondentOneLip())
+                && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 }

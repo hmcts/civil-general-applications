@@ -121,8 +121,7 @@ public class SolicitorEmailValidation {
 
     private void validateLipEmail(CaseData civilCaseData, CaseData gaCaseData,
                                   CaseData.CaseDataBuilder caseDataBuilder) {
-        if (Objects.nonNull(gaCaseData.getIsGaApplicantLip())
-                && gaCaseData.getIsGaApplicantLip().equals(YES)) {
+        if (GaForLipService.isLipApp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkApplicantLip(gaCaseData, caseDataBuilder,
                         civilCaseData.getClaimantUserDetails());
@@ -131,8 +130,7 @@ public class SolicitorEmailValidation {
                         civilCaseData.getDefendantUserDetails());
             }
         }
-        if (Objects.nonNull(gaCaseData.getIsGaRespondentOneLip())
-            && gaCaseData.getIsGaRespondentOneLip().equals(YES)) {
+        if (GaForLipService.isLipResp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getDefendantUserDetails());
             } else {
