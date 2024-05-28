@@ -31,6 +31,10 @@ public class FeatureToggleService {
         return internalClient.boolVariation(feature, user, false);
     }
 
+    public boolean isGaForLipsEnabled() {
+        return internalClient.boolVariation("GaForLips", createLDUser().build(), false);
+    }
+
     public boolean isOrganisationOnboarded(String orgId) {
         LDUser ldUser = createLDUser().custom("orgId", orgId).build();
         return internalClient.boolVariation("isOrganisationOnboarded", ldUser, false);
