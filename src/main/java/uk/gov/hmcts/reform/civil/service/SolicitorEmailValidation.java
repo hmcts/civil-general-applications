@@ -99,14 +99,12 @@ public class SolicitorEmailValidation {
 
         // GA Applicant solicitor
         CaseData.CaseDataBuilder caseDataBuilder = gaCaseData.toBuilder();
-        if (!GaForLipService.isGaForLip(gaCaseData)) {
+        if (!gaForLipService.isGaForLip(gaCaseData)) {
             caseDataBuilder.generalAppApplnSolicitor(checkIfOrgIDMatch(gaCaseData.getGeneralAppApplnSolicitor(),
                                                                    civilCaseData, gaCaseData));
 
             // GA Respondent solicitor
             List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
-
-        if (!GaForLipService.isGaForLip(gaCaseData)) {
             gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
                 .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
 
@@ -122,7 +120,7 @@ public class SolicitorEmailValidation {
 
     private void validateLipEmail(CaseData civilCaseData, CaseData gaCaseData,
                                   CaseData.CaseDataBuilder caseDataBuilder) {
-        if (GaForLipService.isLipApp(gaCaseData)) {
+        if (gaForLipService.isLipApp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkApplicantLip(gaCaseData, caseDataBuilder,
                         civilCaseData.getClaimantUserDetails());
@@ -131,7 +129,7 @@ public class SolicitorEmailValidation {
                         civilCaseData.getDefendantUserDetails());
             }
         }
-        if (GaForLipService.isLipResp(gaCaseData)) {
+        if (gaForLipService.isLipResp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
                 checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getDefendantUserDetails());
             } else {

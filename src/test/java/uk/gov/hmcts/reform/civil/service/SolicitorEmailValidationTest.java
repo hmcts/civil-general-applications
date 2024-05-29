@@ -46,7 +46,7 @@ public class SolicitorEmailValidationTest {
 
     @BeforeEach
     void setUp() {
-        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
     }
 
     @Test

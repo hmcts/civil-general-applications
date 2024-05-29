@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsPro
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -50,6 +51,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     GeneralApplicationCreationNotificationService.class,
+    GaForLipService.class,
     JacksonAutoConfiguration.class
 })
 public class GeneralApplicationCreationNotificationServiceTest {
@@ -69,6 +71,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
 
     @MockBean
     private NotificationsProperties notificationsProperties;
+    @MockBean
+    private FeatureToggleService featureToggleService;
     @Captor
     ArgumentCaptor<Map<String, String>> argumentCaptor;
 
@@ -89,6 +93,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 .thenReturn("general-application-respondent-template-id");
             when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
                     .thenReturn("general-application-respondent-template-lip-id");
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         }
 
         @Test

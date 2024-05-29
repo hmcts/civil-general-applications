@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final GaForLipService gaForLipService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
 
@@ -93,7 +93,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     }
 
     private String getTemplate(CaseData caseData, boolean urgent) {
-        if (GaForLipService.isLipResp(caseData)) {
+        if (gaForLipService.isLipResp(caseData)) {
             return notificationProperties
                     .getLipGeneralAppRespondentEmailTemplate();
         } else {
@@ -120,7 +120,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         String lipRespName = "";
-        if (GaForLipService.isLipResp(caseData)) {
+        if (gaForLipService.isLipResp(caseData)) {
             lipRespName = caseData
                     .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
                     + " " + caseData
