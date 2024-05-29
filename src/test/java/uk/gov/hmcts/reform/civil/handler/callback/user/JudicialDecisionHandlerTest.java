@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -69,7 +70,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -143,6 +144,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private DeadlinesCalculator deadlinesCalculator;
 
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -197,6 +201,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + " Any such application must be made by 4pm on";
 
     private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+
+    @BeforeEach
+    void setUp() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {

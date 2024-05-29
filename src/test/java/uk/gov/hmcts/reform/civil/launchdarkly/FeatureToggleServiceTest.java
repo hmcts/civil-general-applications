@@ -85,6 +85,15 @@ class FeatureToggleServiceTest {
         verifyBoolVariationCalled(multipartyFeatureKey, List.of("timestamp", "environment"));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldCallBoolVariation_whenGaForLipInvoked(Boolean toggleStat) {
+        var gaForLipsFeatureKey = "GaForLips";
+        givenToggle(gaForLipsFeatureKey, toggleStat);
+
+        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(toggleStat);
+    }
+
     @Test
     void shouldCallBoolVariation_whenIsRpaContinuousFeedEnabledInvoked() {
         var multipartyFeatureKey = "rpaContinuousFeed";
