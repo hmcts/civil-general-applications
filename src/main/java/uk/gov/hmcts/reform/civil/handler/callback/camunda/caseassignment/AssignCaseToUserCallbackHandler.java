@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +57,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
     private final CaseDetailsConverter caseDetailsConverter;
 
+    private final GaForLipService gaForLipService;
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -80,7 +82,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                                                                                    .build())
                                                                  .orgPolicyCaseAssignedRole(APPLICANTSOLICITORONE.getFormattedName()).build());
 
-                if (!GaForLipService.isGaForLip(caseData)) {
+                if (!gaForLipService.isGaForLip(caseData)) {
                     List<Element<GASolicitorDetailsGAspec>>  applicantAddlSolList = caseData.getGeneralAppRespondentSolicitors().stream()
                         .filter(userOrgId -> (userOrgId.getValue().getOrganisationIdentifier()
                             .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor()
@@ -89,7 +91,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 }
             }
 
-            if (!GaForLipService.isGaForLip(caseData)) {
+            if (!gaForLipService.isGaForLip(caseData)) {
                 List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
                     .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
                         .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
@@ -108,7 +110,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))))
                 || (generalAppFeesService.isFreeApplication(caseData))) {
 
-                if (!GaForLipService.isGaForLip(caseData)) {
+                if (!gaForLipService.isGaForLip(caseData)) {
 
                     List<Element<GASolicitorDetailsGAspec>>  respondentSolicitorsList = caseData.getGeneralAppRespondentSolicitors().stream()
                         .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()

@@ -1,25 +1,28 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -34,9 +37,17 @@ public class SolicitorEmailValidationTest {
     @Autowired
     private SolicitorEmailValidation solicitorEmailValidation;
 
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
     private static final String CLAIM_CL_LIP_EMAIL = "hmcts.civil.cl@gmail.com";
     private static final String CLAIM_DEF_LIP_EMAIL = "hmcts.civil.def@gmail.com";
+
+    @BeforeEach
+    void setUp() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+    }
 
     @Test
     void shouldMatchIfThereIsNoChangeInGAApplicantEmailAndCivilApplicantEmail_1V1() {
@@ -60,6 +71,7 @@ public class SolicitorEmailValidationTest {
 
     @Test
     void shouldMatchRespondentOneEmailId_LRvsLIP() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         CaseData caseData = solicitorEmailValidation
             .validateSolicitorEmail(getCivilCaseData(DUMMY_EMAIL, DUMMY_EMAIL, DUMMY_EMAIL, null, CLAIM_DEF_LIP_EMAIL),
                     getGaCaseData(NO, YES, NO, YES));

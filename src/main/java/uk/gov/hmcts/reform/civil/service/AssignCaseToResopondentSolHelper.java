@@ -21,6 +21,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 public class AssignCaseToResopondentSolHelper {
 
     private final CoreCaseUserService coreCaseUserService;
+    private final GaForLipService gaForLipService;
 
     private static final int FIRST_SOLICITOR = 0;
 
