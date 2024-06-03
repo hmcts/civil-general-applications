@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment.AssignCaseToUserCallbackHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
@@ -34,7 +35,7 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 @SpringBootTest(classes = {
     AssignCaseToUserCallbackHandler.class,
     AssignCaseToResopondentSolHelper.class,
+    GaForLipService.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class
 })
@@ -85,7 +87,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private GaForLipService gaForLipService;
+    private FeatureToggleService featureToggleService;
 
     private CallbackParams params;
     private GeneralApplication generalApplication;
@@ -468,6 +470,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             when(coreCaseUserService.getUserRoles(any()))
                 .thenReturn(CaseAssignedUserRolesResource.builder()
                                 .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -528,6 +531,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
         @Test
         void shouldHaveDefendantRole() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
             assertThat(response.getData().get("respondent1OrganisationPolicy"))
                 .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");

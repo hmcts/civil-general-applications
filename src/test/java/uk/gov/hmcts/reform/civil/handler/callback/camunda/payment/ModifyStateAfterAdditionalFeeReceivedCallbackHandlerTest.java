@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +55,9 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
     @MockBean
     StateGeneratorService stateGeneratorService;
+
+    @MockBean
+    GaForLipService gaForLipService;
 
     @MockBean JudicialNotificationService judicialNotificationService;
 

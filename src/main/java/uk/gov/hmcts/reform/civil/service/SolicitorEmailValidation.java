@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
-import uk.gov.hmcts.reform.civil.utils.GaForLipService;
 
 import java.util.List;
 
@@ -22,6 +21,8 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2Solic
 @Service
 @RequiredArgsConstructor
 public class SolicitorEmailValidation {
+
+    private final GaForLipService gaForLipService;
 
     private GASolicitorDetailsGAspec updateSolDetails(String updateEmail,
                                                       GASolicitorDetailsGAspec generalAppSolicitor) {
@@ -104,7 +105,7 @@ public class SolicitorEmailValidation {
         // GA Respondent solicitor
         List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
 
-        if (!GaForLipService.isGaForLip(gaCaseData)) {
+        if (!gaForLipService.isGaForLip(gaCaseData)) {
             gaCaseData.getGeneralAppRespondentSolicitors().forEach(rs -> generalAppRespondentSolicitors
                 .add(element(checkIfOrgIDMatch(rs.getValue(), civilCaseData, gaCaseData))));
 
