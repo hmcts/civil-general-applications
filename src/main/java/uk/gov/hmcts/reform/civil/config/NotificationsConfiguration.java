@@ -17,8 +17,7 @@ public class NotificationsConfiguration {
 
     @Bean
     public NotificationClient notificationClient(NotificationsProperties notificationsProperties) {
-        //TODO revert bak
-        return new NotificationClient("unspec-a8b1617c-8e15-49aa-a8d3-a27a243f3c45-62103421-281e-4f28-ae70-74dff6a1a76f");
+        return new NotificationClient(notificationsProperties.getGovNotifyApiKey());
     }
 
 }
