@@ -48,7 +48,6 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language(caseData.isBilingual() ? "cy" : "En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
 
