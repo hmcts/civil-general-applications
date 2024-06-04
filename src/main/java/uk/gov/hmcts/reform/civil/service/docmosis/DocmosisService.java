@@ -24,7 +24,7 @@ public class DocmosisService {
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = generalAppLocationRefDataService
             .getCourtLocations(authorisation);
-        System.out.println("LOCATION IS   "+ caseData.getCaseManagementLocation() + "\n" + caseData.getCaseManagementLocation().getBaseLocation());
+        System.out.println("LOCATION IS   " + caseData.getCaseManagementLocation() + "\n" + caseData.getCaseManagementLocation().getBaseLocation());
         var matchingLocations =
             courtLocations
                 .stream()
