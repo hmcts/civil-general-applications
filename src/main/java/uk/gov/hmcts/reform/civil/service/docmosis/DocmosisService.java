@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -16,6 +17,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @SuppressWarnings("unchecked")
 public class DocmosisService {
 
@@ -24,7 +26,7 @@ public class DocmosisService {
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = generalAppLocationRefDataService
             .getCourtLocations(authorisation);
-        System.out.println("LOCATION IS   " + caseData.getCaseManagementLocation() + "\n" + caseData.getCaseManagementLocation().getBaseLocation());
+        log.info("LOCATION IS   " + caseData.getCaseManagementLocation() + "\n" + caseData.getCaseManagementLocation().getBaseLocation());
         var matchingLocations =
             courtLocations
                 .stream()
