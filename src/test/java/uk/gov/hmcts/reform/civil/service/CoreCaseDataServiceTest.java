@@ -250,6 +250,21 @@ class CoreCaseDataServiceTest {
                     any(CaseDataContent.class)
                 )
             ).thenReturn(caseDetails);
+
+            when(coreCaseDataApi.startForCitizen(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID, JURISDICTION,
+                                                    GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+            )).thenReturn(buildStartEventResponse());
+
+            when(coreCaseDataApi.submitForCitizen(
+                     eq(USER_AUTH_TOKEN),
+                     eq(SERVICE_AUTH_TOKEN),
+                     eq(USER_ID),
+                     eq(JURISDICTION),
+                     eq(GENERAL_APPLICATION_CASE_TYPE),
+                     anyBoolean(),
+                     any(CaseDataContent.class)
+                 )
+            ).thenReturn(caseDetails);
         }
 
         @Test
@@ -264,6 +279,28 @@ class CoreCaseDataServiceTest {
             );
 
             verify(coreCaseDataApi).submitForCaseworker(
+                eq(USER_AUTH_TOKEN),
+                eq(SERVICE_AUTH_TOKEN),
+                eq(USER_ID),
+                eq(JURISDICTION),
+                eq(GENERAL_APPLICATION_CASE_TYPE),
+                anyBoolean(),
+                any(CaseDataContent.class)
+            );
+        }
+
+        @Test
+        void shouldStartAndSubmitCitizenEvent_WhenCalled() {
+
+            GeneralApplication generalApplication = GeneralApplication.builder().build();
+
+            service.createGeneralAppCaseForCitizen(generalApplication.toMap(objectMapper));
+
+            verify(coreCaseDataApi).startForCitizen(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
+                                                       JURISDICTION, GENERAL_APPLICATION_CASE_TYPE, GENERAL_APPLICATION_CREATION
+            );
+
+            verify(coreCaseDataApi).submitForCitizen(
                 eq(USER_AUTH_TOKEN),
                 eq(SERVICE_AUTH_TOKEN),
                 eq(USER_ID),
@@ -367,15 +404,28 @@ class CoreCaseDataServiceTest {
             when(coreCaseDataApi.startForCaseworker(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(), anyString(),
                     anyString(), anyString()
             )).thenThrow(new RuntimeException("Exception"));
+            when(coreCaseDataApi.startForCitizen(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(), anyString(),
+                                                    anyString(), anyString()
+            )).thenThrow(new RuntimeException("Exception"));
             when(coreCaseDataApi.startEventForCaseWorker(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(), anyString(),
                     anyString(), anyString(), anyString()
+            )).thenThrow(new RuntimeException("Exception"));
+            when(coreCaseDataApi.startEventForCitizen(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(), anyString(),
+                                                         anyString(), anyString(), anyString()
             )).thenThrow(new RuntimeException("Exception"));
             when(coreCaseDataApi.submitEventForCaseWorker(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(),
                     anyString(), anyString(), anyString(),
                     anyBoolean(), any(CaseDataContent.class)
             )).thenThrow(new RuntimeException("Exception"));
+            when(coreCaseDataApi.submitEventForCitizen(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(),
+                                                          anyString(), anyString(), anyString(),
+                                                          anyBoolean(), any(CaseDataContent.class)
+            )).thenThrow(new RuntimeException("Exception"));
             when(coreCaseDataApi.submitForCaseworker(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(),
                     anyString(), anyString(), anyBoolean(), any(CaseDataContent.class)
+            )).thenThrow(new RuntimeException("Exception"));
+            when(coreCaseDataApi.submitForCitizen(eq(EXPIRED_USER_AUTH_TOKEN), anyString(), anyString(),
+                                                     anyString(), anyString(), anyBoolean(), any(CaseDataContent.class)
             )).thenThrow(new RuntimeException("Exception"));
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             when(coreCaseDataApi.searchCases(
@@ -400,11 +450,28 @@ class CoreCaseDataServiceTest {
         }
 
         @Test
+        void shouldRetry_startCaseForCitizen_WhenTokenExpired() {
+            service.startCaseForCitizen(CASE_ID);
+            verify(coreCaseDataApi,
+                   times(2))
+                .startForCitizen(anyString(), anyString(), anyString(), anyString(), anyString(), anyString());
+        }
+
+        @Test
         void shouldRetry_startUpdate_WhenTokenExpired() {
             service.startUpdate(CASE_ID, CaseEvent.valueOf(EVENT_ID));
             verify(coreCaseDataApi, times(2)).startEventForCaseWorker(anyString(), anyString(), anyString(),
                     anyString(), anyString(),
                     anyString(), anyString()
+            );
+        }
+
+        @Test
+        void shouldRetry_startUpdateForCitizen_WhenTokenExpired() {
+            service.startUpdateForCitizen(CASE_ID, CaseEvent.valueOf(EVENT_ID));
+            verify(coreCaseDataApi, times(2)).startEventForCitizen(anyString(), anyString(), anyString(),
+                                                                      anyString(), anyString(),
+                                                                      anyString(), anyString()
             );
         }
 
@@ -441,6 +508,14 @@ class CoreCaseDataServiceTest {
             verify(coreCaseDataApi,
                     times(2))
                     .submitForCaseworker(anyString(), anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(CaseDataContent.class));
+        }
+
+        @Test
+        void shouldRetry_submitForCitizen_WhenTokenExpired() {
+            service.submitForCitizen(CaseDataContent.builder().build());
+            verify(coreCaseDataApi,
+                   times(2))
+                .submitForCitizen(anyString(), anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(CaseDataContent.class));
         }
 
         @Test

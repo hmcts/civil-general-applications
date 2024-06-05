@@ -522,17 +522,41 @@ public class CreateApplicationTaskHandlerTest {
 
         }
 
+        @Test
+        void shouldCreateApplicationForCitizenIfLipApplication() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null, true);
+            CaseData data = buildData(generalApplication, NO, NO, false, true);
+
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
+        }
+
         private GeneralApplication getGeneralApplication(String organisationIdentifier,
                                                          YesOrNo parentClaimantIsApplicant,
                                                          YesOrNo isWithoutNotice, YesOrNo isMultiParty,
                                                          YesOrNo isGeneralAppAgreed,
                                                          YesOrNo isDocumentVisible,
                                                          List<Element<Document>> generalAppEvidenceDocument) {
+            return getGeneralApplication(organisationIdentifier, parentClaimantIsApplicant, isWithoutNotice, isMultiParty, isGeneralAppAgreed,
+                                         isDocumentVisible, generalAppEvidenceDocument, false);
+        }
+
+        private GeneralApplication getGeneralApplication(String organisationIdentifier,
+                                                         YesOrNo parentClaimantIsApplicant,
+                                                         YesOrNo isWithoutNotice, YesOrNo isMultiParty,
+                                                         YesOrNo isGeneralAppAgreed,
+                                                         YesOrNo isDocumentVisible,
+                                                         List<Element<Document>> generalAppEvidenceDocument,
+                                                         boolean isLipApplication) {
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
 
             builder.generalAppType(GAApplicationType.builder()
                                        .types(singletonList(SUMMARY_JUDGEMENT))
                                        .build());
+            builder.isGaApplicantLip(isLipApplication ? YES : NO);
 
             return builder
                 .parentClaimantIsApplicant(parentClaimantIsApplicant)
@@ -791,6 +815,12 @@ public class CreateApplicationTaskHandlerTest {
     public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
                               YesOrNo respondent2SameLegalRepresentative,
                               boolean addEvidenceDoc) {
+        return buildData(generalApplication, addApplicant2, respondent2SameLegalRepresentative, addEvidenceDoc, false);
+    }
+
+    public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
+                              YesOrNo respondent2SameLegalRepresentative,
+                              boolean addEvidenceDoc, boolean isLipApplication) {
         generalApplications = getGeneralApplications(generalApplication);
         generalApplicationsDetailsList = Lists.newArrayList();
         gaDetailsMasterCollection = Lists.newArrayList();
@@ -863,12 +893,15 @@ public class CreateApplicationTaskHandlerTest {
         map.put("applicationTypes", GA_CASE_TYPES);
 
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
+        when(coreCaseDataService.createGeneralAppCaseForCitizen(anyMap())).thenReturn(caseData);
 
         createApplicationTaskHandler.execute(mockTask, externalTaskService);
 
         verify(coreCaseDataService).startUpdate(CASE_ID, CREATE_GENERAL_APPLICATION_CASE);
-        if (!addEvidenceDoc) {
+        if (!isLipApplication) {
             verify(coreCaseDataService).createGeneralAppCase(map);
+        } else {
+            verify(coreCaseDataService).createGeneralAppCaseForCitizen(map);
         }
 
         CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
