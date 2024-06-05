@@ -311,6 +311,8 @@ public class CaseData implements MappableObject {
     private final String serviceRequestReference;
     private final Fee generalAppFee;
     private final PaymentDetails generalAppPaymentDetails;
+    private final IdamUserDetails claimantUserDetails;
+    private final IdamUserDetails defendantUserDetails;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
