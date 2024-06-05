@@ -232,7 +232,11 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             map.put("gaAddlDocClaimant", addlDoc);
             map.put("generalAppEvidenceDocument", null);
         }
-        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+        if (generalApplication.getIsGaApplicantLip() == YES) {
+            generalAppCaseData = coreCaseDataService.createGeneralAppCaseForCitizen(map);
+        } else {
+            generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+        }
     }
 
     private String getTypesString(final GeneralApplication generalApplication) {

@@ -51,6 +51,12 @@ public class CoreCaseDataService {
         return submitForCaseWorker(caseDataContent(startEventResponse, caseDataMap));
     }
 
+    public CaseData createGeneralAppCaseForCitizen(Map<String, Object> caseDataMap) {
+        var startEventResponse = startCaseForCitizen(GENERAL_APPLICATION_CREATION.name());
+        return submitForCitizen(caseDataContent(startEventResponse, caseDataMap));
+    }
+
+
     public StartEventResponse startUpdate(String caseId, CaseEvent eventName) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
         try {
@@ -72,6 +78,29 @@ public class CoreCaseDataService {
                 CASE_TYPE,
                 caseId,
                 eventName.name());
+    }
+
+    public StartEventResponse startUpdateForCitizen(String caseId, CaseEvent eventName) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        try {
+            return startUpdateForCitizen(caseId, eventName, systemUpdateUser);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            log.info(RETRY_MSG);
+            systemUpdateUser = refreshSystemUpdateUser();
+            return startUpdateForCitizen(caseId, eventName, systemUpdateUser);
+        }
+    }
+
+    private StartEventResponse startUpdateForCitizen(String caseId, CaseEvent eventName, UserAuthContent systemUpdateUser) {
+        return coreCaseDataApi.startEventForCitizen(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            CASE_TYPE,
+            caseId,
+            eventName.name());
     }
 
     public StartEventResponse startGaUpdate(String caseId, CaseEvent eventName) {
@@ -245,6 +274,18 @@ public class CoreCaseDataService {
         }
     }
 
+    public StartEventResponse startCaseForCitizen(String eventId) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        try {
+            return startCaseForCitizen(eventId, systemUpdateUser);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            log.info(RETRY_MSG);
+            systemUpdateUser = refreshSystemUpdateUser();
+            return startCaseForCitizen(eventId, systemUpdateUser);
+        }
+    }
+
     private StartEventResponse startCaseForCaseworker(String eventId, UserAuthContent systemUpdateUser) {
         return coreCaseDataApi.startForCaseworker(
                 systemUpdateUser.getUserToken(),
@@ -253,6 +294,16 @@ public class CoreCaseDataService {
                 JURISDICTION,
                 GENERAL_APPLICATION_CASE_TYPE,
                 eventId);
+    }
+
+    private StartEventResponse startCaseForCitizen(String eventId, UserAuthContent systemUpdateUser) {
+        return coreCaseDataApi.startForCitizen(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            eventId);
     }
 
     public CaseData submitForCaseWorker(CaseDataContent caseDataContent) {
@@ -267,6 +318,18 @@ public class CoreCaseDataService {
         }
     }
 
+    public CaseData submitForCitizen(CaseDataContent caseDataContent) {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        try {
+            return submitForCitizen(caseDataContent, systemUpdateUser);
+        } catch (Exception e) {
+            log.info(e.getMessage());
+            log.info(RETRY_MSG);
+            systemUpdateUser = refreshSystemUpdateUser();
+            return submitForCitizen(caseDataContent, systemUpdateUser);
+        }
+    }
+
     private CaseData submitForCaseWorker(CaseDataContent caseDataContent, UserAuthContent systemUpdateUser) {
         CaseDetails caseDetails = coreCaseDataApi.submitForCaseworker(
                 systemUpdateUser.getUserToken(),
@@ -276,6 +339,19 @@ public class CoreCaseDataService {
                 GENERAL_APPLICATION_CASE_TYPE,
                 true,
                 caseDataContent
+        );
+        return caseDetailsConverter.toCaseData(caseDetails);
+    }
+
+    private CaseData submitForCitizen(CaseDataContent caseDataContent, UserAuthContent systemUpdateUser) {
+        CaseDetails caseDetails = coreCaseDataApi.submitForCitizen(
+            systemUpdateUser.getUserToken(),
+            authTokenGenerator.generate(),
+            systemUpdateUser.getUserId(),
+            JURISDICTION,
+            GENERAL_APPLICATION_CASE_TYPE,
+            true,
+            caseDataContent
         );
         return caseDetailsConverter.toCaseData(caseDetails);
     }
