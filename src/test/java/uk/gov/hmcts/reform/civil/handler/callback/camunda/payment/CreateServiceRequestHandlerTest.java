@@ -10,10 +10,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
@@ -107,6 +109,23 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
             assertThat(paymentDetails.getReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate())
                     .isNotNull();
+        }
+
+        @Test
+        void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenReturn(paymentServiceResponse.builder()
+                                .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                                                                       .helpWithFee(YesOrNo.YES).build()).build();
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
+                .isEqualTo(FREE_PAYMENT_REFERENCE);
+            PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
+            assertThat(paymentDetails).isNull();
         }
 
         @Test
