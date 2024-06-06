@@ -66,7 +66,6 @@ public class GeneralApplication implements MappableObject {
     private Document generalAppN245FormUpload;
     private GAHearingDateGAspec generalAppHearingDate;
 
-
     // GA for LIP
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
