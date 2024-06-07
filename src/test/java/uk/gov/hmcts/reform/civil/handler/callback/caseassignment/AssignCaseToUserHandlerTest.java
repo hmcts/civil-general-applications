@@ -84,9 +84,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
 
-    @MockBean
-    private GaForLipService gaForLipService;
-
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -276,7 +273,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignDefendantRoleForGALip {
         @BeforeEach
         void setup() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -847,7 +844,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .thenReturn(CaseAssignedUserRolesResource.builder()
                                 .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(gaForLipService.isLipApp(any())).thenReturn(true);
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -873,7 +869,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                                               .organisationIdentifier("Org1").build())
                 .isMultiParty(NO)
                 .isGaRespondentOneLip(YES)
-                .isGaApplicantLip(NO)
+                .isGaApplicantLip(YES)
                 .isGaRespondentTwoLip(NO)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
                 .defendant1PartyName("Respondent1")
