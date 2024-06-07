@@ -22,19 +22,19 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
-    private final static String ccmccEpimsId = "192280";
-    private final static String cnbcEpimsId = "420219";
+    private static final  String ccmccEpimsId = "192280";
+    private static final  String cnbcEpimsId = "420219";
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         Boolean isCcmccOrCnbc = checkIfCcmccOrCnbc(caseData);
         List<LocationRefData> courtLocations = null;
         if (isCcmccOrCnbc && caseData.getCaseAccessCategory().equals(SPEC_CLAIM)) {
-           courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
+            courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
         }
         if (isCcmccOrCnbc && caseData.getCaseAccessCategory().equals(UNSPEC_CLAIM)) {
             courtLocations = generalAppLocationRefDataService.getCcmccLocation(authorisation);
         }
-        if (!isCcmccOrCnbc){
+        if (!isCcmccOrCnbc) {
             courtLocations = generalAppLocationRefDataService.getCourtLocations(authorisation);
         }
         var matchingLocations =
@@ -90,6 +90,8 @@ public class DocmosisService {
     public Boolean checkIfCcmccOrCnbc(CaseData caseData) {
         if (caseData.getCaseManagementLocation().getBaseLocation().equals(ccmccEpimsId)) {
             return true;
-        } else return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimsId);
+        } else {
+            return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimsId);
+        }
     }
 }
