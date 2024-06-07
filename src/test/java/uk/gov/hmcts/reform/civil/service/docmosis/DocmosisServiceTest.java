@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -41,7 +42,9 @@ public class DocmosisServiceTest {
     private static final List<LocationRefData> locationRefData = Arrays
         .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
                 LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+                LocationRefData.builder().epimmsId("3").venueName("Manchester").build(),
+                LocationRefData.builder().epimmsId("192280").venueName("CCMCC").build(),
+                LocationRefData.builder().epimmsId("420219").venueName("CNBC").build());
 
     @Test
     void shouldReturnLocationRefData() {
@@ -52,6 +55,30 @@ public class DocmosisServiceTest {
         LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
         assertThat(locationRefData.getVenueName())
             .isEqualTo("London");
+    }
+
+    @Test
+    void shouldReturnLocationRefData_whenSpecAndCnbc() {
+        when(generalAppLocationRefDataService.getCnbcLocation(any())).thenReturn(locationRefData);
+
+        CaseData caseData = CaseData.builder()
+            .caseAccessCategory(CaseCategory.SPEC_CLAIM)
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("420219").build()).build();
+        LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(locationRefData.getVenueName())
+            .isEqualTo("CNBC");
+    }
+
+    @Test
+    void shouldReturnLocationRefData_whenUspecAndCcmcc() {
+        when(generalAppLocationRefDataService.getCcmccLocation(any())).thenReturn(locationRefData);
+
+        CaseData caseData = CaseData.builder()
+            .caseAccessCategory(CaseCategory.UNSPEC_CLAIM)
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("192280").build()).build();
+        LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(locationRefData.getVenueName())
+            .isEqualTo("CCMCC");
     }
 
     @Test
