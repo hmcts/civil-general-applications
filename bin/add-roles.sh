@@ -4,6 +4,8 @@
 ./bin/utils/ccd-add-role.sh "caseworker-civil"
 ./bin/utils/ccd-add-role.sh "caseworker-caa"
 ./bin/utils/ccd-add-role.sh "caseworker-approver"
+./bin/utils/ccd-add-role.sh "APPLICANT-PROFILE-SPEC"
+./bin/utils/ccd-add-role.sh "RESPONDENT-ONE-PROFILE-SPEC"
 ./bin/utils/ccd-add-role.sh "prd-admin"
 ./bin/utils/ccd-add-role.sh "judge-profile"
 ./bin/utils/ccd-add-role.sh "APP-SOL-UNSPEC-PROFILE"

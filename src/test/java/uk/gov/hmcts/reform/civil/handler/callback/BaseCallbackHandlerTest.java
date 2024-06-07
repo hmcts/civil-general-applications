@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams.Params;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.callback.CallbackVersion;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.UserService;
@@ -72,8 +73,14 @@ public abstract class BaseCallbackHandlerTest {
     }
 
     public CallbackParams callbackParamsOf(CaseData caseData, CallbackType type, String pageId, String eventId) {
-        return specCallbackParamsOf(caseData, type, null, pageId, eventId, Map.of(Params.BEARER_TOKEN,
-                                                                                  "BEARER_TOKEN"));
+        return specCallbackParamsOf(caseData, type, null, pageId, eventId, Map.of(
+            Params.BEARER_TOKEN,
+            "BEARER_TOKEN"
+        ));
+    }
+
+    public CallbackParams callbackParamsOf(CaseData caseData, CaseEvent event, CallbackType type) {
+        return callbackParamsOf(caseData, type, null, event.name());
     }
 
     public CallbackParams callbackParamsOf(CaseData caseData,

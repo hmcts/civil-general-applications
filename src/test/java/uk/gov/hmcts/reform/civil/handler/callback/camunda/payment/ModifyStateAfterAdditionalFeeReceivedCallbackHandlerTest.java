@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,10 +37,12 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
     AssignCaseToResopondentSolHelper.class,
+    GaForLipService.class,
     ModifyStateAfterAdditionalFeeReceivedCallbackHandler.class,
     JacksonAutoConfiguration.class,
 })
@@ -52,6 +55,9 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
     @MockBean
     StateGeneratorService stateGeneratorService;
+
+    @MockBean
+    GaForLipService gaForLipService;
 
     @MockBean JudicialNotificationService judicialNotificationService;
 
@@ -76,6 +82,9 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                 .email("test@gmail.com").organisationIdentifier("org1").build())
             .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(NO)
+            .isGaRespondentTwoLip(NO)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -105,6 +114,9 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
                                           .email("test@gmail.com").organisationIdentifier("org1").build())
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                 GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(NO)
+            .isGaRespondentTwoLip(NO)
             .generalAppRespondentSolicitors(getRespondentSolicitors())
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 
@@ -18,6 +19,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 public class AssignCaseToResopondentSolHelper {
 
     private final CoreCaseUserService coreCaseUserService;
+    private final GaForLipService gaForLipService;
 
     private static final int FIRST_SOLICITOR = 0;
 
@@ -28,29 +30,37 @@ public class AssignCaseToResopondentSolHelper {
          * */
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
 
-            List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
-                .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
-                    .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
-            GASolicitorDetailsGAspec respondentSolicitor1 =
-                respondentSolList.get(FIRST_SOLICITOR).getValue();
-            coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
-                                           respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
-            for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
-                if ((respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
-                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
-                    coreCaseUserService
-                        .assignCase(caseId, respSolElement.getValue().getId(),
-                                    respSolElement.getValue().getOrganisationIdentifier(),
-                                    RESPONDENTSOLICITORONE);
-                } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
-                    && !(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
-                    .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
-                    coreCaseUserService
-                        .assignCase(caseId, respSolElement.getValue().getId(),
-                                    respSolElement.getValue().getOrganisationIdentifier(),
-                                    RESPONDENTSOLICITORTWO);
-                }
+            if (!gaForLipService.isLipResp(caseData)) {
 
+                List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
+                    .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
+                        .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
+                GASolicitorDetailsGAspec respondentSolicitor1 =
+                    respondentSolList.get(FIRST_SOLICITOR).getValue();
+                coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
+                                               respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
+                    if ((respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
+                        .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                        coreCaseUserService
+                            .assignCase(caseId, respSolElement.getValue().getId(),
+                                        respSolElement.getValue().getOrganisationIdentifier(),
+                                        RESPONDENTSOLICITORONE);
+                    } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
+                        && !(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
+                        .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
+                        coreCaseUserService
+                            .assignCase(caseId, respSolElement.getValue().getId(),
+                                        respSolElement.getValue().getOrganisationIdentifier(),
+                                        RESPONDENTSOLICITORTWO);
+                    }
+
+                }
+            } else {
+                /* GA for Lip*/
+                GASolicitorDetailsGAspec respondentSolicitor1
+                    = caseData.getGeneralAppRespondentSolicitors().get(FIRST_SOLICITOR).getValue();
+                coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(), null, DEFENDANT);
             }
         }
     }

@@ -86,6 +86,9 @@ civil-service:
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
     ingressHost: civil-service-${SERVICE_FQDN}
+    devcpuRequests: 500m
+    devmemoryRequests: 2048Mi
+    devmemoryLimits: 4096Mi
     keyVaults:
       civil:
         resourceGroup: civil
