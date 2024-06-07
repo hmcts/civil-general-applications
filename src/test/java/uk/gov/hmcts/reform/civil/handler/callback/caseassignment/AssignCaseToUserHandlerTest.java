@@ -280,6 +280,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .email("test@gmail.com").build();
 
             respondentSols.add(element(respondent1));
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()
