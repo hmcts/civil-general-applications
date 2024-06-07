@@ -22,21 +22,21 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
-    private static final  String ccmccEpimsId = "192280";
-    private static final  String cnbcEpimsId = "420219";
+    private static final  String CCMCC_EPIMM_ID = "192280";
+    private static final  String CNBC_EPIMM_ID = "420219";
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
-        Boolean isCcmccOrCnbc = checkIfCcmccOrCnbc(caseData);
         List<LocationRefData> courtLocations = null;
-        if (isCcmccOrCnbc && caseData.getCaseAccessCategory().equals(SPEC_CLAIM)) {
+        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(SPEC_CLAIM)) {
             courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
         }
-        if (isCcmccOrCnbc && caseData.getCaseAccessCategory().equals(UNSPEC_CLAIM)) {
+        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(UNSPEC_CLAIM)) {
             courtLocations = generalAppLocationRefDataService.getCcmccLocation(authorisation);
         }
-        if (!isCcmccOrCnbc) {
+        if (!checkIfCcmccOrCnbc(caseData)) {
             courtLocations = generalAppLocationRefDataService.getCourtLocations(authorisation);
         }
+        assert courtLocations != null;
         var matchingLocations =
             courtLocations
                 .stream()
@@ -88,10 +88,10 @@ public class DocmosisService {
     }
 
     public Boolean checkIfCcmccOrCnbc(CaseData caseData) {
-        if (caseData.getCaseManagementLocation().getBaseLocation().equals(ccmccEpimsId)) {
+        if (caseData.getCaseManagementLocation().getBaseLocation().equals(CCMCC_EPIMM_ID)) {
             return true;
         } else {
-            return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimsId);
+            return caseData.getCaseManagementLocation().getBaseLocation().equals(CNBC_EPIMM_ID);
         }
     }
 }

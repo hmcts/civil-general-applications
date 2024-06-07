@@ -417,11 +417,10 @@ class GeneralAppLocationRefDataServiceTest {
                 "banana - court address 1111 - AA0 0BB"
             );
 
-        assertThat(courtLocations.size()).isEqualTo(1);
+        assertThat(courtLocations).hasSize(1);
         verify(lrdConfiguration, times(1)).getUrl();
         verify(lrdConfiguration, times(1)).getEndpoint();
-        assertThat(uriCaptor.getValue().toString())
-            .isEqualTo("dummy_url/fees-register/fees/lookup?court_venue_name=County%20Court%20Money%20Claims%20Centre");
+        assertThat(uriCaptor.getValue()).hasToString("dummy_url/fees-register/fees/lookup?court_venue_name=County%20Court%20Money%20Claims%20Centre");
         assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
@@ -449,11 +448,10 @@ class GeneralAppLocationRefDataServiceTest {
                 "pineapple - court address 1111 - AA0 0BB"
             );
 
-        assertThat(courtLocations.size()).isEqualTo(1);
+        assertThat(courtLocations).hasSize(1);
         verify(lrdConfiguration, times(1)).getUrl();
         verify(lrdConfiguration, times(1)).getEndpoint();
-        assertThat(uriCaptor.getValue().toString())
-            .isEqualTo("dummy_url/fees-register/fees/lookup?court_venue_name=Civil%20National%20Business%20Centre");
+        assertThat(uriCaptor.getValue()).hasToString("dummy_url/fees-register/fees/lookup?court_venue_name=Civil%20National%20Business%20Centre");
         assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))

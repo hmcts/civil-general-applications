@@ -64,8 +64,8 @@ public class DocmosisServiceTest {
         CaseData caseData = CaseData.builder()
             .caseAccessCategory(CaseCategory.SPEC_CLAIM)
             .caseManagementLocation(GACaseLocation.builder().baseLocation("420219").build()).build();
-        LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
-        assertThat(locationRefData.getVenueName())
+        LocationRefData cnbcLocationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(cnbcLocationRefData.getVenueName())
             .isEqualTo("CNBC");
     }
 
@@ -76,8 +76,8 @@ public class DocmosisServiceTest {
         CaseData caseData = CaseData.builder()
             .caseAccessCategory(CaseCategory.UNSPEC_CLAIM)
             .caseManagementLocation(GACaseLocation.builder().baseLocation("192280").build()).build();
-        LocationRefData locationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
-        assertThat(locationRefData.getVenueName())
+        LocationRefData ccmccLocationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(ccmccLocationRefData.getVenueName())
             .isEqualTo("CCMCC");
     }
 
