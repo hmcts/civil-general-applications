@@ -44,6 +44,7 @@ public class JudicialNotificationService implements NotificationData {
     private static final int NUMBER_OF_DEADLINE_DAYS = 5;
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final GaForLipService gaForLipService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final JudicialDecisionHelper judicialDecisionHelper;
@@ -105,6 +106,18 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
+        if (gaForLipService.isLipApp(caseData)) {
+            String isLipAppName = caseData
+                    .getGeneralAppApplnSolicitor().getForename()
+                    + " " + caseData
+                    .getGeneralAppApplnSolicitor().getSurname().orElse("");
+            customProps.put(
+                    GA_LIP_RESP_NAME,
+                    Objects.requireNonNull(isLipAppName)
+            );
+        } else {
+            customProps.remove(GA_LIP_RESP_NAME);
+        }
         return customProps;
     }
 
@@ -220,11 +233,15 @@ public class JudicialNotificationService implements NotificationData {
             if (solicitorType.equals(APPLICANT)
                     && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-
+                String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
+                if (gaForLipService.isLipApp(caseData)) {
+                    template = notificationProperties
+                            .getLipGeneralAppRespondentEmailTemplate();
+                }
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
-                    notificationProperties.getJudgeUncloakApplicationEmailTemplate()
+                        template
                 );
             }
         } else {
