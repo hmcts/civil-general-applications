@@ -51,6 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.CLAIMANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -585,26 +586,18 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
             });
-            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+            params = callbackParamsOfPendingState(dataMap, CallbackType.SUBMITTED);
         }
 
         @Test
-        void shouldNotCallAssignCase() {
-            var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(0)).assignCase(
+        void shouldCallAssignCaseLip() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(1)).assignCase(
                     any(),
                     any(),
                     any(),
-                    any()
+                    eq(CLAIMANT)
             );
-        }
-
-        @Test
-        void shouldHaveDefendantRole() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
-            assertThat(response.getData().get("respondent1OrganisationPolicy"))
-                    .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");
         }
     }
 
