@@ -18,6 +18,9 @@ public class NotificationsProperties {
     private String urgentGeneralAppRespondentEmailTemplate;
 
     @NotEmpty
+    private String lipGeneralAppRespondentEmailTemplate;
+
+    @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
 
     @NotEmpty

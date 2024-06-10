@@ -17,12 +17,23 @@ public class GaForLipService {
 
     public boolean isGaForLip(CaseData caseData) {
         return featureToggleService.isGaForLipsEnabled() && (Objects.nonNull(caseData.getIsGaApplicantLip())
-            && caseData.getIsGaApplicantLip().equals(YES))
-            || (Objects.nonNull(caseData.getIsGaRespondentOneLip())
-            && caseData.getIsGaRespondentOneLip().equals(YES))
-            || (caseData.getIsMultiParty().equals(YES)
-            && Objects.nonNull(caseData.getIsGaRespondentTwoLip())
-            && caseData.getIsGaRespondentTwoLip().equals(YES));
+                && caseData.getIsGaApplicantLip().equals(YES))
+                || (Objects.nonNull(caseData.getIsGaRespondentOneLip())
+                && caseData.getIsGaRespondentOneLip().equals(YES))
+                || (caseData.getIsMultiParty().equals(YES)
+                && Objects.nonNull(caseData.getIsGaRespondentTwoLip())
+                && caseData.getIsGaRespondentTwoLip().equals(YES));
+    }
 
+    public boolean isLipApp(CaseData caseData) {
+        return featureToggleService.isGaForLipsEnabled()
+                && Objects.nonNull(caseData.getIsGaApplicantLip())
+                && caseData.getIsGaApplicantLip().equals(YES);
+    }
+
+    public boolean isLipResp(CaseData caseData) {
+        return featureToggleService.isGaForLipsEnabled()
+                && Objects.nonNull(caseData.getIsGaRespondentOneLip())
+                && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 }
