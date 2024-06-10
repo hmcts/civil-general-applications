@@ -33,6 +33,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.CLAIMANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
@@ -174,20 +175,25 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
 
-        if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED) && !gaForLipService.isLipApp(caseData)) {
+        if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
             GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
-
-            coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                                           applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
-            );
-            List<Element<GASolicitorDetailsGAspec>> addlApplicantSolList = caseData.getGeneralAppApplicantAddlSolicitors();
-            if (Objects.nonNull(addlApplicantSolList) && !addlApplicantSolList.isEmpty()) {
-                for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
-                    coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
-                                                   addlApplicantSolElement.getValue().getOrganisationIdentifier(),
-                                                   APPLICANTSOLICITORONE
-                    );
+            if (!gaForLipService.isLipApp(caseData)) {
+                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                        applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+                );
+                List<Element<GASolicitorDetailsGAspec>> addlApplicantSolList = caseData.getGeneralAppApplicantAddlSolicitors();
+                if (Objects.nonNull(addlApplicantSolList) && !addlApplicantSolList.isEmpty()) {
+                    for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
+                        coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
+                                addlApplicantSolElement.getValue().getOrganisationIdentifier(),
+                                APPLICANTSOLICITORONE
+                        );
+                    }
                 }
+            } else {
+                coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
+                        null, CLAIMANT
+                );
             }
 
         }

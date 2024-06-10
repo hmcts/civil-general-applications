@@ -466,7 +466,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Nested
-    class AssignRolesSpecCaseLip {
+    class AssignRolesSpecCaseLipResp {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
@@ -537,6 +537,75 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
             assertThat(response.getData().get("respondent1OrganisationPolicy"))
                 .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");
+        }
+    }
+
+    @Nested
+    class AssignRolesSpecCaseLipApp {
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                    .thenReturn(CaseAssignedUserRolesResource.builder()
+                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                            .types(singletonList(ADJOURN_HEARING))
+                            .build())
+                    .claimant1PartyName("Applicant1")
+                    .generalAppRespondentSolicitors(respondentSols)
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                            .builder()
+                            .id("id")
+                            .email("TEST@gmail.com")
+                            .build())
+                    .isMultiParty(NO)
+                    .isGaRespondentOneLip(NO)
+                    .isGaApplicantLip(YES)
+                    .isGaRespondentTwoLip(NO)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                    .defendant1PartyName("Respondent1")
+                    .generalAppSuperClaimType(SPEC_CLAIM)
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                    .civilServiceUserRoles(IdamUserDetails.builder()
+                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                            .email("applicant@someorg.com")
+                            .build())
+                    .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                    .build();
+
+            generalApplication = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        }
+
+        @Test
+        void shouldNotCallAssignCase() {
+            var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(0)).assignCase(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+            );
+        }
+
+        @Test
+        void shouldHaveDefendantRole() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
+            assertThat(response.getData().get("respondent1OrganisationPolicy"))
+                    .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");
         }
     }
 
