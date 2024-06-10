@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import com.nimbusds.oauth2.sdk.util.CollectionUtils;
 import lombok.RequiredArgsConstructor;
+import org.camunda.bpm.engine.exception.NotFoundException;
 import org.camunda.community.rest.client.api.ExternalTaskApiClient;
 import org.camunda.community.rest.client.api.IncidentApiClient;
 import org.camunda.community.rest.client.api.ProcessInstanceApiClient;
@@ -31,7 +32,8 @@ public class CamundaRestEngineClient {
     }
 
     public String getIncidentMessage(String incidentId) {
-        IncidentDto incidentDto = incidentApiClient.getIncident(incidentId).getBody();
+        IncidentDto incidentDto =
+            Optional.ofNullable(incidentApiClient.getIncident(incidentId).getBody()).orElseThrow(NotFoundException::new);
         String externalTaskId = incidentDto.getConfiguration();
 
         return externalTaskApiClient.getExternalTaskErrorDetails(externalTaskId).getBody();
