@@ -531,6 +531,21 @@ class ParentCaseUpdateHelperTest {
     }
 
     @Test
+    void updateParentWithGAState_with_collections_WithHwf_WithNotice_WithOutMultiParty() {
+
+        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, NO, YES);
+        CaseData civilCase = getVaryMainCaseDataFor1V2SameSol_DefendantInitiateGA("RespondentSol");
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
+        parentCaseUpdateHelper.updateMasterCollectionForHwf(gaCase);
+        verify(coreCaseDataService, times(1))
+            .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+        assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).isNotNull();
+        assertThat(mapCaptor.getValue().get("respondentSolGaAppDetails")).isNotNull();
+        assertThat(mapCaptor.getValue().get("claimantGaAppDetails")).isNotNull();
+    }
+
+    @Test
     void updateParentWithGAState_without_n245() {
         CaseData gaCase = getCaseWithApplicationDataAndGeneralOrder();
         CaseData civilCase = getCaseWithApplicationData(false);

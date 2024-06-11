@@ -10,13 +10,13 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 @Setter
 @Data
 @Builder(toBuilder = true)
-public class GAHelpWithFees {
+public class HelpWithFees {
 
     private YesOrNo helpWithFee;
     private String helpWithFeesReferenceNumber;
 
     @JsonCreator
-    GAHelpWithFees(@JsonProperty("isWithNotice") YesOrNo helpWithFee,
+    HelpWithFees(@JsonProperty("isWithNotice") YesOrNo helpWithFee,
                    @JsonProperty("helpWithFeesReferenceNumber") String helpWithFeesReferenceNumber) {
         this.helpWithFee = helpWithFee;
         this.helpWithFeesReferenceNumber = helpWithFeesReferenceNumber;

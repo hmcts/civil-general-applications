@@ -49,6 +49,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
@@ -313,7 +314,7 @@ public class CaseData implements MappableObject {
     private final PaymentDetails generalAppPaymentDetails;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
-
+    private HelpWithFees generalAppHelpWithFees;
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
             || businessProcess.getStatus() == null
