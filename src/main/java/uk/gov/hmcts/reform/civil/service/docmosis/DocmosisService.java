@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -22,8 +23,10 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
-    private static final  String CCMCC_EPIMM_ID = "192280";
-    private static final  String CNBC_EPIMM_ID = "420219";
+    @Value("${court-location.unspecified-claim.epimms-id}")
+    private String CCMCC_EPIMM_ID;
+    @Value("${court-location.specified-claim.epimms-id}")
+    private String CNBC_EPIMM_ID;
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = null;
