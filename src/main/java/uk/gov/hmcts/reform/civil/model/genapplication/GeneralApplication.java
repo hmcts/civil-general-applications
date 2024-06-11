@@ -28,6 +28,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo generalAppConsentOrder;
     private final BusinessProcess businessProcess;
     private final GAPbaDetails generalAppPBADetails;
+    private YesOrNo generalAppAskForCosts;
     private String generalAppDetailsOfOrder;
     private String generalAppReasonsOfOrder;
     private GAInformOtherParty generalAppInformOtherParty;
@@ -79,6 +80,7 @@ public class GeneralApplication implements MappableObject {
                        YesOrNo generalAppConsentOrder,
                        @JsonProperty("businessProcess") BusinessProcess businessProcess,
                        @JsonProperty("generalAppPBADetails") GAPbaDetails generalAppPBADetails,
+                       @JsonProperty("generalAppAskForCosts") YesOrNo generalAppAskForCosts,
                        @JsonProperty("generalAppDetailsOfOrder") String generalAppDetailsOfOrder,
                        @JsonProperty("generalAppReasonsOfOrder") String generalAppReasonsOfOrder,
                        @JsonProperty("generalAppInformOtherParty") GAInformOtherParty generalAppInformOtherParty,
@@ -126,6 +128,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppConsentOrder = generalAppConsentOrder;
         this.businessProcess = businessProcess;
         this.generalAppPBADetails = generalAppPBADetails;
+        this.generalAppAskForCosts = generalAppAskForCosts;
         this.generalAppDetailsOfOrder = generalAppDetailsOfOrder;
         this.generalAppReasonsOfOrder = generalAppReasonsOfOrder;
         this.generalAppInformOtherParty = generalAppInformOtherParty;
