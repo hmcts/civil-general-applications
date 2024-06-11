@@ -9,9 +9,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
@@ -70,7 +68,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;
-            if(gaForLipService.isLipApp(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())) {
+            if (gaForLipService.isLipApp(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())) {
                 parentCaseUpdateHelper.updateMasterCollectionForHwf(data);
             }
         } else if (Objects.nonNull(data.getFinalOrderSelection())) {
@@ -80,8 +78,11 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             } else {
                 newState = ORDER_MADE;
             }
-        }  else {
-            newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(data, data.toBuilder().build()))
+        } else {
+            newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
+                data,
+                data.toBuilder().build()
+            ))
                 ? AWAITING_RESPONDENT_RESPONSE
                 : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
         }
