@@ -198,16 +198,6 @@ spring:
 feign:
   client:
     config:
-      incident:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      externalTask:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteRuntimeService:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteRepositoryService:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteExternalTaskService:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
       idam-api:
         loggerLevel: full
       core-case-data-api:
