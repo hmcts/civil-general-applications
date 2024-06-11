@@ -178,6 +178,8 @@ cui-front-end:
 feign:
   client:
     config:
+      processInstance:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
       remoteRuntimeService:
         url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
       processDefinition:
