@@ -178,15 +178,15 @@ cui-front-end:
 feign:
   client:
     config:
+      remoteRuntimeService:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processDefinition:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      message:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
       incident:
         url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
       externalTask:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteRuntimeService:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteRepositoryService:
-        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
-      remoteExternalTaskService:
         url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
 ---
 
