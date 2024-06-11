@@ -315,6 +315,7 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
     private HelpWithFees generalAppHelpWithFees;
+
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
             || businessProcess.getStatus() == null
