@@ -24,9 +24,9 @@ public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
     @Value("${court-location.unspecified-claim.epimms-id}")
-    private String CCMCC_EPIMM_ID;
+    private String ccmccEpimmId;
     @Value("${court-location.specified-claim.epimms-id}")
-    private String CNBC_EPIMM_ID;
+    private String cnbcEpimmId;
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = null;
@@ -91,10 +91,10 @@ public class DocmosisService {
     }
 
     public Boolean checkIfCcmccOrCnbc(CaseData caseData) {
-        if (caseData.getCaseManagementLocation().getBaseLocation().equals(CCMCC_EPIMM_ID)) {
+        if (caseData.getCaseManagementLocation().getBaseLocation().equals(ccmccEpimmId)) {
             return true;
         } else {
-            return caseData.getCaseManagementLocation().getBaseLocation().equals(CNBC_EPIMM_ID);
+            return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimmId);
         }
     }
 }
