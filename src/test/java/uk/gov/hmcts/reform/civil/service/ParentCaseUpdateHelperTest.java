@@ -533,8 +533,8 @@ class ParentCaseUpdateHelperTest {
     @Test
     void updateParentWithGAState_with_collections_WithHwf_WithNotice_WithOutMultiParty() {
 
-        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, NO, YES);
-        CaseData civilCase = getVaryMainCaseDataFor1V2SameSol_DefendantInitiateGA("RespondentSol");
+        CaseData gaCase = getGaVaryCaseDataForCollection("Claimant", AWAITING_APPLICATION_PAYMENT, NO, NO, YES);
+        CaseData civilCase = getVaryMainCaseDataFor1V2SameSol_DefendantInitiateGA("Claimant");
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
         parentCaseUpdateHelper.updateMasterCollectionForHwf(gaCase);
