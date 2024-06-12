@@ -9,12 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
-import uk.gov.hmcts.reform.ccd.model.AddCaseAssignedUserRolesRequest;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRoleWithOrganisation;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesRequest;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.civil.config.CrossAccessUserConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -45,7 +44,7 @@ class CoreCaseUserServiceTest {
     private CrossAccessUserConfiguration userConfig;
 
     @MockBean
-    private CaseAccessDataStoreApi caseAccessDataStoreApi;
+    private CaseAssignmentApi caseAccessDataStoreApi;
 
     @MockBean
     private IdamClient idamClient;
@@ -71,42 +70,44 @@ class CoreCaseUserServiceTest {
         @Test
         void shouldAssignCaseToUser_WhenSameUserWithRequestedCaseRoleDoesNotExist() {
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder().caseAssignmentUserRoles(List.of()).build());
 
             service.assignCase(CASE_ID, USER_ID, ORG_ID, CaseRole.APPLICANTSOLICITORONE);
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                                  CaseRole.APPLICANTSOLICITORONE)).isFalse();
+                                               CaseRole.APPLICANTSOLICITORONE
+            )).isFalse();
             verify(caseAccessDataStoreApi).addCaseUserRoles(
                 CAA_USER_AUTH_TOKEN,
                 SERVICE_AUTH_TOKEN,
-                getAddCaseAssignedUserRolesRequest(CaseRole.APPLICANTSOLICITORONE)
+                getAddCaseAssignmentUserRolesRequest(CaseRole.APPLICANTSOLICITORONE)
             );
         }
 
         @Test
         void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleExist() {
-            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
+            CaseAssignmentUserRole caseAssignedUserRole = CaseAssignmentUserRole.builder()
                 .userId(CAA_USER_AUTH_TOKEN)
                 .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
                 .build();
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole)).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder().caseAssignmentUserRoles(List.of(caseAssignedUserRole)).build());
 
             service.assignCase(CASE_ID, USER_ID, ORG_ID, CaseRole.APPLICANTSOLICITORONE);
             assertThat(service.userHasCaseRole(CASE_ID, USER_ID,
-                                               CaseRole.APPLICANTSOLICITORONE)).isFalse();
+                                               CaseRole.APPLICANTSOLICITORONE
+            )).isFalse();
 
         }
 
         @Test
         void shouldNotAssignCaseToUser_WhenSameUserWithRequestedCaseRoleAlreadyExist() {
-            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
+            CaseAssignmentUserRole caseAssignedUserRole = CaseAssignmentUserRole.builder()
                 .userId(USER_ID)
                 .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
                 .build();
 
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
+                .thenReturn(CaseAssignmentUserRolesResource.builder().caseAssignmentUserRoles(List.of(caseAssignedUserRole))
                                 .build());
 
             service.assignCase(CASE_ID, USER_ID, ORG_ID, CaseRole.APPLICANTSOLICITORONE);
@@ -114,21 +115,21 @@ class CoreCaseUserServiceTest {
             verify(caseAccessDataStoreApi, never()).addCaseUserRoles(
                 CAA_USER_AUTH_TOKEN,
                 SERVICE_AUTH_TOKEN,
-                getAddCaseAssignedUserRolesRequest(CaseRole.RESPONDENTSOLICITORONE)
+                getAddCaseAssignmentUserRolesRequest(CaseRole.RESPONDENTSOLICITORONE)
             );
         }
 
-        private AddCaseAssignedUserRolesRequest getAddCaseAssignedUserRolesRequest(CaseRole caseRole) {
-            CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
-                = CaseAssignedUserRoleWithOrganisation.builder()
+        private CaseAssignmentUserRolesRequest getAddCaseAssignmentUserRolesRequest(CaseRole caseRole) {
+            CaseAssignmentUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
+                = CaseAssignmentUserRoleWithOrganisation.builder()
                 .caseDataId(CASE_ID)
                 .userId(USER_ID)
                 .caseRole(caseRole.getFormattedName())
                 .organisationId(ORG_ID)
                 .build();
 
-            return AddCaseAssignedUserRolesRequest.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+            return CaseAssignmentUserRolesRequest.builder()
+                .caseAssignmentUserRolesWithOrganisation(List.of(caseAssignedUserRoleWithOrganisation))
                 .build();
         }
 
@@ -139,13 +140,13 @@ class CoreCaseUserServiceTest {
 
         @Test
         void shouldRemoveCaseAssignmentToUser_WhenUserWithCaseRoleAlreadyExist() {
-            CaseAssignedUserRole caseAssignedUserRole = CaseAssignedUserRole.builder()
+            CaseAssignmentUserRole caseAssignedUserRole = CaseAssignmentUserRole.builder()
                 .userId(USER_ID)
                 .caseRole(CaseRole.CREATOR.getFormattedName())
                 .build();
 
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
+                .thenReturn(CaseAssignmentUserRolesResource.builder().caseAssignmentUserRoles(List.of(caseAssignedUserRole))
                                 .build());
 
             service.removeCreatorRoleCaseAssignment(CASE_ID, USER_ID, ORG_ID);
@@ -153,19 +154,19 @@ class CoreCaseUserServiceTest {
             verify(caseAccessDataStoreApi).removeCaseUserRoles(
                 CAA_USER_AUTH_TOKEN,
                 SERVICE_AUTH_TOKEN,
-                getCaseAssignedUserRolesRequest(CaseRole.CREATOR)
+                getCaseAssignmentUserRolesRequest(CaseRole.CREATOR)
             );
         }
 
         @Test
         void shouldNotRemoveCaseAssignmentToUser_WhenUserWithCaseRoleDoesNotExist() {
-            CaseAssignedUserRole caseAssignedUserRole
-                = CaseAssignedUserRole.builder().userId(USER_ID)
+            CaseAssignmentUserRole caseAssignedUserRole
+                = CaseAssignmentUserRole.builder().userId(USER_ID)
                 .caseRole(CaseRole.APPLICANTSOLICITORONE.getFormattedName())
                 .build();
 
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
-                .thenReturn(CaseAssignedUserRolesResource.builder().caseAssignedUserRoles(List.of(caseAssignedUserRole))
+                .thenReturn(CaseAssignmentUserRolesResource.builder().caseAssignmentUserRoles(List.of(caseAssignedUserRole))
                                 .build());
 
             service.removeCreatorRoleCaseAssignment(CASE_ID, USER_ID, ORG_ID);
@@ -173,21 +174,21 @@ class CoreCaseUserServiceTest {
             verify(caseAccessDataStoreApi, never()).removeCaseUserRoles(
                 CAA_USER_AUTH_TOKEN,
                 SERVICE_AUTH_TOKEN,
-                getCaseAssignedUserRolesRequest(CaseRole.CREATOR)
+                getCaseAssignmentUserRolesRequest(CaseRole.CREATOR)
             );
         }
 
-        private CaseAssignedUserRolesRequest getCaseAssignedUserRolesRequest(CaseRole caseRole) {
-            CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
-                = CaseAssignedUserRoleWithOrganisation.builder()
+        private CaseAssignmentUserRolesRequest getCaseAssignmentUserRolesRequest(CaseRole caseRole) {
+            CaseAssignmentUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
+                = CaseAssignmentUserRoleWithOrganisation.builder()
                 .caseDataId(CASE_ID)
                 .userId(USER_ID)
                 .caseRole(caseRole.getFormattedName())
                 .organisationId(ORG_ID)
                 .build();
 
-            return CaseAssignedUserRolesRequest.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+            return CaseAssignmentUserRolesRequest.builder()
+                .caseAssignmentUserRolesWithOrganisation(List.of(caseAssignedUserRoleWithOrganisation))
                 .build();
         }
     }
@@ -199,16 +200,17 @@ class CoreCaseUserServiceTest {
         void setup() {
             when(idamClient.getAccessToken(userConfig.getUserName(), userConfig.getPassword())).thenReturn(
                 CAA_USER_AUTH_TOKEN);
-            CaseAssignedUserRolesResource caseAssignedUserRolesResource = CaseAssignedUserRolesResource.builder()
-                .caseAssignedUserRoles(List.of(
-                    CaseAssignedUserRole.builder()
+            CaseAssignmentUserRolesResource caseAssignedUserRolesResource = CaseAssignmentUserRolesResource.builder()
+                .caseAssignmentUserRoles(List.of(
+                    CaseAssignmentUserRole.builder()
                         .userId(USER_ID)
                         .caseRole(CaseRole.RESPONDENTSOLICITORONE.getFormattedName())
                         .build(),
-                    CaseAssignedUserRole.builder()
+                    CaseAssignmentUserRole.builder()
                         .userId(USER_ID2)
                         .caseRole(CaseRole.RESPONDENTSOLICITORTWO.getFormattedName())
-                        .build()))
+                        .build()
+                ))
                 .build();
             when(caseAccessDataStoreApi.getUserRoles(CAA_USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, List.of(CASE_ID)))
                 .thenReturn(caseAssignedUserRolesResource);
@@ -216,7 +218,7 @@ class CoreCaseUserServiceTest {
 
         @Test
         void shouldReturnUserRoles_getUserRoles() {
-            assertThat(service.getUserRoles(CASE_ID).getCaseAssignedUserRoles()).hasSize(2);
+            assertThat(service.getUserRoles(CASE_ID).getCaseAssignmentUserRoles()).hasSize(2);
         }
 
         @Test
@@ -234,14 +236,16 @@ class CoreCaseUserServiceTest {
         @Test
         void shouldReturnTrue_whenAnyCaseRoleAssignedToUser() {
             assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID,
-                    CaseRole.RESPONDENTSOLICITORONE.getFormattedName())).isTrue();
+                                                  CaseRole.RESPONDENTSOLICITORONE.getFormattedName()
+            )).isTrue();
             assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID2,
-                    CaseRole.RESPONDENTSOLICITORTWO.getFormattedName())).isTrue();
+                                                  CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()
+            )).isTrue();
 
             verify(caseAccessDataStoreApi, times(2)).getUserRoles(
-                    CAA_USER_AUTH_TOKEN,
-                    SERVICE_AUTH_TOKEN,
-                    List.of(CASE_ID)
+                CAA_USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                List.of(CASE_ID)
             );
         }
 
@@ -260,14 +264,16 @@ class CoreCaseUserServiceTest {
         @Test
         void shouldReturnFalse_whenAnyCaseRoleNotAssignedToUser() {
             assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID,
-                    CaseRole.RESPONDENTSOLICITORTWO.getFormattedName())).isFalse();
+                                                  CaseRole.RESPONDENTSOLICITORTWO.getFormattedName()
+            )).isFalse();
             assertThat(service.userHasAnyCaseRole(CASE_ID, USER_ID2,
-                    CaseRole.RESPONDENTSOLICITORONE.getFormattedName())).isFalse();
+                                                  CaseRole.RESPONDENTSOLICITORONE.getFormattedName()
+            )).isFalse();
 
             verify(caseAccessDataStoreApi, times(2)).getUserRoles(
-                    CAA_USER_AUTH_TOKEN,
-                    SERVICE_AUTH_TOKEN,
-                    List.of(CASE_ID)
+                CAA_USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                List.of(CASE_ID)
             );
         }
     }
