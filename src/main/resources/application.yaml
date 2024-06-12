@@ -124,6 +124,10 @@ reference:
     enabled: true
     migration: false
 
+dashboard:
+  api:
+    url: ${DASHBOARD_API_URL:http://localhost:4000}
+
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
