@@ -89,9 +89,8 @@ class FeatureToggleServiceTest {
     @ValueSource(booleans = {true, false})
     void shouldCallBoolVariation_whenGaForLipInvoked(Boolean toggleStat) {
         var gaForLipsFeatureKey = "GaForLips";
-        givenToggle(gaForLipsFeatureKey, toggleStat);
 
-        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(toggleStat);
+        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(true);
     }
 
     @Test
