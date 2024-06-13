@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +42,6 @@ public class ApplicationCreatedTaskListUpdateHandlerTest extends BaseCallbackHan
     private FeatureToggleService featureToggleService;
     @InjectMocks
     private ApplicationCreatedTaskListUpdateHandler handler;
-
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {

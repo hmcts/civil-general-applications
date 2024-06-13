@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +34,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_TASK_LIST_GA_COMPLETE;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_TASK_LIST_GA_CREATED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 
 @ExtendWith(MockitoExtension.class)
 public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHandlerTest {
@@ -58,7 +54,6 @@ public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHa
     private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
     private ApplicationCompleteTaskListUpdateHandler handler;
-
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
