@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
@@ -309,12 +310,11 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
-    private final String serviceRequestReference;
-    private final Fee generalAppFee;
-    private final PaymentDetails generalAppPaymentDetails;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
     private HelpWithFees generalAppHelpWithFees;
+    private final FeeType hwfFeeType;
+
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null

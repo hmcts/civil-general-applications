@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,9 @@ class CitizenGeneralAppFeePaymentCallbackHandlerTest extends BaseCallbackHandler
     @Test
     void citizenClaimIssuePayment() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        caseData = caseData.toBuilder().generalAppPaymentDetails(buildPaymentDetails()).build();
+        caseData = caseData.toBuilder()
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .paymentDetails(buildPaymentDetails()).build()).build();
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
