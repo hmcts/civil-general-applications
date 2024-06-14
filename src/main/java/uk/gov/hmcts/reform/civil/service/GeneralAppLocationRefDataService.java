@@ -30,7 +30,6 @@ public class GeneralAppLocationRefDataService {
     private final RestTemplate restTemplate;
     private final GeneralAppLRDConfiguration lrdConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
-    private static final String DATA_LOOKUP_FAILED = "Location Reference Data Lookup Failed - ";
 
     public List<LocationRefData> getCourtLocations(String authToken) {
         try {
@@ -44,41 +43,7 @@ public class GeneralAppLocationRefDataService {
             return onlyEnglandAndWalesLocations(responseEntity.getBody())
                 .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).toList();
         } catch (Exception e) {
-            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
-        }
-        return new ArrayList<>();
-    }
-
-    public List<LocationRefData> getCcmccLocation(String authToken) {
-        try {
-            ResponseEntity<List<LocationRefData>> responseEntity = restTemplate.exchange(
-                buildURIforCcmcc(),
-                HttpMethod.GET,
-                getHeaders(authToken),
-                new ParameterizedTypeReference<>() {
-                }
-            );
-            return onlyEnglandAndWalesLocations(responseEntity.getBody())
-                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).toList();
-        } catch (Exception e) {
-            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
-        }
-        return new ArrayList<>();
-    }
-
-    public List<LocationRefData> getCnbcLocation(String authToken) {
-        try {
-            ResponseEntity<List<LocationRefData>> responseEntity = restTemplate.exchange(
-                buildURIforCnbcSpec(),
-                HttpMethod.GET,
-                getHeaders(authToken),
-                new ParameterizedTypeReference<>() {
-                }
-            );
-            return onlyEnglandAndWalesLocations(responseEntity.getBody())
-                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).toList();
-        } catch (Exception e) {
-            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
+            log.error("Location Reference Data Lookup Failed - " + e.getMessage(), e);
         }
         return new ArrayList<>();
     }
@@ -90,22 +55,6 @@ public class GeneralAppLocationRefDataService {
             .queryParam("is_case_management_location", "Y")
             .queryParam("court_type_id", "10")
             .queryParam("location_type", "Court");
-        return builder.buildAndExpand(new HashMap<>()).toUri();
-    }
-
-    private URI buildURIforCcmcc() {
-        String var10000 = this.lrdConfiguration.getUrl();
-        String queryURL = var10000 + this.lrdConfiguration.getEndpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL)
-            .queryParam("court_venue_name", "County Court Money Claims Centre");
-        return builder.buildAndExpand(new HashMap<>()).toUri();
-    }
-
-    private URI buildURIforCnbcSpec() {
-        String var10000 = this.lrdConfiguration.getUrl();
-        String queryURL = var10000 + this.lrdConfiguration.getEndpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL)
-            .queryParam("court_venue_name", "Civil National Business Centre");
         return builder.buildAndExpand(new HashMap<>()).toUri();
     }
 
@@ -135,7 +84,7 @@ public class GeneralAppLocationRefDataService {
                                                                                               new ParameterizedTypeReference<List<LocationRefData>>() {});
             return responseEntity.getBody();
         } catch (Exception var4) {
-            log.error(DATA_LOOKUP_FAILED + var4.getMessage(), var4);
+            log.error("Location Reference Data Lookup Failed - " + var4.getMessage(), var4);
             return new ArrayList<>();
         }
     }
