@@ -272,13 +272,14 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignDefendantRoleForGALip {
         @BeforeEach
         void setup() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
                 .email("test@gmail.com").build();
 
             respondentSols.add(element(respondent1));
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()

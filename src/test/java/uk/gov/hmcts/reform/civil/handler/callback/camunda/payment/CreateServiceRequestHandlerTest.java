@@ -1,19 +1,23 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
@@ -110,6 +114,35 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenReturn(paymentServiceResponse.builder()
+                                .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                                                                       .helpWithFee(YesOrNo.YES).build()).build();
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
+                .isEqualTo(FREE_PAYMENT_REFERENCE);
+            PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
+            assertThat(paymentDetails).isNull();
+        }
+
+        @Test
+        void shouldThrow_whenPaymentServiceFailed() {
+            var ex = Mockito.mock(FeignException.class);
+            Mockito.when(ex.status()).thenReturn(404);
+            when(paymentsService.createServiceRequest(any(), any()))
+                    .thenThrow(ex);
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors().size())
+                    .isEqualTo(1);
+        }
+
+        @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.camundaActivityId()).isEqualTo("GeneralApplicationPaymentServiceReq");
@@ -118,6 +151,20 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
+        }
+
+        @Test
+        void shouldReturnHwf_True() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                    .helpWithFee(YesOrNo.YES).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isTrue();
+        }
+
+        @Test
+        void shouldReturnHwf_False() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                    .helpWithFee(YesOrNo.NO).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isFalse();
         }
     }
 
