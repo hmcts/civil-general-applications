@@ -48,8 +48,11 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
+            .language("En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
+
+        System.out.print("requestDto " + requestDto);
 
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
             .createGovPayCardPaymentRequest(
