@@ -152,6 +152,20 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
         }
+
+        @Test
+        void shouldReturnHwf_True() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                    .helpWithFee(YesOrNo.YES).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isTrue();
+        }
+
+        @Test
+        void shouldReturnHwf_False() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                    .helpWithFee(YesOrNo.NO).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isFalse();
+        }
     }
 
     private GAPbaDetails extractPaymentDetailsFromResponse(AboutToStartOrSubmitCallbackResponse response) {
