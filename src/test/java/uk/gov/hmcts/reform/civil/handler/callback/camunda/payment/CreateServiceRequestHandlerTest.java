@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -126,6 +128,18 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(FREE_PAYMENT_REFERENCE);
             PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
             assertThat(paymentDetails).isNull();
+        }
+
+        @Test
+        void shouldThrow_whenPaymentServiceFailed() {
+            var ex = Mockito.mock(FeignException.class);
+            Mockito.when(ex.status()).thenReturn(404);
+            when(paymentsService.createServiceRequest(any(), any()))
+                    .thenThrow(ex);
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors().size())
+                    .isEqualTo(1);
         }
 
         @Test
