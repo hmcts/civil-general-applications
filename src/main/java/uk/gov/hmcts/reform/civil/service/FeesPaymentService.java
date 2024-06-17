@@ -51,9 +51,6 @@ public class FeesPaymentService {
             .language("En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
-
-        System.out.print("requestDto " + requestDto);
-
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
             .createGovPayCardPaymentRequest(
                 generalAppPbaDetails.getServiceReqReference(),
