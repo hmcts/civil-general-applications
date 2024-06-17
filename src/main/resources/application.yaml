@@ -159,6 +159,12 @@ stitching:
   api:
     url: http://localhost:8084/api/stitch-ccd-bundles
 
+court-location:
+  specified-claim:
+    epimms-id: "420219"
+  unspecified-claim:
+    epimms-id: "192280"
+
 launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:}
   offline-mode: false
