@@ -26,7 +26,10 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 import uk.gov.hmcts.reform.civil.model.EventSubmissionParams;
 
+import java.util.List;
+
 import static java.util.Collections.emptyList;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 @Tag(name = "Cases Controller")
 @Slf4j
@@ -93,6 +96,19 @@ public class CasesController {
                 .build();
         CaseDetails caseDetails = caseEventService.submitEvent(params);
         return new ResponseEntity<>(caseDetails, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/{caseId}/applications")
+    @Operation(summary = "get list of the applications with given civil case id from CCD")
+    public ResponseEntity<SearchResult> getCaseApplcations(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                           @PathVariable("caseId") String caseId) {
+
+        SearchResult claims = coreCaseDataService.searchGeneralApplication(new Query(
+            matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
+            List.of("data.applicationTypes"),
+            0
+        ), authorization);
+        return new ResponseEntity<>(claims, HttpStatus.OK);
     }
 
 }
