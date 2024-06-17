@@ -174,6 +174,22 @@ exit-survey:
 
 cui-front-end:
   url: ${CUI_URL:http://localhost:3001}
+
+feign:
+  client:
+    config:
+      remoteRuntimeService:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processInstance:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processDefinition:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      message:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      incident:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      externalTask:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
 ---
 
 spring:
@@ -184,12 +200,6 @@ spring:
 feign:
   client:
     config:
-      remoteRuntimeService:
-        url: http://localhost:9404/engine-rest/
-      remoteRepositoryService:
-        url: http://localhost:9404/engine-rest/
-      remoteExternalTaskService:
-        url: http://localhost:9404/engine-rest/
       idam-api:
         loggerLevel: full
       core-case-data-api:

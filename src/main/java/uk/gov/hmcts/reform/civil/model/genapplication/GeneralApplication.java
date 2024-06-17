@@ -71,6 +71,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
+    private HelpWithFees generalAppHelpWithFees;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -122,7 +123,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate,
                        @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
                        @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
-                       @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip) {
+                       @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
+                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -169,6 +171,7 @@ public class GeneralApplication implements MappableObject {
         this.isGaApplicantLip = isGaApplicantLip;
         this.isGaRespondentOneLip = isGaRespondentOneLip;
         this.isGaRespondentTwoLip = isGaRespondentTwoLip;
+        this.generalAppHelpWithFees = generalAppHelpWithFees;
     }
 
     @JsonIgnore
