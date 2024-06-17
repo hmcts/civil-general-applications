@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -70,6 +72,11 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         when(time.now()).thenReturn(LocalDateTime.of(2020, 1, 1, 12, 0, 0));
     }
 
+    private GAPbaDetails extractPaymentDetailsFromResponse(AboutToStartOrSubmitCallbackResponse response) {
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        return responseCaseData.getGeneralAppPBADetails();
+    }
+
     @Nested
     class MakeServiceRequestPayments {
 
@@ -81,7 +88,7 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldMakePaymentServiceRequest_whenInvoked() throws Exception {
             when(paymentsService.createServiceRequest(any(), any()))
-                .thenReturn(paymentServiceResponse.builder()
+                .thenReturn(PaymentServiceResponse.builder()
                                 .serviceRequestReference(SUCCESSFUL_PAYMENT_REFERENCE).build());
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -94,27 +101,28 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         @Test
         void shouldNotMakePaymentServiceRequest_shouldAddFreePaymentDetails_whenInvoked() throws Exception {
             when(paymentsService.createServiceRequest(any(), any()))
-                    .thenReturn(paymentServiceResponse.builder()
-                            .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
+                .thenReturn(PaymentServiceResponse.builder()
+                                .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(true);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
-                    .isEqualTo(FREE_PAYMENT_REFERENCE);
+                .isEqualTo(FREE_PAYMENT_REFERENCE);
             PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
             assertThat(paymentDetails).isNotNull();
             assertThat(paymentDetails.getStatus()).isEqualTo(SUCCESS);
             assertThat(paymentDetails.getCustomerReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
             assertThat(paymentDetails.getReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
             assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate())
-                    .isNotNull();
+                .isNotNull();
         }
+
 
         @Test
         void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
             when(paymentsService.createServiceRequest(any(), any()))
-                .thenReturn(paymentServiceResponse.builder()
+                .thenReturn(PaymentServiceResponse.builder()
                                 .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
             caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
@@ -129,6 +137,18 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldThrow_whenPaymentServiceFailed() {
+            var ex = Mockito.mock(FeignException.class);
+            Mockito.when(ex.status()).thenReturn(404);
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenThrow(ex);
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors().size())
+                .isEqualTo(1);
+        }
+
+        @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             assertThat(handler.camundaActivityId()).isEqualTo("GeneralApplicationPaymentServiceReq");
@@ -138,11 +158,20 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
         }
-    }
 
-    private GAPbaDetails extractPaymentDetailsFromResponse(AboutToStartOrSubmitCallbackResponse response) {
-        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-        return responseCaseData.getGeneralAppPBADetails();
+        @Test
+        void shouldReturnHwf_True() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                                                                       .helpWithFee(YesOrNo.YES).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isTrue();
+        }
+
+        @Test
+        void shouldReturnHwf_False() {
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                                                                       .helpWithFee(YesOrNo.NO).build()).build();
+            assertThat(handler.isHelpWithFees(caseData)).isFalse();
+        }
     }
 
 }
