@@ -118,7 +118,6 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
                 .isNotNull();
         }
 
-
         @Test
         void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
             when(paymentsService.createServiceRequest(any(), any()))
