@@ -51,7 +51,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
-import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
@@ -315,7 +314,6 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaRespondentTwoLip;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
-    private HelpWithFees generalAppHelpWithFees;
     private final FeeType hwfFeeType;
     private final HelpWithFeesDetails gaHwfDetails;
     private final HelpWithFeesDetails additionalHwfDetails;
