@@ -49,7 +49,7 @@ public class CitizenGeneralAppFeePaymentCallbackHandler extends CallbackHandler 
         CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
 
         if (caseData.getGeneralAppPBADetails() != null
-                &&caseData.getGeneralAppPBADetails().getPaymentDetails() != null
+                && caseData.getGeneralAppPBADetails().getPaymentDetails() != null
                 && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus() == SUCCESS) {
             dataBuilder.issueDate(LocalDate.now());
             //TODO: Start Business process after payment
