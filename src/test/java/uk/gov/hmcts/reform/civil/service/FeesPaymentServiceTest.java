@@ -124,7 +124,7 @@ class FeesPaymentServiceTest {
         assertThatThrownBy(
             () -> feesPaymentService.createGovPaymentRequest("1701090368574910", BEARER_TOKEN)
         ).isInstanceOf(NullPointerException.class)
-            .hasMessage("Fee Payment details cannot be null");
+            .hasMessage("Fee Payment service request cannot be null");
 
         verify(paymentsClient, never()).createGovPayCardPaymentRequest(anyString(), anyString(), any());
     }
