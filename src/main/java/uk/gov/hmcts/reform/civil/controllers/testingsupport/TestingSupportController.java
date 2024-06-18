@@ -14,9 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckUnlessOrderDeadlineEndTaskHandler;
@@ -165,9 +165,9 @@ public class TestingSupportController {
 
     @PostMapping(value = {"/user-roles/{caseId}", "/user-roles/{caseId}"})
     @Operation(summary = "user roles for the cases")
-    public CaseAssignedUserRolesResource getUserRoles(
+    public CaseAssignmentUserRolesResource getUserRoles(
         @PathVariable("caseId") String caseId) {
-        return  coreCaseUserService.getUserRoles(caseId);
+        return coreCaseUserService.getUserRoles(caseId);
     }
 
     @PostMapping(value = {"/assignCase/{caseId}", "/assignCase/{caseId}/{caseRole}"})

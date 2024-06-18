@@ -299,15 +299,6 @@ public class ParentCaseUpdateHelper {
                                     generalAppCaseData.getCcdCaseReference())).build()).build()));
                 }
             });
-
-            /**
-             * When main claim's 1 V 2 Same Legal Representative happens,
-             * Check if main claim "Respondent2SameLegalRespresentative" value is true,
-             * if so, ADD GA application has to master collection
-             *
-             * In addition to above, the condition : generalAppCaseData.getIsMultiParty().equals(NO)
-             * Add GA into mater collection if it's not multiparty scenario and GA initiated by Main claim Defendant 1v1
-             */
         } else {
 
             updateJudgeOrClaimantFromRespCollection(
@@ -356,21 +347,14 @@ public class ParentCaseUpdateHelper {
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
             Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
                 .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
-            Optional<Element<GeneralApplicationsDetails>> masterCollection = gaClaimantDetails
-                .stream().filter(masterCollectionElement -> applicationFilterCriteria(masterCollectionElement, applicationId)).findAny();
-
-            claimantCollection.ifPresent(generalApplicationsDetailsElement -> {
-                if (masterCollection.isEmpty()) {
-                    gaMasterDetails.add(
-                        element(
-                            GeneralApplicationsDetails.builder()
-                                .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
-                                .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
-                                                                   .getGeneralAppSubmittedDateGAspec())
-                                .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                                    generalAppCaseData.getCcdCaseReference())).build()).build()));
-                }
-            });
+            claimantCollection.ifPresent(generalApplicationsDetailsElement -> gaMasterDetails.add(
+                element(
+                    GeneralApplicationsDetails.builder()
+                        .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                        .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                           .getGeneralAppSubmittedDateGAspec())
+                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                            generalAppCaseData.getCcdCaseReference())).build()).build())));
             /**
              * When main claim's 1 V 2 Same Legal Representative happens,
              * Check if main claim "Respondent2SameLegalRespresentative" value is true,

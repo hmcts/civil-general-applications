@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -97,6 +98,7 @@ public class CaseData implements MappableObject {
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
+    private final HelpWithFees generalAppHelpWithFees;
     private final GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppApplicantAddlSolicitors;
