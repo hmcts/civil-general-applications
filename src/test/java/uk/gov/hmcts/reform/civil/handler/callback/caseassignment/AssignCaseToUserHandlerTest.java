@@ -546,8 +546,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                    .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                    .thenReturn(CaseAssignmentUserRolesResource.builder()
+                            .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
