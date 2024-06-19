@@ -7,6 +7,10 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import java.util.Objects;
 
 public class HwFFeeTypeService {
+
+    private HwFFeeTypeService() {
+    }
+
     public static CaseData.CaseDataBuilder updateFeeType(CaseData caseData) {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
