@@ -25,6 +25,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTI
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
@@ -81,6 +82,7 @@ public class FlowStateAllowedEventService {
                       TRIGGER_LOCATION_UPDATE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       NO_REMISSION_HWF_GA,
+                      INVALID_HWF_REFERENCE_GA,
                       MAIN_CASE_CLOSED)
         ),
 
@@ -146,6 +148,7 @@ public class FlowStateAllowedEventService {
                       TRIGGER_LOCATION_UPDATE,
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                       NO_REMISSION_HWF_GA,
+                      INVALID_HWF_REFERENCE_GA,
                       MAIN_CASE_CLOSED)
         ),
 
