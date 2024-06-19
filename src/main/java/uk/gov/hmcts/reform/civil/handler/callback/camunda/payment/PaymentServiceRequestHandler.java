@@ -110,7 +110,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             .build();
     }
 
-    private boolean isHelpWithFees(CaseData caseData) {
+    protected boolean isHelpWithFees(CaseData caseData) {
         return Optional.ofNullable(caseData.getGeneralAppHelpWithFees())
             .map(helpWithFees -> helpWithFees.getHelpWithFee())
             .filter(isHwf -> isHwf == YesOrNo.YES)
