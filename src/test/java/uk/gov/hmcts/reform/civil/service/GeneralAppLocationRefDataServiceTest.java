@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 
-@SpringBootTest(classes = {GeneralAppFeesService.class, RestTemplate.class, GeneralAppFeesConfiguration.class})
+@SpringBootTest(classes = {GeneralAppFeesConfiguration.class})
 class GeneralAppLocationRefDataServiceTest {
 
     @Captor
