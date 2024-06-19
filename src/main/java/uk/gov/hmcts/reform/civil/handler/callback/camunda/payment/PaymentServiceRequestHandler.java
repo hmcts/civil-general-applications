@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
@@ -67,7 +70,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             log.info("calling payment service request " + caseData.getCcdCaseReference());
             String serviceRequestReference = GeneralAppFeesService.FREE_REF;
             boolean freeGa = feeService.isFreeApplication(caseData);
-            if (!freeGa) {
+            if (!freeGa && !isHelpWithFees(caseData)) {
                 serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
                         .getServiceRequestReference();
             }
@@ -105,6 +108,13 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             .data(caseData.toMap(objectMapper))
             .errors(errors)
             .build();
+    }
+
+    protected boolean isHelpWithFees(CaseData caseData) {
+        return Optional.ofNullable(caseData.getGeneralAppHelpWithFees())
+            .map(helpWithFees -> helpWithFees.getHelpWithFee())
+            .filter(isHwf -> isHwf == YesOrNo.YES)
+            .isPresent();
     }
 
 }
