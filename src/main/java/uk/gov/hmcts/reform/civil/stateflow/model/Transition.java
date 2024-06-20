@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.stateflow.model;
 
+import java.util.function.BiConsumer;
 import lombok.Data;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
@@ -17,6 +18,8 @@ public class Transition {
     private Predicate<CaseData> condition;
 
     private Consumer<Map<String, Boolean>> flags;
+
+    private BiConsumer<CaseData, Map<String, Boolean>> dynamicFlags;
 
     public Transition(String sourceState, String targetState) {
         this.sourceState = sourceState;

@@ -64,4 +64,6 @@ public class FlowPredicate {
     public static final Predicate<CaseData> judgeMadeWrittenRep = caseData ->
         caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS);
+
+    public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
 }
