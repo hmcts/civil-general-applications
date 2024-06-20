@@ -7,10 +7,12 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static java.util.Optional.ofNullable;
 
@@ -101,5 +103,11 @@ public abstract class CallbackHandler {
      */
     protected CallbackResponse emptySubmittedCallbackResponse(CallbackParams callbackParams) {
         return SubmittedCallbackResponse.builder().build();
+    }
+
+    public String getFullName(UserInfo userDetails) {
+        StringJoiner sj = new StringJoiner(" ");
+        sj.add(userDetails.getGivenName()).add(userDetails.getFamilyName());
+        return sj.toString();
     }
 }
