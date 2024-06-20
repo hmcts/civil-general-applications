@@ -62,6 +62,7 @@ class FeesPaymentServiceTest {
     private static final CardPaymentServiceRequestDTO CARD_PAYMENT_SERVICE_REQUEST
         = CardPaymentServiceRequestDTO.builder()
         .returnUrl("${cui-front-end.url}/general-app-payment-confirmation/1701090368574910")
+        .language("En")
         .amount(new BigDecimal("232.00")).currency("GBP").build();
 
     @Autowired
