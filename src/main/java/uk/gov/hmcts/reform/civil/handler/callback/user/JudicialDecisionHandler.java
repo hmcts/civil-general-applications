@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.utils.IdamUserUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -255,7 +256,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
-        caseDataBuilder.judgeTitle(getFullName(userDetails));
+        caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
 
         if (caseData.getApplicationIsCloaked() == null) {
             caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
