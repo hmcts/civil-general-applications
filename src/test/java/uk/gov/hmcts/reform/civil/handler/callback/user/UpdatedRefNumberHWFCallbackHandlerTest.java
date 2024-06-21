@@ -31,7 +31,6 @@ class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
         handler = new UpdatedRefNumberHWFCallbackHandler(objectMapper);
     }
 
-
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(UPDATE_HELP_WITH_FEE_NUMBER_GA);
