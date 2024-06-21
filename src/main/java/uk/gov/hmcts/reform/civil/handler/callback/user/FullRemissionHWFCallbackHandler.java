@@ -11,8 +11,9 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 import java.math.BigDecimal;
@@ -57,47 +58,46 @@ public class FullRemissionHWFCallbackHandler extends CallbackHandler {
 
     private CallbackResponse fullRemissionHWF(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-//        CaseData.CaseDataBuilder<?, ?> updatedData = caseData.toBuilder()
-//            .businessProcess(BusinessProcess.ready(NOTIFY_LIP_CLAIMANT_HWF_OUTCOME));
-//        BigDecimal claimFeeAmount = caseData.getCalculatedGaFeeInPence();
-//        BigDecimal hearingFeeAmount = caseData.getCalculatedAdditionalFeeInPence();
-//
-//        if (caseData.isHWFTypeClaimIssued() && claimFeeAmount.compareTo(BigDecimal.ZERO) != 0) {
-//            Optional.ofNullable(caseData.getClaimIssuedHwfDetails())
-//                .ifPresentOrElse(
-//                    claimIssuedHwfDetails -> updatedData.claimIssuedHwfDetails(
-//                        claimIssuedHwfDetails.toBuilder().remissionAmount(claimFeeAmount)
-//                            .outstandingFeeInPounds(BigDecimal.ZERO)
-//                            .hwfCaseEvent(FULL_REMISSION_HWF)
-//                            .build()
-//                    ),
-//                    () -> updatedData.claimIssuedHwfDetails(
-//                        HelpWithFeesDetails.builder().remissionAmount(claimFeeAmount)
-//                            .outstandingFeeInPounds(BigDecimal.ZERO)
-//                            .hwfCaseEvent(FULL_REMISSION_HWF)
-//                            .build()
-//                    )
-//                );
-//        } else if (caseData.isHWFTypeHearing() && hearingFeeAmount.compareTo(BigDecimal.ZERO) != 0) {
-//            Optional.ofNullable(caseData.getHearingHwfDetails())
-//                .ifPresentOrElse(
-//                    hearingHwfDetails -> updatedData.hearingHwfDetails(
-//                        HelpWithFeesDetails.builder().remissionAmount(hearingFeeAmount)
-//                            .outstandingFeeInPounds(BigDecimal.ZERO)
-//                            .hwfCaseEvent(FULL_REMISSION_HWF)
-//                            .build()
-//                    ),
-//                    () -> updatedData.hearingHwfDetails(
-//                        HelpWithFeesDetails.builder().remissionAmount(hearingFeeAmount)
-//                            .hwfCaseEvent(FULL_REMISSION_HWF)
-//                            .build()
-//                    )
-//                );
-//        }
-//        helpWithFeesForTabService.setUpHelpWithFeeTab(updatedData);
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder();
+        BigDecimal feeAmount = HwFFeeTypeService.getCalculatedFeeInPence(caseData);
+
+        if (caseData.getHwfFeeType().equals(FeeType.APPLICATION)
+                && feeAmount.compareTo(BigDecimal.ZERO) != 0) {
+            Optional.ofNullable(caseData.getGaHwfDetails())
+                .ifPresentOrElse(
+                    gaHwfDetails -> updatedData.gaHwfDetails(
+                        gaHwfDetails.toBuilder().remissionAmount(feeAmount)
+                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .build()
+                    ),
+                    () -> updatedData.gaHwfDetails(
+                        HelpWithFeesDetails.builder().remissionAmount(feeAmount)
+                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .build()
+                    )
+                );
+        } else if (caseData.getHwfFeeType().equals(FeeType.ADDITIONAL)
+                && feeAmount.compareTo(BigDecimal.ZERO) != 0) {
+            Optional.ofNullable(caseData.getAdditionalHwfDetails())
+                .ifPresentOrElse(
+                    hearingHwfDetails -> updatedData.additionalHwfDetails(
+                        HelpWithFeesDetails.builder().remissionAmount(feeAmount)
+                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .build()
+                    ),
+                    () -> updatedData.additionalHwfDetails(
+                        HelpWithFeesDetails.builder().remissionAmount(feeAmount)
+                            .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .build()
+                    )
+                );
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
-                //.data(updatedData.build().toMap(objectMapper))
+                .data(updatedData.build().toMap(objectMapper))
                 .build();
     }
 }
