@@ -13,6 +13,18 @@ plugins {
   id "io.freefair.lombok" version "6.6.1"
 }
 
+def versions = [
+  junit             : '5.7.0',
+  junitPlatform     : '1.9.2',
+  springBoot        : springBoot.class.package.implementationVersion,
+  springStatemachine: '3.2.0',
+  springfoxSwagger  : '3.0.0',
+  lombok            : '1.18.28',
+  springSecurity    : '6.0.8',
+  pact              : '3.5.24',
+  camunda           : '7.20.0'
+]
+
 group = 'uk.gov.hmcts.reform'
 version = '0.0.1'
 
@@ -41,7 +53,6 @@ allprojects {
     toolVersion = '0.8.8' // jacocoMavenPluginVersion
     reportsDirectory = file("$buildDir/reports/jacoco")
   }
-
 
 // before committing a change, make sure task still works
   dependencyUpdates {
@@ -110,13 +121,7 @@ allprojects {
       dependency group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.5'
 
       dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
-      // CVE-2022-25647
-      dependencySet(
-              group: 'org.camunda.bpm',
-              version: '7.17.0'
-      ) {
-        entry 'camunda-engine'
-      }
+
       // Solves CVE-2022-31159, happens only on local builds when running dependencyCheck gradle task
       dependencySet(
         group: 'com.amazonaws',
@@ -211,7 +216,7 @@ task contract(type: Test) {
   classpath = sourceSets.contractTest.runtimeClasspath
 }
 
-task fortifyScan(type: JavaExec, description: 'Run fortify scan.')  {
+task fortifyScan(type: JavaExec, description: 'Run fortify scan.') {
   getMainClass().set("uk.gov.hmcts.fortifyclient.FortifyClientMainApp")
   classpath += sourceSets.test.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
@@ -237,10 +242,17 @@ def inStrictOrder(Task... tasks) {
 }
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
- onlyIf {
+  onlyIf {
     return (System.env.ENVIRONMENT == 'preview' || System.env.ENVIRONMENT == 'aat')
   }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
+}
+
+task runNonProdApiTests(type: Exec, description: 'Runs non prod features in functional tests.') {
+  onlyIf {
+    return System.env.ENVIRONMENT == 'preview'
+  }
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api-nonprod'
 }
 
 task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
@@ -251,11 +263,11 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
 }
 
 task smoke(description: 'Runs the smoke tests.') {
- dependsOn(inStrictOrder(awaitApplicationReadiness, runSmokeTests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runSmokeTests))
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests, runNightlyAPITests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests,runNonProdApiTests,runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
@@ -292,16 +304,7 @@ jacocoTestReport.dependsOn {
   subprojects*.test
 }
 
-def versions = [
-  junit              : '5.7.0',
-  junitPlatform      : '1.9.2',
-  springBoot         : springBoot.class.package.implementationVersion,
-  springStatemachine : '3.2.0',
-  springfoxSwagger   : '3.0.0',
-  lombok             : '1.18.28',
-  springSecurity     : '6.0.8',
-  pact               : '3.5.24'
-]
+
 
 ext.libraries = [
   junit5: [
@@ -349,15 +352,15 @@ dependencies {
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-openfeign-core', version: '4.0.4'
   implementation group: 'io.github.openfeign', name: 'feign-httpclient', version: '12.1'
   implementation group: 'org.springframework.retry', name: 'spring-retry'
- // hmcts libraries
+  // hmcts libraries
   implementation group: 'com.github.hmcts', name: 'properties-volume-spring-boot-starter', version: '0.1.1'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.1.0'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '4.9.2'
   implementation group: 'com.github.hmcts', name: 'document-management-client', version: '7.0.0'
-  implementation('com.github.hmcts:fees-java-client:0.0.6'){
+  implementation('com.github.hmcts:fees-java-client:0.0.6') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
-  implementation('com.github.hmcts:payments-java-client:1.6.7'){
+  implementation('com.github.hmcts:payments-java-client:1.6.7') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
   }
@@ -371,7 +374,7 @@ dependencies {
   implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.1.3'
 
   implementation group: 'org.springframework.security', name: 'spring-security-web', version: versions.springSecurity
-  implementation group: 'org.springframework.security', name: 'spring-security-config', version : versions.springSecurity
+  implementation group: 'org.springframework.security', name: 'spring-security-config', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-core', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-resource-server', version: versions.springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: versions.springSecurity
@@ -385,11 +388,10 @@ dependencies {
 
   implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.75'
 
-  implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: '7.17.0'
+  implementation group: 'org.camunda.bpm', name: 'camunda-external-task-client', version: versions.camunda
+  implementation group: 'org.camunda.community.rest', name: 'camunda-platform-7-rest-client-spring-boot-starter', version: versions.camunda
+  implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: versions.camunda
 
-  implementation group: 'org.camunda.bpm.extension.rest', name: 'camunda-rest-client-spring-boot-starter', version: '0.0.4'
-
-  implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: '7.17.0'
   implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.14.2'
   implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.2'
 
@@ -414,7 +416,7 @@ dependencies {
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
-  testImplementation   group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
+  testImplementation group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
   testImplementation 'com.github.hmcts:fortify-client:1.3.0:all'
   //pact contract testing
   contractTestImplementation group: 'au.com.dius', name: 'pact-jvm-consumer-junit5_2.12', version: versions.pact
@@ -450,14 +452,14 @@ bootJar {
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 //rootProject.tasks.named("processSmokeTestResources") {
- // duplicatesStrategy = 'include'
+// duplicatesStrategy = 'include'
 //}
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   logger.lifecycle("Runs pact Tests")
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
@@ -476,7 +478,7 @@ pact {
   publish {
     pactDirectory = 'target/pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_FULL_URL") ?: 'https://pact-broker.platform.hmcts.net/'
-    if(pactBrokerUrl == 'https://civil-claims.pactflow.io/') {
+    if (pactBrokerUrl == 'https://civil-claims.pactflow.io/') {
       excludes = ['civil_general_applications-Idam_api']
       pactBrokerToken = System.getenv("PACT_BROKER_TOKEN")
     }

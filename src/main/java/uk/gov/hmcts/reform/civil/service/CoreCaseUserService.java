@@ -5,11 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
-import uk.gov.hmcts.reform.ccd.model.AddCaseAssignedUserRolesRequest;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRoleWithOrganisation;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesRequest;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.civil.config.CrossAccessUserConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 
@@ -50,25 +49,25 @@ public class CoreCaseUserService {
     }
 
     public boolean userHasCaseRole(String caseId, String userId, CaseRole caseRole) {
-        CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
+        CaseAssignmentUserRolesResource userRoles = caseAssignmentApi.getUserRoles(
             getCaaAccessToken(),
             authTokenGenerator.generate(),
             List.of(caseId)
         );
 
-        return userRoles.getCaseAssignedUserRoles().stream()
+        return userRoles.getCaseAssignmentUserRoles().stream()
             .filter(c -> c.getUserId().equals(userId))
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
     }
 
     public boolean userHasAnyCaseRole(String caseId, String userId, String caseRole) {
-        CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
+        CaseAssignmentUserRolesResource userRoles = caseAssignmentApi.getUserRoles(
             getCaaAccessToken(),
             authTokenGenerator.generate(),
             List.of(caseId)
         );
 
-        return userRoles.getCaseAssignedUserRoles().stream()
+        return userRoles.getCaseAssignmentUserRoles().stream()
             .filter(c -> c.getUserId().equals(userId))
             .anyMatch(c -> c.getCaseRole().equals(caseRole));
     }
@@ -81,27 +80,27 @@ public class CoreCaseUserService {
     }
 
     public void assignUserToCaseForRole(String caseId, String userId, String organisationId,
-                                         CaseRole caseRole, String caaAccessToken) {
-        CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
-            = CaseAssignedUserRoleWithOrganisation.builder()
+                                        CaseRole caseRole, String caaAccessToken) {
+        CaseAssignmentUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
+            = CaseAssignmentUserRoleWithOrganisation.builder()
             .caseDataId(caseId)
             .userId(userId)
             .caseRole(caseRole.getFormattedName())
             .organisationId(organisationId)
             .build();
 
-        caseAccessDataStoreApi.addCaseUserRoles(
+        caseAssignmentApi.addCaseUserRoles(
             caaAccessToken,
             authTokenGenerator.generate(),
-            AddCaseAssignedUserRolesRequest.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+            CaseAssignmentUserRolesRequest.builder()
+                .caseAssignmentUserRolesWithOrganisation(List.of(caseAssignedUserRoleWithOrganisation))
                 .build()
         );
     }
 
-    public CaseAssignedUserRolesResource getUserRoles(String caseId) {
+    public CaseAssignmentUserRolesResource getUserRoles(String caseId) {
 
-        return caseAccessDataStoreApi.getUserRoles(
+        return caseAssignmentApi.getUserRoles(
             getCaaAccessToken(),
             authTokenGenerator.generate(),
             List.of(caseId)
@@ -110,31 +109,31 @@ public class CoreCaseUserService {
     }
 
     private void removeCreatorAccess(String caseId, String userId, String organisationId, String caaAccessToken) {
-        CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
-            = CaseAssignedUserRoleWithOrganisation.builder()
+        CaseAssignmentUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation
+            = CaseAssignmentUserRoleWithOrganisation.builder()
             .caseDataId(caseId)
             .userId(userId)
             .caseRole(CREATOR.getFormattedName())
             .organisationId(organisationId)
             .build();
 
-        caseAccessDataStoreApi.removeCaseUserRoles(
+        caseAssignmentApi.removeCaseUserRoles(
             caaAccessToken,
             authTokenGenerator.generate(),
-            CaseAssignedUserRolesRequest.builder()
-                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+            CaseAssignmentUserRolesRequest.builder()
+                .caseAssignmentUserRolesWithOrganisation(List.of(caseAssignedUserRoleWithOrganisation))
                 .build()
         );
     }
 
     public boolean userWithCaseRoleExistsOnCase(String caseId, String accessToken, CaseRole caseRole) {
-        CaseAssignedUserRolesResource userRoles = caseAccessDataStoreApi.getUserRoles(
+        CaseAssignmentUserRolesResource userRoles = caseAssignmentApi.getUserRoles(
             accessToken,
             authTokenGenerator.generate(),
             List.of(caseId)
         );
 
-        return userRoles.getCaseAssignedUserRoles().stream()
+        return userRoles.getCaseAssignmentUserRoles().stream()
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
     }
 }

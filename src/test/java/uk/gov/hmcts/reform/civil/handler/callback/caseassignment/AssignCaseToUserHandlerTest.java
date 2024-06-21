@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRole;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
+import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -33,9 +35,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     private CoreCaseUserService coreCaseUserService;
 
     @MockBean
-    private CaseAccessDataStoreApi caseAccessDataStoreApi;
+    private CaseAssignmentApi caseAssignmentApi;
 
     @MockBean
     private OrganisationService organisationService;
@@ -105,8 +107,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -175,17 +177,17 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         }
     }
 
-    private List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
+    private List<CaseAssignmentUserRole> getCaseAssignedApplicantUserRoles() {
         return List.of(
-            CaseAssignedUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
+            CaseAssignmentUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
                 .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("2")
+            CaseAssignmentUserRole.builder().caseDataId("1").userId("2")
                 .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+            CaseAssignmentUserRole.builder().caseDataId("1").userId("3")
                 .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+            CaseAssignmentUserRole.builder().caseDataId("1").userId("4")
                 .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
-            CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+            CaseAssignmentUserRole.builder().caseDataId("1").userId("5")
                 .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build()
         );
     }
@@ -196,8 +198,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         void setup() {
 
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
 
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
             List<Element<GASolicitorDetailsGAspec>> addlApplicantSol = new ArrayList<>();
@@ -272,13 +274,14 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     class AssignDefendantRoleForGALip {
         @BeforeEach
         void setup() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
                 .email("test@gmail.com").build();
 
             respondentSols.add(element(respondent1));
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
 
             GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
             builder.generalAppType(GAApplicationType.builder()
@@ -308,7 +311,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             generalApplication = builder.build();
             Map<String, Object> data = objectMapper.convertValue(generalApplication, new TypeReference<>() {
-                });
+            });
 
             params = callbackParamsOf(data, CallbackType.SUBMITTED);
         }
@@ -324,8 +327,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             assignCaseToUserHandler.handle(params);
             verify(coreCaseUserService, times(1))
                 .assignCase(CASE_ID.toString(),
-                                  generalApplication
-                                      .getGeneralAppRespondentSolicitors().get(0).getValue().getId(), null,
+                            generalApplication
+                                .getGeneralAppRespondentSolicitors().get(0).getValue().getId(), null,
                             CaseRole.DEFENDANT
                 );
         }
@@ -336,8 +339,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -402,8 +405,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -468,8 +471,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
@@ -543,8 +546,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
@@ -608,8 +611,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignedUserRolesResource.builder()
-                                .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id3")
@@ -665,18 +668,18 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOfPendingState(dataMap, CallbackType.SUBMITTED);
         }
 
-        public List<CaseAssignedUserRole> getCaseAssignedApplicantUserRoles() {
+        public List<CaseAssignmentUserRole> getCaseAssignedApplicantUserRoles() {
 
             return List.of(
-                CaseAssignedUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
+                CaseAssignmentUserRole.builder().caseDataId("1").userId(STRING_NUM_CONSTANT)
                     .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
-                CaseAssignedUserRole.builder().caseDataId("1").userId("2")
+                CaseAssignmentUserRole.builder().caseDataId("1").userId("2")
                     .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build(),
-                CaseAssignedUserRole.builder().caseDataId("1").userId("3")
+                CaseAssignmentUserRole.builder().caseDataId("1").userId("3")
                     .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
-                CaseAssignedUserRole.builder().caseDataId("1").userId("4")
+                CaseAssignmentUserRole.builder().caseDataId("1").userId("4")
                     .caseRole(RESPONDENTSOLICITORONE.getFormattedName()).build(),
-                CaseAssignedUserRole.builder().caseDataId("1").userId("5")
+                CaseAssignmentUserRole.builder().caseDataId("1").userId("5")
                     .caseRole(APPLICANTSOLICITORONE.getFormattedName()).build()
             );
         }
@@ -708,17 +711,17 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
-                    .thenReturn(CaseAssignedUserRolesResource.builder()
-                            .caseAssignedUserRoles(getCaseAssignedApplicantUserRoles()).build());
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                    .email("test@gmail.com").organisationIdentifier("org3").build();
+                .email("test@gmail.com").organisationIdentifier("org3").build();
 
             GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-                    .email("test@gmail.com").organisationIdentifier("org2").build();
+                .email("test@gmail.com").organisationIdentifier("org2").build();
             GASolicitorDetailsGAspec respondent3 = GASolicitorDetailsGAspec.builder().id("id")
-                    .email("test@gmail.com").organisationIdentifier("org2").build();
+                .email("test@gmail.com").organisationIdentifier("org2").build();
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
@@ -730,8 +733,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 .isGaApplicantLip(NO)
                 .isGaRespondentTwoLip(NO)
                 .generalAppType(GAApplicationType.builder()
-                            .types(singletonList(SUMMARY_JUDGEMENT))
-                            .build())
+                                    .types(singletonList(SUMMARY_JUDGEMENT))
+                                    .build())
                 .claimant1PartyName("Applicant1")
                 .generalAppRespondentSolicitors(respondentSols)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
@@ -753,8 +756,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
             GeneralApplication.GeneralApplicationBuilder builderWithNotice = GeneralApplication.builder();
             builderWithNotice.generalAppType(GAApplicationType.builder()
-                                       .types(singletonList(SUMMARY_JUDGEMENT))
-                                       .build())
+                                                 .types(singletonList(SUMMARY_JUDGEMENT))
+                                                 .build())
                 .claimant1PartyName("Applicant1")
                 .generalAppRespondentSolicitors(respondentSols)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec
@@ -800,8 +803,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
         void shouldCallAssignCaseApp_1TimePending() {
             params = callbackParamsOfPendingState(dataMap, CallbackType.ABOUT_TO_SUBMIT);
             AboutToStartOrSubmitCallbackResponse response
-                    = (AboutToStartOrSubmitCallbackResponse)
-                    assignCaseToUserHandler.handle(params);
+                = (AboutToStartOrSubmitCallbackResponse)
+                assignCaseToUserHandler.handle(params);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -810,8 +813,8 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
             //resp1 sol1 has been assigned twice, one at line 36 then in for loop
             AboutToStartOrSubmitCallbackResponse response
-                    = (AboutToStartOrSubmitCallbackResponse)
-                    assignCaseToUserHandler.handle(params);
+                = (AboutToStartOrSubmitCallbackResponse)
+                assignCaseToUserHandler.handle(params);
             assertThat(response.getErrors()).isEmpty();
         }
 
@@ -831,6 +834,74 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any(),
                 eq(RESPONDENTSOLICITORTWO)
+            );
+        }
+    }
+
+    @Nested
+    class AssignRolesSpecCaseLipApplicant {
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                .thenReturn(CaseAssignmentUserRolesResource.builder()
+                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
+                .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                                       .types(singletonList(ADJOURN_HEARING))
+                                       .build())
+                .claimant1PartyName("Applicant1")
+                .generalAppRespondentSolicitors(respondentSols)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                                              .builder()
+                                              .id("id")
+                                              .email("TEST@gmail.com")
+                                              .organisationIdentifier("Org1").build())
+                .isMultiParty(NO)
+                .isGaRespondentOneLip(YES)
+                .isGaApplicantLip(YES)
+                .isGaRespondentTwoLip(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                .defendant1PartyName("Respondent1")
+                .claimant2PartyName("Applicant2")
+                .defendant2PartyName("Respondent2")
+                .generalAppSuperClaimType(SPEC_CLAIM)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                .civilServiceUserRoles(IdamUserDetails.builder()
+                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                                           .email("applicant@someorg.com")
+                                           .build())
+                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                .build();
+
+            generalApplication = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOfPendingState(dataMap, CallbackType.SUBMITTED);
+        }
+
+        @Test
+        void shouldNotCallAssignCase() {
+            var response = (SubmittedCallbackResponse) assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(0)).assignCase(
+                any(),
+                any(),
+                any(),
+                any()
             );
         }
     }
