@@ -22,7 +22,7 @@ public class CoreCaseUserService {
 
     Logger log = LoggerFactory.getLogger(CoreCaseUserService.class);
 
-    private final CaseAccessDataStoreApi caseAccessDataStoreApi;
+    private final CaseAssignmentApi caseAssignmentApi;
     private final UserService userService;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
