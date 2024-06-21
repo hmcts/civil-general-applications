@@ -114,6 +114,24 @@ class GeneralAppLocationRefDataServiceTest {
         return new ResponseEntity<List<LocationRefData>>(responseData, OK);
     }
 
+    private ResponseEntity<List<LocationRefData>> getLocationRefDataResponseForCcmcc() {
+        List<LocationRefData> responseData = new ArrayList<LocationRefData>();
+        responseData.add(getLocationRefData("banana", "orange", "AA0 0BB",
+                                            "court address 1111"
+        ));
+
+        return new ResponseEntity<List<LocationRefData>>(responseData, OK);
+    }
+
+    private ResponseEntity<List<LocationRefData>> getLocationRefDataResponseForCnbc() {
+        List<LocationRefData> responseData = new ArrayList<LocationRefData>();
+        responseData.add(getLocationRefData("pineapple", "mango", "AA0 0BB",
+                                            "court address 1111"
+        ));
+
+        return new ResponseEntity<List<LocationRefData>>(responseData, OK);
+    }
+
     private ResponseEntity<List<LocationRefData>> getNonScotlandLocationsRefDataResponse() {
         List<LocationRefData> responseData = new ArrayList<LocationRefData>();
         responseData.add(getLocationRefData("site_name_01", "London", "AA0 0BB",
@@ -372,6 +390,68 @@ class GeneralAppLocationRefDataServiceTest {
         verify(lrdConfiguration, times(1)).getEndpoint();
         assertThat(uriCaptor.getValue().toString())
             .isEqualTo("dummy_url/fees-register/fees/lookup?epimms_id=00000");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsCcmcc() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getLocationRefDataResponseForCcmcc());
+
+        List<LocationRefData> courtLocations = refDataService
+            .getCcmccLocation("user_token");
+
+        DynamicList courtLocationString = getLocationsFromList(courtLocations);
+
+        assertThat(locationsFromDynamicList(courtLocationString))
+            .containsOnly(
+                "banana - court address 1111 - AA0 0BB"
+            );
+
+        assertThat(courtLocations).hasSize(1);
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue()).hasToString("dummy_url/fees-register/fees/lookup?court_venue_name=County%20Court%20Money%20Claims%20Centre");
+        assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
+        assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
+            .isEqualTo("service_token");
+    }
+
+    @Test
+    void shouldReturnLocations_whenLRDReturnsCnbc() {
+        when(authTokenGenerator.generate()).thenReturn("service_token");
+        when(restTemplate.exchange(
+            uriCaptor.capture(),
+            httpMethodCaptor.capture(),
+            httpEntityCaptor.capture(),
+            ArgumentMatchers.<ParameterizedTypeReference<List<LocationRefData>>>any()
+        ))
+            .thenReturn(getLocationRefDataResponseForCnbc());
+
+        List<LocationRefData> courtLocations = refDataService
+            .getCnbcLocation("user_token");
+
+        DynamicList courtLocationString = getLocationsFromList(courtLocations);
+
+        assertThat(locationsFromDynamicList(courtLocationString))
+            .containsOnly(
+                "pineapple - court address 1111 - AA0 0BB"
+            );
+
+        assertThat(courtLocations).hasSize(1);
+        verify(lrdConfiguration, times(1)).getUrl();
+        verify(lrdConfiguration, times(1)).getEndpoint();
+        assertThat(uriCaptor.getValue()).hasToString("dummy_url/fees-register/fees/lookup?court_venue_name=Civil%20National%20Business%20Centre");
         assertThat(httpMethodCaptor.getValue()).isEqualTo(HttpMethod.GET);
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("Authorization")).isEqualTo("user_token");
         assertThat(httpEntityCaptor.getValue().getHeaders().getFirst("ServiceAuthorization"))
