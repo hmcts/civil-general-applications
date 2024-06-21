@@ -124,10 +124,15 @@ reference:
     enabled: true
     migration: false
 
+dashboard:
+  api:
+    url: ${DASHBOARD_API_URL:http://localhost:4000}
+
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
   urgentGeneralAppRespondentEmailTemplate: "3ae23a46-a83b-4768-a066-198e80958cea"
+  lipGeneralAppRespondentEmailTemplate: "39d8c00f-2597-4e39-80a9-0f53c05715be"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
   writtenRepConcurrentRepresentationApplicantEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
   writtenRepConcurrentRepresentationRespondentEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
@@ -158,6 +163,12 @@ stitching:
   api:
     url: http://localhost:8084/api/stitch-ccd-bundles
 
+court-location:
+  specified-claim:
+    epimms-id: "420219"
+  unspecified-claim:
+    epimms-id: "192280"
+
 launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:}
   offline-mode: false
@@ -171,6 +182,24 @@ exit-survey:
   applicant-link: https://www.smartsurvey.co.uk/s/CivilDamages_ExitSurvey_Claimant/
   respondent-link: https://www.smartsurvey.co.uk/s/CivilDamages_ExitSurvey_Defendant/
 
+cui-front-end:
+  url: ${CUI_URL:http://localhost:3001}
+
+feign:
+  client:
+    config:
+      remoteRuntimeService:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processInstance:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processDefinition:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      message:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      incident:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      externalTask:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
 ---
 
 spring:
@@ -181,12 +210,6 @@ spring:
 feign:
   client:
     config:
-      remoteRuntimeService:
-        url: http://localhost:9404/engine-rest/
-      remoteRepositoryService:
-        url: http://localhost:9404/engine-rest/
-      remoteExternalTaskService:
-        url: http://localhost:9404/engine-rest/
       idam-api:
         loggerLevel: full
       core-case-data-api:

@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -69,6 +70,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -118,6 +120,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 @SpringBootTest(classes = {
     JudicialDecisionHandler.class,
     AssignCaseToResopondentSolHelper.class,
+    GaForLipService.class,
     DeadlinesCalculator.class,
     JacksonAutoConfiguration.class},
     properties = {"reference.database.enabled=false"})
@@ -140,6 +143,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private DeadlinesCalculator deadlinesCalculator;
+
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -195,6 +201,11 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         + " Any such application must be made by 4pm on";
 
     private static LocalDate localDatePlus7days = LocalDate.now().plusDays(7);
+
+    @BeforeEach
+    void setUp() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -3043,6 +3054,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = getApplicationBusinessProcess().toBuilder().isMultiParty(NO)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                               .email("test@gmail.com").organisationIdentifier("org1").build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
                 .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -3059,7 +3073,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = getApplicationWithPreferredTypeNotInPerson().toBuilder()
                 .isMultiParty(NO)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
-                                              .email("test@gmail.com").organisationIdentifier("org1").build()).build();
+                                              .email("test@gmail.com").organisationIdentifier("org1").build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -3082,7 +3099,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                         .judgeHearingTimeEstimateText1("test")
                                                         .hearingPreferencesPreferredTypeLabel1("test")
                                                         .judgeHearingSupportReqText1("test")
-                                                        .build()).build();
+                                                        .build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO).build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
@@ -3101,6 +3121,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                               .email("test@gmail.com").organisationIdentifier("org1").build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
                 .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -3117,6 +3140,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                               .email("test@gmail.com").organisationIdentifier("org1").build())
                 .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
                 .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
@@ -3187,6 +3213,9 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                               .email("test@gmail.com").organisationIdentifier("org1").build())
                 .makeAppVisibleToRespondents(GAMakeApplicationAvailableCheck.builder()
                                                  .makeAppAvailableCheck(getMakeAppVisible()).build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
                 .build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);

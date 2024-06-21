@@ -64,12 +64,16 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     }
 
     private List<String> compareFees(CaseData caseData, Fee latestfee) {
+
         if (caseData.getGeneralAppPBADetails() == null
             || caseData.getGeneralAppPBADetails().getFee() == null) {
             return List.of(ERROR_MESSAGE_NO_FEE_IN_CASEDATA);
         }
         Fee caseDataFee = caseData.getGeneralAppPBADetails().getFee();
         if (!caseDataFee.equals(latestfee)) {
+            log.info("Fees not equal - latest fee {} for General Application with value: {} with casedata fee {} with value : {} ",
+                latestfee.getCode(), latestfee.getCalculatedAmountInPence(),  caseData.getGeneralAppPBADetails().getFee().getCode(),
+                caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence());
             return List.of(ERROR_MESSAGE_FEE_CHANGED);
         }
 

@@ -28,6 +28,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo generalAppConsentOrder;
     private final BusinessProcess businessProcess;
     private final GAPbaDetails generalAppPBADetails;
+    private YesOrNo generalAppAskForCosts;
     private String generalAppDetailsOfOrder;
     private String generalAppReasonsOfOrder;
     private GAInformOtherParty generalAppInformOtherParty;
@@ -66,6 +67,12 @@ public class GeneralApplication implements MappableObject {
     private Document generalAppN245FormUpload;
     private GAHearingDateGAspec generalAppHearingDate;
 
+    // GA for LIP
+    private final YesOrNo isGaApplicantLip;
+    private final YesOrNo isGaRespondentOneLip;
+    private final YesOrNo isGaRespondentTwoLip;
+    private HelpWithFees generalAppHelpWithFees;
+
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
                        @JsonProperty("generalAppRespondentAgreement")
@@ -74,6 +81,7 @@ public class GeneralApplication implements MappableObject {
                        YesOrNo generalAppConsentOrder,
                        @JsonProperty("businessProcess") BusinessProcess businessProcess,
                        @JsonProperty("generalAppPBADetails") GAPbaDetails generalAppPBADetails,
+                       @JsonProperty("generalAppAskForCosts") YesOrNo generalAppAskForCosts,
                        @JsonProperty("generalAppDetailsOfOrder") String generalAppDetailsOfOrder,
                        @JsonProperty("generalAppReasonsOfOrder") String generalAppReasonsOfOrder,
                        @JsonProperty("generalAppInformOtherParty") GAInformOtherParty generalAppInformOtherParty,
@@ -112,12 +120,17 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,
                        @JsonProperty("generalAppVaryJudgementType") YesOrNo generalAppVaryJudgementType,
                        @JsonProperty("generalAppN245FormUpload") Document generalAppN245FormUpload,
-                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
+                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate,
+                       @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
+                       @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
+                       @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
+                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
         this.businessProcess = businessProcess;
         this.generalAppPBADetails = generalAppPBADetails;
+        this.generalAppAskForCosts = generalAppAskForCosts;
         this.generalAppDetailsOfOrder = generalAppDetailsOfOrder;
         this.generalAppReasonsOfOrder = generalAppReasonsOfOrder;
         this.generalAppInformOtherParty = generalAppInformOtherParty;
@@ -155,6 +168,10 @@ public class GeneralApplication implements MappableObject {
         this.generalAppVaryJudgementType = generalAppVaryJudgementType;
         this.generalAppN245FormUpload = generalAppN245FormUpload;
         this.generalAppHearingDate = generalAppHearingDate;
+        this.isGaApplicantLip = isGaApplicantLip;
+        this.isGaRespondentOneLip = isGaRespondentOneLip;
+        this.isGaRespondentTwoLip = isGaRespondentTwoLip;
+        this.generalAppHelpWithFees = generalAppHelpWithFees;
     }
 
     @JsonIgnore

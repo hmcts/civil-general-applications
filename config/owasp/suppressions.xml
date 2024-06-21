@@ -1,39 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <suppress>
-    <notes>jackson-core-2.13.4.jar
-      jackson-jaxrs-json-provider-2.13.4.jar
-      json-20210307.jar
-      json-smart-2.4.8.jar</notes>
-    <cve>CVE-2022-45688</cve>
-  </suppress>
-  <suppress>
-    <notes>latest camunda jars and jakarta activation 2.1.1 is the latest</notes>
-    <cve>CVE-2008-7271</cve>
-    <cve>CVE-2010-4647</cve>
-    <cve>CVE-2023-4218</cve>
-  </suppress>
-  <suppress>
-    <notes>suppressing jackson databind cve as most of the latest dependencies has got vulnerability jackson jar</notes>
-    <cve>CVE-2023-35116</cve>
-  </suppress>
-  <suppress>
-    <notes>latest spring cloud starter netflix still got vulnerable guava jar</notes>
-    <cve>CVE-2023-2976</cve>
-  </suppress>
-  <suppress until="2024-05-08">
-    <cve>CVE-2023-3635</cve>
-    <cve>CVE-2023-34035</cve>
-    <cve>CVE-2023-34034</cve>
-    <cve>CVE-2023-3782</cve>
-    <cve>CVE-2020-8908</cve>
-  </suppress>
-  <suppress>
-    <notes>Latest spring boot 3.1.3 still got vulnerable tomcat will try upgrade later</notes>
-    <cve>CVE-2023-41080</cve>
-  </suppress>
-  <suppress until="2024-05-08">
-    <notes>All latest jars has got the vulnerablities. will upgrade later when that is fixed</notes>
-    <cve>CVE-2023-5072</cve>
-  </suppress>
 </suppressions>
