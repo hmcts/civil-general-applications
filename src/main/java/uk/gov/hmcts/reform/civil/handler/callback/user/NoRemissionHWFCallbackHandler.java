@@ -29,7 +29,6 @@ public class NoRemissionHWFCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = List.of(NO_REMISSION_HWF_GA);
     private final ObjectMapper objectMapper;
-    //private final HWFFeePaymentOutcomeService hwfFeePaymentOutcomeService;
     private final Map<String, Callback> callbackMap = Map.of(
         callbackKey(ABOUT_TO_START), this::setData,
         callbackKey(ABOUT_TO_SUBMIT),
@@ -65,20 +64,6 @@ public class NoRemissionHWFCallbackHandler extends CallbackHandler {
 
     private CallbackResponse noRemissionHWF(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        /*caseData = hwfFeePaymentOutcomeService.updateOutstandingFee(caseData, callbackParams.getRequest().getEventId());
-        CaseData.CaseDataBuilder<?, ?> updatedData = caseData.toBuilder()
-            .businessProcess(BusinessProcess.ready(NOTIFY_LIP_CLAIMANT_HWF_OUTCOME));
-
-        if (caseData.isHWFTypeHearing()) {
-            HelpWithFeesDetails hearingFeeDetails =
-                Optional.ofNullable(caseData.getHearingHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.hearingHwfDetails(hearingFeeDetails.toBuilder().hwfCaseEvent(NO_REMISSION_HWF).build());
-        }
-        if (caseData.isHWFTypeClaimIssued()) {
-            HelpWithFeesDetails claimIssuedHwfDetails =
-                Optional.ofNullable(caseData.getClaimIssuedHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.claimIssuedHwfDetails(claimIssuedHwfDetails.toBuilder().hwfCaseEvent(NO_REMISSION_HWF).build());
-        }*/
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))
             .build();
