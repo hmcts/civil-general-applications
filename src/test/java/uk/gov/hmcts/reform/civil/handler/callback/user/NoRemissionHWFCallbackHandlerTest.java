@@ -67,4 +67,19 @@ public class NoRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
         }
     }
+
+    @Nested
+    class Submitted {
+        @Test
+        void doNothing_noRemissionHWF() {
+            CaseData caseData = CaseData.builder()
+                    .ccdState(APPLICATION_ADD_PAYMENT)
+                    .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
+            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getGeneralAppHelpWithFees()).isNotNull();
+        }
+    }
+
 }
