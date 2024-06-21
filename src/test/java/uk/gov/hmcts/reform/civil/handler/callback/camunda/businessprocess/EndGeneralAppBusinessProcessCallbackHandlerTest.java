@@ -51,6 +51,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderFu
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
@@ -112,6 +113,9 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
+    private GaForLipService gaForLipService;
     @Captor
     private ArgumentCaptor<Map<String, Object>> mapCaptor;
 

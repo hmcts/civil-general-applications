@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -12,6 +13,8 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import java.util.List;
 import java.util.Objects;
 
+import static uk.gov.hmcts.reform.civil.enums.CaseCategory.SPEC_CLAIM;
+import static uk.gov.hmcts.reform.civil.enums.CaseCategory.UNSPEC_CLAIM;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
@@ -20,10 +23,23 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
+    @Value("${court-location.unspecified-claim.epimms-id}")
+    private String ccmccEpimmId;
+    @Value("${court-location.specified-claim.epimms-id}")
+    private String cnbcEpimmId;
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
-        List<LocationRefData> courtLocations = generalAppLocationRefDataService
-            .getCourtLocations(authorisation);
+        List<LocationRefData> courtLocations = null;
+        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(SPEC_CLAIM)) {
+            courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
+        }
+        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(UNSPEC_CLAIM)) {
+            courtLocations = generalAppLocationRefDataService.getCcmccLocation(authorisation);
+        }
+        if (!checkIfCcmccOrCnbc(caseData)) {
+            courtLocations = generalAppLocationRefDataService.getCourtLocations(authorisation);
+        }
+        assert courtLocations != null;
         var matchingLocations =
             courtLocations
                 .stream()
@@ -71,6 +87,14 @@ public class DocmosisService {
             return caseData.getJudicialDecisionMakeOrder().getOrderWithoutNotice() + " "
                 .concat(caseData.getJudicialDecisionMakeOrder().getOrderWithoutNoticeDate()
                             .format(DATE_FORMATTER));
+        }
+    }
+
+    public Boolean checkIfCcmccOrCnbc(CaseData caseData) {
+        if (caseData.getCaseManagementLocation().getBaseLocation().equals(ccmccEpimmId)) {
+            return true;
+        } else {
+            return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimmId);
         }
     }
 }
