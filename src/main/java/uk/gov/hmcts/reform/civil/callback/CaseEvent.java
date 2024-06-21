@@ -84,7 +84,6 @@ public enum CaseEvent {
     NO_REMISSION_HWF_GA(USER),
     UPDATE_HELP_WITH_FEE_NUMBER_GA(USER);
 
-
     private final UserType userType;
 
     public boolean isCamundaEvent() {
