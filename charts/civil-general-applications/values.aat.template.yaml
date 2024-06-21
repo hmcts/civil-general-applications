@@ -51,8 +51,8 @@ java:
         - docmosis-api-key
         - gov-notify-api-key
         - sendgrid-api-key
-        - name: launch-darkly-sdk-key-non-prod
-          alias: launch-darkly-sdk-key
+        - name: launch-darkly-sdk-key
+          alias: LAUNCH_DARKLY_SDK_KEY
   postgresql:
     enabled: true
     image:
@@ -118,7 +118,7 @@ civil-service:
             alias: robotics.notification.sender
           - name: robotics-notification-recipient
             alias: robotics.notification.recipient
-          - name: launch-darkly-sdk-key-non-prod
+          - name: launch-darkly-sdk-key
             alias: LAUNCH_DARKLY_SDK_KEY
           - name: robotics-notification-multipartyrecipient
             alias: robotics.notification.multipartyrecipient
