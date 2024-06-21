@@ -24,6 +24,7 @@ class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     private UpdatedRefNumberHWFCallbackHandler handler;
     private ObjectMapper objectMapper;
+
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
