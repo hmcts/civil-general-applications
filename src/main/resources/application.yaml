@@ -46,6 +46,10 @@ spring:
             client-id: internal
             client-secret: internal
 
+location:
+  api:
+    baseUrl: ${GENAPP_LRD_URL:http://localhost:6669}
+
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
 
