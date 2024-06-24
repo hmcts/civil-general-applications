@@ -316,7 +316,7 @@ document_management:
 
 docmosis:
   tornado:
-    url: http://fake-docmosis-api
+    url: http://localhost:6660
     key: fake-key
 
 feign:
