@@ -342,7 +342,7 @@ testing:
 
 rd_professional:
   api:
-    url: http://fake-prd-api
+    url: http://localhost:6665
 
 sendgrid:
   api-key: fake-key

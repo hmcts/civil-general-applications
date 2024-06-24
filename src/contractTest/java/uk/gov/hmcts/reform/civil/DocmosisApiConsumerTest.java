@@ -6,7 +6,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.apache.http.HttpStatus;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -32,13 +31,13 @@ public class DocmosisApiConsumerTest extends BaseContractTest {
 
     @Pact(consumer = "civil-general-applications")
     public RequestResponsePact postCreateDocumentRequest(PactDslWithProvider builder)
-        throws JSONException, IOException {
+        throws IOException {
         return buildCreateDocumentResponsePact(builder);
     }
 
     @Test
     @PactTestFor(pactMethod = "postCreateDocumentRequest")
-    public void verifyCreateDocumentRequest() throws IOException {
+    public void verifyCreateDocumentRequest() {
         byte[] response = docmosisApiClient.createDocument(getDocmosisRequest());
 
         assertThat(
@@ -47,7 +46,7 @@ public class DocmosisApiConsumerTest extends BaseContractTest {
         );
     }
 
-    private RequestResponsePact buildCreateDocumentResponsePact(PactDslWithProvider builder) throws IOException, JSONException {
+    private RequestResponsePact buildCreateDocumentResponsePact(PactDslWithProvider builder) throws IOException {
         return builder
             .uponReceiving("a render document request")
             .path(ENDPOINT)
@@ -59,7 +58,7 @@ public class DocmosisApiConsumerTest extends BaseContractTest {
             .toPact();
     }
 
-    private static byte[] getResponse() throws IOException {
+    private static byte[] getResponse() {
         return ResourceReader.readBytes("/TEST_DOCUMENT_1.pdf");
     }
 
@@ -73,7 +72,7 @@ public class DocmosisApiConsumerTest extends BaseContractTest {
             .build();
     }
 
-    private String createJsonObject(Object obj) throws JSONException, IOException {
+    private String createJsonObject(Object obj) throws IOException {
         return objectMapper.writeValueAsString(obj);
     }
 }

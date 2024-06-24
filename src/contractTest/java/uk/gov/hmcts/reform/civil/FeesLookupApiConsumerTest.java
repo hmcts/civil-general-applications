@@ -7,7 +7,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.apache.http.HttpStatus;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -42,7 +41,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     private FeesApiClient feesApiClient;
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getFeeForAdditionalValue(PactDslWithProvider builder) throws JSONException {
+    public RequestResponsePact getFeeForAdditionalValue(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA HACFOOnNotice",
                                                  HACFO_ON_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,
                                                  new BigDecimal(10.00), "FEE0011"
@@ -50,7 +49,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     }
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getFeeForAppToVaryOrSuspend(PactDslWithProvider builder) throws JSONException {
+    public RequestResponsePact getFeeForAppToVaryOrSuspend(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA App to vary or to suspend",
                                                  APPN_TO_VARY_KEYWORD, "miscellaneous", "other",
                                                  new BigDecimal(30.00), "FEE0013"
@@ -58,7 +57,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     }
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getFeeForConsentWithOrWithout(PactDslWithProvider builder) throws JSONException {
+    public RequestResponsePact getFeeForConsentWithOrWithout(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA Consent with or without notice",
                                                  CONSENT_WITHWITHOUT_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,
                                                  new BigDecimal(20.00), "FEE0012"
@@ -66,7 +65,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     }
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getFeeForWithNotice(PactDslWithProvider builder) throws JSONException {
+    public RequestResponsePact getFeeForWithNotice(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA with notice",
                                                  WITH_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,
                                                  new BigDecimal(20.00), "FEE0012"
