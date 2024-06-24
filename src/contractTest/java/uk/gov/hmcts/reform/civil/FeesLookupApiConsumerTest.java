@@ -41,7 +41,6 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     @Autowired
     private FeesApiClient feesApiClient;
 
-
     @Pact(consumer = "civil-general-applications")
     public RequestResponsePact getFeeForAdditionalValue(PactDslWithProvider builder) throws JSONException {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA HACFOOnNotice",
@@ -73,7 +72,6 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
                                                  new BigDecimal(20.00), "FEE0012"
         );
     }
-
 
     @Test
     @PactTestFor(pactMethod = "getFeeForAdditionalValue")
@@ -136,8 +134,6 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
         assertThat(fee.getCode(), is(equalTo("FEE0012")));
         assertThat(fee.getFeeAmount(), is(equalTo(new BigDecimal(20.00))));
     }
-
-
 
     private RequestResponsePact buildGenAppFeeRequestResponsePact(PactDslWithProvider builder, String uponReceiving,
                                                                   String keyword, String event, String service,
