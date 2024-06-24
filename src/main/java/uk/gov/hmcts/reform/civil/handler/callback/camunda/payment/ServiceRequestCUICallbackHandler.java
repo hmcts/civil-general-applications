@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 
@@ -64,8 +63,10 @@ public class ServiceRequestCUICallbackHandler extends CallbackHandler {
             if (isServiceRequestNotRequested(caseData)) {
                 log.info("Calling payment service request (application fee) for case {}", caseData.getCcdCaseReference());
                 String serviceRequestReference = getServiceRequestReference(caseData, authToken);
-                caseData = caseData.toBuilder().serviceRequestReference(serviceRequestReference)
-                    .generalAppPBADetails(getGeneralAppPbaDetails(serviceRequestReference, caseData.getGeneralAppFee()))
+                caseData = caseData.toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                                                                         .serviceReqReference(serviceRequestReference)
+                                                                         .fee(caseData.getGeneralAppPBADetails().getFee())
+                                                                         .build())
                     .build();
             }
         } catch (FeignException e) {
@@ -86,13 +87,6 @@ public class ServiceRequestCUICallbackHandler extends CallbackHandler {
     }
 
     private boolean isServiceRequestNotRequested(CaseData caseData) {
-        return isNull(caseData.getServiceRequestReference());
-    }
-
-    private GAPbaDetails getGeneralAppPbaDetails(String serviceReference, Fee gaFee) {
-        return GAPbaDetails.builder()
-            .serviceReqReference(serviceReference)
-            .fee(gaFee)
-            .build();
+        return isNull(caseData.getGeneralAppPBADetails()) || isNull(caseData.getGeneralAppPBADetails().getServiceReqReference());
     }
 }

@@ -35,13 +35,13 @@ public class FeesPaymentService {
         log.info("Creating gov Payment request url for caseId {}", caseReference);
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(caseReference));
         CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
-
+        String parentCaseRef = caseData.getParentCaseReference();
         GAPbaDetails generalAppPbaDetails = caseData.getGeneralAppPBADetails();
 
         requireNonNull(generalAppPbaDetails, "Fee Payment details cannot be null");
         requireNonNull(generalAppPbaDetails.getServiceReqReference(), "Fee Payment service request cannot be null");
 
-        String returnUrlSubPath = "/general-app-payment-confirmation/";
+        String returnUrlSubPath = "/general-application/payment-confirmation/" + parentCaseRef + "/gaid/";
 
         CardPaymentServiceRequestDTO requestDto = CardPaymentServiceRequestDTO.builder()
             .amount(generalAppPbaDetails.getFee().getCalculatedAmountInPence()

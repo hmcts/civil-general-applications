@@ -310,9 +310,7 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
-    private final String serviceRequestReference;
     private final Fee generalAppFee;
-    private final PaymentDetails generalAppPaymentDetails;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
 

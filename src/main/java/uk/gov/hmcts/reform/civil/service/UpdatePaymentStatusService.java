@@ -16,10 +16,10 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
 
-import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
 
 @Slf4j
@@ -76,19 +76,20 @@ public class UpdatePaymentStatusService {
     private CaseData updateCaseDataWithStateAndPaymentDetails(CardPaymentStatusResponse cardPaymentStatusResponse,
                                                               CaseData caseData) {
 
-        PaymentDetails pbaDetails = caseData.getGeneralAppPaymentDetails();
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        GAPbaDetails.GAPbaDetailsBuilder pbaDetailsBuilder;
+        pbaDetailsBuilder = pbaDetails == null ? GAPbaDetails.builder() : pbaDetails.toBuilder();
 
-        PaymentDetails paymentDetails = ofNullable(pbaDetails)
-            .map(PaymentDetails::toBuilder)
-            .orElse(PaymentDetails.builder())
+        PaymentDetails paymentDetails = PaymentDetails.builder()
             .status(PaymentStatus.valueOf(cardPaymentStatusResponse.getStatus().toUpperCase()))
             .reference(cardPaymentStatusResponse.getPaymentReference())
             .errorCode(cardPaymentStatusResponse.getErrorCode())
             .errorMessage(cardPaymentStatusResponse.getErrorDescription())
             .build();
 
+        pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
         return caseData.toBuilder()
-            .generalAppPaymentDetails(paymentDetails)
+            .generalAppPBADetails(pbaDetails)
             .build();
     }
 

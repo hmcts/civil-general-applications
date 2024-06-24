@@ -10,16 +10,21 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 
 @Slf4j
@@ -47,11 +52,10 @@ public class CitizenGeneralAppFeePaymentCallbackHandler extends CallbackHandler 
 
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder dataBuilder = caseData.toBuilder();
-
-        if (caseData.getGeneralAppPaymentDetails() != null && caseData.getGeneralAppPaymentDetails().getStatus() == SUCCESS) {
+        PaymentDetails paymentDetails = Optional.of(caseData.getGeneralAppPBADetails()).map(GAPbaDetails::getPaymentDetails).orElse(null);
+        if (paymentDetails != null && paymentDetails.getStatus() == SUCCESS) {
             dataBuilder.issueDate(LocalDate.now());
-            //TODO: Start Business process after payment
-            // dataBuilder.businessProcess(BusinessProcess.ready(CREATE_CLAIM_SPEC_AFTER_PAYMENT));
+            dataBuilder.businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
