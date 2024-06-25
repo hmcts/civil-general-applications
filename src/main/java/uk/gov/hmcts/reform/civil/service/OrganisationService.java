@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.civil.client.OrganisationApi;
 import uk.gov.hmcts.reform.civil.config.PrdAdminUserConfiguration;
-import uk.gov.hmcts.reform.civil.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ public class OrganisationService {
     //WARNING! below function findOrganisation is being used by both damages and specified claims,
     // changes to this code may break one of the claim journeys, check with respective teams before changing it
 
-    public Optional<Organisation> findOrganisation(String authToken) {
+    public Optional<OrganisationResponse> findOrganisation(String authToken) {
         try {
             return ofNullable(organisationApi.findUserOrganisation(authToken, authTokenGenerator.generate()));
 
@@ -38,7 +38,7 @@ public class OrganisationService {
 
     //WARNING! below function findOrganisationById is being used by both damages and specified claims,
     // changes to this code may break one of the claim journeys, check with respective teams before changing it
-    public Optional<Organisation> findOrganisationById(String id) {
+    public Optional<OrganisationResponse> findOrganisationById(String id) {
         String authToken = userService.getAccessToken(userConfig.getUsername(), userConfig.getPassword());
         try {
             return ofNullable(organisationApi.findOrganisationById(authToken, authTokenGenerator.generate(), id));
@@ -48,10 +48,14 @@ public class OrganisationService {
         }
     }
 
-    public Optional<Organisation> findOrganisationByUserId(String userId) {
+    public Optional<OrganisationResponse> findOrganisationByUserId(String userId) {
         try {
             String authToken = userService.getAccessToken(userConfig.getUsername(), userConfig.getPassword());
-            return ofNullable(organisationApi.findOrganisationByUserId(authToken, authTokenGenerator.generate(), userId));
+            return ofNullable(organisationApi.findOrganisationByUserId(
+                authToken,
+                authTokenGenerator.generate(),
+                userId
+            ));
         } catch (FeignException.NotFound ex) {
             log.error("Organisation not found", ex);
             return Optional.empty();

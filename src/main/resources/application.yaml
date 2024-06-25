@@ -320,7 +320,7 @@ document_management:
 
 docmosis:
   tornado:
-    url: http://fake-docmosis-api
+    url: http://localhost:6660
     key: fake-key
 
 feign:
@@ -342,7 +342,7 @@ testing:
 
 rd_professional:
   api:
-    url: http://fake-prd-api
+    url: http://localhost:6665
 
 sendgrid:
   api-key: fake-key
