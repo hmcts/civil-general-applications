@@ -15,7 +15,7 @@ public class HwFFeeTypeService {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
             && Objects.isNull(caseData.getHwfFeeType())) {
-            if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+            if (CaseState.APPLICATION_ADD_PAYMENT == caseData.getCcdState()) {
                 caseDataBuilder.hwfFeeType(FeeType.ADDITIONAL);
             } else {
                 caseDataBuilder.hwfFeeType(FeeType.APPLICATION);

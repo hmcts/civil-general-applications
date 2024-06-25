@@ -37,7 +37,7 @@ public class CasesControllerTest extends BaseIntegrationTest {
 
     private static final String CLAIMS_LIST_URL = "/cases/";
     private static final String CASES_URL = "/cases/{caseId}";
-    private static final String CASE_APP_URL = "/cases//{caseId}/applications";
+    private static final String CASE_APP_URL = "/cases/{caseId}/applications";
     private static final String SUBMIT_EVENT_URL = "/cases/{caseId}/citizen/{submitterId}/event";
     private static final String ELASTICSEARCH = "{\n"
         + "\"terms\": {\n"

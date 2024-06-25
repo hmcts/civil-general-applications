@@ -248,6 +248,13 @@ task runApiTests(type: Exec, description: 'Runs Api tests.') {
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
 }
 
+task runNonProdApiTests(type: Exec, description: 'Runs non prod features in functional tests.') {
+  onlyIf {
+    return System.env.ENVIRONMENT == 'preview'
+  }
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api-nonprod'
+}
+
 task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
@@ -260,7 +267,7 @@ task smoke(description: 'Runs the smoke tests.') {
 }
 
 task functional(description: 'Runs the functional tests.') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests, runNightlyAPITests))
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runApiTests,runNonProdApiTests,runNightlyAPITests))
 }
 
 task crossbrowser(description: 'Runs the crossbrowser tests.') {
