@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.civil.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Optional;
 
@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.civil.launchdarkly.OnBoardingOrganisationContr
     OnBoardingOrganisationControlService.class,
     JacksonAutoConfiguration.class
 })
-class OnBoardingOrganisationControlServiceTest {
+class OnBoardingOrganisationControlServiceTestResponse {
 
     public static final String USER_TOKEN = "bearer:userToken";
     @MockBean
@@ -35,7 +35,7 @@ class OnBoardingOrganisationControlServiceTest {
     @Test
     void shouldNotReturnError_whenOrganisationInAllowedList() {
         when(organisationService.findOrganisation(USER_TOKEN))
-            .thenReturn(Optional.of(Organisation.builder().organisationIdentifier("0FA7S8S").build()));
+            .thenReturn(Optional.of(OrganisationResponse.builder().organisationIdentifier("0FA7S8S").build()));
 
         when(featureToggleService.isOrganisationOnboarded("0FA7S8S")).thenReturn(true);
 
@@ -46,7 +46,7 @@ class OnBoardingOrganisationControlServiceTest {
     void shouldReturnError_whenOrganisationNotInAllowedList() {
         String firm = "Solicitor tribunal ltd";
         when(organisationService.findOrganisation(USER_TOKEN))
-            .thenReturn(Optional.of(Organisation.builder().name(firm).organisationIdentifier("0F99S99").build()));
+            .thenReturn(Optional.of(OrganisationResponse.builder().name(firm).organisationIdentifier("0F99S99").build()));
 
         when(featureToggleService.isOrganisationOnboarded("0F99S99")).thenReturn(false);
 
