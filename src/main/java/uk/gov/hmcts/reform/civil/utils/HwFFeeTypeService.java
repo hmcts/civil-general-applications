@@ -6,9 +6,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class HwFFeeTypeService {
 

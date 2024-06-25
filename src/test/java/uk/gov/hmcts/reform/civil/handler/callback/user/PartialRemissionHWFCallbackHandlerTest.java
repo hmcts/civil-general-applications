@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.handler.callback.user.PartialRemissionHWFCallbackHandler.ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ADDITIONAL_FEE;
 import static uk.gov.hmcts.reform.civil.handler.callback.user.PartialRemissionHWFCallbackHandler.ERR_MSG_REMISSION_AMOUNT_LESS_THAN_GA_FEE;
@@ -59,7 +57,10 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
                                     Fee.builder()
                                             .calculatedAmountInPence(BigDecimal.valueOf(10000)).code("OOOCM002").build())
                             .build())
-                    .gaHwfDetails(HelpWithFeesDetails.builder().build())
+                    .gaHwfDetails(HelpWithFeesDetails.builder()
+                            .remissionAmount(BigDecimal.valueOf(1000))
+                            .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                            .build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .build();
 
@@ -81,12 +82,12 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
                                     Fee.builder()
                                             .calculatedAmountInPence(BigDecimal.valueOf(10000)).code("OOOCM002").build())
                             .build())
-                .additionalHwfDetails(HelpWithFeesDetails.builder()
-                                       .remissionAmount(BigDecimal.valueOf(1000))
-                                       .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
-                                       .build())
-                .hwfFeeType(FeeType.ADDITIONAL)
-                .build();
+                    .additionalHwfDetails(HelpWithFeesDetails.builder()
+                            .remissionAmount(BigDecimal.valueOf(1000))
+                            .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                            .build())
+                    .hwfFeeType(FeeType.ADDITIONAL)
+                    .build();
             CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
 
             //When
@@ -104,16 +105,16 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
     void shouldPopulateErrorWhenApplicationRemissionAmountIsNegative() {
         //Given
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().fee(
-                            Fee.builder()
-                                    .calculatedAmountInPence(BigDecimal.valueOf(30000))
-                                    .code("OOOCM002").build())
-                    .build())
-            .gaHwfDetails(HelpWithFeesDetails.builder()
-                                       .remissionAmount(BigDecimal.valueOf(-1000))
-                                       .build())
-            .hwfFeeType(FeeType.APPLICATION)
-            .build();
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                                Fee.builder()
+                                        .calculatedAmountInPence(BigDecimal.valueOf(30000))
+                                        .code("OOOCM002").build())
+                        .build())
+                .gaHwfDetails(HelpWithFeesDetails.builder()
+                        .remissionAmount(BigDecimal.valueOf(-1000))
+                        .build())
+                .hwfFeeType(FeeType.APPLICATION)
+                .build();
 
         CallbackParams params = callbackParamsOf(caseData, CallbackType.MID, "remission-amount");
 
@@ -128,17 +129,17 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
     void shouldPopulateErrorWhenAdditionalRemissionAmountIsNegative() {
         //Given
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().fee(
-                            Fee.builder()
-                                    .calculatedAmountInPence(BigDecimal.valueOf(30000))
-                                    .code("OOOCM002").build())
-                    .build())
-            .additionalHwfDetails(HelpWithFeesDetails.builder()
-                                       .remissionAmount(BigDecimal.valueOf(-1000))
-                                       .build())
-            .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                                Fee.builder()
+                                        .calculatedAmountInPence(BigDecimal.valueOf(30000))
+                                        .code("OOOCM002").build())
+                        .build())
+                .additionalHwfDetails(HelpWithFeesDetails.builder()
+                        .remissionAmount(BigDecimal.valueOf(-1000))
+                        .build())
+                .hwfFeeType(FeeType.ADDITIONAL)
 
-            .build();
+                .build();
         CallbackParams params = callbackParamsOf(caseData, CallbackType.MID, "remission-amount");
 
         //When
@@ -153,19 +154,19 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
     void shouldPopulateErrorWhenRemissionAmountIsNotValidForDifferentFeeTypes(FeeType feeType, String errMsg) {
         //Given
         CaseData caseData = CaseData.builder()
-            .generalAppPBADetails(GAPbaDetails.builder().fee(
-                            Fee.builder()
-                                    .calculatedAmountInPence(BigDecimal.valueOf(30000))
-                                    .code("OOOCM002").build())
-                    .build())
-            .additionalHwfDetails(HelpWithFeesDetails.builder()
-                    .remissionAmount(BigDecimal.valueOf(35000))
-                    .build())
-            .gaHwfDetails(HelpWithFeesDetails.builder()
-                    .remissionAmount(BigDecimal.valueOf(35000))
-                    .build())
-            .hwfFeeType(feeType)
-            .build();
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                                Fee.builder()
+                                        .calculatedAmountInPence(BigDecimal.valueOf(30000))
+                                        .code("OOOCM002").build())
+                        .build())
+                .additionalHwfDetails(HelpWithFeesDetails.builder()
+                        .remissionAmount(BigDecimal.valueOf(35000))
+                        .build())
+                .gaHwfDetails(HelpWithFeesDetails.builder()
+                        .remissionAmount(BigDecimal.valueOf(35000))
+                        .build())
+                .hwfFeeType(feeType)
+                .build();
         CallbackParams params = callbackParamsOf(caseData, CallbackType.MID, "remission-amount");
 
         //When
@@ -177,8 +178,8 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
 
     private static Stream<Arguments> provideFeeTypes() {
         return Stream.of(
-            Arguments.of(FeeType.APPLICATION, ERR_MSG_REMISSION_AMOUNT_LESS_THAN_GA_FEE),
-            Arguments.of(FeeType.ADDITIONAL, ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ADDITIONAL_FEE)
+                Arguments.of(FeeType.APPLICATION, ERR_MSG_REMISSION_AMOUNT_LESS_THAN_GA_FEE),
+                Arguments.of(FeeType.ADDITIONAL, ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ADDITIONAL_FEE)
         );
     }
 
