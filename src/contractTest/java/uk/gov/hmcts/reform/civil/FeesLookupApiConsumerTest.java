@@ -40,7 +40,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     @Autowired
     private FeesApiClient feesApiClient;
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getFeeForAdditionalValue(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA HACFOOnNotice",
                                                  HACFO_ON_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,
@@ -48,7 +48,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
         );
     }
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getFeeForAppToVaryOrSuspend(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA App to vary or to suspend",
                                                  APPN_TO_VARY_KEYWORD, "miscellaneous", "other",
@@ -56,7 +56,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
         );
     }
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getFeeForConsentWithOrWithout(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA Consent with or without notice",
                                                  CONSENT_WITHWITHOUT_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,
@@ -64,7 +64,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
         );
     }
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getFeeForWithNotice(PactDslWithProvider builder) {
         return buildGenAppFeeRequestResponsePact(builder, "a request for GA with notice",
                                                  WITH_NOTICE_KEYWORD, GENERAL_APP_EVENT, SERVICE_GENERAL,

@@ -33,17 +33,17 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
     @Autowired
     private LocationReferenceDataApiClient locationReferenceDataApiClient;
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getCourtVenueByName(PactDslWithProvider builder) {
         return buildCourtVenueByNameResponsePact(builder);
     }
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getCourtVenueByEpimmsId(PactDslWithProvider builder) {
         return buildCourtVenueByEpimmsIdResponsePact(builder);
     }
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getCourtVenue(PactDslWithProvider builder) {
         return buildCourtVenueResponsePact(builder);
     }

@@ -29,7 +29,7 @@ public class DocmosisApiConsumerTest extends BaseContractTest {
     @Autowired
     private DocmosisApiClient docmosisApiClient;
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact postCreateDocumentRequest(PactDslWithProvider builder)
         throws IOException {
         return buildCreateDocumentResponsePact(builder);

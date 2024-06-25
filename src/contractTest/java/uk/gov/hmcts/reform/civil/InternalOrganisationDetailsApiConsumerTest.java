@@ -28,7 +28,7 @@ public class InternalOrganisationDetailsApiConsumerTest extends BaseContractTest
     @Autowired
     private OrganisationApi organisationApi;
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getOrganisationByUserId(PactDslWithProvider builder) {
         return buildUserOrganisationResponsePact(builder);
     }

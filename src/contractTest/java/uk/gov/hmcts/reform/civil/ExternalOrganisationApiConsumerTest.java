@@ -30,7 +30,7 @@ public class ExternalOrganisationApiConsumerTest extends BaseContractTest {
     @Autowired
     private OrganisationApi organisationApi;
 
-    @Pact(consumer = "civil-general-applications")
+    @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getUserOrganisation(PactDslWithProvider builder)
         throws JSONException, IOException {
         return buildUserOrganisationResponsePact(builder);
