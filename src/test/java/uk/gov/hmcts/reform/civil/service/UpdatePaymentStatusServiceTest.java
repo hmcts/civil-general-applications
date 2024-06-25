@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.CASE_PROGRESSION;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,11 +53,9 @@ class UpdatePaymentStatusServiceTest {
                                  .status(BusinessProcessStatus.READY)
                                  .camundaEvent(BUSINESS_PROCESS)
                                  .build())
-            .generalAppPBADetails(GAPbaDetails.builder()
-                                      .paymentDetails(PaymentDetails.builder()
-                                                          .customerReference("RC-1604-0739-2145-4711")
-                                                          .build())
-                                      .build())
+            .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
+                    .customerReference("RC-1604-0739-2145-4711")
+                    .build()).build())
             .build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
@@ -65,14 +63,14 @@ class UpdatePaymentStatusServiceTest {
         when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(startEventResponse(
             caseDetails,
-            CITIZEN_GENERAL_APP_PAYMENT
+            INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT
         ));
         when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
         updatePaymentStatusService.updatePaymentStatus(String.valueOf(CASE_ID), getCardPaymentStatusResponse());
 
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
-        verify(coreCaseDataService).startUpdate(String.valueOf(CASE_ID), CITIZEN_GENERAL_APP_PAYMENT);
+        verify(coreCaseDataService).startUpdate(String.valueOf(CASE_ID), INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT);
         verify(coreCaseDataService).submitUpdate(any(), any());
 
     }

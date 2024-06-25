@@ -64,9 +64,9 @@ public class ServiceRequestCUICallbackHandler extends CallbackHandler {
                 log.info("Calling payment service request (application fee) for case {}", caseData.getCcdCaseReference());
                 String serviceRequestReference = getServiceRequestReference(caseData, authToken);
                 caseData = caseData.toBuilder().generalAppPBADetails(GAPbaDetails.builder()
-                                                                         .serviceReqReference(serviceRequestReference)
-                                                                         .fee(caseData.getGeneralAppPBADetails().getFee())
-                                                                         .build())
+                                .serviceReqReference(serviceRequestReference)
+                                .fee(caseData.getGeneralAppPBADetails().getFee())
+                                .build())
                     .build();
             }
         } catch (FeignException e) {
@@ -87,6 +87,7 @@ public class ServiceRequestCUICallbackHandler extends CallbackHandler {
     }
 
     private boolean isServiceRequestNotRequested(CaseData caseData) {
-        return isNull(caseData.getGeneralAppPBADetails()) || isNull(caseData.getGeneralAppPBADetails().getServiceReqReference());
+        return isNull(caseData.getGeneralAppPBADetails())
+                || isNull(caseData.getGeneralAppPBADetails().getServiceReqReference());
     }
 }

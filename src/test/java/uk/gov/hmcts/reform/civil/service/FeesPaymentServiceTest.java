@@ -88,7 +88,6 @@ class FeesPaymentServiceTest {
             .generalAppPBADetails(GAPbaDetails.builder().serviceReqReference("2023-1701090705688")
                                        .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
                                        .build())
-            .generalAppFee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
             .parentCaseReference("1701090368574910")
             .build();
 
@@ -117,15 +116,17 @@ class FeesPaymentServiceTest {
     @Test
     @SneakyThrows
     void shouldNotCreateGovPayPaymentUrlForMissingPbaDetails() {
-        CaseData caseData = CaseData.builder().ccdCaseReference(2801090368574910L)
-            .generalAppFee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
+        CaseData caseData = CaseData.builder().ccdCaseReference(1701090368574910L)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
+                        .build())
             .build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         assertThatThrownBy(
             () -> feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN)
         ).isInstanceOf(NullPointerException.class)
-            .hasMessage("Fee Payment details cannot be null");
+            .hasMessage("Fee Payment service request cannot be null");
 
         verify(paymentsClient, never()).createGovPayCardPaymentRequest(anyString(), anyString(), any());
     }
