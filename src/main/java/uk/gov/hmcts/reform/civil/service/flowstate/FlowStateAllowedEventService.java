@@ -151,7 +151,6 @@ public class FlowStateAllowedEventService {
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                       NO_REMISSION_HWF_GA,
                       MORE_INFORMATION_HWF_GA,
-                      FULL_REMISSION_HWF_GA,
                       MAIN_CASE_CLOSED)
         ),
 
