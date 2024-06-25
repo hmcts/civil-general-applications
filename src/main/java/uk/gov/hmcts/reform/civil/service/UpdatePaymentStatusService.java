@@ -76,7 +76,7 @@ public class UpdatePaymentStatusService {
     private CaseData updateCaseDataWithStateAndPaymentDetails(CardPaymentStatusResponse cardPaymentStatusResponse,
                                                               CaseData caseData) {
 
-        PaymentDetails pbaDetails = caseData.getGeneralAppPaymentDetails();
+        PaymentDetails pbaDetails = caseData.getGeneralAppPBADetails().getPaymentDetails();
 
         PaymentDetails paymentDetails = ofNullable(pbaDetails)
             .map(PaymentDetails::toBuilder)
@@ -88,7 +88,8 @@ public class UpdatePaymentStatusService {
             .build();
 
         return caseData.toBuilder()
-            .generalAppPaymentDetails(paymentDetails)
+            .generalAppPBADetails(caseData.getGeneralAppPBADetails()
+                    .toBuilder().paymentDetails(paymentDetails).build())
             .build();
     }
 

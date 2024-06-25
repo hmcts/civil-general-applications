@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
 
@@ -57,9 +58,9 @@ class UpdatePaymentStatusServiceTest {
                                  .status(BusinessProcessStatus.READY)
                                  .camundaEvent(BUSINESS_PROCESS)
                                  .build())
-            .generalAppPaymentDetails(PaymentDetails.builder()
-                                          .customerReference("RC-1604-0739-2145-4711")
-                                          .build())
+            .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
+                    .customerReference("RC-1604-0739-2145-4711")
+                    .build()).build())
             .build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 

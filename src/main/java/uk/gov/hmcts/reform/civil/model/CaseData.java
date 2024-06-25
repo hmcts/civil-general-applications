@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
@@ -50,6 +51,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
@@ -310,11 +312,11 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
-    private final String serviceRequestReference;
-    private final Fee generalAppFee;
-    private final PaymentDetails generalAppPaymentDetails;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
+    private final FeeType hwfFeeType;
+    private final HelpWithFeesDetails gaHwfDetails;
+    private final HelpWithFeesDetails additionalHwfDetails;
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
