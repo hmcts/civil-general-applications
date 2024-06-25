@@ -15,9 +15,9 @@ public class HwFFeeTypeServiceTest {
     void updateFeeType_shouldSetAdditionalFeeType_whenCaseStateIsApplicationAddPayment() {
         // Arrange
         CaseData caseData = CaseData.builder()
-            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-            .generalAppHelpWithFees(HelpWithFees.builder().build())
-            .build();
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .build();
 
         // Act
         CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
@@ -30,9 +30,9 @@ public class HwFFeeTypeServiceTest {
     void updateFeeType_shouldSetApplicationFeeType_whenCaseStateIsNotApplicationAddPayment() {
         // Arrange
         CaseData caseData = CaseData.builder()
-            .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
-            .generalAppHelpWithFees(HelpWithFees.builder().build())
-            .build();
+                .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .build();
 
         // Act
         CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
@@ -45,8 +45,8 @@ public class HwFFeeTypeServiceTest {
     void updateFeeType_shouldNotChangeFeeType_whenGeneralAppHelpWithFeesIsNull() {
         // Arrange
         CaseData caseData = CaseData.builder()
-            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-            .build();
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .build();
 
         // Act
         CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);

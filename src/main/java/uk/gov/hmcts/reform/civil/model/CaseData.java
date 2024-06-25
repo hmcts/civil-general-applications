@@ -53,6 +53,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
@@ -318,6 +319,8 @@ public class CaseData implements MappableObject {
     private final FeeType hwfFeeType;
     private final HelpWithFeesDetails gaHwfDetails;
     private final HelpWithFeesDetails additionalHwfDetails;
+    private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
+    private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
