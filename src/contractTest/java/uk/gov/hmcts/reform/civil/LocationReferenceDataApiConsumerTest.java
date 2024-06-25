@@ -35,19 +35,19 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
     @Autowired
     private LocationReferenceDataApiClient locationReferenceDataApiClient;
 
-    @Pact(consumer = "civil-service")
+    @Pact(consumer = "civil-general-applications")
     public RequestResponsePact getCourtVenueByName(PactDslWithProvider builder)
         throws JSONException, IOException {
         return buildCourtVenueByNameResponsePact(builder);
     }
 
-    @Pact(consumer = "civil-service")
+    @Pact(consumer = "civil-general-applications")
     public RequestResponsePact getCourtVenueByEpimmsId(PactDslWithProvider builder)
         throws JSONException, IOException {
         return buildCourtVenueByEpimmsIdResponsePact(builder);
     }
 
-    @Pact(consumer = "civil-service")
+    @Pact(consumer = "civil-general-applications")
     public RequestResponsePact getCourtVenue(PactDslWithProvider builder)
         throws JSONException, IOException {
         return buildCourtVenueResponsePact(builder);
