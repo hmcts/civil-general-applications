@@ -27,8 +27,6 @@ import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 import uk.gov.hmcts.reform.civil.model.EventSubmissionParams;
 
 import static java.util.Collections.emptyList;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-import java.util.List;
 
 @Tag(name = "Cases Controller")
 @Slf4j
@@ -51,7 +49,7 @@ public class CasesController {
         log.info("Received getCaseList");
 
         Query query = new Query(QueryBuilders
-                                    .wrapperQuery(searchString), emptyList(), 0);
+                .wrapperQuery(searchString), emptyList(), 0);
         SearchResult claims = coreCaseDataService.searchGeneralApplication(query, authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
     }
@@ -61,12 +59,12 @@ public class CasesController {
     })
     @Operation(summary = "get case by id from CCD")
     public ResponseEntity<CaseDetails> getCaseId(
-        @PathVariable("caseId") Long caseId,
-        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
+            @PathVariable("caseId") Long caseId,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
     ) {
         log.info(
-            "Received CaseId: {}",
-            caseId
+                "Received CaseId: {}",
+                caseId
         );
 
         var caseDetailsResponse = coreCaseDataService.getCase(caseId, authorisation);
@@ -80,34 +78,21 @@ public class CasesController {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "401", description = "Not Authorized")})
     public ResponseEntity<CaseDetails> submitEvent(
-        @PathVariable("submitterId") String submitterId,
-        @PathVariable("caseId") String caseId,
-        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-        @RequestBody EventDto eventDto
+            @PathVariable("submitterId") String submitterId,
+            @PathVariable("caseId") String caseId,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+            @RequestBody EventDto eventDto
     ) {
         EventSubmissionParams params = EventSubmissionParams
-            .builder()
-            .authorisation(authorization)
-            .caseId(caseId)
-            .userId(submitterId)
-            .event(eventDto.getEvent())
-            .updates(eventDto.getCaseDataUpdate())
-            .build();
+                .builder()
+                .authorisation(authorization)
+                .caseId(caseId)
+                .userId(submitterId)
+                .event(eventDto.getEvent())
+                .updates(eventDto.getCaseDataUpdate())
+                .build();
         CaseDetails caseDetails = caseEventService.submitEvent(params);
         return new ResponseEntity<>(caseDetails, HttpStatus.OK);
-    }
-
-    @GetMapping(path = "/{caseId}/applications")
-    @Operation(summary = "get list of the applications with given civil case id from CCD")
-    public ResponseEntity<SearchResult> getCaseApplications(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
-                                                            @PathVariable("caseId") String caseId) {
-
-        SearchResult claims = coreCaseDataService.searchGeneralApplication(new Query(
-            matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
-            List.of("data.applicationTypes"),
-            0
-        ), authorization);
-        return new ResponseEntity<>(claims, HttpStatus.OK);
     }
 
 }

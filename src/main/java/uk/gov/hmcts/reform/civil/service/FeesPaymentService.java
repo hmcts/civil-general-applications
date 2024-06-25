@@ -82,7 +82,7 @@ public class FeesPaymentService {
 
         } catch (Exception e) {
 
-            log.error("Update payment status failed for claim [{}]", caseReference);
+            log.error("Update payment status failed for application [{}]", caseReference);
         }
 
         return response.build();

@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 
 @Slf4j
 @Service
@@ -49,7 +49,7 @@ public class UpdatePaymentStatusService {
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
             caseReference,
-            CITIZEN_GENERAL_APP_PAYMENT
+            INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT
         );
 
         CaseDataContent caseDataContent = buildCaseDataContent(
