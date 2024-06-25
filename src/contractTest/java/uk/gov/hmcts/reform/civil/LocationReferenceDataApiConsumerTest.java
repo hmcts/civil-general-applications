@@ -7,7 +7,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.RequestResponsePact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import org.apache.http.HttpStatus;
-import org.json.JSONException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +16,6 @@ import org.springframework.test.context.TestPropertySource;
 import uk.gov.hmcts.reform.civil.client.LocationReferenceDataApiClient;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 
-import java.io.IOException;
 import java.util.List;
 
 import static au.com.dius.pact.consumer.dsl.LambdaDsl.newJsonArray;
@@ -36,20 +34,17 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
     private LocationReferenceDataApiClient locationReferenceDataApiClient;
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getCourtVenueByName(PactDslWithProvider builder)
-        throws JSONException, IOException {
+    public RequestResponsePact getCourtVenueByName(PactDslWithProvider builder) {
         return buildCourtVenueByNameResponsePact(builder);
     }
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getCourtVenueByEpimmsId(PactDslWithProvider builder)
-        throws JSONException, IOException {
+    public RequestResponsePact getCourtVenueByEpimmsId(PactDslWithProvider builder) {
         return buildCourtVenueByEpimmsIdResponsePact(builder);
     }
 
     @Pact(consumer = "civil-general-applications")
-    public RequestResponsePact getCourtVenue(PactDslWithProvider builder)
-        throws JSONException, IOException {
+    public RequestResponsePact getCourtVenue(PactDslWithProvider builder) {
         return buildCourtVenueResponsePact(builder);
     }
 
@@ -98,7 +93,7 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
         );
     }
 
-    private RequestResponsePact buildCourtVenueResponsePact(PactDslWithProvider builder) throws IOException {
+    private RequestResponsePact buildCourtVenueResponsePact(PactDslWithProvider builder) {
         return builder
             .given("There are court locations to be returned")
             .uponReceiving("a location request")
@@ -116,7 +111,7 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
             .toPact();
     }
 
-    private RequestResponsePact buildCourtVenueByNameResponsePact(PactDslWithProvider builder) throws IOException {
+    private RequestResponsePact buildCourtVenueByNameResponsePact(PactDslWithProvider builder) {
         return builder
             .given("There are court locations to be returned")
             .uponReceiving("a location request")
@@ -131,7 +126,7 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
             .toPact();
     }
 
-    private RequestResponsePact buildCourtVenueByEpimmsIdResponsePact(PactDslWithProvider builder) throws IOException {
+    private RequestResponsePact buildCourtVenueByEpimmsIdResponsePact(PactDslWithProvider builder) {
         return builder
             .given("There are court locations to be returned")
             .uponReceiving("a location request")
