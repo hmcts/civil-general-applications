@@ -6,6 +6,9 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class HwFFeeTypeService {
 
@@ -30,6 +33,22 @@ public class HwFFeeTypeService {
         if (Objects.nonNull(caseData.getGeneralAppPBADetails())
                 && Objects.nonNull(caseData.getGeneralAppPBADetails().getFee())) {
             return caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public static BigDecimal getGaRemissionAmount(CaseData caseData) {
+        if (Objects.nonNull(caseData.getGaHwfDetails())
+                && Objects.nonNull(caseData.getGaHwfDetails().getRemissionAmount())) {
+            return caseData.getGaHwfDetails().getRemissionAmount();
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public static BigDecimal getAdditionalRemissionAmount(CaseData caseData) {
+        if (Objects.nonNull(caseData.getAdditionalHwfDetails())
+                && Objects.nonNull(caseData.getAdditionalHwfDetails().getRemissionAmount())) {
+            return caseData.getAdditionalHwfDetails().getRemissionAmount();
         }
         return BigDecimal.ZERO;
     }

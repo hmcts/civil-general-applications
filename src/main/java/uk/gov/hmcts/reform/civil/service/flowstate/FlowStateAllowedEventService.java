@@ -38,6 +38,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
@@ -85,6 +86,7 @@ public class FlowStateAllowedEventService {
                       NO_REMISSION_HWF_GA,
                       MORE_INFORMATION_HWF_GA,
                       FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
                       MAIN_CASE_CLOSED)
         ),
 
@@ -152,6 +154,7 @@ public class FlowStateAllowedEventService {
                       NO_REMISSION_HWF_GA,
                       MORE_INFORMATION_HWF_GA,
                       FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
                       MAIN_CASE_CLOSED)
         ),
 
