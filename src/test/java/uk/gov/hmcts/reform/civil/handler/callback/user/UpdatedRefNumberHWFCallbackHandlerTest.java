@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 
 @SpringBootTest(classes = {
     UpdatedRefNumberHWFCallbackHandler.class,
@@ -64,6 +65,42 @@ public class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerT
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+        }
+    }
+
+    @Nested
+    class AboutToSubmit {
+
+        private static final String NEW_HWF_REF_NUMBER = "new_hwf_ref_number";
+
+        @Test
+        void shouldUpdateRefNumber_forApplicationHwf() {
+            CaseData caseData = CaseData.builder()
+                .hwfFeeType(FeeType.APPLICATION)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .gaHwfDetails(HelpWithFeesDetails.builder()
+                                  .hwfReferenceNumber(NEW_HWF_REF_NUMBER).build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()).isEqualTo(NEW_HWF_REF_NUMBER);
+            assertThat(responseCaseData.getGaHwfDetails().getHwfReferenceNumber()).isNull();
+        }
+
+        @Test
+        void shouldUpdateRefNumber_forAdditionalHwf() {
+            CaseData caseData = CaseData.builder()
+                .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .additionalHwfDetails(HelpWithFeesDetails.builder()
+                                  .hwfReferenceNumber(NEW_HWF_REF_NUMBER).build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()).isEqualTo(NEW_HWF_REF_NUMBER);
+            assertThat(responseCaseData.getAdditionalHwfDetails().getHwfReferenceNumber()).isNull();
         }
     }
 }

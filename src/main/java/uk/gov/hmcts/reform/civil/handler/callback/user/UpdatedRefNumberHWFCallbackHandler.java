@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 @Service
@@ -52,8 +54,38 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
 
     private CallbackResponse updatedRefNumberHWF(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        CaseData updatedCaseData = updateHwFReference(caseData);
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseData.toMap(objectMapper))
+            .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    private CaseData updateHwFReference(CaseData caseData) {
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder();
+        if (caseData.isHWFTypeApplication()) {
+            String newRefNumber = getHwFNewReferenceNumber(caseData.getGaHwfDetails());
+            ofNullable(caseData.getGeneralAppHelpWithFees())
+                .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
+            if (caseData.getGaHwfDetails() != null) {
+                updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+            }
+            return updatedData.build();
+        }
+        if (caseData.isHWFTypeAdditional()) {
+            String newRefNumber = getHwFNewReferenceNumber(caseData.getAdditionalHwfDetails());
+            ofNullable(caseData.getGeneralAppHelpWithFees())
+                .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
+            if (caseData.getAdditionalHwfDetails() != null) {
+                updatedData.additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+            }
+            return updatedData.build();
+        }
+        return caseData;
+    }
+
+    private String getHwFNewReferenceNumber(HelpWithFeesDetails helpWithFeesDetails) {
+        return ofNullable(helpWithFeesDetails)
+            .map(HelpWithFeesDetails::getHwfReferenceNumber)
+            .orElse(null);
     }
 }
