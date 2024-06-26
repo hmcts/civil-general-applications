@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
@@ -46,6 +47,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_APPLICANT_NOTIF
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_GA_BUSINESS_PROCESS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_LOCATION_UPDATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VALIDATE_FEE_GASPEC;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
@@ -81,6 +83,8 @@ public class FlowStateAllowedEventService {
                       TRIGGER_LOCATION_UPDATE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       NO_REMISSION_HWF_GA,
+                      UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                      MORE_INFORMATION_HWF_GA,
                       MAIN_CASE_CLOSED)
         ),
 
@@ -146,6 +150,8 @@ public class FlowStateAllowedEventService {
                       TRIGGER_LOCATION_UPDATE,
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                       NO_REMISSION_HWF_GA,
+                      UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                      MORE_INFORMATION_HWF_GA,
                       MAIN_CASE_CLOSED)
         ),
 
