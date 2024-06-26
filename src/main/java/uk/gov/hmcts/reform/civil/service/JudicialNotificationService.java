@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 
@@ -106,6 +107,7 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
+
         if (gaForLipService.isLipApp(caseData)) {
             String isLipAppName = caseData
                     .getGeneralAppApplnSolicitor().getForename()
@@ -114,6 +116,18 @@ public class JudicialNotificationService implements NotificationData {
             customProps.put(
                     GA_LIP_RESP_NAME,
                     Objects.requireNonNull(isLipAppName)
+            );
+        } else if (gaForLipService.isLipResp(caseData)
+            && isRespondentNotificationMakeDecisionEvent(caseData)) {
+
+            String isLipRespondentName = caseData
+                .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
+                + " " + caseData
+                .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+
+            customProps.put(
+                GA_LIP_RESP_NAME,
+                Objects.requireNonNull(isLipRespondentName)
             );
         } else {
             customProps.remove(GA_LIP_RESP_NAME);
@@ -218,9 +232,13 @@ public class JudicialNotificationService implements NotificationData {
                     .formatLocalDateTime(requestForInformationDeadline, DATE) : null);
 
             if (areRespondentSolicitorsPresent(caseData)) {
+                String template = notificationProperties.getGeneralApplicationRespondentEmailTemplate();
+                if (gaForLipService.isLipResp(caseData)) {
+                    template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+                }
                 sendEmailToRespondent(
                     caseData,
-                    notificationProperties.getGeneralApplicationRespondentEmailTemplate()
+                    template
                 );
             }
             customProps.remove(GA_NOTIFICATION_DEADLINE);
@@ -305,6 +323,11 @@ public class JudicialNotificationService implements NotificationData {
                         caseData,
                         notificationProperties.getJudgeApproveOrderToStrikeOutOCMC()
                     );
+                } else if (useGaForLipTemplate(caseData)) {
+                    sendEmailToRespondent(
+                        caseData,
+                        notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                    );
                 } else {
                     sendEmailToRespondent(
                         caseData,
@@ -372,9 +395,13 @@ public class JudicialNotificationService implements NotificationData {
 
         if (solicitorType.equals(RESPONDENT)
             && isSendEmailToDefendant(caseData)) {
+            String template  = notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate();
+            if (gaForLipService.isLipResp(caseData)) {
+                template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+            }
             sendEmailToRespondent(
                     caseData,
-                    notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate()
+                    template
             );
         }
 
@@ -392,9 +419,13 @@ public class JudicialNotificationService implements NotificationData {
     private void applicationDirectionOrder(CaseData caseData, String solicitorType) {
         if (solicitorType.equals(RESPONDENT)
             && isSendEmailToDefendant(caseData)) {
+            String template = notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate();
+            if (gaForLipService.isLipResp(caseData)) {
+                template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+            }
             sendEmailToRespondent(
                     caseData,
-                    notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate()
+                    template
             );
         }
 
@@ -509,6 +540,22 @@ public class JudicialNotificationService implements NotificationData {
     public static boolean useOcmcTemplate(CaseData caseData) {
         return caseData.getGeneralAppType().getTypes().contains(STRIKE_OUT)
             && caseData.getGeneralAppSuperClaimType().equals("SPEC_CLAIM");
+    }
+
+    public boolean useGaForLipTemplate(CaseData caseData) {
+        return gaForLipService.isLipResp(caseData);
+    }
+
+    private static boolean isRespondentNotificationMakeDecisionEvent(CaseData caseData) {
+        var judicialDecision = Optional.ofNullable(caseData.getBusinessProcess())
+            .map(BusinessProcess::getCamundaEvent).orElse(null);
+        // Case Event should be START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION
+        return
+            Objects.nonNull(judicialDecision)
+                && caseData.getBusinessProcess().getCamundaEvent()
+                .equals("MAKE_DECISION")
+                && caseData.getBusinessProcess().getActivityId()
+                .equals("StartRespondentNotificationProcessMakeDecision");
     }
 
 }
