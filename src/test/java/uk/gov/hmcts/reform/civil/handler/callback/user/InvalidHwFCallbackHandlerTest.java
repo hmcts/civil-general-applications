@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @ExtendWith(MockitoExtension.class)
-public class InvalidHwFCallbackHandlerTest {
+class InvalidHwFCallbackHandlerTest {
 
     private ObjectMapper objectMapper;
     private InvalidHwFCallbackHandler handler;
@@ -37,6 +37,28 @@ public class InvalidHwFCallbackHandlerTest {
     }
 
     @Nested
+    class AboutToSubmit {
+        @Test
+        void shouldSubmit_InvalidHwFEvent() {
+            CaseData caseData = CaseData.builder()
+                .ccdState(AWAITING_RESPONDENT_RESPONSE)
+                .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
+
+            CallbackParams params = CallbackParams.builder()
+                .type(CallbackType.ABOUT_TO_SUBMIT)
+                .caseData(caseData)
+                .build();
+
+            AboutToStartOrSubmitCallbackResponse response =
+                (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData).isNotNull();
+        }
+    }
+
+    @Nested
     class AboutToStart {
         @Test
         void shouldSetUpDefaultData_WhileHwfFeeTypeIsBlank() {
@@ -49,7 +71,8 @@ public class InvalidHwFCallbackHandlerTest {
                 .caseData(caseData)
                 .build();
 
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            AboutToStartOrSubmitCallbackResponse response =
+                (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
@@ -66,7 +89,8 @@ public class InvalidHwFCallbackHandlerTest {
                 .caseData(caseData)
                 .build();
 
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            AboutToStartOrSubmitCallbackResponse response =
+                (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
