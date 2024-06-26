@@ -84,7 +84,7 @@ public class FlowStateAllowedEventService {
                       REFER_TO_LEGAL_ADVISOR,
                       TRIGGER_LOCATION_UPDATE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
-                      NO_REMISSION_HWF_GA
+                      NO_REMISSION_HWF_GA,
                       INVALID_HWF_REFERENCE_GA,
                       UPDATE_HELP_WITH_FEE_NUMBER_GA,
                       MORE_INFORMATION_HWF_GA,

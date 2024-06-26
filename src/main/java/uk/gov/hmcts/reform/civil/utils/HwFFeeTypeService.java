@@ -25,7 +25,6 @@ public class HwFFeeTypeService {
         return caseDataBuilder;
     }
 
-
     public static BigDecimal getCalculatedFeeInPence(CaseData caseData) {
         if (Objects.nonNull(caseData.getGeneralAppPBADetails())
                 && Objects.nonNull(caseData.getGeneralAppPBADetails().getFee())) {
