@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 import java.math.BigDecimal;
 
 public class HwFFeeTypeServiceTest {
@@ -24,7 +23,7 @@ public class HwFFeeTypeServiceTest {
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
                 .build();
-      
+
         // Act
         CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
 
