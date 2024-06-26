@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -320,6 +321,16 @@ public class CaseData implements MappableObject {
     private final HelpWithFeesDetails additionalHwfDetails;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
+
+    @JsonIgnore
+    public boolean isHWFTypeApplication() {
+        return getHwfFeeType() == FeeType.APPLICATION;
+    }
+
+    @JsonIgnore
+    public boolean isHWFTypeAdditional() {
+        return getHwfFeeType() == FeeType.ADDITIONAL;
+    }
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
