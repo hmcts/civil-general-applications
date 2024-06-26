@@ -10,13 +10,12 @@ import java.util.Objects;
 public class HwFFeeTypeService {
 
     private HwFFeeTypeService() {
-
     }
 
     public static CaseData.CaseDataBuilder updateFeeType(CaseData caseData) {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
-                && Objects.isNull(caseData.getHwfFeeType())) {
+            && Objects.isNull(caseData.getHwfFeeType())) {
             if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
                 caseDataBuilder.hwfFeeType(FeeType.ADDITIONAL);
             } else {
