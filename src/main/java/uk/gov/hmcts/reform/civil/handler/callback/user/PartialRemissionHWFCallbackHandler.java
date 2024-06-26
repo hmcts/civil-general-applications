@@ -9,7 +9,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
-import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
@@ -22,21 +21,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class PartialRemissionHWFCallbackHandler extends CallbackHandler {
+public class PartialRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
     private static final List<CaseEvent> EVENTS = List.of(PARTIAL_REMISSION_HWF_GA);
     public static final String ERR_MSG_REMISSION_AMOUNT_LESS_THAN_GA_FEE = "Remission amount must be less than application fee";
     public static final String ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ADDITIONAL_FEE = "Remission amount must be less than additional application fee";
     public static final String ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ZERO = "Remission amount must be greater than zero";
-
-    private final ObjectMapper objectMapper;
 
     private final Map<String, Callback> callbackMap = Map.of(
         callbackKey(ABOUT_TO_START), this::setData,
@@ -46,22 +41,13 @@ public class PartialRemissionHWFCallbackHandler extends CallbackHandler {
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
 
+    public PartialRemissionHWFCallbackHandler(ObjectMapper objectMapper) {
+        super(objectMapper, EVENTS);
+    }
+
     @Override
     protected Map<String, Callback> callbacks() {
         return callbackMap;
-    }
-
-    @Override
-    public List<CaseEvent> handledEvents() {
-        return EVENTS;
-    }
-
-    private CallbackResponse setData(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
-        return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(caseDataBuilder.build().toMap(objectMapper))
-                .build();
     }
 
     private CallbackResponse validateRemissionAmount(CallbackParams callbackParams) {
