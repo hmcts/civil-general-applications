@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
-import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -84,7 +83,6 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     @Test
     @PactTestFor(pactMethod = "getFeeForAdditionalValue")
     public void verifyFeeForAdditionalValue() {
-
 
         Fee fee =
             generalAppFeesService.getFeeForGA(
