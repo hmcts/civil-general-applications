@@ -1575,6 +1575,9 @@ class JudicialApplicantNotificationServiceTest {
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
             .generalAppApplnSolicitor(isLipApp.equals(YES) ? lip : lr)
             .isGaApplicantLip(isLipApp)
+            .applicantPartyName("App")
+            .claimant1PartyName("CL")
+            .defendant1PartyName("DEF")
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(CASE_REFERENCE.toString()).build())
@@ -1598,7 +1601,8 @@ class JudicialApplicantNotificationServiceTest {
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
-                NotificationData.GA_LIP_RESP_NAME, "LipF LipS"
+                NotificationData.GA_LIP_RESP_NAME, "App",
+                NotificationData.CASE_TITLE, "CL v DEF"
         );
     }
 
