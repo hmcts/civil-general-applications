@@ -13,10 +13,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-import uk.gov.hmcts.reform.civil.client.FeesApiClient;
+import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,7 +44,10 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     public static final String HACFO_ON_NOTICE_KEYWORD = "HACFOOnNotice";
 
     @Autowired
-    private FeesApiClient feesApiClient;
+    private GeneralAppFeesService generalAppFeesService;
+
+    @Autowired
+    private GeneralAppFeesConfiguration feesConfiguration;
 
     @Pact(consumer = "civil_general_applications")
     public RequestResponsePact getFeeForAdditionalValue(PactDslWithProvider builder) {
@@ -76,62 +85,49 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     @PactTestFor(pactMethod = "getFeeForAdditionalValue")
     public void verifyFeeForAdditionalValue() {
 
-        FeeLookupResponseDto fee = feesApiClient.lookupFee(
-            SERVICE_GENERAL,
-            JURISDICTION_CIVIL,
-            JURISDICTION_CIVIL,
-            CHANNEL,
-            GENERAL_APP_EVENT,
-            HACFO_ON_NOTICE_KEYWORD
-        );
+
+        Fee fee =
+            generalAppFeesService.getFeeForGA(
+                feesConfiguration.getApplicationUncloakAdditionalFee(), null, null);
         assertThat(fee.getCode(), is(equalTo("FEE0011")));
-        assertThat(fee.getFeeAmount(), is(equalTo(new BigDecimal(10.00))));
+        assertThat(fee.getCalculatedAmountInPence(), is(equalTo(new BigDecimal(1000))));
     }
 
     @Test
     @PactTestFor(pactMethod = "getFeeForAppToVaryOrSuspend")
     public void verifyFeeForAppToVaryOrSuspend() {
+        Fee fee = generalAppFeesService.getFeeForGA(
+            CaseData.builder().generalAppType(
+                    GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
+                        .build())
+                .build());
 
-        FeeLookupResponseDto fee = feesApiClient.lookupFee(
-            "other",
-            JURISDICTION_CIVIL,
-            JURISDICTION_CIVIL,
-            CHANNEL,
-            "miscellaneous",
-            APPN_TO_VARY_KEYWORD
-        );
         assertThat(fee.getCode(), is(equalTo("FEE0013")));
-        assertThat(fee.getFeeAmount(), is(equalTo(new BigDecimal(30.00))));
+        assertThat(fee.getCalculatedAmountInPence(), is(equalTo(new BigDecimal(3000))));
     }
 
     @Test
     @PactTestFor(pactMethod = "getFeeForConsentWithOrWithout")
     public void verifyFeeForConsentWithOrWithout() {
-        FeeLookupResponseDto fee = feesApiClient.lookupFee(
-            SERVICE_GENERAL,
-            JURISDICTION_CIVIL,
-            JURISDICTION_CIVIL,
-            CHANNEL,
-            GENERAL_APP_EVENT,
-            CONSENT_WITHWITHOUT_NOTICE_KEYWORD
-        );
+        Fee fee = generalAppFeesService.getFeeForGA(
+            CaseData.builder().generalAppType(
+                    GAApplicationType.builder().types(List.of(GeneralApplicationTypes.SETTLE_BY_CONSENT))
+                        .build())
+                .build());
         assertThat(fee.getCode(), is(equalTo("FEE0012")));
-        assertThat(fee.getFeeAmount(), is(equalTo(new BigDecimal(20.00))));
+        assertThat(fee.getCalculatedAmountInPence(), is(equalTo(new BigDecimal(2000))));
     }
 
     @Test
     @PactTestFor(pactMethod = "getFeeForWithNotice")
     public void verifyFeeForWithNotice() {
-        FeeLookupResponseDto fee = feesApiClient.lookupFee(
-            SERVICE_GENERAL,
-            JURISDICTION_CIVIL,
-            JURISDICTION_CIVIL,
-            CHANNEL,
-            GENERAL_APP_EVENT,
-            WITH_NOTICE_KEYWORD
-        );
+        Fee fee = generalAppFeesService.getFeeForGA(
+            CaseData.builder().generalAppType(
+                    GAApplicationType.builder().types(List.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT))
+                        .build())
+                .build());
         assertThat(fee.getCode(), is(equalTo("FEE0012")));
-        assertThat(fee.getFeeAmount(), is(equalTo(new BigDecimal(20.00))));
+        assertThat(fee.getCalculatedAmountInPence(), is(equalTo(new BigDecimal(2000))));
     }
 
     private RequestResponsePact buildGenAppFeeRequestResponsePact(PactDslWithProvider builder, String uponReceiving,
