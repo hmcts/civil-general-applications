@@ -242,6 +242,7 @@ ccd:
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+        UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CIVIL
       keyVaults: []
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
 
