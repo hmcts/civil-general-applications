@@ -1,16 +1,20 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -21,11 +25,14 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -42,6 +49,11 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
 
     @Autowired
     private GeneralApplicationAfterPaymentCallbackHandler handler;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private GaForLipService gaForLipService;
 
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
@@ -51,9 +63,34 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
     void shouldTriggerTheEventAndAboutToSubmit() {
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(false);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-        assertThat(response.getErrors()).isNull();
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.name());
+    }
+
+    @Test
+    void shouldTriggerTheEventAndAboutToSubmitWithoutBusinessProcess() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        caseData = addPaymentStatusToGAPbaDetails(caseData, PaymentStatus.FAILED);
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getBusinessProcess()).isNull();
+    }
+
+    @Test
+    void shouldTriggerTheEventAndAboutToSubmitWithBusinessProcess() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        caseData = addPaymentStatusToGAPbaDetails(caseData, PaymentStatus.SUCCESS);
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.name());
     }
 
     @Test
@@ -93,6 +130,20 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
+            .build();
+    }
+
+    private CaseData addPaymentStatusToGAPbaDetails(CaseData caseData, PaymentStatus status) {
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        GAPbaDetails.GAPbaDetailsBuilder pbaDetailsBuilder;
+        pbaDetailsBuilder = pbaDetails == null ? GAPbaDetails.builder() : pbaDetails.toBuilder();
+
+        PaymentDetails paymentDetails = PaymentDetails.builder()
+            .status(status)
+            .build();
+        pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
+        return caseData.toBuilder()
+            .generalAppPBADetails(pbaDetails)
             .build();
     }
 }
