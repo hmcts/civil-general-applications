@@ -9,6 +9,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.user.PartialRemissionHW
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -64,7 +65,7 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
                     .hwfFeeType(FeeType.APPLICATION)
                     .build();
 
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            CallbackParams params = callbackParamsOf(caseData, CaseEvent.PARTIAL_REMISSION_HWF_GA, CallbackType.ABOUT_TO_SUBMIT);
             //When
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -88,7 +89,7 @@ public class PartialRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerT
                             .build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .build();
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            CallbackParams params = callbackParamsOf(caseData, CaseEvent.PARTIAL_REMISSION_HWF_GA, CallbackType.ABOUT_TO_SUBMIT);
 
             //When
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
