@@ -50,6 +50,7 @@ java:
     SOME_ENV_VARIABLE: true
     DOCUMENT_MANAGEMENT_SECURED: false
     GA_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service
+    CUI_URL: https://civil-citizen-ui.{{ .Values.global.environment }}.platform.hmcts.net
 
   keyVaults:
     civil:
