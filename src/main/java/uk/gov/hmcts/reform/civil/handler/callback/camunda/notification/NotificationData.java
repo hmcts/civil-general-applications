@@ -16,6 +16,7 @@ public interface NotificationData {
     String GA_HEARING_DATE = "hearingDate";
     String GA_HEARING_TIME = "hearingTime";
     String GA_LIP_RESP_NAME = "respondentName";
+    String CASE_TITLE = "ClaimantvDefendant";
 
     Map<String, String> addProperties(CaseData caseData);
 
