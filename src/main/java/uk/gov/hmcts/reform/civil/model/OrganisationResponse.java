@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Organisation {
+public class OrganisationResponse {
 
     private String companyNumber;
     private String companyUrl;
