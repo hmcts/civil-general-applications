@@ -46,6 +46,10 @@ spring:
             client-id: internal
             client-secret: internal
 
+location:
+  api:
+    baseUrl: ${GENAPP_LRD_URL:http://localhost:6669}
+
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
 
@@ -162,6 +166,12 @@ os-postcode-lookup:
 stitching:
   api:
     url: http://localhost:8084/api/stitch-ccd-bundles
+
+court-location:
+  specified-claim:
+    epimms-id: "420219"
+  unspecified-claim:
+    epimms-id: "192280"
 
 launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:}
@@ -310,7 +320,7 @@ document_management:
 
 docmosis:
   tornado:
-    url: http://fake-docmosis-api
+    url: http://localhost:6660
     key: fake-key
 
 feign:
@@ -332,7 +342,7 @@ testing:
 
 rd_professional:
   api:
-    url: http://fake-prd-api
+    url: http://localhost:6665
 
 sendgrid:
   api-key: fake-key
