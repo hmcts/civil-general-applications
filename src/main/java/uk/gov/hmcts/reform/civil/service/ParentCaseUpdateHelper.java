@@ -743,8 +743,8 @@ public class ParentCaseUpdateHelper {
                 .toList();
 
             return civilCaseList.stream().filter(civilDocument -> gaCaseList
-               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
-                   .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
+               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink().getDocumentUrl()
+                   .equals(civilDocument.getValue().getDocumentLink().getDocumentUrl()))).toList().size();
         } else {
             List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
                    .map(element -> (Element<Document>) element)

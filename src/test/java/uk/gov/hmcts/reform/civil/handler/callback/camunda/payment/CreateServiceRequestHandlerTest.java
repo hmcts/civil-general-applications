@@ -119,9 +119,21 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldThrow_whenPaymentServiceFailed() {
+            var ex = Mockito.mock(FeignException.class);
+            Mockito.when(ex.status()).thenReturn(404);
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenThrow(ex);
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            assertThat(response.getErrors().size())
+                .isEqualTo(1);
+        }
+
+        @Test
         void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
             when(paymentsService.createServiceRequest(any(), any()))
-                .thenReturn(PaymentServiceResponse.builder()
+                .thenReturn(paymentServiceResponse.builder()
                                 .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
             caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
@@ -133,18 +145,6 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(FREE_PAYMENT_REFERENCE);
             PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
             assertThat(paymentDetails).isNull();
-        }
-
-        @Test
-        void shouldThrow_whenPaymentServiceFailed() {
-            var ex = Mockito.mock(FeignException.class);
-            Mockito.when(ex.status()).thenReturn(404);
-            when(paymentsService.createServiceRequest(any(), any()))
-                .thenThrow(ex);
-            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            assertThat(response.getErrors().size())
-                .isEqualTo(1);
         }
 
         @Test

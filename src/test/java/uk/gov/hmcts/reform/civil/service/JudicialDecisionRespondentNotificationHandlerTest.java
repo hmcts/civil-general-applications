@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -56,6 +57,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 @SpringBootTest(classes = {
     JudicialNotificationService.class,
     JacksonAutoConfiguration.class,
+    GaForLipService.class
 })
 public class JudicialDecisionRespondentNotificationHandlerTest {
 
@@ -81,6 +83,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private static final String RESPONDENT = "respondent";
 
@@ -97,6 +101,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
     @BeforeEach
     void setup() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
