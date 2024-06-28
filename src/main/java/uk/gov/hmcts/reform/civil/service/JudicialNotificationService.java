@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -44,6 +45,7 @@ public class JudicialNotificationService implements NotificationData {
     private static final int NUMBER_OF_DEADLINE_DAYS = 5;
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final GaForLipService gaForLipService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final JudicialDecisionHelper judicialDecisionHelper;
@@ -105,6 +107,21 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
+        if (gaForLipService.isLipApp(caseData)) {
+            String isLipAppName = caseData.getApplicantPartyName();
+            customProps.put(
+                    GA_LIP_RESP_NAME,
+                    Objects.requireNonNull(isLipAppName)
+            );
+            String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
+            customProps.put(
+                    CASE_TITLE,
+                    Objects.requireNonNull(caseTitle)
+            );
+        } else {
+            customProps.remove(GA_LIP_RESP_NAME);
+            customProps.remove(CASE_TITLE);
+        }
         return customProps;
     }
 
@@ -220,11 +237,15 @@ public class JudicialNotificationService implements NotificationData {
             if (solicitorType.equals(APPLICANT)
                     && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-
+                String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
+                if (gaForLipService.isLipApp(caseData)) {
+                    template = notificationProperties
+                            .getLipGeneralAppRespondentEmailTemplate();
+                }
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
-                    notificationProperties.getJudgeUncloakApplicationEmailTemplate()
+                        template
                 );
             }
         } else {
