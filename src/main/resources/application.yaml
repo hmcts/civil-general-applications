@@ -18,6 +18,8 @@ management:
     case-document-am-api:
       enabled: true
 spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/civil/","optional:configtree:/mnt/secrets/civil-gen-apps/"
   application:
     name: civil-general-applications
   main:
