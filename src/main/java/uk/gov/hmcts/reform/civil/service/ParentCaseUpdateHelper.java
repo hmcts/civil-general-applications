@@ -173,6 +173,9 @@ public class ParentCaseUpdateHelper {
                 List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
                     .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .toList();
+                Optional<Element<GeneralApplication>> newApplicationElement = civilGeneralApplications.stream()
+                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                    .findFirst();
 
                 GeneralApplication generalApplication = civilGeneralApplications.stream()
                     .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
@@ -181,7 +184,7 @@ public class ParentCaseUpdateHelper {
                     .getValue();
 
                 civilGeneralApplications =
-                    addApplication(buildGeneralApplication(generalApplication), generalApplicationsList);
+                    addApplication(newApplicationElement, buildGeneralApplication(generalApplication), generalApplicationsList);
 
             }
         }
@@ -832,12 +835,22 @@ public class ParentCaseUpdateHelper {
         return applicationBuilder.build();
     }
 
-    private List<Element<GeneralApplication>> addApplication(GeneralApplication application,
+    private List<Element<GeneralApplication>> addApplication(Optional<Element<GeneralApplication>> newApplicationElement,
+                                                             GeneralApplication application,
                                                              List<Element<GeneralApplication>>
                                                                  generalApplicationsList) {
         List<Element<GeneralApplication>> newApplication = newArrayList();
         newApplication.addAll(generalApplicationsList);
-        newApplication.add(element(application));
+        Element<GeneralApplication> elementToAdd;
+        if (newApplicationElement.isPresent()) {
+            elementToAdd = Element.<GeneralApplication>builder()
+                .id(newApplicationElement.get().getId())
+                .value(application)
+                .build();
+        } else {
+            elementToAdd = element(application);
+        }
+        newApplication.add(elementToAdd);
 
         return newApplication;
     }
