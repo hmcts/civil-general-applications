@@ -10,10 +10,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.civil.client.OrganisationApi;
 import uk.gov.hmcts.reform.civil.config.PrdAdminUserConfiguration;
-import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.prd.client.OrganisationApi;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-class OrganisationServiceTest {
+class OrganisationResponseServiceTest {
 
     private static final String AUTH_TOKEN = "Bearer token";
     private static final String PRD_ADMIN_AUTH_TOKEN = "Bearer token";
@@ -39,7 +38,7 @@ class OrganisationServiceTest {
         "not found message",
         Request.create(GET, "", Map.of(), new byte[]{}, UTF_8, null),
         "not found response body".getBytes(UTF_8), Map.of());
-    private final Organisation expectedOrganisation = Organisation.builder()
+    private final OrganisationResponse expectedOrganisationResponse = OrganisationResponse.builder()
         .organisationIdentifier(ORG_ID)
         .build();
 
@@ -50,7 +49,7 @@ class OrganisationServiceTest {
     private AuthTokenGenerator authTokenGenerator;
 
     @Mock
-    private IdamClient idamClient;
+    private UserService userService;
 
     @Mock
     private PrdAdminUserConfiguration userConfig;
@@ -60,23 +59,23 @@ class OrganisationServiceTest {
 
     @BeforeEach
     void setUp() {
-        given(organisationApi.findUserOrganisation(any(), any())).willReturn(expectedOrganisation);
-        given(organisationApi.findOrganisationById(any(), any(), any())).willReturn(expectedOrganisation);
-        given(organisationApi.findOrganisationByUserId(any(), any(), any())).willReturn(expectedOrganisation);
+        given(organisationApi.findUserOrganisation(any(), any())).willReturn(expectedOrganisationResponse);
+        given(organisationApi.findOrganisationById(any(), any(), any())).willReturn(expectedOrganisationResponse);
+        given(organisationApi.findOrganisationByUserId(any(), any(), any())).willReturn(expectedOrganisationResponse);
         given(authTokenGenerator.generate()).willReturn(SERVICE_AUTH_TOKEN);
-        when(idamClient.getAccessToken(userConfig.getUsername(), userConfig.getPassword())).thenReturn(
+        when(userService.getAccessToken(userConfig.getUsername(), userConfig.getPassword())).thenReturn(
             PRD_ADMIN_AUTH_TOKEN);
     }
 
     @Nested
-    class FindOrganisation {
+    class FindOrganisationResponse {
 
         @Test
         void shouldReturnOrganisation_whenInvoked() {
             var organisation = organisationService.findOrganisation(AUTH_TOKEN);
 
             verify(organisationApi).findUserOrganisation(AUTH_TOKEN, SERVICE_AUTH_TOKEN);
-            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisation));
+            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisationResponse));
         }
 
         @Test
@@ -90,15 +89,15 @@ class OrganisationServiceTest {
     }
 
     @Nested
-    class FindOrganisationById {
+    class FindOrganisationByIdResponse {
 
         @Test
         void shouldReturnOrganisation_whenInvoked() {
             var organisation = organisationService.findOrganisationById(ORG_ID);
 
-            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
             verify(organisationApi).findOrganisationById(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, ORG_ID);
-            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisation));
+            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisationResponse));
         }
 
         @Test
@@ -106,21 +105,21 @@ class OrganisationServiceTest {
             given(organisationApi.findOrganisationById(any(), any(), any())).willThrow(notFoundFeignException);
             var organisation = organisationService.findOrganisationById(ORG_ID);
 
-            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
             verify(organisationApi).findOrganisationById(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, ORG_ID);
             assertThat(organisation).isEmpty();
         }
     }
 
     @Nested
-    class FindOrganisationByUserId {
+    class FindOrganisationByUserIdResponse {
         @Test
         void shouldReturnOrganisation_whenInvoked() {
             var organisation = organisationService.findOrganisationByUserId(USER_ID);
 
-            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
             verify(organisationApi).findOrganisationByUserId(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID);
-            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisation));
+            assertThat(organisation).isEqualTo(Optional.of(expectedOrganisationResponse));
         }
 
         @Test
@@ -128,7 +127,7 @@ class OrganisationServiceTest {
             given(organisationApi.findOrganisationByUserId(any(), any(), any())).willThrow(notFoundFeignException);
             var organisation = organisationService.findOrganisationByUserId(USER_ID);
 
-            verify(idamClient).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
+            verify(userService).getAccessToken(userConfig.getUsername(), userConfig.getPassword());
             verify(organisationApi).findOrganisationByUserId(PRD_ADMIN_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID);
             assertThat(organisation).isEmpty();
         }

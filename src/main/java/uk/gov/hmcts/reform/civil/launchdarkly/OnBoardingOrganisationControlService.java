@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.civil.launchdarkly;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ public class OnBoardingOrganisationControlService {
     private final OrganisationService organisationService;
 
     public List<String> validateOrganisation(String userBearer) {
-        Optional<Organisation> userOrganisation = organisationService.findOrganisation(userBearer);
+        Optional<OrganisationResponse> userOrganisation = organisationService.findOrganisation(userBearer);
 
         boolean organisationOnboarded = userOrganisation
             .map(userOrg -> featureToggleService.isOrganisationOnboarded(userOrg.getOrganisationIdentifier()))

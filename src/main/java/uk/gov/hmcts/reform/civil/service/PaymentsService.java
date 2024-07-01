@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.UUID;
 
@@ -87,7 +87,7 @@ public class PaymentsService {
         FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
         var organisationId = caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
         var organisationName = organisationService.findOrganisationById(organisationId)
-            .map(Organisation::getName)
+            .map(OrganisationResponse::getName)
             .orElseThrow(RuntimeException::new);
 
         return PBAServiceRequestDTO.builder()

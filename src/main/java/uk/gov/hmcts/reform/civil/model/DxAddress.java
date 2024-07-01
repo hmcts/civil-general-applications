@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.prd.model;
+package uk.gov.hmcts.reform.civil.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SuperUser {
+public class DxAddress {
 
-    private String email;
-    private String firstName;
-    private String lastName;
+    private String dxExchange;
+    private String dxNumber;
 }

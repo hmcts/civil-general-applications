@@ -37,7 +37,8 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
 
     private static final CardPaymentServiceRequestDTO CARD_PAYMENT_SERVICE_REQUEST
         = CardPaymentServiceRequestDTO.builder()
-        .returnUrl("http://localhost:3001/general-app-payment-confirmation/1701090368574910")
+        .returnUrl("http://localhost:3001/general-application/payment-confirmation/1701090368574910/gaid/2801090368574910")
+        .language("En")
         .amount(new BigDecimal("232.00")).currency("GBP").build();
 
     @MockBean
@@ -49,17 +50,19 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
 
     @BeforeEach
     void before() {
-        CaseDetails expectedCaseDetails = CaseDetails.builder().id(1701090368574910L)
+        CaseDetails expectedCaseDetails = CaseDetails.builder().id(2801090368574910L)
             .data(Map.of(
                 "generalAppPBADetails",
                 GAPbaDetails.builder().serviceReqReference("2023-1701090705688")
                     .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
                     .build(),
                 "generalAppFee",
-                Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build()
+                Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build(),
+                "parentCaseReference",
+                "1701090368574910"
             )).build();
 
-        when(coreCaseDataService.getCase(1701090368574910L)).thenReturn(expectedCaseDetails);
+        when(coreCaseDataService.getCase(2801090368574910L)).thenReturn(expectedCaseDetails);
     }
 
     @Test
@@ -73,7 +76,7 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
             CARD_PAYMENT_SERVICE_REQUEST
         )).thenReturn(response);
 
-        doPost(BEARER_TOKEN, "", FEES_PAYMENT_REQUEST_URL, "1701090368574910")
+        doPost(BEARER_TOKEN, "", FEES_PAYMENT_REQUEST_URL, "2801090368574910")
             .andExpect(content().json(toJson(CardPaymentStatusResponse.from(response))))
             .andExpect(status().isOk());
     }
