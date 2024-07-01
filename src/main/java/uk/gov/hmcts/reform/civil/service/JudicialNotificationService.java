@@ -108,17 +108,21 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
+
+        if (gaForLipService.isGaForLip(caseData)) {
+            String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
+            customProps.put(
+                CASE_TITLE,
+                Objects.requireNonNull(caseTitle)
+            );
+        }
         if (gaForLipService.isLipApp(caseData)) {
             String isLipAppName = caseData.getApplicantPartyName();
             customProps.put(
                     GA_LIP_RESP_NAME,
                     Objects.requireNonNull(isLipAppName)
             );
-            String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
-            customProps.put(
-                    CASE_TITLE,
-                    Objects.requireNonNull(caseTitle)
-            );
+
         } else if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
 
@@ -126,7 +130,6 @@ public class JudicialNotificationService implements NotificationData {
                 .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
                 + " " + caseData
                 .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
-
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)

@@ -573,6 +573,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private CaseData caseDataForConcurrentWrittenOption() {
             return
                 CaseData.builder()
+                    .isMultiParty(NO)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .judicialDecision(GAJudicialDecision.builder()
                                           .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
@@ -607,6 +608,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                         GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS).build())
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToGetReliefFromSanctions()).build())
+                .isMultiParty(NO)
                 .build();
         }
 
@@ -624,6 +626,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeSummeryJudgement()).build())
                 .judicialConcurrentDateText(DUMMY_DATE)
+                .isMultiParty(NO)
                 .build();
         }
 
@@ -643,6 +646,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStrikeOut()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().build())
+                .isMultiParty(NO)
                 .build();
         }
 
@@ -661,11 +665,13 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToAmendStatmentOfClaim()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().build())
+                .isMultiParty(NO)
                 .build();
         }
 
         private CaseData caseDataForJudicialDirectionOrderOfApplication(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .isMultiParty(NO)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
@@ -701,6 +707,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToAmendStatmentOfClaim()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().build())
+                .isMultiParty(NO)
                 .build();
         }
 
@@ -727,12 +734,14 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                         .types(applicationTypeToStrikeOut()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .generalAppPBADetails(GAPbaDetails.builder().build())
+                    .isMultiParty(NO)
                     .build();
         }
 
         private CaseData caseDataForSequentialWrittenRepInList() {
             return
                 CaseData.builder()
+                    .isMultiParty(NO)
                     .judicialDecision(GAJudicialDecision.builder()
                                           .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
                     .generalAppRespondentSolicitors(respondentSolicitors())
@@ -755,6 +764,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                                                                  YesOrNo isWithNotice) {
             return
                 CaseData.builder()
+                    .isMultiParty(NO)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                        .hasAgreed(orderAgreement).build())
@@ -790,6 +800,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                     .generalAppType(GAApplicationType.builder()
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
+                    .isMultiParty(NO)
                     .build();
         }
 
@@ -815,6 +826,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                         .types(applicationTypeSummeryJudgement()).build())
                     .judicialConcurrentDateText(DUMMY_DATE)
                     .generalAppPBADetails(GAPbaDetails.builder().build())
+                    .isMultiParty(NO)
                     .build();
         }
 
@@ -1048,6 +1060,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             .generalAppType(GAApplicationType.builder()
                                 .types(applicationTypeToStayTheClaim()).build())
             .generalAppPBADetails(GAPbaDetails.builder().build())
+            .isMultiParty(NO)
             .build();
 
     }
