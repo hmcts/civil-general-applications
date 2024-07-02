@@ -74,7 +74,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                 && nonNull(caseData.getDefendant2PartyName());
 
         return HearingForm.builder()
-            .court(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+            .court(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
             .judgeHearingLocation(caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel())
             .caseNumber(getCaseNumberFormatted(caseData))
             .creationDate(getDateFormatted(LocalDate.now()))

@@ -182,7 +182,10 @@ class FreeFormOrderGeneratorTest {
             .finalOrderFreeForm().isMultiParty(YES).build().toBuilder()
             .build();
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("London")
+                            .build());
         FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_FreeFormOrder(templateDate, caseData);
     }
@@ -212,7 +215,10 @@ class FreeFormOrderGeneratorTest {
             .build();
 
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("Manchester")
+                            .build());
         FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
     }

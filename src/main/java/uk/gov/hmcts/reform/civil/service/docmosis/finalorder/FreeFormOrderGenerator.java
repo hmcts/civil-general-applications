@@ -61,7 +61,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
             .freeFormOrderedText(caseData.getFreeFormOrderedText())
             .freeFormOrderValue(getFreeFormOrderValue(caseData))
-            .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+            .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
             .siteName(caseData.getCaseManagementLocation().getSiteName())
             .address(caseData.getCaseManagementLocation().getAddress())
             .postcode(caseData.getCaseManagementLocation().getPostcode())

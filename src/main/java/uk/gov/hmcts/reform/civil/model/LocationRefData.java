@@ -12,6 +12,7 @@ public class LocationRefData {
     private String courtVenueId;
     private String epimmsId;
     private String siteName;
+    private String externalShortName;
     private String regionId;
     private String region;
     private String courtType;
@@ -30,6 +31,7 @@ public class LocationRefData {
     LocationRefData(@JsonProperty("court_venue_id") String courtVenueId,
                     @JsonProperty("epimms_id") String epimmsId,
                     @JsonProperty("site_name") String siteName,
+                    @JsonProperty("external_short_name") String externalShortName,
                     @JsonProperty("region_id") String regionId,
                     @JsonProperty("region") String region,
                     @JsonProperty("court_type") String courtType,
@@ -46,6 +48,7 @@ public class LocationRefData {
         this.courtVenueId = courtVenueId;
         this.epimmsId = epimmsId;
         this.siteName = siteName;
+        this.externalShortName = externalShortName;
         this.regionId = regionId;
         this.region = region;
         this.courtType = courtType;

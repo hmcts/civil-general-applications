@@ -75,7 +75,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .judgeHearingLocation(caseData.getJudicialListForHearing()
                                           .getHearingPreferencesPreferredType() == GAJudicialHearingType.IN_PERSON
                                           ? caseData.getJudicialListForHearing()
