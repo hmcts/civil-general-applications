@@ -841,15 +841,11 @@ public class ParentCaseUpdateHelper {
                                                                  generalApplicationsList) {
         List<Element<GeneralApplication>> newApplication = newArrayList();
         newApplication.addAll(generalApplicationsList);
-        Element<GeneralApplication> elementToAdd;
-        if (newApplicationElement.isPresent()) {
-            elementToAdd = Element.<GeneralApplication>builder()
-                .id(newApplicationElement.get().getId())
-                .value(application)
-                .build();
-        } else {
-            elementToAdd = element(application);
-        }
+        Element<GeneralApplication> elementToAdd = newApplicationElement.isPresent()
+            ? Element.<GeneralApplication>builder().id(newApplicationElement.get().getId())
+            .value(application)
+            .build()
+            : element(application);
         newApplication.add(elementToAdd);
 
         return newApplication;
