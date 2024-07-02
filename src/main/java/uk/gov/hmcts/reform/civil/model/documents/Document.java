@@ -14,17 +14,20 @@ public class Document {
     String documentFileName;
     String documentHash;
     String categoryID;
+    String uploadTimestamp;
 
     @JsonCreator
     public Document(@JsonProperty("document_url") String documentUrl,
                     @JsonProperty("document_binary_url") String documentBinaryUrl,
                     @JsonProperty("document_filename") String documentFileName,
                     @JsonProperty("document_hash") String documentHash,
-                    @JsonProperty("category_id") String categoryID) {
+                    @JsonProperty("category_id") String categoryID,
+                    @JsonProperty("upload_timestamp") String uploadTimestamp) {
         this.documentUrl = documentUrl;
         this.documentBinaryUrl = documentBinaryUrl;
         this.documentFileName = documentFileName;
         this.documentHash = documentHash;
         this.categoryID = categoryID;
+        this.uploadTimestamp = uploadTimestamp;
     }
 }

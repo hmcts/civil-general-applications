@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -50,6 +51,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
     private CaseData data;
@@ -132,6 +134,23 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier() != null
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                 .equals(getRespondent1SolicitorOrgId(caseData))) {
+
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
+
+            if (gaDetailsRespondentSol != null) {
+                respondentSpecficGADetails = addRespApplication(
+                        gaDetailsRespondentSol, caseData.getRespondentSolGaAppDetails());
+            }
+        }
+
+        /*
+         * Add the GA in respondent one collection if he/she initiate without notice application, and he is Lip.
+         * */
+        if (generalApplication.getGeneralAppApplnSolicitor() != null
+                && featureToggleService.isGaForLipsEnabled()
+                && generalApplication.getParentClaimantIsApplicant().equals(NO)
+                && Objects.nonNull(generalApplication.getIsGaApplicantLip())
+                && generalApplication.getIsGaApplicantLip().equals(YES)) {
 
             GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
 

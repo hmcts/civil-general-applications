@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -38,6 +39,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,6 +60,7 @@ import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.i
 @SpringBootTest(classes = {
     JudicialNotificationService.class,
     JacksonAutoConfiguration.class,
+    GaForLipService.class
 })
 class JudicialApplicantNotificationServiceTest {
 
@@ -83,6 +86,8 @@ class JudicialApplicantNotificationServiceTest {
     private CoreCaseDataService coreCaseDataService;
     @MockBean
     private JudicialDecisionHelper judicialDecisionHelper;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private static final String APPLICANT = "applicant";
     private static final String RESPONDENT = "respondent";
@@ -96,12 +101,14 @@ class JudicialApplicantNotificationServiceTest {
     private static final String ORG_ID = "1";
     private static final String ID = "1";
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
+    private static final String SAMPLE_LIP_TEMPLATE = "general-application-apps-judicial-notification-template-lip-id";
     private static final String JUDGES_DECISION = "MAKE_DECISION";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
     @BeforeEach
     void setup() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
@@ -142,6 +149,8 @@ class JudicialApplicantNotificationServiceTest {
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getGeneralApplicationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
+        when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
+                .thenReturn(SAMPLE_LIP_TEMPLATE);
     }
 
     @Nested
@@ -1362,8 +1371,8 @@ class JudicialApplicantNotificationServiceTest {
     class RequestMoreInformation {
         @Test
         void notificationShouldSend_IfWithoutNotice_ApplicationContinuesToBeCloaked() {
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES,
-                                                                                      SEND_APP_TO_OTHER_PARTY);
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES, NO,
+                    SEND_APP_TO_OTHER_PARTY);
 
             when(time.now()).thenReturn(responseDate);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -1384,7 +1393,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationShouldSend_IfWithNotice() {
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO,
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO, NO,
                                                                                       REQUEST_MORE_INFORMATION);
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -1402,7 +1411,7 @@ class JudicialApplicantNotificationServiceTest {
         @Test
         void notificationShouldSend_ApplicantRespondent_When_RequestForInformation_withConsentOrder() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES,
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES, NO,
                                                                                       REQUEST_MORE_INFORMATION)
                 .toBuilder()
                 .generalAppConsentOrder(YES)
@@ -1426,7 +1435,7 @@ class JudicialApplicantNotificationServiceTest {
         @Test
         void notificationShouldSend_Applicant_When_RequestForInformation_withOutConsentOrder() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES,
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES, NO,
                                                                                       REQUEST_MORE_INFORMATION);
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -1447,7 +1456,7 @@ class JudicialApplicantNotificationServiceTest {
         void sendNotificationOnlyToClaimant_IfRespondentNotPresent_RequestMoreInfo() {
 
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(
-                NO, YES, NO, REQUEST_MORE_INFORMATION).toBuilder()
+                NO, YES, NO, NO, REQUEST_MORE_INFORMATION).toBuilder()
                 .generalAppRespondentSolicitors(Arrays.asList()).build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -1466,7 +1475,7 @@ class JudicialApplicantNotificationServiceTest {
         @Test
         void shouldSendAdditionalPaymentNotification_UncloakedApplication_BeforeAdditionalPaymentMade() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, NO,
                                                                                       SEND_APP_TO_OTHER_PARTY);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -1482,9 +1491,27 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void shouldSendAdditionalPaymentNotification_Lip_UncloakedApplication_BeforeAdditionalPaymentMade() {
+
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, YES,
+                    SEND_APP_TO_OTHER_PARTY);
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                    .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                    DUMMY_EMAIL,
+                    "general-application-apps-judicial-notification-template-lip-id",
+                    notificationPropertiesToStayTheClaimLip(),
+                    "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationShouldSend_Both_When_RequestForInformation_UncloakedApplication_NoAdditionalPayment() {
 
-            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+            CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, NO,
                     SEND_APP_TO_OTHER_PARTY).toBuilder()
                     .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE).build();
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -1529,8 +1556,10 @@ class JudicialApplicantNotificationServiceTest {
 
     private CaseData caseDataForJudicialRequestForInformationOfApplication(
         YesOrNo isRespondentOrderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked,
-        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
-
+        YesOrNo isLipApp, GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
+        GASolicitorDetailsGAspec lr = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL).build();
+        GASolicitorDetailsGAspec lip = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL)
+                .forename("LipF").surname(Optional.of("LipS")).build();
         return CaseData.builder()
             .generalAppRespondentSolicitors(respondentSolicitors())
             .applicationIsCloaked(isCloaked)
@@ -1544,8 +1573,11 @@ class JudicialApplicantNotificationServiceTest {
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(isRespondentOrderAgreement).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
-                                          .email(DUMMY_EMAIL).build())
+            .generalAppApplnSolicitor(isLipApp.equals(YES) ? lip : lr)
+            .isGaApplicantLip(isLipApp)
+            .applicantPartyName("App")
+            .claimant1PartyName("CL")
+            .defendant1PartyName("DEF")
             .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(CASE_REFERENCE.toString()).build())
@@ -1561,6 +1593,16 @@ class JudicialApplicantNotificationServiceTest {
             NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
             NotificationData.GA_APPLICATION_TYPE,
             GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue()
+        );
+    }
+
+    private Map<String, String> notificationPropertiesToStayTheClaimLip() {
+        return Map.of(
+                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.GA_APPLICATION_TYPE,
+                GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
+                NotificationData.GA_LIP_RESP_NAME, "App",
+                NotificationData.CASE_TITLE, "CL v DEF"
         );
     }
 
