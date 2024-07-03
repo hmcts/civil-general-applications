@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,6 +37,7 @@ public class CasesControllerTest extends BaseIntegrationTest {
 
     private static final String CLAIMS_LIST_URL = "/cases/";
     private static final String CASES_URL = "/cases/{caseId}";
+    private static final String CASE_APP_URL = "/cases/{caseId}/applications";
     private static final String SUBMIT_EVENT_URL = "/cases/{caseId}/citizen/{submitterId}/event";
     private static final String ELASTICSEARCH = "{\n"
         + "\"terms\": {\n"
@@ -102,6 +104,16 @@ public class CasesControllerTest extends BaseIntegrationTest {
             "123"
         ).andExpect(content().json(toJson(expectedCaseDetails)))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnApplicationsByMainCaseId() {
+        SearchResult result = SearchResult.builder().cases(List.of()).total(1).build();
+        when(coreCaseDataService.searchGeneralApplication(any(), any())).thenReturn(result);
+        doGet(BEARER_TOKEN, CASE_APP_URL, 1L)
+                .andExpect(content().json(toJson(result)))
+                .andExpect(status().isOk());
     }
 
 }

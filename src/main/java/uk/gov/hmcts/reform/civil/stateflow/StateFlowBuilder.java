@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.stateflow;
 
+import java.util.function.BiConsumer;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineBuilder;
 import org.springframework.statemachine.config.configurers.ExternalTransitionConfigurer;
@@ -173,6 +174,14 @@ public class StateFlowBuilder<S> {
         }
 
         @Override
+        public SetNext<S> set(BiConsumer<CaseData, Map<String, Boolean>> flags) {
+            checkNull(flags, STATE);
+            stateFlowContext.getCurrentTransition()
+                .ifPresent(currentTransition -> currentTransition.setDynamicFlags(flags));
+            return this;
+        }
+
+        @Override
         public StateNext<S> state(S state) {
             return addState(state);
         }
@@ -221,6 +230,15 @@ public class StateFlowBuilder<S> {
                     if (transition.getFlags() != null) {
                         transitionConfigurer.action(
                             action -> transition.getFlags().accept(
+                                (Map<String, Boolean>)action.getExtendedState().get(EXTENDED_STATE_FLAGS_KEY, Map.class)
+                            )
+                        );
+                    }
+
+                    if (transition.getDynamicFlags() != null) {
+                        transitionConfigurer.action(
+                            action -> transition.getDynamicFlags().accept(
+                                action.getExtendedState().get(EXTENDED_STATE_CASE_KEY, CaseData.class),
                                 (Map<String, Boolean>)action.getExtendedState().get(EXTENDED_STATE_FLAGS_KEY, Map.class)
                             )
                         );
