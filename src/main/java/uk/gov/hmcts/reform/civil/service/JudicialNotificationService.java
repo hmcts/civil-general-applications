@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
@@ -38,7 +36,6 @@ public class JudicialNotificationService implements NotificationData {
 
     private static final String RESPONDENT = "respondent";
     private static final String APPLICANT = "applicant";
-    private static final Logger log = LoggerFactory.getLogger(JudicialNotificationService.class);
 
     private final NotificationsProperties notificationProperties;
     private final NotificationService notificationService;
@@ -147,8 +144,6 @@ public class JudicialNotificationService implements NotificationData {
     private void sendNotificationForJudicialDecision(CaseData caseData, String recipient, String template)
         throws NotificationException {
         try {
-            log.info("JudicialNotificationService.class::sendNotificationForJudicialDecision::templateId: {}",
-                     template);
             notificationService.sendMail(recipient, template, addProperties(caseData),
                                          String.format(REFERENCE_TEMPLATE,
                                                        caseData.getGeneralAppParentCaseLink().getCaseReference()));

@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -15,7 +13,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 @Service
 public class GaForLipService {
 
-    private static final Logger log = LoggerFactory.getLogger(GaForLipService.class);
     private final FeatureToggleService featureToggleService;
 
     public boolean isGaForLip(CaseData caseData) {
@@ -35,12 +32,6 @@ public class GaForLipService {
     }
 
     public boolean isLipResp(CaseData caseData) {
-
-        log.info(" ****************************************************************** ");
-        log.info("-----feature Toggle caseData: {}", featureToggleService.isGaForLipsEnabled());
-        log.info("---------isGaRespondentOneLip nonnull: {}", Objects.nonNull(caseData.getIsGaRespondentOneLip()));
-        log.info("-------isGaRespondentOneLip: {}", caseData.getIsGaRespondentOneLip());
-        log.info(" ****************************************************************** ");
         return featureToggleService.isGaForLipsEnabled()
                 && Objects.nonNull(caseData.getIsGaRespondentOneLip())
                 && caseData.getIsGaRespondentOneLip().equals(YES);
