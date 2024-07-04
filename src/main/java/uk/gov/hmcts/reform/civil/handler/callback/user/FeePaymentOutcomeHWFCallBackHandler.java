@@ -4,6 +4,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -11,6 +13,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
@@ -81,10 +84,27 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         caseData = caseDataBuilder.build();
         caseData = HwFFeeTypeService.updateHwfReferenceNumber(caseData);
 
-        //paymentRequestUpdateCallbackService.processHWF(caseData);
+        List<String> errors = new ArrayList<>();
+
+        assert paymentRequestUpdateCallbackService != null;
+        caseData = paymentRequestUpdateCallbackService.processHwf(caseData);
+        if (Objects.isNull(caseData)) {
+            errors.add("Process failed");
+        }
+
+        if (caseData.isHWFTypeApplication()) {
+            caseData = caseData.toBuilder()
+                    .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
+        } else if (caseData.isHWFTypeAdditional()) {
+            caseData = caseData.toBuilder()
+                    .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
+        } else {
+            errors.add("Invalid state");
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))
+            .errors(errors)
             .build();
     }
 

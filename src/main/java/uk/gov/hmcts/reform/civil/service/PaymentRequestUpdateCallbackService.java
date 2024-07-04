@@ -56,37 +56,59 @@ public class PaymentRequestUpdateCallbackService {
                                                                                    .getCcdCaseNumber()));
             CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
 
-            if (!Objects.isNull(caseData)) {
-
-                switch (caseData.getCcdState()) {
-                    case APPLICATION_ADD_PAYMENT:
-                        processAndTriggerAdditionalPayment(caseData, serviceRequestUpdateDto);
-                        break;
-                    case AWAITING_APPLICATION_PAYMENT:
-                        processAndTriggerAwaitingPayment(caseData, serviceRequestUpdateDto);
-                        break;
-                    default:
-                        log.error("This Case id {} is not in a valid state APPLICATION_ADD_PAYMENT,"
-                                      + "AWAITING_APPLICATION_PAYMENT to process payment callback ",
-                                  serviceRequestUpdateDto.getCcdCaseNumber());
-                }
-            } else {
-                log.error("Case id {} not present", serviceRequestUpdateDto.getCcdCaseNumber());
-            }
+            processServiceRequest(serviceRequestUpdateDto, caseData, false);
         }
     }
 
-    private void processAndTriggerAwaitingPayment(CaseData caseData, ServiceRequestUpdateDto serviceRequestUpdateDto) {
+    public CaseData processHwf(CaseData caseData) {
+        ServiceRequestUpdateDto serviceRequestUpdateDto = ServiceRequestUpdateDto
+                .builder()
+                .ccdCaseNumber(caseData.getCcdCaseReference().toString())
+                .payment(PaymentDto.builder()
+                        .customerReference(caseData.getGeneralAppHelpWithFees()
+                                .getHelpWithFeesReferenceNumber())
+                        .build())
+                .build();
+        return processServiceRequest(serviceRequestUpdateDto, caseData, true);
+    }
+
+    private CaseData processServiceRequest(ServiceRequestUpdateDto serviceRequestUpdateDto,
+                                       CaseData caseData,
+                                       boolean hwf) {
+        if (!Objects.isNull(caseData)) {
+
+            switch (caseData.getCcdState()) {
+                case APPLICATION_ADD_PAYMENT:
+                    return processAndTriggerAdditionalPayment(caseData, serviceRequestUpdateDto, hwf);
+                case AWAITING_APPLICATION_PAYMENT:
+                    return processAndTriggerAwaitingPayment(caseData, serviceRequestUpdateDto, hwf);
+                default:
+                    log.error("This Case id {} is not in a valid state APPLICATION_ADD_PAYMENT,"
+                                    + "AWAITING_APPLICATION_PAYMENT to process payment callback ",
+                            serviceRequestUpdateDto.getCcdCaseNumber());
+            }
+        } else {
+            log.error("Case id {} not present", serviceRequestUpdateDto.getCcdCaseNumber());
+        }
+        return null;
+    }
+
+    private CaseData processAndTriggerAwaitingPayment(CaseData caseData,
+                                                  ServiceRequestUpdateDto serviceRequestUpdateDto,
+                                                  boolean hwf) {
         log.info("Processing the callback for Application Payment "
                      + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
         caseData = updateCaseDataWithPaymentDetails(serviceRequestUpdateDto, caseData);
-
-        createEvent(caseData, INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT,
+        if (!hwf) {
+            createEvent(caseData, INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT,
                     serviceRequestUpdateDto.getCcdCaseNumber());
+        }
+        return caseData;
     }
 
-    private void processAndTriggerAdditionalPayment(CaseData caseData,
-                                                    ServiceRequestUpdateDto serviceRequestUpdateDto) {
+    private CaseData processAndTriggerAdditionalPayment(CaseData caseData,
+                                                    ServiceRequestUpdateDto serviceRequestUpdateDto,
+                                                    boolean hwf) {
         log.info("Processing the callback for making Additional Payment"
                      + "for the caseId {}", serviceRequestUpdateDto.getCcdCaseNumber());
         try {
@@ -96,9 +118,11 @@ public class PaymentRequestUpdateCallbackService {
             }
 
             caseData = updateCaseDataWithStateAndPaymentDetails(serviceRequestUpdateDto, caseData);
-
-            createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
+            if (!hwf) {
+                createEvent(caseData, MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
                         serviceRequestUpdateDto.getCcdCaseNumber());
+            }
+            return caseData;
 
         } catch (NotificationException e) {
             log.info("processing callback failed at Judicial Notification service, "
@@ -106,6 +130,7 @@ public class PaymentRequestUpdateCallbackService {
                          + "along with the Additional payment details "
                          + "and trigger MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID event  %s ", e);
         }
+        return null;
     }
 
     private CaseData updateCaseDataWithPaymentDetails(ServiceRequestUpdateDto serviceRequestUpdateDto,
