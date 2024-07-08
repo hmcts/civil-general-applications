@@ -78,7 +78,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .defendant2Name(caseData
                                     .getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
                 .courtLocation(docmosisService
-                                   .getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                                   .getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())

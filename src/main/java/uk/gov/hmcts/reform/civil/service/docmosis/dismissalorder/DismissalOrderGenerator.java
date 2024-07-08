@@ -64,7 +64,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
