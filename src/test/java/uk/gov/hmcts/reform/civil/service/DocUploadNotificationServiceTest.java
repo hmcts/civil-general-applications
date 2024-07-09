@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,9 +52,13 @@ public class DocUploadNotificationServiceTest {
     @MockBean
     private NotificationsProperties notificationsProperties;
 
+    @MockBean
+    private GaForLipService gaForLipService;
+
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
+    private final Map<String, String> customProp = new HashMap<>();
 
     @Nested
     class AboutToSubmitCallback {
@@ -59,11 +66,16 @@ public class DocUploadNotificationServiceTest {
         void setup() {
             when(notificationsProperties.getEvidenceUploadTemplate())
                     .thenReturn("general-apps-notice-of-document-template-id");
+            when(notificationsProperties.getLipGeneralAppApplicantEmailTemplate())
+                .thenReturn("ga-notice-of-document-lip-appln-template-id");
+            when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
+                .thenReturn("ga-notice-of-document-lip-respondent-template-id");
         }
 
         @Test
         void appNotificationShouldSendWhenInvoked() {
-            CaseData caseData = getCaseData(true);
+
+            CaseData caseData = getCaseData(true, NO, NO);
             docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
             verify(notificationService, times(1)).sendMail(
                     DUMMY_EMAIL,
@@ -75,7 +87,7 @@ public class DocUploadNotificationServiceTest {
 
         @Test
         void respNotificationShouldSendTwice1V2() {
-            CaseData caseData = getCaseData(true);
+            CaseData caseData = getCaseData(true, NO, YES);
             docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
             verify(notificationService, times(2)).sendMail(
                     DUMMY_EMAIL,
@@ -85,21 +97,74 @@ public class DocUploadNotificationServiceTest {
             );
         }
 
+        @Test
+        void lipApplicantNotificationShouldSendWhenInvoked() {
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            CaseData caseData = getCaseData(true, YES, NO);
+            docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-notice-of-document-lip-appln-template-id",
+                getNotificationDataMapForLip(YES, NO),
+                "general-apps-notice-of-document-upload-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void lipRespondentNotificationShouldSend() {
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(false);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).forename("forename").organisationIdentifier("2").build();
+            respondentSols.add(element(respondent1));
+
+            CaseData caseData = getCaseData(true, NO, YES).toBuilder()
+                .generalAppRespondentSolicitors(respondentSols).build();
+            docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-notice-of-document-lip-respondent-template-id",
+                getNotificationDataMapForLip(NO, YES),
+                "general-apps-notice-of-document-upload-" + CASE_REFERENCE
+            );
+        }
+
+        private Map<String, String> getNotificationDataMapForLip(YesOrNo isLipAppln, YesOrNo isLipRespondent) {
+
+            customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
+            customProp.put(NotificationData.CASE_TITLE, "CL v DEF");
+
+            if (isLipAppln == YES) {
+                customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
+            }
+
+            if (isLipRespondent == YES) {
+                customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename ");
+            }
+            return customProp;
+        }
+
         private Map<String, String> getNotificationDataMap() {
             return Map.of(
                     NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString()
             );
         }
 
-        private CaseData getCaseData(boolean isMet) {
+        private CaseData getCaseData(boolean isMet, YesOrNo isGaApplicantLip, YesOrNo isGaRespondentOneLip) {
 
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
 
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                    .email(DUMMY_EMAIL).organisationIdentifier("2").build();
+                    .email(DUMMY_EMAIL).forename("forename").organisationIdentifier("2").build();
 
             GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-                    .email(DUMMY_EMAIL).organisationIdentifier("3").build();
+                    .email(DUMMY_EMAIL).forename("forename").organisationIdentifier("3").build();
 
             respondentSols.add(element(respondent1));
             respondentSols.add(element(respondent2));
@@ -110,6 +175,11 @@ public class DocUploadNotificationServiceTest {
                         .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                 .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                         .generalAppRespondentSolicitors(respondentSols)
+                        .applicantPartyName("App")
+                        .claimant1PartyName("CL")
+                        .defendant1PartyName("DEF")
+                        .isGaRespondentOneLip(isGaRespondentOneLip)
+                        .isGaApplicantLip(isGaApplicantLip)
                         .businessProcess(BusinessProcess.builder().status(STARTED)
                                 .processInstanceId(PROCESS_INSTANCE_ID).build())
                         .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
@@ -131,8 +201,13 @@ public class DocUploadNotificationServiceTest {
                         .build();
             } else {
                 return new CaseDataBuilder()
+                        .applicantPartyName("App")
+                        .claimant1PartyName("CL")
+                        .defendant1PartyName("DEF")
                         .businessProcess(BusinessProcess.builder().status(STARTED)
                                 .processInstanceId(PROCESS_INSTANCE_ID).build())
+                        .isGaApplicantLip(isGaApplicantLip)
+                        .isGaApplicantLip(isGaApplicantLip)
                         .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
                         .gaUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                         .gaRespondentOrderAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())

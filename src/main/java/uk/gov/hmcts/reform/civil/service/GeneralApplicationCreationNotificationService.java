@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -120,11 +122,19 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         String lipRespName = "";
+        String caseTitle = "";
         if (gaForLipService.isLipResp(caseData)) {
+
+            String surname = "";
+            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname() != null) {
+                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+            }
+
             lipRespName = caseData
                     .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
-                    + " " + caseData
-                    .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+                    + " " + surname;
+            caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
+
         }
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
@@ -132,7 +142,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
-            GA_LIP_RESP_NAME, lipRespName
+            GA_LIP_RESP_NAME, lipRespName,
+            CASE_TITLE, Objects.requireNonNull(caseTitle)
         );
     }
 
