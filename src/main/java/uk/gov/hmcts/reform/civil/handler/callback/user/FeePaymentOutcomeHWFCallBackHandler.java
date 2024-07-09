@@ -35,9 +35,11 @@ import org.springframework.stereotype.Service;
 public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase {
 
     public static final String WRONG_REMISSION_TYPE_SELECTED = "Incorrect remission type selected";
+    public static final String CASE_STATE_INVALID = "Case is in invalid state";
+    public static final String PROCESS_FEE_PAYMENT_FAILED = "Process fee payment failed";
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.FEE_PAYMENT_OUTCOME_GA);
 
-    public FeePaymentOutcomeHWFCallBackHandler (ObjectMapper objectMapper,
+    public FeePaymentOutcomeHWFCallBackHandler(ObjectMapper objectMapper,
                                                 PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService) {
         super(objectMapper, EVENTS, paymentRequestUpdateCallbackService);
     }
@@ -89,7 +91,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         assert paymentRequestUpdateCallbackService != null;
         caseData = paymentRequestUpdateCallbackService.processHwf(caseData);
         if (Objects.isNull(caseData)) {
-            errors.add("Process failed");
+            errors.add(PROCESS_FEE_PAYMENT_FAILED);
         }
 
         if (caseData.isHWFTypeApplication()) {
@@ -99,7 +101,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             caseData = caseData.toBuilder()
                     .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
         } else {
-            errors.add("Invalid state");
+            errors.add(CASE_STATE_INVALID);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()

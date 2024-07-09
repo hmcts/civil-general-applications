@@ -42,6 +42,7 @@ class InvalidHwFCallbackHandlerTest {
         void shouldSubmit_InvalidHwFEvent() {
             CaseData caseData = CaseData.builder()
                 .ccdState(AWAITING_RESPONDENT_RESPONSE)
+                .hwfFeeType(FeeType.APPLICATION)
                 .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
 
             CallbackParams params = CallbackParams.builder()
@@ -55,6 +56,7 @@ class InvalidHwFCallbackHandlerTest {
             CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(updatedData).isNotNull();
+            assertThat(updatedData.getGaHwfDetails().getHwfCaseEvent()).isEqualTo(INVALID_HWF_REFERENCE_GA);
         }
     }
 
@@ -76,7 +78,6 @@ class InvalidHwFCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
-            assertThat(responseCaseData.getGaHwfDetails().getHwfCaseEvent()).isEqualTo(INVALID_HWF_REFERENCE_GA);
         }
 
         @Test
@@ -95,7 +96,6 @@ class InvalidHwFCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
             assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
-            assertThat(responseCaseData.getAdditionalHwfDetails().getHwfCaseEvent()).isEqualTo(INVALID_HWF_REFERENCE_GA);
         }
     }
 }

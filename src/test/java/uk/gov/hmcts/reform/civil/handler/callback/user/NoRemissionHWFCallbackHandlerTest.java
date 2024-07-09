@@ -74,8 +74,9 @@ public class NoRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
         void doNothing_noRemissionHWF() {
             CaseData caseData = CaseData.builder()
                     .ccdState(APPLICATION_ADD_PAYMENT)
+                    .hwfFeeType(FeeType.APPLICATION)
                     .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_SUBMIT);
+            CallbackParams params = callbackParamsOf(caseData, NO_REMISSION_HWF_GA, CallbackType.ABOUT_TO_SUBMIT);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getGeneralAppHelpWithFees()).isNotNull();

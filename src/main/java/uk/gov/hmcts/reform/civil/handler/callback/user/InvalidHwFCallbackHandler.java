@@ -33,7 +33,7 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
 
-    public InvalidHwFCallbackHandler (ObjectMapper objectMapper) {
+    public InvalidHwFCallbackHandler(ObjectMapper objectMapper) {
         super(objectMapper, EVENTS);
     }
 
