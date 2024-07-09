@@ -92,16 +92,16 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         caseData = paymentRequestUpdateCallbackService.processHwf(caseData);
         if (Objects.isNull(caseData)) {
             errors.add(PROCESS_FEE_PAYMENT_FAILED);
-        }
-
-        if (caseData.isHWFTypeApplication()) {
-            caseData = caseData.toBuilder()
-                    .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
-        } else if (caseData.isHWFTypeAdditional()) {
-            caseData = caseData.toBuilder()
-                    .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
         } else {
-            errors.add(CASE_STATE_INVALID);
+            if (caseData.isHWFTypeApplication()) {
+                caseData = caseData.toBuilder()
+                        .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
+            } else if (caseData.isHWFTypeAdditional()) {
+                caseData = caseData.toBuilder()
+                        .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
+            } else {
+                errors.add(CASE_STATE_INVALID);
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
