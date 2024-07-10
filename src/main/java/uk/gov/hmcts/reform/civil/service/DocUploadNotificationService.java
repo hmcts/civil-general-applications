@@ -105,7 +105,7 @@ public class DocUploadNotificationService implements NotificationData {
         String surname = "";
 
         if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
-            surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().get();
+            surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
         }
         return surname;
     }
