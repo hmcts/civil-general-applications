@@ -59,10 +59,10 @@ public class JudicialNotificationService implements NotificationData {
         caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
 
         switch (notificationCriterion(caseData)) {
-            case CONCURRENT_WRITTEN_REP: //done
+            case CONCURRENT_WRITTEN_REP:
                 concurrentWrittenRepNotification(caseData, solicitorType);
                 break;
-            case SEQUENTIAL_WRITTEN_REP: // done
+            case SEQUENTIAL_WRITTEN_REP:
                 sequentialWrittenRepNotification(caseData, solicitorType);
                 break;
             case LIST_FOR_HEARING:

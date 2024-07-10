@@ -36,7 +36,11 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,11 +108,6 @@ class JudicialApplicantNotificationServiceTest {
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
-    public static BusinessProcess businessProcess = BusinessProcess.builder()
-        .camundaEvent(JUDGES_DECISION)
-        .activityId("StartRespondentNotificationProcessMakeDecision")
-        .build();
-
     @BeforeEach
     void setup() {
         when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
@@ -172,23 +171,7 @@ class JudicialApplicantNotificationServiceTest {
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-judicial-notification-applicant-template-lip-id",
-                notificationPropertiesSummeryJudgement(YES, NO),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void sendNotificationRespondentConcurrentWrittenRep() {
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
-                                .toBuilder().businessProcess(businessProcess).build());
-
-            judicialNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
-                .toBuilder().businessProcess(businessProcess).build();
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesSummeryJudgement(NO, YES),
+                notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
@@ -202,45 +185,295 @@ class JudicialApplicantNotificationServiceTest {
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-judicial-notification-applicant-template-lip-id",
-                notificationPropertiesSummeryJudgement(YES, NO),
+                notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
 
         @Test
-        void sendNotificationRespondentSequentialWrittenRep() {
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForSequentialWrittenOption(NO, YES).toBuilder().businessProcess(businessProcess)
-                                .build());
+        void notificationUncloakShouldSendForDismissal_ApplicantLIP() {
 
-            judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption(NO, YES)
-                                                             .toBuilder().businessProcess(businessProcess).build(),
-                                                         RESPONDENT);
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, YES, NO));
+
+            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  YES, NO), APPLICANT);
+
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesSummeryJudgement(NO, YES),
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
 
         @Test
-        void notificationUncloakShouldSendForDismissal_RespondentLIP() {
+        void notificationCloakShouldSendForDismissal_ApplicantLIP() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, NO, YES)
-                                .toBuilder().businessProcess(businessProcess).build());
+                .thenReturn(caseDataForJudgeDismissal(NO, NO, YES, YES, NO));
 
-            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  NO, YES)
-                                                             .toBuilder()
-                                                             .businessProcess(businessProcess).build(), RESPONDENT);
+            judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  YES, NO), APPLICANT);
 
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesSummeryJudgement(NO, YES),
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
+        }
+
+        @Test
+        void notificationShouldSend_LipRespondent_When_JudicialDirectionOrderRep_unCloaks() {
+
+            CaseData caseData
+                = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
+                                                                                                NO, NO, YES, YES, NO);
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL, "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(), "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSend_LipRespondent_When_JudicialDirectionOrderRep() {
+
+            CaseData caseData
+                = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
+                                                                                                NO, YES, YES, YES, NO);
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL, "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(), "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendSendToLipRespondent_IfApplicationUncloakedForApproveOrEdit() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
+                    YES, NO, NO));
+
+            judicialNotificationService.sendNotification(
+                caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
+                    YES, NO, NO), APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendSendToLipRespondent_IfApplicationForApproveOrEdit() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
+                    YES, NO, YES));
+
+            judicialNotificationService.sendNotification(
+                caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
+                    YES, NO, YES), APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void shouldSendNotification_LipRespondent_UncloakedApplication() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO,
+                                                                        SEND_APP_TO_OTHER_PARTY)
+                .toBuilder().generalAppType(GAApplicationType.builder()
+                                                .types(applicationTypeSummeryJudgement()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void shouldSendNotification_LipRespondent_Application() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES,
+                                                                        SEND_APP_TO_OTHER_PARTY)
+                .toBuilder().generalAppType(GAApplicationType.builder()
+                                                .types(applicationTypeSummeryJudgement()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+
+            judicialNotificationService.sendNotification(caseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void notificationShouldSendListForHearing() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataListForHearing());
+
+            judicialNotificationService.sendNotification(caseDataListForHearing(), APPLICANT);
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        private CaseData caseDataListForHearing() {
+            return CaseData.builder()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(NO)
+                .applicantPartyName("App")
+                .claimant1PartyName("CL")
+                .defendant1PartyName("DEF")
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeSummeryJudgement()).build())
+                .isMultiParty(NO)
+                .build();
+        }
+
+        private CaseData caseDataForJudicialRequestForInformationOfApplication(
+            YesOrNo isRespondentOrderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked,
+            GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
+
+            GASolicitorDetailsGAspec lr = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL).build();
+            GASolicitorDetailsGAspec lip = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL)
+                .forename("LipF").surname(Optional.of("LipS")).build();
+            return CaseData.builder()
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .applicationIsCloaked(isCloaked)
+                .isMultiParty(NO)
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO).build())
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .requestMoreInfoOption(gaJudgeRequestMoreInfoOption)
+                                                     .judgeRequestMoreInfoText("Test")
+                                                     .judgeRequestMoreInfoByDate(LocalDate.now())
+                                                     .deadlineForMoreInfoSubmission(deadline).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                                   .hasAgreed(isRespondentOrderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(NO)
+                .applicantPartyName("App")
+                .claimant1PartyName("CL")
+                .defendant1PartyName("DEF")
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStayTheClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
+                .build();
+
+        }
+
+        private CaseData caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(YesOrNo orderAgreement,
+                                                                                                YesOrNo isWithNotice,
+                                                                                                YesOrNo isCloaked) {
+            return CaseData.builder()
+                .applicationIsCloaked(isCloaked)
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .isGaRespondentOneLip(NO)
+                .isGaApplicantLip(YES)
+
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeSummeryJudgement()).build())
+                .isMultiParty(NO)
+                .applicantPartyName("App")
+                .claimant1PartyName("CL")
+                .defendant1PartyName("DEF")
+                .build();
+        }
+
+        private CaseData caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(
+            YesOrNo orderAgreement,
+            YesOrNo isWithNotice,
+            YesOrNo isCloaked,
+            YesOrNo isGaLip,
+            YesOrNo isApplicantLip,
+            YesOrNo isRespondentLip) {
+            return CaseData.builder()
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
+                .applicationIsCloaked(isCloaked)
+                .isGaApplicantLip(isApplicantLip)
+                .applicantPartyName("App")
+                .claimant1PartyName("CL")
+                .defendant1PartyName("DEF")
+                .isGaRespondentOneLip(isRespondentLip)
+                .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GIVE_DIRECTIONS_WITHOUT_HEARING).build())
+                .generalAppRespondentSolicitors(isGaLip.equals(YES) ? lipRespondent() : respondentSolicitors())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeSummeryJudgement()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
+                .isMultiParty(NO)
+                .build();
         }
 
         private CaseData caseDataForJudgeDismissal(YesOrNo orderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked,
@@ -271,19 +504,14 @@ class JudicialApplicantNotificationServiceTest {
                 .build();
         }
 
-        private Map<String, String> notificationPropertiesSummeryJudgement(YesOrNo isLipAppln, YesOrNo isLipRespondent) {
+        private Map<String, String> notificationPropertiesSummeryJudgement() {
 
             customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
             customProp.put(NotificationData.CASE_TITLE, "CL v DEF");
             customProp.put(NotificationData.GA_APPLICATION_TYPE,
                            GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue());
-            if (isLipAppln == YES) {
-                customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
-            }
+            customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
 
-            if (isLipRespondent == YES) {
-                customProp.put(NotificationData.GA_LIP_RESP_NAME, "respondent solicitor");
-            }
             return customProp;
         }
 
@@ -337,11 +565,13 @@ class JudicialApplicantNotificationServiceTest {
                 .isMultiParty(NO)
                 .build();
         }
+
         private List<Element<GASolicitorDetailsGAspec>> respondentSolicitors() {
             return Arrays.asList(element(GASolicitorDetailsGAspec.builder().id(ID)
                                              .forename("respondent")
                                              .surname(Optional.of("solicitor"))
-                                             .email(DUMMY_EMAIL).organisationIdentifier(ORG_ID).build()));      }
+                                             .email(DUMMY_EMAIL).organisationIdentifier(ORG_ID).build()));
+        }
     }
 
     @Nested
@@ -525,35 +755,6 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendSendToLipRespondent_IfApplicationUncloakedForApproveOrEdit() {
-
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
-                    YES, YES, NO, YES, NO, YES).toBuilder().businessProcess(businessProcess).build());
-
-            judicialNotificationService.sendNotification(
-                caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
-                    YES, YES, NO, YES, NO, YES).toBuilder().businessProcess(businessProcess).build(), RESPONDENT);
-
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesToStayTheClaimForLipRespondent(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        private Map<String, String> notificationPropertiesToStayTheClaimForLipRespondent() {
-            return Map.of(
-                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
-                NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
-                NotificationData.CASE_TITLE, "CL v DEF",
-                NotificationData.GA_LIP_RESP_NAME, "respondent lip"
-            );
-        }
-
-        @Test
         void notificationShouldSendSendToApplicant_and_respondent_IfApplicationApproveOrEditForConsentOrder() {
             CaseData caseData = caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(YES, YES, NO, NO, NO, NO)
                 .toBuilder().generalAppConsentOrder(NO).build();
@@ -670,38 +871,6 @@ class JudicialApplicantNotificationServiceTest {
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToAmendStatementOfCase(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void notificationShouldSend_LipRespondent_When_JudicialDirectionOrderRep_unCloaks() {
-
-            CaseData caseData
-                = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
-                                                                                                NO, YES, YES, NO, YES)
-                .toBuilder()
-                .generalAppConsentOrder(YES)
-                .businessProcess(businessProcess)
-                .applicationIsCloaked(null)
-                .build();
-
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseData);
-
-            judicialNotificationService.sendNotification(caseData, RESPONDENT);
-
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL, "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesToAmendStatementOfCase_LIP(), "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        private Map<String, String> notificationPropertiesToAmendStatementOfCase_LIP() {
-            return Map.of(
-                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
-                NotificationData.GA_APPLICATION_TYPE, GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue(),
-                NotificationData.CASE_TITLE, "CL v DEF",
-                NotificationData.GA_LIP_RESP_NAME, "respondent lip"
             );
         }
 
@@ -1801,26 +1970,6 @@ class JudicialApplicantNotificationServiceTest {
                     "ga-judicial-notification-applicant-template-lip-id",
                     notificationPropertiesToStayTheClaimLip(),
                     "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
-            );
-        }
-
-        @Test
-        void shouldSendNotification_LipRespondent_UncloakedApplication() {
-
-            CaseData caseData
-                = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, NO, YES,
-                                                                                      SEND_APP_TO_OTHER_PARTY)
-                .toBuilder().ccdState(CaseState.APPLICATION_ADD_PAYMENT).businessProcess(businessProcess).build();
-            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseData);
-
-            judicialNotificationService.sendNotification(caseData, RESPONDENT);
-
-            verify(notificationService, times(1)).sendMail(
-                DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
-                notificationPropertiesToStayTheClaimLipRespondent(),
-                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
 
