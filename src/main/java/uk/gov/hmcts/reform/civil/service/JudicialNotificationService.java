@@ -275,7 +275,7 @@ public class JudicialNotificationService implements NotificationData {
             if (solicitorType.equals(APPLICANT)
                     && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-                // change template
+                
                 String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
                 if (useGaForLipApplicantTemplate(caseData)) {
                     template = notificationProperties
