@@ -58,25 +58,20 @@ public class HearingScheduledNotificationService implements NotificationData {
 
             String surname = "";
             if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
-                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue()
+                    .getSurname().orElse("");
             }
 
             String isLipRespondentName = caseData
                 .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
                 + " " + surname;
-            customProps.put(
-                GA_LIP_RESP_NAME,
-                Objects.requireNonNull(isLipRespondentName)
-            );
             customProps.remove(GA_LIP_APPLICANT_NAME);
+            customProps.put(GA_LIP_RESP_NAME, Objects.requireNonNull(isLipRespondentName));
         }
 
         if (gaForLipService.isGaForLip(caseData)) {
-            String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
-            customProps.put(
-                CASE_TITLE,
-                Objects.requireNonNull(caseTitle)
-            );
+            customProps.put(CASE_TITLE, Objects.requireNonNull(JudicialFinalDecisionHandler
+                                                                   .getAllPartyNames(caseData)));
         } else {
             customProps.remove(CASE_TITLE);
             customProps.remove(GA_LIP_APPLICANT_NAME);

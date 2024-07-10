@@ -215,7 +215,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
             CaseData caseData
                 = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
-                                                                                                NO, YES, YES, NO, YES)
+                                                                                                NO, YES, NO, YES)
                 .toBuilder().businessProcess(businessProcess).build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -379,7 +379,6 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             YesOrNo orderAgreement,
             YesOrNo isWithNotice,
             YesOrNo isCloaked,
-            YesOrNo isGaLip,
             YesOrNo isApplicantLip,
             YesOrNo isRespondentLip) {
             return CaseData.builder()

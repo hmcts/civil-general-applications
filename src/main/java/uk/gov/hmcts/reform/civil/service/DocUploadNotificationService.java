@@ -73,15 +73,10 @@ public class DocUploadNotificationService implements NotificationData {
             customProps.put(GA_LIP_APPLICANT_NAME, Objects.requireNonNull(isLipAppName));
 
         } else if (gaForLipService.isLipResp(caseData)) {
-            String surname = "";
-
-            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
-                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
-            }
 
             String isLipRespondentName = caseData
                 .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
-                + " " + surname;
+                + " " + getSurname(caseData);
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)
@@ -104,5 +99,15 @@ public class DocUploadNotificationService implements NotificationData {
                           && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                           || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                           ? ", " + caseData.getDefendant2PartyName() : "");
+    }
+
+    public String getSurname(CaseData caseData) {
+        String surname = "";
+
+        if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
+            return caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().get();
+        }
+
+        return surname;
     }
 }

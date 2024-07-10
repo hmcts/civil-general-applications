@@ -1970,15 +1970,6 @@ class JudicialApplicantNotificationServiceTest {
             );
         }
 
-        private Map<String, String> notificationPropertiesToStayTheClaimLipRespondent() {
-            return Map.of(
-                NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
-                NotificationData.GA_APPLICATION_TYPE, GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
-                NotificationData.CASE_TITLE, "CL v DEF",
-                NotificationData.GA_LIP_RESP_NAME, "respondent lip"
-            );
-        }
-
         @Test
         void notificationShouldSend_Both_When_RequestForInformation_UncloakedApplication_NoAdditionalPayment() {
 
