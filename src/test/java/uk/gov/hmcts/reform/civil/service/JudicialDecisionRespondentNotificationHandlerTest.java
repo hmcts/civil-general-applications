@@ -315,9 +315,6 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             YesOrNo isRespondentOrderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked,
             GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
 
-            GASolicitorDetailsGAspec lr = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL).build();
-            GASolicitorDetailsGAspec lip = GASolicitorDetailsGAspec.builder().email(DUMMY_EMAIL)
-                .forename("LipF").surname(Optional.of("LipS")).build();
             return CaseData.builder()
                 .generalAppRespondentSolicitors(respondentSolicitors())
                 .applicationIsCloaked(isCloaked)
