@@ -57,7 +57,7 @@ public class HearingScheduledNotificationService implements NotificationData {
         if (gaForLipService.isLipResp(caseData)) {
 
             String surname = "";
-            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname() != null) {
+            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
                 surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
             }
 

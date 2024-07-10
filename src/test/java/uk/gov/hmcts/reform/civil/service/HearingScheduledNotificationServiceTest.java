@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
@@ -89,7 +90,7 @@ public class HearingScheduledNotificationServiceTest {
         }
 
         if (isLipRespondent == YES) {
-            customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename ");
+            customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename surname");
         }
         return customProp;
     }
@@ -137,7 +138,8 @@ public class HearingScheduledNotificationServiceTest {
 
         List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
         GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-            .email(DUMMY_EMAIL).forename("forename").organisationIdentifier("2").build();
+            .email(DUMMY_EMAIL).surname(Optional.of("surname"))
+            .forename("forename").organisationIdentifier("2").build();
         respondentSols.add(element(respondent1));
 
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)

@@ -126,8 +126,8 @@ public class JudicialNotificationService implements NotificationData {
         if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
             String surname = "";
-            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname() != null) {
-                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().get();
+            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
+                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
             }
 
             String isLipRespondentName = caseData
@@ -275,7 +275,7 @@ public class JudicialNotificationService implements NotificationData {
             if (solicitorType.equals(APPLICANT)
                     && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-                
+
                 String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
                 if (useGaForLipApplicantTemplate(caseData)) {
                     template = notificationProperties

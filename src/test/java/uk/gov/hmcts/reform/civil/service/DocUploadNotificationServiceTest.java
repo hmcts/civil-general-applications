@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -121,7 +122,7 @@ public class DocUploadNotificationServiceTest {
 
             List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
             GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                .email(DUMMY_EMAIL).forename("forename").organisationIdentifier("2").build();
+                .email(DUMMY_EMAIL).surname(Optional.of("surname")).forename("forename").organisationIdentifier("2").build();
             respondentSols.add(element(respondent1));
 
             CaseData caseData = getCaseData(true, NO, YES).toBuilder()
@@ -145,7 +146,7 @@ public class DocUploadNotificationServiceTest {
             }
 
             if (isLipRespondent == YES) {
-                customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename ");
+                customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename surname");
             }
             return customProp;
         }
