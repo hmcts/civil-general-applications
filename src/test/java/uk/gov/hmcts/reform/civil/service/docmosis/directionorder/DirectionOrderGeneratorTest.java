@@ -75,9 +75,9 @@ class DirectionOrderGeneratorTest {
     private GeneralAppLocationRefDataService generalAppLocationRefDataService;
 
     private static List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+        .asList(LocationRefData.builder().epimmsId("1").externalShortName("Reading").build(),
+                LocationRefData.builder().epimmsId("2").externalShortName("London").build(),
+                LocationRefData.builder().epimmsId("3").externalShortName("Manchester").build());
 
     @BeforeEach
     public void setUp() {
@@ -91,7 +91,7 @@ class DirectionOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
         CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
         directionOrderGenerator.generate(caseData, BEARER_TOKEN);
@@ -138,7 +138,7 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
             var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -185,7 +185,7 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
             var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -234,7 +234,7 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
@@ -292,7 +292,7 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
@@ -343,7 +343,7 @@ class DirectionOrderGeneratorTest {
 
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
             var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
 
             assertNull(templateData.getJudgeRecital());

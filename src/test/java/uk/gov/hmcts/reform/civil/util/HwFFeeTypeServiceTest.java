@@ -3,9 +3,11 @@ package uk.gov.hmcts.reform.civil.util;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
@@ -91,5 +93,24 @@ public class HwFFeeTypeServiceTest {
 
         // Assert
         assertThat(feeInPence).isEqualTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void should_updateHwfReferenceNumber() {
+        CaseData caseData = CaseData.builder()
+                .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
+                        .builder()
+                        .hwfNumberAvailable(YesOrNo.YES)
+                        .hwfNumberForFeePaymentOutcome("hwf").build())
+                .build();
+        CaseData updatedCaseData = HwFFeeTypeService.updateHwfReferenceNumber(caseData);
+        assertThat(updatedCaseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())
+                .isEqualTo("hwf");
+        assertThat(updatedCaseData.getGeneralAppHelpWithFees().getHelpWithFee())
+                .isEqualTo(YesOrNo.YES);
+        assertThat(updatedCaseData.getFeePaymentOutcomeDetails()
+                .getHwfNumberForFeePaymentOutcome()).isNull();
+        assertThat(updatedCaseData.getFeePaymentOutcomeDetails()
+                .getHwfNumberAvailable()).isNull();
     }
 }
