@@ -163,13 +163,13 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
         caseData = caseData.toBuilder()
             .isGaApplicantLip(YesOrNo.YES)
             .build();
-        BigDecimal expectedApplicationFeeAmount = caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence();
 
         when(judicialDecisionHelper
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
         when(judicialDecisionHelper
                  .containsTypesNeedNoAdditionalFee(caseData)).thenReturn(false);
 
+        BigDecimal expectedApplicationFeeAmount = caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence();
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
