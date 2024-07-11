@@ -81,4 +81,5 @@ public class NoRemissionHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getGeneralAppHelpWithFees()).isNotNull();
         }
     }
+
 }
