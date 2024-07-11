@@ -75,7 +75,7 @@ class GeneralOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_ORDER)))
             .thenReturn(new DocmosisDocument(GENERAL_ORDER.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
         generalOrderGenerator.generate(caseData, BEARER_TOKEN);
 
@@ -119,7 +119,7 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
             var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -164,7 +164,7 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
             var templateData = generalOrderGenerator.getTemplateData(caseData, "auth");
 
@@ -211,7 +211,7 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
@@ -269,7 +269,7 @@ class GeneralOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 
@@ -320,7 +320,7 @@ class GeneralOrderGeneratorTest {
 
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
             var templateData = generalOrderGenerator.getTemplateData(updateData, "auth");
 

@@ -2098,7 +2098,10 @@ class AssistedOrderFormGeneratorTest {
     @Test
     void shouldGenerateAssistedOrderDocument() {
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("Reading")
+                            .build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
 
@@ -2138,7 +2141,10 @@ class AssistedOrderFormGeneratorTest {
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
 
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("London")
+                            .build());
         CaseData caseData = getSampleGeneralApplicationCaseData(YES).toBuilder()
             .caseManagementLocation(GACaseLocation.builder().siteName("testing")
                                         .address("london court")
