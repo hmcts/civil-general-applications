@@ -233,7 +233,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
-                    NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : ""
+                NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : "",
+                NotificationData.CASE_TITLE, "null v null"
             );
         }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -126,13 +127,15 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                     + " " + caseData
                     .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
         }
+        String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
-            GA_LIP_RESP_NAME, lipRespName
+            GA_LIP_RESP_NAME, lipRespName,
+            CASE_TITLE, caseTitle
         );
     }
 

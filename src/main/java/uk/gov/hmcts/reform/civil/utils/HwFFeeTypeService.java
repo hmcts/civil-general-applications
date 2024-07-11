@@ -5,7 +5,9 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -83,4 +85,25 @@ public class HwFFeeTypeService {
         return updatedData.build();
     }
 
+    public static CaseData updateHwfReferenceNumber(CaseData caseData) {
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder();
+
+        if (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+                && caseData.getFeePaymentOutcomeDetails().getHwfNumberAvailable() == YesOrNo.YES) {
+            HelpWithFees helpWithFees = HelpWithFees.builder()
+                    .helpWithFee(YesOrNo.YES)
+                    .helpWithFeesReferenceNumber(caseData.getFeePaymentOutcomeDetails().getHwfNumberForFeePaymentOutcome())
+                    .build();
+            updatedData.generalAppHelpWithFees(helpWithFees);
+            clearHwfReferenceProperties(updatedData);
+        }
+        return updatedData.build();
+    }
+
+    private static void clearHwfReferenceProperties(CaseData.CaseDataBuilder caseDataBuilder) {
+        CaseData caseData = caseDataBuilder.build();
+        caseDataBuilder.feePaymentOutcomeDetails(caseData.getFeePaymentOutcomeDetails().toBuilder()
+                .hwfNumberAvailable(null)
+                .hwfNumberForFeePaymentOutcome(null).build());
+    }
 }
