@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -20,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
@@ -247,7 +247,7 @@ public class JudicialNotificationService implements NotificationData {
     private CaseData applicationRequestForInformation(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)
-            && (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)
+            && (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)
                 || judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData))) {
 
             // Send notification to respondent if payment is made
@@ -605,13 +605,14 @@ public class JudicialNotificationService implements NotificationData {
     private static boolean isRespondentNotificationMakeDecisionEvent(CaseData caseData) {
         var judicialDecision = Optional.ofNullable(caseData.getBusinessProcess())
             .map(BusinessProcess::getCamundaEvent).orElse(null);
-        // Case Event should be START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION
-        return
-            Objects.nonNull(judicialDecision)
+        // Case Event should be START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION (OR)
+        // CCD state is APPLICATION ADDLN Payment
+        return caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)
+            || (Objects.nonNull(judicialDecision)
                 && caseData.getBusinessProcess().getCamundaEvent()
                 .equals("MAKE_DECISION")
                 && caseData.getBusinessProcess().getActivityId()
-                .equals("StartRespondentNotificationProcessMakeDecision");
+                .equals("StartRespondentNotificationProcessMakeDecision"));
     }
 
 }

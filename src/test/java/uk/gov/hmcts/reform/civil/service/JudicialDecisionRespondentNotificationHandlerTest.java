@@ -48,6 +48,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -163,6 +165,22 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
                                 .toBuilder().businessProcess(businessProcess).build());
+
+            judicialRespondentNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
+                .toBuilder().businessProcess(businessProcess).build();
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void sendNotificationRespondentConcurrentWrittenRep_AddlnPayment() {
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
+                                .toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build());
 
             judicialRespondentNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
                 .toBuilder().businessProcess(businessProcess).build();
@@ -295,6 +313,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                 .businessProcess(businessProcess)
                 .isGaRespondentOneLip(YES)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .generalAppRespondentSolicitors(respondentSolicitors())
                 .applicantPartyName("App")
                 .claimant1PartyName("CL")
@@ -360,7 +379,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                               .email(DUMMY_EMAIL).build())
                 .isGaRespondentOneLip(YES)
                 .isGaApplicantLip(NO)
-
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .businessProcess(BusinessProcess.builder().camundaEvent(JUDGES_DECISION).build())
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(CASE_REFERENCE.toString()).build())
@@ -388,6 +407,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .isGaApplicantLip(isApplicantLip)
                 .applicantPartyName("App")
                 .claimant1PartyName("CL")
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .defendant1PartyName("DEF")
                 .isGaRespondentOneLip(isRespondentLip)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
@@ -412,6 +432,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .applicationIsCloaked(isCloaked)
                 .isGaApplicantLip(isLipApplicant)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .isGaRespondentOneLip(isLipRespondent)
                 .applicantPartyName("App")
                 .claimant1PartyName("CL")
@@ -451,6 +472,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                     .isGaRespondentOneLip(isGaRespondentOneLip)
                     .applicantPartyName("App")
                     .claimant1PartyName("CL")
+                    .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                     .defendant1PartyName("DEF")
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .judicialDecision(GAJudicialDecision.builder()
@@ -476,6 +498,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 .isGaRespondentOneLip(isGaRespondentOneLip)
                 .applicantPartyName("App")
                 .claimant1PartyName("CL")
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .defendant1PartyName("DEF")
                 .generalAppRespondentSolicitors(respondentSolicitors())
                 .judicialDecision(GAJudicialDecision.builder()
@@ -1404,7 +1427,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
 
         return CaseData.builder()
-            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .generalAppRespondentSolicitors(respondentSolicitors())
             .applicationIsCloaked(isCloaked)
             .judicialDecision(GAJudicialDecision.builder()
