@@ -321,6 +321,7 @@ public class CaseData implements MappableObject {
     private final HelpWithFeesDetails additionalHwfDetails;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
+    private final YesOrNo generalAppAskForCosts;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
