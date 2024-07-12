@@ -21,8 +21,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
