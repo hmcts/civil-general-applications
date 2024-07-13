@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
@@ -99,7 +101,6 @@ public class CaseData implements MappableObject {
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
-    private final HelpWithFees generalAppHelpWithFees;
     private final GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppApplicantAddlSolicitors;
@@ -316,11 +317,15 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaRespondentTwoLip;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
+    private final HelpWithFees generalAppHelpWithFees;
     private final FeeType hwfFeeType;
     private final HelpWithFeesDetails gaHwfDetails;
     private final HelpWithFeesDetails additionalHwfDetails;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
+    private final YesOrNo generalAppAskForCosts;
+    @JsonUnwrapped
+    private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
