@@ -18,6 +18,13 @@ public interface NotificationData {
     String GA_LIP_RESP_NAME = "respondentName";
     String CASE_TITLE = "ClaimantvDefendant";
 
+    //hwf
+    String CLAIMANT_NAME = "claimantName";
+    String HWF_REFERENCE_NUMBER = "hwFReferenceNumber";
+    String TYPE_OF_FEE = "typeOfFee";
+    String HWF_MORE_INFO_DATE = "date";
+    String HWF_MORE_INFO_DOCUMENTS = "documents";
+
     Map<String, String> addProperties(CaseData caseData);
 
 }

@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.service.JudicialNotificationService;
+import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 public class HwfApplicantNotificationHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
-    private final JudicialNotificationService judicialNotificationService;
+    private final HwfNotificationService notificationService;
     private static final List<CaseEvent> EVENTS = List.of(
             NOTIFY_APPLICANT_LIP_HWF
     );
@@ -43,7 +43,7 @@ public class HwfApplicantNotificationHandler extends CallbackHandler {
 
     private CallbackResponse hwfApplicantNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-
+        notificationService.sendNotification(caseData);
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))
             .build();

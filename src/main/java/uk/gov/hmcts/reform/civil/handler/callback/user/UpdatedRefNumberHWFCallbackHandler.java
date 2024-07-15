@@ -67,7 +67,8 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
             ofNullable(caseData.getGeneralAppHelpWithFees())
                 .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
             if (caseData.getGaHwfDetails() != null) {
-                updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+                updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder()
+                        .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA).hwfReferenceNumber(null).build());
             }
             return updatedData.build();
         }
@@ -76,7 +77,8 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
             ofNullable(caseData.getGeneralAppHelpWithFees())
                 .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
             if (caseData.getAdditionalHwfDetails() != null) {
-                updatedData.additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+                updatedData.additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder()
+                        .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA).hwfReferenceNumber(null).build());
             }
             return updatedData.build();
         }

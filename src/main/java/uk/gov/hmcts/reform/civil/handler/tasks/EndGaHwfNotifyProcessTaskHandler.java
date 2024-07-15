@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_GA_BUSINESS_PROCESS;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_GA_HWF_NOTIFY_PROCESS;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EndGaBusinessProcessTaskHandler implements BaseExternalTaskHandler {
+public class EndGaHwfNotifyProcessTaskHandler implements BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -35,7 +34,7 @@ public class EndGaBusinessProcessTaskHandler implements BaseExternalTaskHandler 
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
-            .startGaUpdate(caseId, END_GA_BUSINESS_PROCESS);
+            .startGaUpdate(caseId, END_GA_HWF_NOTIFY_PROCESS);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
