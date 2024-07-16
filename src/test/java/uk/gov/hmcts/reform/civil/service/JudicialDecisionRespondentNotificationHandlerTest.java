@@ -460,7 +460,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             customProp.put(NotificationData.CASE_TITLE, "CL v DEF");
             customProp.put(NotificationData.GA_APPLICATION_TYPE,
                            GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue());
-            customProp.put(NotificationData.GA_LIP_RESP_NAME, "respondent solicitor");
+            customProp.put(NotificationData.GA_LIP_RESP_NAME, "DEF");
 
             return customProp;
         }

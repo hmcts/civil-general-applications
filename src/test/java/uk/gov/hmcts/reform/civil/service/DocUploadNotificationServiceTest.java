@@ -146,7 +146,7 @@ public class DocUploadNotificationServiceTest {
             }
 
             if (isLipRespondent == YES) {
-                customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename surname");
+                customProp.put(NotificationData.GA_LIP_RESP_NAME, "DEF");
             }
             return customProp;
         }

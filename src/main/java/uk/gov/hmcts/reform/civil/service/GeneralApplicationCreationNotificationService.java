@@ -125,14 +125,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         String caseTitle = "";
         if (gaForLipService.isLipResp(caseData)) {
 
-            String surname = "";
-            if (caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().isPresent()) {
-                surname = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
-            }
-
-            lipRespName = caseData
-                    .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
-                    + " " + surname;
+            lipRespName = caseData.getDefendant1PartyName();
             caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
 
         }

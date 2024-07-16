@@ -74,9 +74,7 @@ public class DocUploadNotificationService implements NotificationData {
 
         } else if (gaForLipService.isLipResp(caseData)) {
 
-            String isLipRespondentName = caseData
-                .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
-                + " " + getSurname(caseData);
+            String isLipRespondentName = caseData.getDefendant1PartyName();
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)

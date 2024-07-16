@@ -90,7 +90,7 @@ public class HearingScheduledNotificationServiceTest {
         }
 
         if (isLipRespondent == YES) {
-            customProp.put(NotificationData.GA_LIP_RESP_NAME, "forename surname");
+            customProp.put(NotificationData.GA_LIP_RESP_NAME, "Test Defendant1 Name");
         }
         return customProp;
     }

@@ -179,7 +179,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             verify(notificationService, times(2)).sendMail(
                     any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
             );
-            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("LipF LipS");
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
             assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
         }
 
