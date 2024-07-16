@@ -81,16 +81,17 @@ class FeesPaymentServiceTest {
     private UpdatePaymentStatusService updatePaymentStatusService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    private CaseData caseData;
 
     @BeforeEach
     void before() {
-        CaseData caseData = CaseData.builder().ccdCaseReference(2801090368574910L)
+        caseData = CaseData.builder().ccdCaseReference(2801090368574910L)
             .generalAppPBADetails(GAPbaDetails.builder().serviceReqReference("2023-1701090705688")
+                                       .additionalPaymentServiceRef("2023-1701090705600")
                                        .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
                                        .build())
             .parentCaseReference("1701090368574910")
             .build();
-
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
     }
 
@@ -101,6 +102,27 @@ class FeesPaymentServiceTest {
 
         when(paymentsClient.createGovPayCardPaymentRequest(
             "2023-1701090705688",
+            BEARER_TOKEN,
+            CARD_PAYMENT_SERVICE_REQUEST
+        )).thenReturn(response);
+
+        CardPaymentStatusResponse govPaymentRequest = feesPaymentService.createGovPaymentRequest(
+            "2801090368574910",
+            BEARER_TOKEN
+        );
+        assertThat(govPaymentRequest).isEqualTo(CardPaymentStatusResponse.from(response));
+
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldCreateGovPayPaymentUrlForServiceRequestAdditionalPayment() {
+        caseData = caseData.toBuilder().applicationFeeAmountInPence(BigDecimal.TEN).build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+        CardPaymentServiceRequestResponse response = buildServiceRequestResponse();
+
+        when(paymentsClient.createGovPayCardPaymentRequest(
+            "2023-1701090705600",
             BEARER_TOKEN,
             CARD_PAYMENT_SERVICE_REQUEST
         )).thenReturn(response);

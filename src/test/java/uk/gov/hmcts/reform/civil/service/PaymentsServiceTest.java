@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -194,6 +195,23 @@ class PaymentsServiceTest {
             () -> paymentsService.validateRequest(caseData)
         );
         assertThat(exception.getMessage()).isEqualTo("Applicant's organization details not received.");
+    }
+
+    @Test
+    void validateRequestShouldNotThrowAnError_whenApplicantSolicitorOrgDetailsAreNotSetForLiPApplicant() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder()
+                                               .calculatedAmountInPence(BigDecimal.TEN)
+                                               .version("version")
+                                               .code("code").build()).build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
+            .build();
+
+        paymentsService.validateRequest(caseData);
+
+        assertThat(caseData).isNotNull();
     }
 
     @Test

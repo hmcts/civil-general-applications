@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.fee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,10 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
 
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee(), null, null);
-            BigDecimal applicationFee = caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence();
+            BigDecimal applicationFee = Optional.ofNullable(caseData.getGeneralAppPBADetails())
+                .map(details -> details.getFee())
+                .map(fee -> fee.getCalculatedAmountInPence())
+                .orElse(null);
             GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails()
                 .toBuilder().fee(feeForGA).build();
             CaseData.CaseDataBuilder builder = caseData.toBuilder();
