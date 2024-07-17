@@ -19,7 +19,6 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.HwFMoreInfoRequiredDocuments;
@@ -46,8 +45,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class HwfNotificationServiceTest {
 
     private static final String EMAIL_TEMPLATE_MORE_INFO_HWF = "test-hwf-more-info-id";
@@ -111,7 +113,6 @@ public class HwfNotificationServiceTest {
     @BeforeEach
     void setup() {
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
                 EMAIL_TEMPLATE_MORE_INFO_HWF);
         when(notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber()).thenReturn(
@@ -132,13 +133,15 @@ public class HwfNotificationServiceTest {
                                 getMoreInformationDocumentList()).build())
                 .gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
+                EMAIL_TEMPLATE_MORE_INFO_HWF);
         // When
         service.sendNotification(caseData);
 
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_MORE_INFO_HWF,
+                "test-hwf-more-info-id",
                 getNotificationDataMapMoreInfoGa(),
                 REFERENCE_NUMBER
         );
@@ -157,6 +160,8 @@ public class HwfNotificationServiceTest {
                 .additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
+                EMAIL_TEMPLATE_MORE_INFO_HWF);
 
         // When
         service.sendNotification(caseData);
@@ -164,7 +169,7 @@ public class HwfNotificationServiceTest {
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_MORE_INFO_HWF,
+                "test-hwf-more-info-id",
                 getNotificationDataMapMoreInfoAdditional(),
                 REFERENCE_NUMBER
         );
@@ -225,7 +230,7 @@ public class HwfNotificationServiceTest {
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_UPDATE_REF_NUMBER,
+                "test-hwf-updaterefnumber-id",
                 getNotificationCommonDataMapForGa(),
                 REFERENCE_NUMBER
         );
@@ -245,7 +250,7 @@ public class HwfNotificationServiceTest {
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_UPDATE_REF_NUMBER,
+                "test-hwf-updaterefnumber-id",
                 getNotificationCommonDataMapForAdditional(),
                 REFERENCE_NUMBER
         );
@@ -260,14 +265,13 @@ public class HwfNotificationServiceTest {
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
-
         // When
         service.sendNotification(caseData);
 
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_INVALID_HWF_REFERENCE,
+                "test-hwf-invalidrefnumber-id",
                 getNotificationCommonDataMapForGa(),
                 REFERENCE_NUMBER
         );
@@ -283,14 +287,13 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
-
         // When
         service.sendNotification(caseData);
 
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
-                EMAIL_TEMPLATE_INVALID_HWF_REFERENCE,
+                "test-hwf-invalidrefnumber-id",
                 getNotificationCommonDataMapForAdditional(),
                 REFERENCE_NUMBER
         );

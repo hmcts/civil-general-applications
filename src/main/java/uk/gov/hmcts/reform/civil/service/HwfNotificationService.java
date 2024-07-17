@@ -89,8 +89,12 @@ public class HwfNotificationService implements NotificationData {
     private String getTemplate(CaseEvent hwfEvent) {
         if (emailTemplates == null) {
             emailTemplates = Map.of(
-                CaseEvent.MORE_INFORMATION_HWF_GA,
-                notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()
+                    CaseEvent.INVALID_HWF_REFERENCE_GA,
+                    notificationsProperties.getNotifyApplicantForHwfInvalidRefNumber(),
+                    CaseEvent.MORE_INFORMATION_HWF_GA,
+                    notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded(),
+                    CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                    notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber()
             );
         }
         return emailTemplates.get(hwfEvent);
