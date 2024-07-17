@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -66,6 +67,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
+        caseDataBuilder.isWaTaskRequired(YesOrNo.NO);
         CaseData updatedCaseData = caseDataBuilder.build();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
@@ -78,7 +80,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
                     .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
                             .contains(BUNDLE))
-                    .collect(Collectors.toList());
+                    .toList();
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
                     .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
                             .contains(BUNDLE))
