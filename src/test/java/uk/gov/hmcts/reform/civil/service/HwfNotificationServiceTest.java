@@ -43,17 +43,11 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-    HwfNotificationService.class,
-    JacksonAutoConfiguration.class
-})
+@ExtendWith(MockitoExtension.class)
 public class HwfNotificationServiceTest {
 
     private static final String EMAIL_TEMPLATE_MORE_INFO_HWF = "test-hwf-more-info-id";
@@ -66,18 +60,18 @@ public class HwfNotificationServiceTest {
     private static final String REFERENCE_NUMBER = "1";
     private static final LocalDate NOW = LocalDate.now();
 
-    @MockBean
+    @Mock
     private NotificationsProperties notificationsProperties;
-    @MockBean
+    @Mock
     private NotificationService notificationService;
-    @MockBean
+    @Mock
     private CoreCaseDataService coreCaseDataService;
 
-    @MockBean
+    @Mock
     private CaseDetailsConverter caseDetailsConverter;
-    @MockBean
+    @Mock
     private SolicitorEmailValidation solicitorEmailValidation;
-    @Autowired
+    @InjectMocks
     private HwfNotificationService service;
 
     private static final CaseData GA_CASE_DATA = CaseDataBuilder.builder()
