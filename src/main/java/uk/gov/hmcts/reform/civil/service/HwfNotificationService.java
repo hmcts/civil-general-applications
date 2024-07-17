@@ -70,10 +70,7 @@ public class HwfNotificationService implements NotificationData {
 
     private Map<String, String> getFurtherProperties(CaseData caseData) {
         return switch (getEvent(caseData)) {
-            //case NO_REMISSION_HWF -> getNoRemissionProperties(caseData);
             case MORE_INFORMATION_HWF_GA -> getMoreInformationProperties(caseData);
-            //case PARTIAL_REMISSION_HWF_GRANTED -> getPartialRemissionProperties(caseData);
-            //case INVALID_HWF_REFERENCE, UPDATE_HELP_WITH_FEE_NUMBER -> Collections.emptyMap();
             default -> throw new NotificationException(new Exception(ERROR_HWF_EVENT));
         };
     }
