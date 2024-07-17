@@ -4,7 +4,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CASE_REFERENCE;
@@ -17,6 +19,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.HwFMoreInfoRequiredDocuments;
@@ -54,6 +57,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class HwfNotificationServiceTest {
 
     private static final String EMAIL_TEMPLATE_MORE_INFO_HWF = "test-hwf-more-info-id";
+    private static final String EMAIL_TEMPLATE_INVALID_HWF_REFERENCE = "test-hwf-invalidrefnumber-id";
+    private static final String EMAIL_TEMPLATE_UPDATE_REF_NUMBER = "test-hwf-updaterefnumber-id";
     private static final String EMAIL = "test@email.com";
     private static final String APPLICANT = "Mr. John Rambo";
     private static final String GA_REFERENCE = "1111222233334444";
@@ -115,6 +120,10 @@ public class HwfNotificationServiceTest {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
                 EMAIL_TEMPLATE_MORE_INFO_HWF);
+        when(notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber()).thenReturn(
+                EMAIL_TEMPLATE_UPDATE_REF_NUMBER);
+        when(notificationsProperties.getNotifyApplicantForHwfInvalidRefNumber()).thenReturn(
+                EMAIL_TEMPLATE_INVALID_HWF_REFERENCE);
     }
 
     @Test
@@ -206,6 +215,109 @@ public class HwfNotificationServiceTest {
             documentList.append("\n");
         }
         return documentList.toString();
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_ClaimIssued() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
+                .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                EMAIL_TEMPLATE_UPDATE_REF_NUMBER,
+                getNotificationCommonDataMapForGa(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_Additional() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
+                .build();
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                EMAIL_TEMPLATE_UPDATE_REF_NUMBER,
+                getNotificationCommonDataMapForAdditional(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_InvalidRefNumber_ClaimIssued() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
+                .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                EMAIL_TEMPLATE_INVALID_HWF_REFERENCE,
+                getNotificationCommonDataMapForGa(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_InvalidRefNumber_Hearing() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
+                .build();
+
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                EMAIL_TEMPLATE_INVALID_HWF_REFERENCE,
+                getNotificationCommonDataMapForAdditional(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    private Map<String, String> getNotificationCommonDataMapForGa() {
+        return Map.of(
+                CLAIMANT_NAME, APPLICANT,
+                CASE_REFERENCE, GA_REFERENCE,
+                TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+                HWF_REFERENCE_NUMBER, HWF_REFERENCE
+        );
+    }
+
+    private Map<String, String> getNotificationCommonDataMapForAdditional() {
+        return Map.of(
+                CLAIMANT_NAME, APPLICANT,
+                CASE_REFERENCE, GA_REFERENCE,
+                TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+                HWF_REFERENCE_NUMBER, HWF_REFERENCE
+        );
     }
 
 }
