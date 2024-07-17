@@ -310,7 +310,7 @@ public class CaseData implements MappableObject {
     private final String judgeTitle;
 
     private final List<Element<UploadDocumentByType>> uploadDocument;
-    private final YesOrNo isWaTaskRequired;
+    private final YesOrNo isGaTypeTaskRequired;
     // GA for LIP
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;

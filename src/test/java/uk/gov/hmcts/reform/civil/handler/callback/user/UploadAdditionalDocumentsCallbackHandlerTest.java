@@ -103,7 +103,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .respondent2SameLegalRepresentative(YesOrNo.NO)
                 .applicationIsUncloakedOnce(YES)
                 .parentClaimantIsApplicant(YES)
-                .isWaTaskRequired(NO)
+                .isGaTypeTaskRequired(NO)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                 .uploadDocument(uploadDocumentByApplicant)
@@ -118,7 +118,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(UPLOAD_ADDL_DOCUMENTS.toString());
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
-            assertThat(responseCaseData.getIsWaTaskRequired()).isEqualTo(NO);
+            assertThat(responseCaseData.getIsGaTypeTaskRequired()).isEqualTo(NO);
         }
 
         @Test

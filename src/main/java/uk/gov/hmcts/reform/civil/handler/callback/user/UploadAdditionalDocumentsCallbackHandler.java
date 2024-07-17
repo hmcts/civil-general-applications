@@ -67,7 +67,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
-        caseDataBuilder.isWaTaskRequired(YesOrNo.NO);
+        caseDataBuilder.isGaTypeTaskRequired(YesOrNo.NO);
         CaseData updatedCaseData = caseDataBuilder.build();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
