@@ -82,4 +82,10 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String notifyApplicantForHwFMoreInformationNeeded;
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumber;
 }
