@@ -343,7 +343,7 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public boolean isAdditionalFeeRequested() {
-        return getApplicationFeeAmountInPence() != null;
+        return getGeneralAppPBADetails() != null && getGeneralAppPBADetails().getAdditionalPaymentServiceRef() != null;
     }
 
     public boolean hasNoOngoingBusinessProcess() {

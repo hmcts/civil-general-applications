@@ -86,9 +86,10 @@ class UpdatePaymentStatusServiceTest {
                                  .status(BusinessProcessStatus.READY)
                                  .camundaEvent(BUSINESS_PROCESS)
                                  .build())
-            .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
+            .generalAppPBADetails(GAPbaDetails.builder().additionalPaymentDetails(PaymentDetails.builder()
                                                                             .customerReference("RC-1604-0739-2145-4711")
-                                                                            .build()).build())
+                                                                            .build())
+                                      .additionalPaymentServiceRef("2023-1701090705600").build())
             .applicationFeeAmountInPence(new BigDecimal("10000"))
             .build();
         CaseDetails caseDetails = buildCaseDetails(caseData);

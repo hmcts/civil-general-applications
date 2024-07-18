@@ -87,7 +87,6 @@ class FeesPaymentServiceTest {
     void before() {
         caseData = CaseData.builder().ccdCaseReference(2801090368574910L)
             .generalAppPBADetails(GAPbaDetails.builder().serviceReqReference("2023-1701090705688")
-                                       .additionalPaymentServiceRef("2023-1701090705600")
                                        .fee(Fee.builder().calculatedAmountInPence(new BigDecimal("23200")).build())
                                        .build())
             .parentCaseReference("1701090368574910")
@@ -117,7 +116,8 @@ class FeesPaymentServiceTest {
     @Test
     @SneakyThrows
     void shouldCreateGovPayPaymentUrlForServiceRequestAdditionalPayment() {
-        caseData = caseData.toBuilder().applicationFeeAmountInPence(BigDecimal.TEN).build();
+        caseData = caseData.toBuilder().generalAppPBADetails(caseData.getGeneralAppPBADetails().toBuilder()
+                                                                 .additionalPaymentServiceRef("2023-1701090705600").build()).build();
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         CardPaymentServiceRequestResponse response = buildServiceRequestResponse();
 
