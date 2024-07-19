@@ -11,7 +11,10 @@ import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.Notificat
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
+import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
+import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -68,9 +71,28 @@ public class HwfNotificationService implements NotificationData {
         );
     }
 
+    private Map<String, String> getPartialRemissionProperties(CaseData caseData) {
+        BigDecimal remission;
+        BigDecimal outstanding;
+        if (caseData.isHWFTypeApplication()) {
+            remission = MonetaryConversions
+                    .penniesToPounds(HwFFeeTypeService.getGaRemissionAmount(caseData));
+            outstanding = caseData.getGaHwfDetails().getOutstandingFeeInPounds();
+        } else {
+            remission = MonetaryConversions
+                    .penniesToPounds(HwFFeeTypeService.getAdditionalRemissionAmount(caseData));
+            outstanding = caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds();
+        }
+        return Map.of(
+            PART_AMOUNT, remission.toString(),
+            REMAINING_AMOUNT, outstanding.toString()
+        );
+    }
+
     private Map<String, String> getFurtherProperties(CaseData caseData) {
         return switch (getEvent(caseData)) {
             case MORE_INFORMATION_HWF_GA -> getMoreInformationProperties(caseData);
+            case PARTIAL_REMISSION_HWF_GA -> getPartialRemissionProperties(caseData);
             case INVALID_HWF_REFERENCE_GA, UPDATE_HELP_WITH_FEE_NUMBER_GA -> Collections.emptyMap();
             default -> throw new NotificationException(new Exception(ERROR_HWF_EVENT));
         };
@@ -94,7 +116,9 @@ public class HwfNotificationService implements NotificationData {
                     CaseEvent.MORE_INFORMATION_HWF_GA,
                     notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded(),
                     CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA,
-                    notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber()
+                    notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber(),
+                    CaseEvent.PARTIAL_REMISSION_HWF_GA,
+                    notificationsProperties.getNotifyApplicantForHwfPartialRemission()
             );
         }
         return emailTemplates.get(hwfEvent);

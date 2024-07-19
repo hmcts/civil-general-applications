@@ -24,6 +24,8 @@ public interface NotificationData {
     String TYPE_OF_FEE = "typeOfFee";
     String HWF_MORE_INFO_DATE = "date";
     String HWF_MORE_INFO_DOCUMENTS = "documents";
+    String PART_AMOUNT = "partAmount";
+    String REMAINING_AMOUNT = "remainingAmount";
 
     Map<String, String> addProperties(CaseData caseData);
 
