@@ -106,8 +106,6 @@ class RequestForInformationGeneratorTest {
             .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
             .build();
 
-        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
-            .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
             .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
