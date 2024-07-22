@@ -88,18 +88,17 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
-        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption =  Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo()).map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
+        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = getGAJudgeRequestMoreInfoOption(caseData);
 
-        if(gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
+        if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
             return REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
         }
         return REQUEST_FOR_INFORMATION;
     }
 
     private DocumentType getDocumentType(CaseData caseData) {
-        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption =  Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo()).map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
-
-        if(gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
+        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = getGAJudgeRequestMoreInfoOption(caseData);
+        if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
             return DocumentType.SEND_APP_TO_OTHER_PARTY;
         }
         return DocumentType.REQUEST_FOR_INFORMATION;
@@ -112,5 +111,10 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
             .map(amount -> amount.setScale(2))
             .map(BigDecimal::toPlainString)
             .orElse(BigDecimal.ZERO.toPlainString());
+    }
+
+    private GAJudgeRequestMoreInfoOption getGAJudgeRequestMoreInfoOption(CaseData caseData) {
+        return Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo())
+            .map(GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
     }
 }

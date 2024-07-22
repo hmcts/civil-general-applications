@@ -270,7 +270,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo()).map(
             GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
 
-        return gaForLipService.isLipApp(caseData) && caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
+        return gaForLipService.isLipApp(caseData) && caseData.getJudicialDecision().getDecision() == REQUEST_MORE_INFO
             && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
     }
 
