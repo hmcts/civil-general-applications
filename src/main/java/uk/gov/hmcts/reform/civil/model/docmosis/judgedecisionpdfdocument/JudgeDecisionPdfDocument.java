@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -49,6 +50,7 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String defendant2Name;
     private final String claimant1Name;
     private final String claimant2Name;
+    private final String additionalApplicationFee;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
@@ -65,4 +67,8 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate submittedOn;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate applicationCreatedDate;
 }

@@ -25,8 +25,10 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
@@ -50,6 +52,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @ExtendWith(SpringExtension.class)
@@ -100,6 +103,9 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private FeatureToggleService featureToggleService;
 
+    @MockBean
+    private GaForLipService gaForLipService;
+
     @Autowired
     private GeneratePDFDocumentCallbackHandler handler;
 
@@ -131,6 +137,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         when(consentOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.CONSENT_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
     }
 
     @Nested
@@ -332,6 +339,28 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .build();
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getRequestForInformationDocument().get(0).getValue())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldGenerateSendAppToOtherParty_whenAboutToSubmitEventIsCalled() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 

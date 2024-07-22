@@ -14,7 +14,8 @@ public enum DocmosisTemplates {
     FREE_FORM_ORDER("CV-UNS-GAP-ENG-01075.docx", GENERAL_ORDER.getDocumentTitle()),
     ASSISTED_ORDER_FORM("CV-UNS-GAP-ENG-01076.docx", GENERAL_ORDER.getDocumentTitle()),
     CONSENT_ORDER_FORM("CV-UNS-GAP-ENG-01078.docx", "Consent_order_for_application_%s.pdf"),
-    GENERAL_APPLICATION_DRAFT("CV-UNS-GAP-ENG-01077.docx", "Draft_application_%s.pdf");
+    GENERAL_APPLICATION_DRAFT("CV-UNS-GAP-ENG-01077.docx", "Draft_application_%s.pdf"),
+    REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY("CV-SPEC-GAP-ENG-SEND-TO-OTHER-PARTY.docx", "make-with-notice_%s.pdf");
 
     private final String template;
     private final String documentTitle;
