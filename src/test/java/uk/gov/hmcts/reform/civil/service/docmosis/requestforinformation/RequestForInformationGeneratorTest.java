@@ -77,18 +77,18 @@ class RequestForInformationGeneratorTest {
 
     @Test
     void shouldGenerateSendAppToOtherPartyDocumentForLipClaimant() {
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY)))
+            .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
         CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
                                                  .judgeRecitalText("test")
                                                  .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
                                                  .judgeRequestMoreInfoByDate(now()).build())
             .build();
-
-        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY)))
-            .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY.getDocumentTitle(), bytes));
-        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
         requestForInformationGenerator.generate(caseData, BEARER_TOKEN);
 
