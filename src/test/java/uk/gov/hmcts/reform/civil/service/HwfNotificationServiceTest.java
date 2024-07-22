@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
@@ -14,6 +15,8 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.No
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DATE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DOCUMENTS;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_REFERENCE_NUMBER;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.PART_AMOUNT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.REMAINING_AMOUNT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.TYPE_OF_FEE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
@@ -55,11 +58,14 @@ public class HwfNotificationServiceTest {
     private static final String EMAIL_TEMPLATE_MORE_INFO_HWF = "test-hwf-more-info-id";
     private static final String EMAIL_TEMPLATE_INVALID_HWF_REFERENCE = "test-hwf-invalidrefnumber-id";
     private static final String EMAIL_TEMPLATE_UPDATE_REF_NUMBER = "test-hwf-updaterefnumber-id";
+    private static final String EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION = "test-hwf-partialRemission-id";
     private static final String EMAIL = "test@email.com";
     private static final String APPLICANT = "Mr. John Rambo";
     private static final String GA_REFERENCE = "1111222233334444";
     private static final String HWF_REFERENCE = "000HWF001";
     private static final String REFERENCE_NUMBER = "1";
+    private static final String REMISSION_AMOUNT = "100000.00";
+    private static final String OUTSTANDING_AMOUNT_IN_POUNDS = "500.00";
     private static final LocalDate NOW = LocalDate.now();
 
     @Mock
@@ -119,6 +125,8 @@ public class HwfNotificationServiceTest {
                 EMAIL_TEMPLATE_UPDATE_REF_NUMBER);
         when(notificationsProperties.getNotifyApplicantForHwfInvalidRefNumber()).thenReturn(
                 EMAIL_TEMPLATE_INVALID_HWF_REFERENCE);
+        when(notificationsProperties.getNotifyApplicantForHwfPartialRemission()).thenReturn(
+                EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION);
     }
 
     @Test
@@ -133,8 +141,6 @@ public class HwfNotificationServiceTest {
                                 getMoreInformationDocumentList()).build())
                 .gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
-        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
-                EMAIL_TEMPLATE_MORE_INFO_HWF);
         // When
         service.sendNotification(caseData);
 
@@ -160,8 +166,6 @@ public class HwfNotificationServiceTest {
                 .additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
-        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeeded()).thenReturn(
-                EMAIL_TEMPLATE_MORE_INFO_HWF);
 
         // When
         service.sendNotification(caseData);
@@ -314,6 +318,76 @@ public class HwfNotificationServiceTest {
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_PartialRemission_ClaimIssued() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
+                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .build();
+
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                "test-hwf-partialRemission-id",
+                getNotificationDataMapPartialRemissionGa(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_PartialRemission_Hearing() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+                .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
+                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .build();
+
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+                EMAIL,
+                "test-hwf-partialRemission-id",
+                getNotificationDataMapPartialRemissionAdditional(),
+                REFERENCE_NUMBER
+        );
+    }
+
+    private Map<String, String> getNotificationDataMapPartialRemissionGa() {
+        return Map.of(
+                CLAIMANT_NAME, APPLICANT,
+                CASE_REFERENCE, GA_REFERENCE,
+                TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+                HWF_REFERENCE_NUMBER, HWF_REFERENCE,
+                PART_AMOUNT, "1000.00",
+                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
+        );
+    }
+
+    private Map<String, String> getNotificationDataMapPartialRemissionAdditional() {
+        return Map.of(
+                CLAIMANT_NAME, APPLICANT,
+                CASE_REFERENCE, GA_REFERENCE,
+                TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+                HWF_REFERENCE_NUMBER, HWF_REFERENCE,
+                PART_AMOUNT, "1000.00",
+                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
         );
     }
 
