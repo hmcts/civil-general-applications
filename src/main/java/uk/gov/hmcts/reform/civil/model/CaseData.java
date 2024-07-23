@@ -318,6 +318,7 @@ public class CaseData implements MappableObject {
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
     private final HelpWithFees generalAppHelpWithFees;
+    private final HelpWithFees gaAdditionalHelpWithFees;
     private final FeeType hwfFeeType;
     private final HelpWithFeesDetails gaHwfDetails;
     private final HelpWithFeesDetails additionalHwfDetails;
