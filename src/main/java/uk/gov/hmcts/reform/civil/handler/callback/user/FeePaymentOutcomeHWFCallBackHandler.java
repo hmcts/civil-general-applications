@@ -95,9 +95,19 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         } else {
             if (processedCaseData.isHWFTypeApplication()) {
                 caseData = processedCaseData.toBuilder()
-                        .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
+                    .gaHwfDetails(caseData.getGaHwfDetails().toBuilder()
+                                      .fee(caseData.getGeneralAppPBADetails().getFee())
+                                      .hwfReferenceNumber(caseData
+                                                              .getGeneralAppHelpWithFees()
+                                                              .getHelpWithFeesReferenceNumber()).build())
+                    .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
             } else if (processedCaseData.isHWFTypeAdditional()) {
                 caseData = processedCaseData.toBuilder()
+                    .additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder()
+                                              .fee(caseData.getGeneralAppPBADetails().getFee())
+                                              .hwfReferenceNumber(caseData
+                                                                      .getGeneralAppHelpWithFees()
+                                                                      .getHelpWithFeesReferenceNumber()).build())
                         .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
             } else {
                 errors.add(CASE_STATE_INVALID);
