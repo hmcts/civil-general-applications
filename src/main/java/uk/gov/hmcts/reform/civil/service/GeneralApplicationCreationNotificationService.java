@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -121,13 +122,13 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         String lipRespName = "";
+        String caseTitle = "";
         if (gaForLipService.isLipResp(caseData)) {
-            lipRespName = caseData
-                    .getGeneralAppRespondentSolicitors().get(0).getValue().getForename()
-                    + " " + caseData
-                    .getGeneralAppRespondentSolicitors().get(0).getValue().getSurname().orElse("");
+
+            lipRespName = caseData.getDefendant1PartyName();
+            caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
+
         }
-        String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
@@ -135,7 +136,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
             GA_LIP_RESP_NAME, lipRespName,
-            CASE_TITLE, caseTitle
+            CASE_TITLE, Objects.requireNonNull(caseTitle)
         );
     }
 

@@ -15,6 +15,7 @@ public interface NotificationData {
     String GA_REQUEST_FOR_INFORMATION_DEADLINE = "requestForInformationDeadline";
     String GA_HEARING_DATE = "hearingDate";
     String GA_HEARING_TIME = "hearingTime";
+    String GA_LIP_APPLICANT_NAME = "applicantName";
     String GA_LIP_RESP_NAME = "respondentName";
     String CASE_TITLE = "ClaimantvDefendant";
 
