@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
@@ -59,6 +60,8 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
     private ObjectMapper objectMapper;
     @MockBean
     JudicialDecisionHelper judicialDecisionHelper;
+    @MockBean
+    FeatureToggleService featureToggleService;
 
     @BeforeEach
     void setup() {
@@ -144,6 +147,34 @@ class AdditionalFeeValueCallbackHandlerTest extends BaseCallbackHandlerTest {
                  .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(false);
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         verify(generalAppFeesService, never()).getFeeForGA(any(), any(), any());
+    }
+
+    @Test
+    void shouldSetAppplicationFeeAmount_WhenApplicationUncloaked() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        when(generalAppFeesService.getFeeForGA(any(), any(), any()))
+            .thenReturn(Fee.builder().calculatedAmountInPence(
+                TEST_FEE_AMOUNT_POUNDS_167).code(TEST_FEE_CODE).version(VERSION).build());
+
+        var caseData = CaseDataBuilder.builder()
+            .judicialDecisionWithUncloakRequestForInformationApplication(
+                REQUEST_MORE_INFORMATION, YesOrNo.NO, YesOrNo.NO)
+            .build();
+        caseData = caseData.toBuilder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .build();
+
+        when(judicialDecisionHelper
+                 .isApplicationUncloakedWithAdditionalFee(caseData)).thenReturn(true);
+        when(judicialDecisionHelper
+                 .containsTypesNeedNoAdditionalFee(caseData)).thenReturn(false);
+
+        BigDecimal expectedApplicationFeeAmount = caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence();
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getApplicationFeeAmountInPence()).isEqualTo(expectedApplicationFeeAmount);
     }
 
     @Test

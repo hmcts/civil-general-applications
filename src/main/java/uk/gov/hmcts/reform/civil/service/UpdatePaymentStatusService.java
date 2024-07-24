@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.exceptions.CaseDataUpdateException;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -19,8 +20,6 @@ import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
-
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 
 @Slf4j
 @Service
@@ -46,10 +45,12 @@ public class UpdatePaymentStatusService {
     }
 
     private void createEvent(CaseData caseData, String caseReference) {
-
+        CaseEvent caseEvent = caseData.isAdditionalFeeRequested()
+            ? CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID
+            : CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
             caseReference,
-            INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT
+            caseEvent
         );
 
         CaseDataContent caseDataContent = buildCaseDataContent(
@@ -86,8 +87,11 @@ public class UpdatePaymentStatusService {
             .errorCode(cardPaymentStatusResponse.getErrorCode())
             .errorMessage(cardPaymentStatusResponse.getErrorDescription())
             .build();
-
-        pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
+        if (caseData.isAdditionalFeeRequested()) {
+            pbaDetails = pbaDetailsBuilder.additionalPaymentDetails(paymentDetails).build();
+        } else {
+            pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
+        }
         return caseData.toBuilder()
             .generalAppPBADetails(pbaDetails)
             .build();
