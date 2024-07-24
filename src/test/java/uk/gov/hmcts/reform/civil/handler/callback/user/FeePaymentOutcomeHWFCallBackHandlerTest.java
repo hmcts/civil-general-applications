@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
@@ -108,6 +109,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                                             .calculatedAmountInPence(BigDecimal.valueOf(10000)).code("OOOCM002").build())
                             .build())
                     .gaHwfDetails(HelpWithFeesDetails.builder().build())
+                    .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("ref").build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .build();
             when(service.processHwf(any(CaseData.class)))
@@ -129,7 +131,9 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                                     Fee.builder()
                                             .calculatedAmountInPence(BigDecimal.valueOf(10000)).code("OOOCM002").build())
                             .build())
+                    .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("ref").build())
                     .gaHwfDetails(HelpWithFeesDetails.builder().build())
+                    .additionalHwfDetails(HelpWithFeesDetails.builder().build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .build();
             when(service.processHwf(any(CaseData.class)))
