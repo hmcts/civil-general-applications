@@ -6,15 +6,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CASE_REFERENCE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CLAIMANT_NAME;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.FEE_AMOUNT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DATE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DOCUMENTS;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_REFERENCE_NUMBER;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.NO_REMISSION_REASONS;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.PART_AMOUNT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.REMAINING_AMOUNT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.TYPE_OF_FEE;
@@ -25,6 +28,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.HwFMoreInfoRequiredDocuments;
+import uk.gov.hmcts.reform.civil.enums.NoRemissionDetailsSummary;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -59,6 +63,7 @@ public class HwfNotificationServiceTest {
     private static final String EMAIL_TEMPLATE_INVALID_HWF_REFERENCE = "test-hwf-invalidrefnumber-id";
     private static final String EMAIL_TEMPLATE_UPDATE_REF_NUMBER = "test-hwf-updaterefnumber-id";
     private static final String EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION = "test-hwf-partialRemission-id";
+    private static final String EMAIL_TEMPLATE_NO_REMISSION = "test-hwf-noRemission-id";
     private static final String EMAIL = "test@email.com";
     private static final String APPLICANT = "Mr. John Rambo";
     private static final String GA_REFERENCE = "1111222233334444";
@@ -127,6 +132,8 @@ public class HwfNotificationServiceTest {
                 EMAIL_TEMPLATE_INVALID_HWF_REFERENCE);
         when(notificationsProperties.getNotifyApplicantForHwfPartialRemission()).thenReturn(
                 EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION);
+        when(notificationsProperties.getNotifyApplicantForNoRemission()).thenReturn(
+            EMAIL_TEMPLATE_NO_REMISSION);
     }
 
     @Test
@@ -366,6 +373,72 @@ public class HwfNotificationServiceTest {
                 "test-hwf-partialRemission-id",
                 getNotificationDataMapPartialRemissionAdditional(),
                 REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfNoRemission_ClaimIssued() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(NO_REMISSION_HWF_GA)
+            .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-noRemission-id",
+            getNotificationDataMapNoRemissionApplication(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfNoRemission_AdditionalFee() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(NO_REMISSION_HWF_GA)
+            .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        // When
+        service.sendNotification(caseData);
+
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-noRemission-id",
+            getNotificationDataMapNoRemissionAdditional(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    private Map<String, String> getNotificationDataMapNoRemissionApplication() {
+        return Map.of(
+            CLAIMANT_NAME, APPLICANT,
+            CASE_REFERENCE, GA_REFERENCE,
+            TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+            HWF_REFERENCE_NUMBER, HWF_REFERENCE,
+            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel()
+        );
+    }
+
+    private Map<String, String> getNotificationDataMapNoRemissionAdditional() {
+        return Map.of(
+            CLAIMANT_NAME, APPLICANT,
+            CASE_REFERENCE, GA_REFERENCE,
+            TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+            HWF_REFERENCE_NUMBER, HWF_REFERENCE,
+            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel()
         );
     }
 

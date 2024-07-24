@@ -94,8 +94,25 @@ public class HwfNotificationService implements NotificationData {
             case MORE_INFORMATION_HWF_GA -> getMoreInformationProperties(caseData);
             case PARTIAL_REMISSION_HWF_GA -> getPartialRemissionProperties(caseData);
             case INVALID_HWF_REFERENCE_GA, UPDATE_HELP_WITH_FEE_NUMBER_GA -> Collections.emptyMap();
+            case NO_REMISSION_HWF_GA -> getNoRemissionProperties(caseData);
             default -> throw new NotificationException(new Exception(ERROR_HWF_EVENT));
         };
+    }
+
+    private Map<String, String> getNoRemissionProperties(CaseData caseData) {
+        String remission;
+        BigDecimal outstanding;
+        if (caseData.isHWFTypeApplication()) {
+            remission = caseData.getGaHwfDetails().getNoRemissionDetailsSummary().getLabel();
+            outstanding = caseData.getGaHwfDetails().getOutstandingFeeInPounds();
+        } else {
+            remission = caseData.getAdditionalHwfDetails().getNoRemissionDetailsSummary().getLabel();
+            outstanding = caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds();
+        }
+        return Map.of(
+            FEE_AMOUNT, outstanding.toString(),
+            NO_REMISSION_REASONS, remission
+        );
     }
 
     private CaseEvent getEvent(CaseData caseData) {
@@ -118,7 +135,9 @@ public class HwfNotificationService implements NotificationData {
                     CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA,
                     notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber(),
                     CaseEvent.PARTIAL_REMISSION_HWF_GA,
-                    notificationsProperties.getNotifyApplicantForHwfPartialRemission()
+                    notificationsProperties.getNotifyApplicantForHwfPartialRemission(),
+                    CaseEvent.NO_REMISSION_HWF_GA,
+                    notificationsProperties.getNotifyApplicantForNoRemission()
             );
         }
         return emailTemplates.get(hwfEvent);

@@ -26,6 +26,8 @@ public interface NotificationData {
     String HWF_MORE_INFO_DOCUMENTS = "documents";
     String PART_AMOUNT = "partAmount";
     String REMAINING_AMOUNT = "remainingAmount";
+    String FEE_AMOUNT = "amount";
+    String NO_REMISSION_REASONS = "reasons";
 
     Map<String, String> addProperties(CaseData caseData);
 
