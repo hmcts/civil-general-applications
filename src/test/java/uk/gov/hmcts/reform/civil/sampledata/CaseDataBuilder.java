@@ -144,6 +144,9 @@ public class CaseDataBuilder {
 
     protected GASolicitorDetailsGAspec generalAppApplnSolicitor;
     protected YesOrNo isGaRespondentOneLip;
+    protected String applicantPartyName;
+    protected String claimant1PartyName;
+    protected String defendant1PartyName;
     protected YesOrNo isGaApplicantLip;
     protected YesOrNo isGaRespondentTwoLip;
     private YesOrNo isMultiParty;
@@ -259,6 +262,21 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder applicantPartyName(String applicantPartyName) {
+        this.applicantPartyName = applicantPartyName;
+        return this;
+    }
+
+    public CaseDataBuilder claimant1PartyName(String claimant1PartyName) {
+        this.claimant1PartyName = claimant1PartyName;
+        return this;
+    }
+
+    public CaseDataBuilder defendant1PartyName(String defendant1PartyName) {
+        this.defendant1PartyName = defendant1PartyName;
+        return this;
+    }
+
     public CaseDataBuilder isGaApplicantLip(YesOrNo isGaApplicantLip) {
         this.isGaApplicantLip = isGaApplicantLip;
         return this;
@@ -352,6 +370,9 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .applicantPartyName(applicantPartyName)
+            .claimant1PartyName(claimant1PartyName)
+            .defendant1PartyName(defendant1PartyName)
             .isGaRespondentOneLip(isGaRespondentOneLip)
             .isGaRespondentTwoLip(isGaRespondentTwoLip)
             .isGaApplicantLip(isGaApplicantLip)
