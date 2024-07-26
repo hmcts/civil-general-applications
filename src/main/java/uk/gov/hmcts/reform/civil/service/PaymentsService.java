@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -44,7 +45,7 @@ public class PaymentsService {
             error = "Fees are not set correctly.";
         }
         if (caseData.getGeneralAppApplnSolicitor() == null
-                || isBlank(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier())) {
+                || (caseData.getIsGaApplicantLip() != YesOrNo.YES && isBlank(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))) {
             error = "Applicant's organization details not received.";
         }
         if (!isBlank(error)) {

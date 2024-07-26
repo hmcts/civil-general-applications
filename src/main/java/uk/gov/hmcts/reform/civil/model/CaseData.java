@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.civil.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -324,6 +326,8 @@ public class CaseData implements MappableObject {
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
     private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
     private final YesOrNo generalAppAskForCosts;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private final BigDecimal applicationFeeAmountInPence;
     @JsonUnwrapped
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
 
@@ -335,6 +339,11 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean isHWFTypeAdditional() {
         return getHwfFeeType() == FeeType.ADDITIONAL;
+    }
+
+    @JsonIgnore
+    public boolean isAdditionalFeeRequested() {
+        return getGeneralAppPBADetails() != null && getGeneralAppPBADetails().getAdditionalPaymentServiceRef() != null;
     }
 
     public boolean hasNoOngoingBusinessProcess() {
