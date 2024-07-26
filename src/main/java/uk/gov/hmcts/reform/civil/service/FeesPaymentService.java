@@ -53,7 +53,9 @@ public class FeesPaymentService {
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
             .createGovPayCardPaymentRequest(
-                generalAppPbaDetails.getServiceReqReference(),
+                caseData.isAdditionalFeeRequested()
+                    ? generalAppPbaDetails.getAdditionalPaymentServiceRef()
+                    : generalAppPbaDetails.getServiceReqReference(),
                 authorization,
                 requestDto
             );
