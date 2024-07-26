@@ -112,7 +112,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
             .map(BigDecimal::toPlainString)
             .map(amount -> amount.replace(".00", ""))
             .map(amount -> "£" + amount)
-            .orElse("£"+ BigDecimal.ZERO.toPlainString());
+            .orElse("£" + BigDecimal.ZERO.toPlainString());
     }
 
     private GAJudgeRequestMoreInfoOption getGAJudgeRequestMoreInfoOption(CaseData caseData) {
