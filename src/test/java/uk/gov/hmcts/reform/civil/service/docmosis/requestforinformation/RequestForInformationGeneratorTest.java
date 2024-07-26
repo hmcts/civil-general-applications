@@ -214,7 +214,7 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText()),
                 () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
-                () -> assertEquals(templateData.getAdditionalApplicationFee(), "275.00")
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
             );
         }
     }
