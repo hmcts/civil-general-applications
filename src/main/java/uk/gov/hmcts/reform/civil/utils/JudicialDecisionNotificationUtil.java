@@ -286,4 +286,26 @@ public class JudicialDecisionNotificationUtil {
             && caseData.getGeneralAppUrgencyRequirement()
                 .getGeneralAppUrgency() == NO;
     }
+
+    public static boolean isLipNotificationCriteriaSatisfied(CaseData caseData) {
+
+        if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
+
+            var recipient = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail();
+            return isLipWithNotice(caseData)
+                && !(StringUtils.isEmpty(recipient));
+        }
+        return false;
+    }
+
+    private static boolean isLipWithNotice(CaseData caseData) {
+        // Check if the judge uncloaks the application, in addition
+        return (caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES))
+            ||
+            ((caseData.getGeneralAppRespondentAgreement() != null
+                && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))
+                || caseData.getGeneralAppInformOtherParty() != null
+                && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())); //false
+    }
 }

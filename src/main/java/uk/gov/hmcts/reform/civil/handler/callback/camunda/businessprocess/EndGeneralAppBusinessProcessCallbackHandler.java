@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isLipNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
@@ -79,12 +80,18 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
                 newState = ORDER_MADE;
             }
         } else {
-            newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
-                data,
-                data.toBuilder().build()
-            ))
-                ? AWAITING_RESPONDENT_RESPONSE
-                : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+            if (gaForLipService.isLipApp(data)) {
+                newState = (isLipNotificationCriteriaSatisfied(data)) ? AWAITING_RESPONDENT_RESPONSE
+                    : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+            } else {
+
+                newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
+                    data,
+                    data.toBuilder().build()
+                ))
+                    ? AWAITING_RESPONDENT_RESPONSE
+                    : APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
+            }
         }
 
         if (!(data.getCcdState().equals(AWAITING_DIRECTIONS_ORDER_DOCS)
