@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsPro
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.HwFMoreInfoRequiredDocuments;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,17 +36,24 @@ public class HwfNotificationService implements NotificationData {
     private final CoreCaseDataService coreCaseDataService;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private Map<CaseEvent, String> emailTemplates;
+    private CaseEvent event;
 
     private static final String ERROR_HWF_EVENT = "Hwf Event not support";
 
     public void sendNotification(CaseData caseData) throws NotificationException {
+        sendNotification(caseData, null);
+    }
+
+    public void sendNotification(CaseData caseData, CaseEvent event) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
                 .toCaseData(coreCaseDataService
                         .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
         caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
-        CaseEvent event = getEvent(caseData);
-
+        if (Objects.isNull(event)) {
+            event = getEvent(caseData);
+        }
+        this.event = event;
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
                 getTemplate(event),
@@ -56,7 +65,7 @@ public class HwfNotificationService implements NotificationData {
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         Map<String, String> commonProperties = getCommonProperties(caseData);
-        Map<String, String> furtherProperties = getFurtherProperties(caseData);
+        Map<String, String> furtherProperties = getFurtherProperties(caseData, event);
         return Collections.unmodifiableMap(
                 Stream.concat(commonProperties.entrySet().stream(), furtherProperties.entrySet().stream())
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
@@ -89,11 +98,12 @@ public class HwfNotificationService implements NotificationData {
         );
     }
 
-    private Map<String, String> getFurtherProperties(CaseData caseData) {
-        return switch (getEvent(caseData)) {
+    private Map<String, String> getFurtherProperties(CaseData caseData, CaseEvent event) {
+        return switch (event) {
             case MORE_INFORMATION_HWF_GA -> getMoreInformationProperties(caseData);
             case PARTIAL_REMISSION_HWF_GA -> getPartialRemissionProperties(caseData);
             case INVALID_HWF_REFERENCE_GA, UPDATE_HELP_WITH_FEE_NUMBER_GA -> Collections.emptyMap();
+            case FEE_PAYMENT_OUTCOME_GA -> getPaymentOutcomeProperties(caseData);
             default -> throw new NotificationException(new Exception(ERROR_HWF_EVENT));
         };
     }
@@ -118,7 +128,9 @@ public class HwfNotificationService implements NotificationData {
                     CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA,
                     notificationsProperties.getNotifyApplicantForHwfUpdateRefNumber(),
                     CaseEvent.PARTIAL_REMISSION_HWF_GA,
-                    notificationsProperties.getNotifyApplicantForHwfPartialRemission()
+                    notificationsProperties.getNotifyApplicantForHwfPartialRemission(),
+                    CaseEvent.FEE_PAYMENT_OUTCOME_GA,
+                    notificationsProperties.getNotifyApplicantForHwfPaymentOutcome()
             );
         }
         return emailTemplates.get(hwfEvent);
@@ -149,5 +161,13 @@ public class HwfNotificationService implements NotificationData {
             documentList.append("\n");
         }
         return documentList.toString();
+    }
+
+    private Map<String, String> getPaymentOutcomeProperties(CaseData caseData) {
+        String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
+        return Map.of(
+                CASE_TITLE, caseTitle,
+                APPLICANT_NAME, caseData.getApplicantPartyName()
+                );
     }
 }
