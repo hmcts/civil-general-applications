@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
 
 import java.time.LocalDate;
@@ -22,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 @Slf4j
 @Service
@@ -73,17 +72,7 @@ public class MoreInformationHwfCallbackHandler extends HWFCallbackHandlerBase {
         CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
                 .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
 
-        if (caseData.getHwfFeeType().equals(FeeType.ADDITIONAL)) {
-            HelpWithFeesDetails additionalFeeDetails =
-                Optional.ofNullable(caseData.getAdditionalHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.additionalHwfDetails(additionalFeeDetails.toBuilder().hwfCaseEvent(MORE_INFORMATION_HWF_GA).build());
-        }
-        if (caseData.getHwfFeeType().equals(FeeType.APPLICATION)) {
-            HelpWithFeesDetails gaHwfDetails =
-                Optional.ofNullable(caseData.getGaHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.gaHwfDetails(gaHwfDetails.toBuilder().hwfCaseEvent(MORE_INFORMATION_HWF_GA).build());
-
-        }
+        HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, MORE_INFORMATION_HWF_GA);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedData.build().toMap(objectMapper))

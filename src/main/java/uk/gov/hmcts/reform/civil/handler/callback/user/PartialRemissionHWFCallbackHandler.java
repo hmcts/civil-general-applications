@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 import java.util.ArrayList;
@@ -78,16 +77,8 @@ public class PartialRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
         CaseData caseData = callbackParams.getCaseData();
         caseData = HwFFeeTypeService.updateOutstandingFee(caseData, callbackParams.getRequest().getEventId());
         CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
-                .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));;
-
-        if (caseData.getHwfFeeType().equals(FeeType.ADDITIONAL)) {
-            HelpWithFeesDetails additionalHwfDetails = caseData.getAdditionalHwfDetails();
-            updatedData.additionalHwfDetails(additionalHwfDetails.toBuilder().hwfCaseEvent(PARTIAL_REMISSION_HWF_GA).build());
-        }
-        if (caseData.getHwfFeeType().equals(FeeType.APPLICATION)) {
-            updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder().hwfCaseEvent(
-                    PARTIAL_REMISSION_HWF_GA).build());
-        }
+                .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, PARTIAL_REMISSION_HWF_GA);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedData.build().toMap(objectMapper))
