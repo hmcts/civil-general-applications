@@ -49,6 +49,7 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     private final String defendant2Name;
     private final String claimant1Name;
     private final String claimant2Name;
+    private final String additionalApplicationFee;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
@@ -65,4 +66,8 @@ public class JudgeDecisionPdfDocument implements MappableObject {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
     @JsonSerialize(using = LocalDateSerializer.class)
     private final LocalDate submittedOn;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate applicationCreatedDate;
 }
