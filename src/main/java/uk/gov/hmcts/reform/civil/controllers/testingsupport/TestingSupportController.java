@@ -95,7 +95,7 @@ public class TestingSupportController {
         var businessProcess = Objects.requireNonNull(generalApplication).getValue().getBusinessProcess();
         var businessProcessInfo = new BusinessProcessInfo(businessProcess);
 
-        log.info("GA Business process status: " + businessProcess.getStatus() + " Camunda Event: " + businessProcess
+        log.info("GA Business process status : " + businessProcess.getStatus() + " Camunda Event: " + businessProcess
             .getCamundaEvent());
 
         if (businessProcess.getStatus() == STARTED) {
