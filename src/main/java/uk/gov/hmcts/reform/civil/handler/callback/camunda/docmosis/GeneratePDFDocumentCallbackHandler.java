@@ -10,9 +10,12 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
@@ -29,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
@@ -68,6 +72,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
 
     private final AssignCategoryId assignCategoryId;
+    private final GaForLipService gaForLipService;
 
     @Override
     public String camundaActivityId() {
@@ -211,7 +216,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
 
-        } else if (isRequestMoreInfo(caseData)) {
+        } else if (isRequestMoreInfo(caseData) || isRequestMoreInfoAndSendAppToOtherParty(caseData)) {
             decision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
@@ -259,6 +264,14 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
                 && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate() != null
                 && caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText() != null;
+    }
+
+    private boolean isRequestMoreInfoAndSendAppToOtherParty(final CaseData caseData) {
+        GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo()).map(
+            GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
+
+        return gaForLipService.isLipApp(caseData) && caseData.getJudicialDecision().getDecision() == REQUEST_MORE_INFO
+            && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
     }
 
     private boolean isWrittenRepConOrder(final CaseData caseData) {
