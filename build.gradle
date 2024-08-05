@@ -298,8 +298,8 @@ jacocoTestReport {
     sourceSets it.sourceSets.main
   }
   reports {
-    xml.enabled = true
-    csv.enabled = false
+    xml.required = true
+    csv.required = false
     xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
