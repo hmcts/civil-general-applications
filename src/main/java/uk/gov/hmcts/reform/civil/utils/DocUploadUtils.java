@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -89,6 +90,8 @@ public class DocUploadUtils {
                 && caseData.getGeneralAppApplicantAddlSolicitors().stream().filter(appSolUser -> appSolUser.getValue().getId()
                 .equals(userId)).toList().size() == 1)) {
             return APPLICANT;
+        } else if (caseData.getGeneralAppRespondentSolicitors() != null && isLipRespondent(caseData)) {
+            return RESPONDENT_ONE;
         } else if (caseData.getGeneralAppRespondentSolicitors() != null) {
             String orgID = caseData.getGeneralAppRespondentSolicitors().get(0).getValue().getOrganisationIdentifier();
             List<Element<GASolicitorDetailsGAspec>> resp1SolList = caseData.getGeneralAppRespondentSolicitors().stream()
@@ -159,5 +162,9 @@ public class DocUploadUtils {
         } else {
             return YesOrNo.NO;
         }
+    }
+
+    private static boolean isLipRespondent(CaseData caseData) {
+        return Objects.nonNull(caseData.getIsGaRespondentOneLip()) && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 }
