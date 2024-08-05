@@ -21,6 +21,7 @@ public interface NotificationData {
 
     //hwf
     String CLAIMANT_NAME = "claimantName";
+    String APPLICANT_NAME = "applicantName";
     String HWF_REFERENCE_NUMBER = "hwFReferenceNumber";
     String TYPE_OF_FEE = "typeOfFee";
     String HWF_MORE_INFO_DATE = "date";

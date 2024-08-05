@@ -96,5 +96,7 @@ public class NotificationsProperties {
     private String notifyApplicantForHwfPartialRemission;
     @NotEmpty
     private String notifyApplicantForNoRemission;
+    @NotEmpty
+    private String notifyApplicantForHwfPaymentOutcome;
 
 }
