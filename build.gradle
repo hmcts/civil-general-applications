@@ -280,17 +280,6 @@ task crossbrowser(description: 'Runs the crossbrowser tests.') {
 
 project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
 
-sonarqube {
-  properties {
-    property "sonar.projectName", "Reform :: civil-general-applications"
-    property "sonar.projectKey", "civil-general-applications"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
-    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
-    property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
-    property "sonar.host.url", "https://sonar.reform.hmcts.net/"
-  }
-}
-
 jacocoTestReport {
   executionData(test, integration)
   executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
@@ -300,9 +289,21 @@ jacocoTestReport {
   reports {
     xml.required = true
     csv.required = false
-    xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    xml.outputLocation = layout.buildDirectory.file("/reports/jacoco/test/jacocoTestReport.xml")
   }
 }
+
+sonarqube {
+  properties {
+    property "sonar.projectName", "Reform :: civil-general-applications"
+    property "sonar.projectKey", "civil-general-applications"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.outputLocation.get().asFile.aboslutePath}"
+    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
+    property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
+    property "sonar.host.url", "https://sonar.reform.hmcts.net/"
+  }
+}
+
 
 jacocoTestReport.dependsOn {
   subprojects*.test
