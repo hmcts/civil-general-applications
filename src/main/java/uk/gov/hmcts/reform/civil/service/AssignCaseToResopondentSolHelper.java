@@ -30,7 +30,7 @@ public class AssignCaseToResopondentSolHelper {
          * */
         if (!CollectionUtils.isEmpty(caseData.getGeneralAppRespondentSolicitors())) {
 
-            if (!gaForLipService.isGaForLip(caseData)) {
+            if (!gaForLipService.isLipResp(caseData)) {
 
                 List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
                     .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()

@@ -16,6 +16,7 @@ java:
     RESPONSE_DEADLINE_CHECK_EVENT_EMITTER_ENABLED: false
     CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-aat.service.core-compute-aat.internal
     DOCUMENT_MANAGEMENT_SECURED: true
+    CAMUNDA_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
     FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://${SERVICE_NAME}-camunda/engine-rest/
@@ -31,29 +32,41 @@ java:
     DOCUMENT_MANAGEMENT_URL: http://dm-store-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     SPRING_CLOUD_BOOTSTRAP_ENABLED: true
     RD_PROFESSIONAL_API_URL: http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+    DASHBOARD_API_URL: http://${SERVICE_NAME}-civil-service
     SOME_ENV_VARIABLE: true
   keyVaults:
     civil:
       resourceGroup: civil
       secrets:
-        - civil-idam-client-secret
-        - system-update-user-username
-        - system-update-user-password
-        - cross-access-user-username
-        - cross-access-user-password
-        - prd-admin-user-username
-        - prd-admin-user-password
+        - name: civil-idam-client-secret
+          alias: idam.client.secret
+        - name: system-update-user-username
+          alias: CIVIL_SYSTEM_UPDATE_USERNAME
+        - name: system-update-user-password
+          alias: CIVIL_SYSTEM_UPDATE_PASSWORD
+        - name: cross-access-user-username
+          alias: CIVIL_CROSS_ACCESS_USERNAME
+        - name: cross-access-user-password
+          alias: CIVIL_CROSS_ACCESS_PASSWORD
+        - name: prd-admin-user-username
+          alias: CIVIL_PRD_ADMIN_USERNAME
+        - name: prd-admin-user-password
+          alias: CIVIL_PRD_ADMIN_PASSWORD
         - name: genapp-appinsights-connection-string
           alias: appinsights-connection-string
-        - docmosis-api-key
-        - gov-notify-api-key
-        - sendgrid-api-key
+        - name: docmosis-api-key
+          alias: docmosis.tornado.key
+        - name: gov-notify-api-key
+          alias: GOV_NOTIFY_API_KEY
+        - name: sendgrid-api-key
+          alias: SENDGRID_API_KEY
         - name: launch-darkly-sdk-key-non-prod
-          alias: launch-darkly-sdk-key
+          alias: LAUNCH_DARKLY_SDK_KEY
     civil-gen-apps:
       resourceGroup: civil
       secrets:
-        - microservicekey-civil-general-applications
+        - name: microservicekey-civil-general-applications
+          alias: idam.s2s-auth.totp_secret
   postgresql:
     enabled: true
     image:
@@ -240,6 +253,7 @@ ccd:
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
         IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+        UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CIVIL
       keyVaults: []
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
 

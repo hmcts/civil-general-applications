@@ -14,9 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestHeader;
-import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesResource;
+import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckStayOrderDeadlineEndTaskHandler;
 import uk.gov.hmcts.reform.civil.handler.tasks.CheckUnlessOrderDeadlineEndTaskHandler;
@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.civil.service.UserService;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Objects;
 
@@ -165,9 +165,9 @@ public class TestingSupportController {
 
     @PostMapping(value = {"/user-roles/{caseId}", "/user-roles/{caseId}"})
     @Operation(summary = "user roles for the cases")
-    public CaseAssignedUserRolesResource getUserRoles(
+    public CaseAssignmentUserRolesResource getUserRoles(
         @PathVariable("caseId") String caseId) {
-        return  coreCaseUserService.getUserRoles(caseId);
+        return coreCaseUserService.getUserRoles(caseId);
     }
 
     @PostMapping(value = {"/assignCase/{caseId}", "/assignCase/{caseId}/{caseRole}"})
@@ -177,7 +177,7 @@ public class TestingSupportController {
                            @PathVariable("caseRole") CaseRole caseRole) {
         String userId = userService.getUserInfo(authorisation).getUid();
         String organisationId = organisationService.findOrganisation(authorisation)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
         coreCaseUserService.assignCase(caseId, userId, organisationId, caseRole);
 
     }
@@ -187,7 +187,7 @@ public class TestingSupportController {
     public String getOrgDetailsByUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) {
         String userId = userService.getUserInfo(authorisation).getUid();
         return organisationService.findOrganisationByUserId(userId)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
 
     }
 

@@ -254,6 +254,74 @@ public class ParentCaseUpdateHelper {
         return null;
     }
 
+    public void updateMasterCollectionForHwf(CaseData generalAppCaseData) {
+
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
+            parentCaseId,
+            UPDATE_CASE_WITH_GA_STATE
+        );
+
+        CaseData parentCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
+
+        List<Element<GeneralApplicationsDetails>> gaClaimantDetails = ofNullable(
+            parentCaseData.getClaimantGaAppDetails()).orElse(newArrayList());
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol2 = ofNullable(
+            parentCaseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
+
+        List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+            parentCaseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
+
+        List<Element<GeneralApplicationsDetails>> gaMasterDetails = ofNullable(
+            parentCaseData.getGaDetailsMasterCollection()).orElse(newArrayList());
+
+        if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
+            Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
+                .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
+
+            Optional<Element<GeneralApplicationsDetails>> masterCollection = gaMasterDetails
+                .stream().filter(masterCollectionElement -> applicationFilterCriteria(
+                    masterCollectionElement,
+                    applicationId
+                )).findAny();
+
+            claimantCollection.ifPresent(generalApplicationsDetailsElement -> {
+                if (masterCollection.isEmpty()) {
+                    gaMasterDetails.add(
+                        element(
+                            GeneralApplicationsDetails.builder()
+                                .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                                .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                                   .getGeneralAppSubmittedDateGAspec())
+                                .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                                    generalAppCaseData.getCcdCaseReference())).build()).build()));
+                }
+            });
+        } else {
+
+            updateJudgeOrClaimantFromRespCollection(
+                generalAppCaseData,
+                applicationId,
+                gaMasterDetails,
+                gaDetailsRespondentSol
+            );
+        }
+
+        Map<String, Object> updateMap = getUpdatedCaseData(parentCaseData, parentCaseData.getGeneralApplications(),
+                                                           gaClaimantDetails,
+                                                           gaDetailsRespondentSol,
+                                                           gaDetailsRespondentSol2,
+                                                           gaMasterDetails
+        );
+
+        CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
+            startEventResponse, updateMap);
+
+        coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
+    }
+
     public void updateJudgeAndRespondentCollectionAfterPayment(CaseData generalAppCaseData) {
 
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
@@ -675,8 +743,8 @@ public class ParentCaseUpdateHelper {
                 .toList();
 
             return civilCaseList.stream().filter(civilDocument -> gaCaseList
-               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
-                   .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
+               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink().getDocumentUrl()
+                   .equals(civilDocument.getValue().getDocumentLink().getDocumentUrl()))).toList().size();
         } else {
             List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
                    .map(element -> (Element<Document>) element)

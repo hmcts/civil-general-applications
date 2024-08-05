@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.civil.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AssistedCostTypesList;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
@@ -15,10 +20,12 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
@@ -49,6 +56,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderAppealDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderCost;
@@ -308,9 +317,35 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
-    private final String serviceRequestReference;
-    private final Fee generalAppFee;
-    private final PaymentDetails generalAppPaymentDetails;
+    private final IdamUserDetails claimantUserDetails;
+    private final IdamUserDetails defendantUserDetails;
+    private final HelpWithFees generalAppHelpWithFees;
+    private final HelpWithFees gaAdditionalHelpWithFees;
+    private final FeeType hwfFeeType;
+    private final HelpWithFeesDetails gaHwfDetails;
+    private final HelpWithFeesDetails additionalHwfDetails;
+    private final HelpWithFeesMoreInformation helpWithFeesMoreInformationGa;
+    private final HelpWithFeesMoreInformation helpWithFeesMoreInformationAdditional;
+    private final YesOrNo generalAppAskForCosts;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private final BigDecimal applicationFeeAmountInPence;
+    @JsonUnwrapped
+    private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
+
+    @JsonIgnore
+    public boolean isHWFTypeApplication() {
+        return getHwfFeeType() == FeeType.APPLICATION;
+    }
+
+    @JsonIgnore
+    public boolean isHWFTypeAdditional() {
+        return getHwfFeeType() == FeeType.ADDITIONAL;
+    }
+
+    @JsonIgnore
+    public boolean isAdditionalFeeRequested() {
+        return getGeneralAppPBADetails() != null && getGeneralAppPBADetails().getAdditionalPaymentServiceRef() != null;
+    }
 
     public boolean hasNoOngoingBusinessProcess() {
         return businessProcess == null
