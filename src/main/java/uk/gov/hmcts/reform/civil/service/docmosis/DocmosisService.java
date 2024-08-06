@@ -13,8 +13,6 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseCategory.SPEC_CLAIM;
-import static uk.gov.hmcts.reform.civil.enums.CaseCategory.UNSPEC_CLAIM;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
