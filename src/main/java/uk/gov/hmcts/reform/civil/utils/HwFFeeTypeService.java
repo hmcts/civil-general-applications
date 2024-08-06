@@ -8,9 +8,11 @@ import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 
 public class HwFFeeTypeService {
 
@@ -105,5 +107,20 @@ public class HwFFeeTypeService {
         caseDataBuilder.feePaymentOutcomeDetails(caseData.getFeePaymentOutcomeDetails().toBuilder()
                 .hwfNumberAvailable(null)
                 .hwfNumberForFeePaymentOutcome(null).build());
+    }
+
+    public static void updateEventInHwfDetails(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder, CaseEvent eventId) {
+
+        if (caseData.getHwfFeeType().equals(FeeType.ADDITIONAL)) {
+            HelpWithFeesDetails additionalFeeDetails =
+                Optional.ofNullable(caseData.getAdditionalHwfDetails()).orElse(new HelpWithFeesDetails());
+            caseDataBuilder.additionalHwfDetails(additionalFeeDetails.toBuilder().hwfCaseEvent(eventId).build());
+        }
+        if (caseData.getHwfFeeType().equals(FeeType.APPLICATION)) {
+            HelpWithFeesDetails gaHwfDetails =
+                Optional.ofNullable(caseData.getGaHwfDetails()).orElse(new HelpWithFeesDetails());
+            caseDataBuilder.gaHwfDetails(gaHwfDetails.toBuilder().hwfCaseEvent(eventId).build());
+
+        }
     }
 }

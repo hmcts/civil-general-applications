@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_AD
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
@@ -21,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
+import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 
 import java.math.BigDecimal;
@@ -50,6 +53,8 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     private ObjectMapper mapper = new ObjectMapper();
     @MockBean
     private PaymentRequestUpdateCallbackService service;
+    @MockBean
+    private HwfNotificationService hwfNotificationService;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -119,6 +124,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
             verify(service, times(1)).processHwf(any());
+            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(CaseEvent.FEE_PAYMENT_OUTCOME_GA));
             assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.toString());
         }
 
@@ -141,6 +147,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
             verify(service, times(1)).processHwf(any());
+            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(CaseEvent.FEE_PAYMENT_OUTCOME_GA));
             assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID.toString());
         }
     }
