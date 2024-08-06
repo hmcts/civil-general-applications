@@ -26,10 +26,10 @@ public class DocmosisService {
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = null;
-        if (checkIfCnbc(caseData)) {
+        Boolean cnbcCourt = checkIfCnbc(caseData);
+        if (cnbcCourt) {
             courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
-        }
-        if (!checkIfCnbc(caseData)) {
+        } else {
             courtLocations = generalAppLocationRefDataService.getCourtLocations(authorisation);
         }
         assert courtLocations != null;
