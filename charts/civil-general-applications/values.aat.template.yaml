@@ -75,7 +75,7 @@ java:
         enabled: false
       resources:
         requests:
-          cpu: 25m
+          cpu: 200m
       initdb:
         scripts:
           init.sql: |
@@ -196,7 +196,7 @@ xui-webapp:
   nodejs:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctspublic.azurecr.io/xui/webapp:latest
+    image: hmctspublic.azurecr.io/xui/webapp:prod-061bcd2-20240731132727
     devmemoryRequests: 2048Mi
     devmemoryLimits: 4096Mi
     ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
@@ -257,9 +257,10 @@ ccd:
   ccd-data-store-api:
     java:
       imagePullPolicy: Always
-      devcpuRequests: 500m
       devmemoryRequests: 2048Mi
-      devmemoryLimits: 8Gi
+      devcpuRequests: 2000m
+      devmemoryLimits: 4096Mi
+      devcpuLimits: 4000m
       autoscaling:
         enabled: false
       environment:
