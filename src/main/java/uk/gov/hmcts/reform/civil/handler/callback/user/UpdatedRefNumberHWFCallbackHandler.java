@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
@@ -61,13 +63,15 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
     }
 
     private CaseData updateHwFReference(CaseData caseData) {
-        CaseData.CaseDataBuilder updatedData = caseData.toBuilder();
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
+                .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
         if (caseData.isHWFTypeApplication()) {
             String newRefNumber = getHwFNewReferenceNumber(caseData.getGaHwfDetails());
             ofNullable(caseData.getGeneralAppHelpWithFees())
                 .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
             if (caseData.getGaHwfDetails() != null) {
-                updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+                updatedData.gaHwfDetails(caseData.getGaHwfDetails().toBuilder()
+                        .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA).hwfReferenceNumber(null).build());
             }
             return updatedData.build();
         }
@@ -76,7 +80,8 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
             ofNullable(caseData.getGeneralAppHelpWithFees())
                 .ifPresent(hwf -> updatedData.generalAppHelpWithFees(hwf.toBuilder().helpWithFeesReferenceNumber(newRefNumber).build()));
             if (caseData.getAdditionalHwfDetails() != null) {
-                updatedData.additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder().hwfReferenceNumber(null).build());
+                updatedData.additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder()
+                        .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA).hwfReferenceNumber(null).build());
             }
             return updatedData.build();
         }

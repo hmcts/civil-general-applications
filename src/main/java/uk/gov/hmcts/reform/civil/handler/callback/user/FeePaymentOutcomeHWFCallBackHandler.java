@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
@@ -40,8 +41,9 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.FEE_PAYMENT_OUTCOME_GA);
 
     public FeePaymentOutcomeHWFCallBackHandler(ObjectMapper objectMapper,
-                                                PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService) {
-        super(objectMapper, EVENTS, paymentRequestUpdateCallbackService);
+                                               PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService,
+                                               HwfNotificationService hwfNotificationService) {
+        super(objectMapper, EVENTS, paymentRequestUpdateCallbackService, hwfNotificationService);
     }
 
     @Override
@@ -90,6 +92,8 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
 
         assert paymentRequestUpdateCallbackService != null;
         CaseData processedCaseData = paymentRequestUpdateCallbackService.processHwf(caseData);
+        assert hwfNotificationService != null;
+        hwfNotificationService.sendNotification(processedCaseData, CaseEvent.FEE_PAYMENT_OUTCOME_GA);
         if (Objects.isNull(processedCaseData)) {
             errors.add(PROCESS_FEE_PAYMENT_FAILED);
         } else {
