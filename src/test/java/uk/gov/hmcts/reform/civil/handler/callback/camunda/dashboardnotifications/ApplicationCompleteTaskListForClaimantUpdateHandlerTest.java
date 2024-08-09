@@ -33,14 +33,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_TASK_LIST_GA_COMPLETE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT;
 
 @ExtendWith(MockitoExtension.class)
-public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHandlerTest {
+public class ApplicationCompleteTaskListForClaimantUpdateHandlerTest extends BaseCallbackHandlerTest {
 
     @Mock
     private DashboardApiClient dashboardApiClient;
@@ -53,11 +53,11 @@ public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHa
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
-    private ApplicationCompleteTaskListUpdateHandler handler;
+    private ApplicationCompleteTaskListForClaimantUpdateHandler handler;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(UPDATE_TASK_LIST_GA_COMPLETE);
+        assertThat(handler.handledEvents()).contains(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHa
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_TASK_LIST_GA_COMPLETE.name())
+                CallbackRequest.builder().eventId(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE.name())
                     .build()
             ).build();
 
@@ -108,48 +108,14 @@ public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHa
         }
 
         @Test
-        void shouldRecordDefendantScenario_whenInvoked() {
+        void shouldNotRecordClaimantScenario_whenNotAllApplicationsComplete() {
             CaseDetails caseDetails = CaseDetails.builder().build();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.NO)
-                .claimantGaAppDetails(List.of(Element.<GeneralApplicationsDetails>builder()
-                                                  .value(GeneralApplicationsDetails.builder()
-                                                             .caseState(ORDER_MADE.getDisplayedValue()).build()).build()))
-                .build();
-            when(coreCaseDataService.getCase(any())).thenReturn(caseDetails);
-            when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-
-            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_TASK_LIST_GA_COMPLETE.name())
-                    .build()
-            ).build();
-
-            handler.handle(params);
-            verify(dashboardApiClient).recordScenario(
-                caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT.getScenario(),
-                "BEARER_TOKEN",
-                ScenarioRequestParams.builder().params(scenarioParams).build()
-            );
-        }
-
-        @Test
-        void shouldNotRecordDefendantScenario_whenNotAllApplicationsComplete() {
-            CaseDetails caseDetails = CaseDetails.builder().build();
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.NO)
+                .parentClaimantIsApplicant(YesOrNo.YES)
                 .claimantGaAppDetails(List.of(Element.<GeneralApplicationsDetails>builder()
                                                   .value(GeneralApplicationsDetails.builder()
                                                              .caseState(AWAITING_RESPONDENT_RESPONSE.getDisplayedValue()).build()).build()))
@@ -158,7 +124,7 @@ public class ApplicationCompleteTaskListUpdateHandlerTest extends BaseCallbackHa
             when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_TASK_LIST_GA_COMPLETE.name())
+                CallbackRequest.builder().eventId(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE.name())
                     .build()
             ).build();
 
