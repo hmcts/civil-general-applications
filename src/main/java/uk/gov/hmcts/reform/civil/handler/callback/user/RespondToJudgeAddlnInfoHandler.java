@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -49,10 +50,14 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
+        if (Objects.nonNull(caseData.getGeneralAppAddlnInfoText())) {
+
+        }
         DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
                 caseData.getGeneralAppAddlnInfoUpload(), role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false);
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
+        caseDataBuilder.generalAppAddlnInfoText(null);
         CaseData updatedCaseData = caseDataBuilder.build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
