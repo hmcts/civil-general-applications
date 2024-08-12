@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPOND_FOR_INFORMATION;
 
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -82,6 +81,6 @@ public class RespondForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     protected DocmosisTemplates getTemplate() {
-        return HEARING_APPLICATION;
+        return RESPOND_FOR_INFORMATION;
     }
 }
