@@ -13,8 +13,6 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import java.util.List;
 import java.util.Objects;
 
-import static uk.gov.hmcts.reform.civil.enums.CaseCategory.SPEC_CLAIM;
-import static uk.gov.hmcts.reform.civil.enums.CaseCategory.UNSPEC_CLAIM;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
@@ -23,20 +21,15 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorServic
 public class DocmosisService {
 
     private final GeneralAppLocationRefDataService generalAppLocationRefDataService;
-    @Value("${court-location.unspecified-claim.epimms-id}")
-    private String ccmccEpimmId;
     @Value("${court-location.specified-claim.epimms-id}")
     private String cnbcEpimmId;
 
     public LocationRefData getCaseManagementLocationVenueName(CaseData caseData, String authorisation) {
         List<LocationRefData> courtLocations = null;
-        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(SPEC_CLAIM)) {
+        Boolean cnbcCourt = checkIfCnbc(caseData);
+        if (cnbcCourt) {
             courtLocations = generalAppLocationRefDataService.getCnbcLocation(authorisation);
-        }
-        if (checkIfCcmccOrCnbc(caseData) && caseData.getCaseAccessCategory().equals(UNSPEC_CLAIM)) {
-            courtLocations = generalAppLocationRefDataService.getCcmccLocation(authorisation);
-        }
-        if (!checkIfCcmccOrCnbc(caseData)) {
+        } else {
             courtLocations = generalAppLocationRefDataService.getCourtLocations(authorisation);
         }
         assert courtLocations != null;
@@ -90,11 +83,7 @@ public class DocmosisService {
         }
     }
 
-    public Boolean checkIfCcmccOrCnbc(CaseData caseData) {
-        if (caseData.getCaseManagementLocation().getBaseLocation().equals(ccmccEpimmId)) {
-            return true;
-        } else {
-            return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimmId);
-        }
+    public Boolean checkIfCnbc(CaseData caseData) {
+        return caseData.getCaseManagementLocation().getBaseLocation().equals(cnbcEpimmId);
     }
 }
