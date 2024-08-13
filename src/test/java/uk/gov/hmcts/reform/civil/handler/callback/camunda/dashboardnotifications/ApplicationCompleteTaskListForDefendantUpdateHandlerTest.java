@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
-import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -71,7 +70,6 @@ public class ApplicationCompleteTaskListForDefendantUpdateHandlerTest extends Ba
         void setup() {
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         }
-
 
         @Test
         void shouldRecordDefendantScenario_whenInvoked() {

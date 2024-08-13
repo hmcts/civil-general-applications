@@ -62,12 +62,12 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandlerTest extends Ba
         }
 
         @Test
-        void shouldRecordDefendantScenarioWhenGaApplicantIsLipAndWithNotice() {
+        void shouldRecordDefendantScenarioWhenGaRespondentIsLipAndWithNotice() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.NO)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();
@@ -121,13 +121,13 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandlerTest extends Ba
         }
 
         @Test
-        void shouldNotRecordScenario_whenWithoutNoticeAndWithoutConsent() {
+        void shouldNotRecordScenarioWhenWithoutNoticeAndWithoutConsent() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaRespondentOneLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.NO)
+                .parentClaimantIsApplicant(YesOrNo.YES)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .build();
 
@@ -145,10 +145,11 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandlerTest extends Ba
         }
 
         @Test
-        void shouldNotRecordScenario_whenLRVLR() {
+        void shouldNotRecordScenarioWhenGaRespondentIsNotLip() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
+                .isGaApplicantLip(YesOrNo.YES)
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .parentClaimantIsApplicant(YesOrNo.NO)
                 .build();
