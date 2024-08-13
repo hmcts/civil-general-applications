@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,14 +66,10 @@ public class RespondForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     private String getSubmittedBy(String role, CaseData caseData) {
-        if (role.equals(CaseRole.CLAIMANT.getFormattedName())) {
+        if (role.equals(DocUploadUtils.APPLICANT)) {
             return caseData.getApplicantPartyName();
-        } else {
-            if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
-                return caseData.getDefendant1PartyName();
-            }
-            return caseData.getClaimant1PartyName();
         }
+        return caseData.getClaimant1PartyName();
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate) {

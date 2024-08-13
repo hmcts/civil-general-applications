@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,9 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
         List<Element<Document>> tobeAdded = caseData.getGeneralAppAddlnInfoUpload();
+        if (Objects.isNull(tobeAdded)) {
+            tobeAdded = new ArrayList<>();
+        }
         if (Objects.nonNull(caseData.getGeneralAppAddlnInfoText())) {
             CaseDocument caseDocument = respondForInformationGenerator.generate(caseData,
                     callbackParams.getParams().get(BEARER_TOKEN).toString(), role);
