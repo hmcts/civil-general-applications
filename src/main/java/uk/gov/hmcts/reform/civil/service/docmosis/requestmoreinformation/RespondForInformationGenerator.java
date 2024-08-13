@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPOND_FOR_INFORMATION;
 
-import uk.gov.hmcts.reform.civil.enums.CaseRole;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -79,5 +77,9 @@ public class RespondForInformationGenerator implements TemplateDataGenerator<Jud
 
     protected DocmosisTemplates getTemplate() {
         return RESPOND_FOR_INFORMATION;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
