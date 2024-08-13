@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
@@ -18,13 +19,16 @@ abstract class HWFCallbackHandlerBase extends CallbackHandler {
     protected final ObjectMapper objectMapper;
     protected final List<CaseEvent> events;
     protected final PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService;
+    protected final HwfNotificationService hwfNotificationService;
 
     public HWFCallbackHandlerBase(ObjectMapper objectMapper,
                                   List<CaseEvent> events,
-                                  PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService) {
+                                  PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService,
+                                  HwfNotificationService hwfNotificationService) {
         this.objectMapper = objectMapper;
         this.events = events;
         this.paymentRequestUpdateCallbackService = paymentRequestUpdateCallbackService;
+        this.hwfNotificationService = hwfNotificationService;
     }
 
     public HWFCallbackHandlerBase(ObjectMapper objectMapper,
@@ -32,6 +36,7 @@ abstract class HWFCallbackHandlerBase extends CallbackHandler {
         this.objectMapper = objectMapper;
         this.events = events;
         this.paymentRequestUpdateCallbackService = null;
+        this.hwfNotificationService = null;
     }
 
     @Override

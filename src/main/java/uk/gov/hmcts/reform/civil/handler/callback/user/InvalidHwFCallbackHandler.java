@@ -9,17 +9,18 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
+import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 
 @Service
 @Slf4j
@@ -52,18 +53,9 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
     }
 
     private CaseData setUpBusinessProcess(CaseData caseData) {
-        CaseData.CaseDataBuilder updatedData = caseData.toBuilder();
-
-        if (caseData.isHWFTypeAdditional()) {
-            HelpWithFeesDetails hearingFeeDetails =
-                    Optional.ofNullable(caseData.getAdditionalHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.additionalHwfDetails(hearingFeeDetails.toBuilder().hwfCaseEvent(INVALID_HWF_REFERENCE_GA).build());
-        }
-        if (caseData.isHWFTypeApplication()) {
-            HelpWithFeesDetails claimIssuedHwfDetails =
-                    Optional.ofNullable(caseData.getGaHwfDetails()).orElse(new HelpWithFeesDetails());
-            updatedData.gaHwfDetails(claimIssuedHwfDetails.toBuilder().hwfCaseEvent(INVALID_HWF_REFERENCE_GA).build());
-        }
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
+                .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, INVALID_HWF_REFERENCE_GA);
         return updatedData.build();
     }
 }
