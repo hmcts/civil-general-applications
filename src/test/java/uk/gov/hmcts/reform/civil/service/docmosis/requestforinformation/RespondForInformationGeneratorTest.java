@@ -77,6 +77,4 @@ public class RespondForInformationGeneratorTest {
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getGeneralAppAddlnInfoText())
         );
     }
-
-
 }

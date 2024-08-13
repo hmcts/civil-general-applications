@@ -155,9 +155,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
 
     @Test
     void shouldConvertToDocAndReturnNullAddlnInfoText() {
-
         CaseData caseData = getCase(null, null, "more info");
-
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
