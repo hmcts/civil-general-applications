@@ -196,7 +196,7 @@ xui-webapp:
   nodejs:
     imagePullPolicy: Always
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctspublic.azurecr.io/xui/webapp:prod-061bcd2-20240731132727
+    image: hmctspublic.azurecr.io/xui/webapp:latest
     devmemoryRequests: 2048Mi
     devmemoryLimits: 4096Mi
     ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
