@@ -105,7 +105,9 @@ public class CasesController {
 
         SearchResult claims = coreCaseDataService.searchGeneralApplication(new Query(
                 matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
-                List.of("data.applicationTypes"),
+                List.of("data.applicationTypes",
+                        "data.generalAppInformOtherParty.isWithNotice",
+                        "data.generalAppRespondentAgreement.hasAgreed"),
                 0
         ), authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
