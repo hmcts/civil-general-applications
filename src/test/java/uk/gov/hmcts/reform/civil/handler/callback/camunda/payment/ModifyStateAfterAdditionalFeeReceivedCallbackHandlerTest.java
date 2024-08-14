@@ -79,7 +79,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     private final GAMakeApplicationAvailableCheck gaMakeApplicationAvailableCheck = GAMakeApplicationAvailableCheck.builder()
         .makeAppAvailableCheck(makeAppAvailableCheck).build();
 
-
     @Test
     void shouldRespondWithStateChanged() {
 
@@ -200,7 +199,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaApplicantLip(NO)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
-        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
         when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
@@ -209,6 +207,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
 
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
@@ -232,7 +231,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaApplicantLip(YES)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
-        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
         when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
@@ -241,6 +239,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
 
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
@@ -264,7 +263,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaRespondentOneLip(NO)
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
-        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
         when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
@@ -272,6 +270,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
         handler.handle(params);
 
