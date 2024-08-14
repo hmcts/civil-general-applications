@@ -33,13 +33,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_DEFENDANT_TASK_LIST_GA_COMPLETE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_RESPONDENT_TASK_LIST_GA_COMPLETE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT;
 
 @ExtendWith(MockitoExtension.class)
-public class ApplicationCompleteTaskListForDefendantUpdateHandlerTest extends BaseCallbackHandlerTest {
+public class ApplicationCompleteTaskListForRespondentUpdateHandlerTest extends BaseCallbackHandlerTest {
 
     @Mock
     private DashboardApiClient dashboardApiClient;
@@ -52,11 +52,11 @@ public class ApplicationCompleteTaskListForDefendantUpdateHandlerTest extends Ba
     @Mock
     private CaseDetailsConverter caseDetailsConverter;
     @InjectMocks
-    private ApplicationCompleteTaskListForDefendantUpdateHandler handler;
+    private ApplicationCompleteTaskListForRespondentUpdateHandler handler;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(UPDATE_DEFENDANT_TASK_LIST_GA_COMPLETE);
+        assertThat(handler.handledEvents()).contains(UPDATE_RESPONDENT_TASK_LIST_GA_COMPLETE);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ApplicationCompleteTaskListForDefendantUpdateHandlerTest extends Ba
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_DEFENDANT_TASK_LIST_GA_COMPLETE.name()).build()).build();
+                CallbackRequest.builder().eventId(UPDATE_RESPONDENT_TASK_LIST_GA_COMPLETE.name()).build()).build();
 
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
@@ -119,7 +119,7 @@ public class ApplicationCompleteTaskListForDefendantUpdateHandlerTest extends Ba
             when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_DEFENDANT_TASK_LIST_GA_COMPLETE.name()).build()).build();
+                CallbackRequest.builder().eventId(UPDATE_RESPONDENT_TASK_LIST_GA_COMPLETE.name()).build()).build();
 
             handler.handle(params);
             verifyNoInteractions(dashboardApiClient);

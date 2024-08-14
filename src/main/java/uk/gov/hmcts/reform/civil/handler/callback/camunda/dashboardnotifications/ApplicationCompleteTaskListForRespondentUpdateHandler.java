@@ -21,18 +21,18 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT;
 
 @Service
-public class ApplicationCompleteTaskListForDefendantUpdateHandler extends DashboardCallbackHandler {
+public class ApplicationCompleteTaskListForRespondentUpdateHandler extends DashboardCallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.UPDATE_DEFENDANT_TASK_LIST_GA_COMPLETE);
+    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.UPDATE_RESPONDENT_TASK_LIST_GA_COMPLETE);
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
 
-    public ApplicationCompleteTaskListForDefendantUpdateHandler(DashboardApiClient dashboardApiClient,
-                                                                DashboardNotificationsParamsMapper mapper,
-                                                                CoreCaseDataService coreCaseDataService,
-                                                                CaseDetailsConverter caseDetailsConverter,
-                                                                FeatureToggleService featureToggleService) {
+    public ApplicationCompleteTaskListForRespondentUpdateHandler(DashboardApiClient dashboardApiClient,
+                                                                 DashboardNotificationsParamsMapper mapper,
+                                                                 CoreCaseDataService coreCaseDataService,
+                                                                 CaseDetailsConverter caseDetailsConverter,
+                                                                 FeatureToggleService featureToggleService) {
         super(dashboardApiClient, mapper, featureToggleService);
         this.coreCaseDataService = coreCaseDataService;
         this.caseDetailsConverter = caseDetailsConverter;
