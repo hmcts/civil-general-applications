@@ -263,7 +263,7 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.ENVIRONMENT == 'preview'
   }
-  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:nightly-api-tests'
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:regression-e2e-tests'
 }
 
 task smoke(description: 'Runs the smoke tests.') {
