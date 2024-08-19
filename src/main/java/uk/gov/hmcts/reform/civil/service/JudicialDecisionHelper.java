@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -16,7 +15,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SE
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class JudicialDecisionHelper {
 
     public YesOrNo isApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
