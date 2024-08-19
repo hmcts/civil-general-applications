@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
@@ -43,39 +44,47 @@ public class StateFlowEngine {
                 .onlyIf((withNoticeApplication.or(withOutNoticeApplication)))
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
             .state(APPLICATION_SUBMITTED)
                 .transitionTo(PROCEED_GENERAL_APPLICATION)
                     .onlyIf(paymentSuccess)
                     .set((c, flags) -> {
                         flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                        flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                     })
             .state(PROCEED_GENERAL_APPLICATION)
                 .transitionTo(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
                     .onlyIf(judgeMadeDecision)
                     .set((c, flags) -> {
                         flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                        flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                     })
             .state(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
                 .transitionTo(LISTED_FOR_HEARING).onlyIf(judgeMadeListingForHearing)
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
                 .transitionTo(ADDITIONAL_INFO).onlyIf(judgeRequestAdditionalInfo)
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
                 .transitionTo(JUDGE_DIRECTIONS).onlyIf(judgeMadeDirections)
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
                 .transitionTo(JUDGE_WRITTEN_REPRESENTATION).onlyIf(judgeMadeWrittenRep)
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
                 .transitionTo(ORDER_MADE).onlyIf(judgeMadeOrder)
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
+                    flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                 })
             .state(LISTED_FOR_HEARING)
             .state(ADDITIONAL_INFO)
