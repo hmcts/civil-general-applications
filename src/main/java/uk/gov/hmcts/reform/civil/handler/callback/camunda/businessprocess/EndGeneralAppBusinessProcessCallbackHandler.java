@@ -58,11 +58,10 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        if (!gaForLipService.isLipApp(data)) {
-            if (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
-                || isFreeFeeCode(data)) {
-                parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
-            }
+        if (!gaForLipService.isLipApp(data)
+            && (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT) || isFreeFeeCode(data))) {
+
+            parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
 
         /*
@@ -70,12 +69,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         * When payment is done via Service Request for GA then,
         * Add GA into collections
         * */
-        if (gaForLipService.isLipApp(data)) {
-            if ((data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
-                && Objects.nonNull(data.getGeneralAppHelpWithFees())
-                && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.NO)) || isFreeFeeCode(data)) {
-                parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
-            }
+        if (gaForLipService.isLipApp(data)
+            && ((data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
+            && Objects.nonNull(data.getGeneralAppHelpWithFees())
+            && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.NO)) || isFreeFeeCode(data))) {
+
+            parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
