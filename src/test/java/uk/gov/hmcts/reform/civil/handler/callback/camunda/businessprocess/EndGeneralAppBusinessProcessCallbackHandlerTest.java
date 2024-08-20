@@ -296,13 +296,13 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
         }
 
-        public CallbackParams getCallbackParamsGaForLipCaseData(YesOrNo HwF) {
+        public CallbackParams getCallbackParamsGaForLipCaseData(YesOrNo hwf) {
             List<GeneralApplicationTypes> types = Arrays.asList(STRIKE_OUT);
             CaseData caseData = CaseData.builder()
                 .isGaApplicantLip(YES)
                 .generalAppType(GAApplicationType.builder().types(types).build())
                 .ccdState(AWAITING_APPLICATION_PAYMENT)
-                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(HwF).build())
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(hwf).build())
                 .build();
 
             CaseDetails caseDetails = CaseDetails
