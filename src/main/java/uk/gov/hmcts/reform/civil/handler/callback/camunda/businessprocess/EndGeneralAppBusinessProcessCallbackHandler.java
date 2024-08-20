@@ -58,7 +58,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        if (!gaForLipService.isLipApp(data)
+        if (!gaForLipService.isGaForLip(data)
             && (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT) || isFreeFeeCode(data))) {
 
             parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
@@ -69,13 +69,14 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         * When payment is done via Service Request for GA then,
         * Add GA into collections
         * */
-        if (gaForLipService.isLipApp(data)
+        if (gaForLipService.isGaForLip(data)
             && ((data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && Objects.nonNull(data.getGeneralAppHelpWithFees())
             && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.NO)) || isFreeFeeCode(data))) {
 
             parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
+
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;
@@ -85,10 +86,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
              * When Caseworker should have access to GA to perform HelpWithFee then,
              * Add GA into collections
              * */
-            if (gaForLipService.isLipApp(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())
+            if (gaForLipService.isGaForLip(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())
                 && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.YES)) {
+
                 parentCaseUpdateHelper.updateMasterCollectionForHwf(data);
             }
+
         } else if (Objects.nonNull(data.getFinalOrderSelection())) {
             if (data.getFinalOrderSelection().equals(ASSISTED_ORDER)
                 && Objects.nonNull(data.getAssistedOrderFurtherHearingDetails())) {
