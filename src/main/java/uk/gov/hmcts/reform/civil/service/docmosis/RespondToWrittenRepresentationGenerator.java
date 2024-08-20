@@ -20,6 +20,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPO
 @Service
 @RequiredArgsConstructor
 public class RespondToWrittenRepresentationGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument>  {
+
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private String role;
