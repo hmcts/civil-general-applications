@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.model.genapplication;
 
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.NoRemissionDetailsSummary;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.reform.civil.model.Fee;
 
 @Data
 @Builder(toBuilder = true)
@@ -26,4 +28,6 @@ public class HelpWithFeesDetails {
     private String hwfReferenceNumber;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private CaseEvent hwfCaseEvent;
+    private Fee fee;
+    private FeeType hwfFeeType;
 }
