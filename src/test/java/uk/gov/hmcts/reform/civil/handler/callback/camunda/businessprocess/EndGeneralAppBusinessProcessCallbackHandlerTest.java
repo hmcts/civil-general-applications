@@ -140,7 +140,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
-        void ShouldAddGAtoJudgeCollection_FreeApplication() {
+        void ShouldAddGAtoJudgeCollectionFreeApplication() {
             CaseData updatedCaseDate = CaseData.builder()
                 .isGaApplicantLip(NO)
                 .isGaRespondentTwoLip(NO)
@@ -191,7 +191,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
-        void ShouldAddGAtoJudgeCollection_PaymentThroughServiceRequest() {
+        void ShouldAddGAtoJudgeCollectionPaymentThroughServiceRequest() {
             CaseData updatedCaseDate = CaseData.builder()
                 .isGaApplicantLip(NO)
                 .isGaRespondentTwoLip(NO)
@@ -242,7 +242,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         }
 
         @Test
-        void ShouldAddGAtoJudgeCollection_ForCaseWorker() {
+        void ShouldAddGAtoJudgeCollectionForCaseWorker() {
             CaseData updatedCaseDate = CaseData.builder()
                 .isGaApplicantLip(YES)
                 .isGaRespondentTwoLip(YES)
