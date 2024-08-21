@@ -70,9 +70,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         * Add GA into collections
         * */
         if (gaForLipService.isGaForLip(data)
-            && ((data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
-            && Objects.nonNull(data.getGeneralAppHelpWithFees())
-            && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.NO)) || isFreeFeeCode(data))) {
+            && (isLipPaymentViaServiceRequest(data) || isFreeFeeCode(data))) {
 
             parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
@@ -132,6 +130,12 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         return (data.getCcdState().equals(PENDING_APPLICATION_ISSUED)
             && Objects.nonNull(data.getGeneralAppPBADetails())
             && Objects.nonNull(data.getGeneralAppPBADetails().getFee())
-            && (data.getGeneralAppPBADetails().getFee().getCode().equalsIgnoreCase(FREE_KEYWORD)));
+            && (FREE_KEYWORD.equalsIgnoreCase(data.getGeneralAppPBADetails().getFee().getCode())));
+    }
+
+    private boolean isLipPaymentViaServiceRequest(CaseData data) {
+        return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
+            && (Objects.isNull(data.getGeneralAppHelpWithFees())
+            || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
     }
 }
