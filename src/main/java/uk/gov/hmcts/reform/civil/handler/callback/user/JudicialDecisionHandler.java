@@ -33,11 +33,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresent
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
-import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
-import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.*;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -233,6 +229,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
     private final DeadlinesCalculator deadlinesCalculator;
     private final IdamClient idamClient;
+    private final GaForLipService gaForLipService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -829,7 +826,8 @@ public class JudicialDecisionHandler extends CallbackHandler {
          * */
 
         if (isApplicationUncloaked != null
-                && isApplicationUncloaked.equals(NO)) {
+                && isApplicationUncloaked.equals(NO)
+                && !gaForLipService.isGaForLip(caseData)) {
             dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
