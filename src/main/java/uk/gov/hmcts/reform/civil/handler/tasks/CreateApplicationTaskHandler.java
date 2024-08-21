@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -40,7 +40,7 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1Solic
 import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
-@Service
+@Component
 public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
