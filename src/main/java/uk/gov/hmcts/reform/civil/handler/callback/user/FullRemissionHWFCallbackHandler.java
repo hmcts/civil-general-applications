@@ -60,12 +60,14 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
                     gaHwfDetails -> updatedData.gaHwfDetails(
                         gaHwfDetails.toBuilder().remissionAmount(feeAmount)
                             .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
                     ),
                     () -> updatedData.gaHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
                             .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
                     )
@@ -78,11 +80,13 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
                             .outstandingFeeInPounds(BigDecimal.ZERO)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .hwfFeeType(FeeType.ADDITIONAL)
                             .build()
                     ),
                     () -> updatedData.additionalHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
+                            .hwfFeeType(FeeType.ADDITIONAL)
                             .build()
                     )
                 );
