@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
@@ -81,6 +82,8 @@ class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()).isEqualTo(NEW_HWF_REF_NUMBER);
             assertThat(responseCaseData.getGaHwfDetails().getHwfReferenceNumber()).isNull();
+            assertThat(responseCaseData.getBusinessProcess()
+                    .getCamundaEvent()).isEqualTo(NOTIFY_APPLICANT_LIP_HWF.toString());
         }
 
         @Test
@@ -96,6 +99,8 @@ class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
             assertThat(responseCaseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()).isEqualTo(NEW_HWF_REF_NUMBER);
             assertThat(responseCaseData.getAdditionalHwfDetails().getHwfReferenceNumber()).isNull();
+            assertThat(responseCaseData.getBusinessProcess()
+                    .getCamundaEvent()).isEqualTo(NOTIFY_APPLICANT_LIP_HWF.toString());
         }
     }
 }
