@@ -5,13 +5,15 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandlerNew;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_CLAIMANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_DEFENDANT;
 
 @Service
 public class ApplicationSubmittedHandler extends DashboardCallbackHandlerNew {
@@ -26,7 +28,11 @@ public class ApplicationSubmittedHandler extends DashboardCallbackHandlerNew {
 
         @Override
         protected String getScenario(CaseData caseData) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED.getScenario();
+            if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_CLAIMANT.getScenario();
+            } else {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_DEFENDANT.getScenario();
+            }
         }
 
         @Override

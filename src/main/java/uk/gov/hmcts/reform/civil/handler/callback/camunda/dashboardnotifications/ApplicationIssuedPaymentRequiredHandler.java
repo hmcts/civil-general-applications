@@ -12,7 +12,8 @@ import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED_CLAIMANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED_DEFENDANT;
 
 @Service
 public class ApplicationIssuedPaymentRequiredHandler extends DashboardCallbackHandlerNew {
@@ -27,7 +28,11 @@ public class ApplicationIssuedPaymentRequiredHandler extends DashboardCallbackHa
 
     @Override
     protected String getScenario(CaseData caseData) {
-        return SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED.getScenario();
+        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED_CLAIMANT.getScenario();
+        } else {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_ISSUED_DEFENDANT.getScenario();
+        }
     }
 
     @Override
