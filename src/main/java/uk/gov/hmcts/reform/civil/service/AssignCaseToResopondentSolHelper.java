@@ -34,30 +34,30 @@ public class AssignCaseToResopondentSolHelper {
 
             if (!gaForLipService.isLipResp(caseData)) {
 
-                List<Element<GASolicitorDetailsGAspec>>  respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
+                List<Element<GASolicitorDetailsGAspec>> respondentSolList = caseData.getGeneralAppRespondentSolicitors().stream()
                     .filter(userOrgId -> !(userOrgId.getValue().getOrganisationIdentifier()
                         .equalsIgnoreCase(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))).toList();
                 GASolicitorDetailsGAspec respondentSolicitor1 =
                     respondentSolList.get(FIRST_SOLICITOR).getValue();
                 log.info("Assigning case {} to first respondent solicitor 1: {}", caseId, respondentSolicitor1.getId());
                 coreCaseUserService.assignCase(caseId, respondentSolicitor1.getId(),
-                                               respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
+                    respondentSolicitor1.getOrganisationIdentifier(), RESPONDENTSOLICITORONE);
                 for (Element<GASolicitorDetailsGAspec> respSolElement : respondentSolList) {
                     if ((respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
                         .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
-                        log.info("Assigning case {} to respondent solicitor: {}", caseId,respSolElement.getValue().getId());
-                            coreCaseUserService
+                        log.info("Assigning case {} to respondent solicitor: {}", caseId, respSolElement.getValue().getId());
+                        coreCaseUserService
                             .assignCase(caseId, respSolElement.getValue().getId(),
-                                        respSolElement.getValue().getOrganisationIdentifier(),
-                                        RESPONDENTSOLICITORONE);
+                                respSolElement.getValue().getOrganisationIdentifier(),
+                                RESPONDENTSOLICITORONE);
                     } else if (caseData.getIsMultiParty().equals(YesOrNo.YES)
                         && !(respondentSolicitor1.getOrganisationIdentifier() != null && respondentSolicitor1.getOrganisationIdentifier()
                         .equalsIgnoreCase(respSolElement.getValue().getOrganisationIdentifier()))) {
-                        log.info("Assigning case {} to respondent solicitor2: {}", caseId,respSolElement.getValue().getId());
+                        log.info("Assigning case {} to respondent solicitor2: {}", caseId, respSolElement.getValue().getId());
                         coreCaseUserService
                             .assignCase(caseId, respSolElement.getValue().getId(),
-                                        respSolElement.getValue().getOrganisationIdentifier(),
-                                        RESPONDENTSOLICITORTWO);
+                                respSolElement.getValue().getOrganisationIdentifier(),
+                                RESPONDENTSOLICITORTWO);
                     }
 
                 }
