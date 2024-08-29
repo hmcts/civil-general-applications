@@ -84,9 +84,6 @@ public class CreateApplicationTaskHandlerTest {
     private static final String CASE_ID = "1";
     private static final String GA_ID = "2";
     private static final String GA_CASE_TYPES = "Summary judgment";
-    private static final String GENERAL_APPLICATIONS = "generalApplications";
-    private static final String GENERAL_APPLICATIONS_DETAILS = "generalApplicationsDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "gaDetailsRespondentSol";
     private static final LocalDateTime DUMMY_DATE = LocalDateTime.parse("2022-02-22T15:59:59");
     private static final UUID DOC_ID = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 
@@ -506,7 +503,7 @@ public class CreateApplicationTaskHandlerTest {
             verify(coreCaseDataService).submitUpdate(CASE_ID, caseDataContent);
 
             CaseData data = coreCaseDataService.submitUpdate(CASE_ID, caseDataContent);
-
+            assertThat(data.getCaseNameGaInternal()).isEqualTo("Internal v Internal");
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
             assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(1);
@@ -553,6 +550,7 @@ public class CreateApplicationTaskHandlerTest {
                                        .build());
 
             return builder
+                .caseNameGaInternal("gaInternal v gaInternal")
                 .parentClaimantIsApplicant(parentClaimantIsApplicant)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                    .hasAgreed(isGeneralAppAgreed).build())
@@ -916,6 +914,7 @@ public class CreateApplicationTaskHandlerTest {
             .ccdState(CaseState.PENDING_APPLICATION_ISSUED)
             .generalApplications(generalApplications)
             .isMultiParty(YES)
+            .claimant1PartyName("Internal v Internal")
             .addApplicant2(addApplicant2)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
