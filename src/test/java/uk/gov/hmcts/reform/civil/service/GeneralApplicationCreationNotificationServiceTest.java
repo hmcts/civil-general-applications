@@ -179,7 +179,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
             verify(notificationService, times(2)).sendMail(
                     any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
             );
-            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("LipF LipS");
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
+            assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
         }
 
         @Test
@@ -233,7 +234,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
-                    NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : ""
+                NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : "",
+                NotificationData.CASE_TITLE, isLip ? "CL v DEF" : ""
             );
         }
 
@@ -253,6 +255,9 @@ public class GeneralApplicationCreationNotificationServiceTest {
             if (isMet) {
 
                 return new CaseDataBuilder()
+                    .applicantPartyName("App")
+                    .claimant1PartyName("CL")
+                    .defendant1PartyName("DEF")
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                                   .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                     .generalAppRespondentSolicitors(respondentSols)
@@ -282,6 +287,9 @@ public class GeneralApplicationCreationNotificationServiceTest {
                     .build();
             } else {
                 return new CaseDataBuilder()
+                    .applicantPartyName("App")
+                    .claimant1PartyName("CL")
+                    .defendant1PartyName("DEF")
                     .businessProcess(BusinessProcess.builder().status(STARTED)
                                          .processInstanceId(PROCESS_INSTANCE_ID).build())
                     .gaInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())

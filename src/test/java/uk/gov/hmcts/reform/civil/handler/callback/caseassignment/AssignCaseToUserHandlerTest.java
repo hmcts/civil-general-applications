@@ -11,10 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
-import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRole;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
-import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -53,6 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.APPLICANTSOLICITORONE;
+import static uk.gov.hmcts.reform.civil.enums.CaseRole.CLAIMANT;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORONE;
 import static uk.gov.hmcts.reform.civil.enums.CaseRole.RESPONDENTSOLICITORTWO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -467,7 +466,7 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Nested
-    class AssignRolesSpecCaseLip {
+    class AssignRolesSpecCaseLipResp {
         @BeforeEach
         void setup() {
             when(coreCaseUserService.getUserRoles(any()))
@@ -538,6 +537,67 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) assignCaseToUserHandler.handle(params);
             assertThat(response.getData().get("respondent1OrganisationPolicy"))
                 .extracting("OrgPolicyCaseAssignedRole").isEqualTo("[DEFENDANT]");
+        }
+    }
+
+    @Nested
+    class AssignRolesSpecCaseLipApp {
+        @BeforeEach
+        void setup() {
+            when(coreCaseUserService.getUserRoles(any()))
+                    .thenReturn(CaseAssignmentUserRolesResource.builder()
+                            .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                    .email("test@gmail.com").organisationIdentifier("org2").build();
+
+            respondentSols.add(element(respondent1));
+
+            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
+            builder.generalAppType(GAApplicationType.builder()
+                            .types(singletonList(ADJOURN_HEARING))
+                            .build())
+                    .claimant1PartyName("Applicant1")
+                    .generalAppRespondentSolicitors(respondentSols)
+                    .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec
+                            .builder()
+                            .id("id")
+                            .email("TEST@gmail.com")
+                            .build())
+                    .isMultiParty(NO)
+                    .isGaRespondentOneLip(NO)
+                    .isGaApplicantLip(YES)
+                    .isGaRespondentTwoLip(NO)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
+                    .defendant1PartyName("Respondent1")
+                    .generalAppSuperClaimType(SPEC_CLAIM)
+                    .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
+                    .civilServiceUserRoles(IdamUserDetails.builder()
+                            .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
+                            .email("applicant@someorg.com")
+                            .build())
+                    .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+                    .build();
+
+            generalApplication = builder.build();
+
+            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
+            });
+            params = callbackParamsOfPendingState(dataMap, CallbackType.SUBMITTED);
+        }
+
+        @Test
+        void shouldCallAssignCaseLip() {
+            assignCaseToUserHandler.handle(params);
+            verify(coreCaseUserService, times(1)).assignCase(
+                    any(),
+                    any(),
+                    any(),
+                    eq(CLAIMANT)
+            );
         }
     }
 
@@ -834,74 +894,6 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
                 any(),
                 any(),
                 eq(RESPONDENTSOLICITORTWO)
-            );
-        }
-    }
-
-    @Nested
-    class AssignRolesSpecCaseLipApplicant {
-        @BeforeEach
-        void setup() {
-            when(coreCaseUserService.getUserRoles(any()))
-                .thenReturn(CaseAssignmentUserRolesResource.builder()
-                                .caseAssignmentUserRoles(getCaseAssignedApplicantUserRoles()).build());
-
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
-
-            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
-                .email("test@gmail.com").organisationIdentifier("org2").build();
-
-            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id")
-                .email("test@gmail.com").organisationIdentifier("org2").build();
-
-            respondentSols.add(element(respondent1));
-            respondentSols.add(element(respondent2));
-
-            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
-            builder.generalAppType(GAApplicationType.builder()
-                                       .types(singletonList(ADJOURN_HEARING))
-                                       .build())
-                .claimant1PartyName("Applicant1")
-                .generalAppRespondentSolicitors(respondentSols)
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec
-                                              .builder()
-                                              .id("id")
-                                              .email("TEST@gmail.com")
-                                              .organisationIdentifier("Org1").build())
-                .isMultiParty(NO)
-                .isGaRespondentOneLip(YES)
-                .isGaApplicantLip(YES)
-                .isGaRespondentTwoLip(NO)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.YES).build())
-                .defendant1PartyName("Respondent1")
-                .claimant2PartyName("Applicant2")
-                .defendant2PartyName("Respondent2")
-                .generalAppSuperClaimType(SPEC_CLAIM)
-                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("12342341").build())
-                .civilServiceUserRoles(IdamUserDetails.builder()
-                                           .id("f5e5cc53-e065-43dd-8cec-2ad005a6b9a9")
-                                           .email("applicant@someorg.com")
-                                           .build())
-                .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-                .build();
-
-            generalApplication = builder.build();
-
-            Map<String, Object> dataMap = objectMapper.convertValue(generalApplication, new TypeReference<>() {
-            });
-            params = callbackParamsOfPendingState(dataMap, CallbackType.SUBMITTED);
-        }
-
-        @Test
-        void shouldNotCallAssignCase() {
-            var response = (SubmittedCallbackResponse) assignCaseToUserHandler.handle(params);
-            verify(coreCaseUserService, times(0)).assignCase(
-                any(),
-                any(),
-                any(),
-                any()
             );
         }
     }

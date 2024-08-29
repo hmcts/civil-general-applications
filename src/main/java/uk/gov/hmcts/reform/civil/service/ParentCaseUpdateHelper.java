@@ -173,7 +173,9 @@ public class ParentCaseUpdateHelper {
                 List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
                     .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .toList();
-
+                Optional<Element<GeneralApplication>> newApplicationElement = civilGeneralApplications.stream()
+                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                    .findFirst();
                 GeneralApplication generalApplication = civilGeneralApplications.stream()
                     .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .findAny()
@@ -181,7 +183,11 @@ public class ParentCaseUpdateHelper {
                     .getValue();
 
                 civilGeneralApplications =
-                    addApplication(buildGeneralApplication(generalApplication), generalApplicationsList);
+                    addApplication(
+                        newApplicationElement,
+                        buildGeneralApplication(generalApplication),
+                        generalApplicationsList
+                    );
 
             }
         }
@@ -743,8 +749,8 @@ public class ParentCaseUpdateHelper {
                 .toList();
 
             return civilCaseList.stream().filter(civilDocument -> gaCaseList
-               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink()
-                   .equals(civilDocument.getValue().getDocumentLink()))).toList().size();
+               .parallelStream().anyMatch(gaDocument -> gaDocument.getValue().getDocumentLink().getDocumentUrl()
+                   .equals(civilDocument.getValue().getDocumentLink().getDocumentUrl()))).toList().size();
         } else {
             List<Element<Document>> civilCaseList = civilCaseDocumentList.stream()
                    .map(element -> (Element<Document>) element)
@@ -832,12 +838,22 @@ public class ParentCaseUpdateHelper {
         return applicationBuilder.build();
     }
 
-    private List<Element<GeneralApplication>> addApplication(GeneralApplication application,
+    private List<Element<GeneralApplication>> addApplication(
+        Optional<Element<GeneralApplication>> newApplicationElement, GeneralApplication application,
                                                              List<Element<GeneralApplication>>
                                                                  generalApplicationsList) {
         List<Element<GeneralApplication>> newApplication = newArrayList();
         newApplication.addAll(generalApplicationsList);
-        newApplication.add(element(application));
+        Element<GeneralApplication> elementToAdd;
+        if (newApplicationElement.isPresent()) {
+            elementToAdd = Element.<GeneralApplication>builder()
+                .id(newApplicationElement.get().getId())
+                .value(application)
+                .build();
+        } else {
+            elementToAdd = element(application);
+        }
+        newApplication.add(elementToAdd);
 
         return newApplication;
     }

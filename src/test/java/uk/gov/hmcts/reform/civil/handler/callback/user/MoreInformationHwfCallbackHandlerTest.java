@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
@@ -94,7 +95,7 @@ class MoreInformationHwfCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(response).isNotNull();
             CaseData data = objectMapper.convertValue(response.getData(), CaseData.class);
             Assertions.assertThat(data.getGaHwfDetails().getHwfReferenceNumber()).isNull();
-            //Assertions.assertThat(data.getBusinessProcess().getCamundaEvent()).isEqualTo(NOTIFY_LIP_CLAIMANT_HWF_OUTCOME.toString());
+            Assertions.assertThat(data.getBusinessProcess().getCamundaEvent()).isEqualTo(NOTIFY_APPLICANT_LIP_HWF.toString());
             Assertions.assertThat(data.getGaHwfDetails().getHwfCaseEvent()).isEqualTo(MORE_INFORMATION_HWF_GA);
         }
 
