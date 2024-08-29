@@ -135,11 +135,11 @@ public class CreateApplicationTaskHandlerTest {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, NO, NO);
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
-
-            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(2);
-            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
-            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(2);
+            assertThat(data.getCaseNameGaInternal()).isEqualTo("Internal v Internal");
+            assertThat(data.getClaimantGaAppDetails()).hasSize(2);
+            assertThat(data.getRespondentSolGaAppDetails()).hasSize(1);
+            assertThat(data.getRespondentSolTwoGaAppDetails()).isEmpty();
+            assertThat(data.getGaDetailsMasterCollection()).hasSize(2);
         }
 
         @Test
