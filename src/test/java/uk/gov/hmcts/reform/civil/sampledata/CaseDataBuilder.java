@@ -370,7 +370,7 @@ public class CaseDataBuilder {
             .ccdState(ccdState)
             .applicantPartyName(applicantPartyName)
             .claimant1PartyName(claimant1PartyName)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .defendant1PartyName(defendant1PartyName)
             .isGaRespondentOneLip(isGaRespondentOneLip)
             .isGaRespondentTwoLip(isGaRespondentTwoLip)
@@ -632,7 +632,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder consentOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -665,7 +665,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder finalOrderFreeForm() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -689,7 +689,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder generalOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -722,7 +722,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder generalOrderFreeFormApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -754,7 +754,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder judgeFinalOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -787,7 +787,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder directionOrderApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -821,7 +821,7 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
@@ -851,7 +851,7 @@ public class CaseDataBuilder {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
             .claimant1PartyName("Test Claimant1 Name")
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant2PartyName("Test Claimant2 Name")
             .judgeTitle("John Doe")
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
@@ -917,7 +917,7 @@ public class CaseDataBuilder {
                                         .judicialTimeEstimate(GAHearingDuration.MINUTES_15)
                                         .build())
             .claimant1PartyName("Test Claimant1 Name")
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
@@ -985,7 +985,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder writtenRepresentationSequentialApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -1020,7 +1020,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder approveApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -1048,7 +1048,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder writtenRepresentationConcurrentApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -1082,7 +1082,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder requestForInformationApplication() {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .locationName("Nottingham County Court and Family Court (and Crown)")
             .caseManagementLocation(GACaseLocation.builder().siteName("testing")
@@ -1118,7 +1118,7 @@ public class CaseDataBuilder {
 
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -1150,7 +1150,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder judicialOrderMadeWithUncloakApplication(YesOrNo isCloak) {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .defendant1PartyName("Test Defendant1 Name")
@@ -1196,7 +1196,7 @@ public class CaseDataBuilder {
             .build();
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)
@@ -1219,7 +1219,7 @@ public class CaseDataBuilder {
     public CaseData.CaseDataBuilder varyApplication(List<GeneralApplicationTypes> types) {
         return CaseData.builder()
             .ccdCaseReference(CASE_ID)
-            .caseNameGaInternal("Internal v Internal")
+            .caseNameHmctsInternal("Internal v Internal")
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY)

@@ -96,8 +96,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             if (genApps.isPresent()) {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
+                generalApplication.setCaseNameGaInternal(caseData.getCaseNameHmctsInternal());
 
-                createGeneralApplicationCase(caseId, caseData.getCaseNameHmctsInternal(), generalApplication);
+                createGeneralApplicationCase(caseId, generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
 
                 withoutNoticeNoConsent(generalApplication, caseData);
@@ -237,13 +238,12 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         }
     }
 
-    private void createGeneralApplicationCase(String caseId, String caseName, GeneralApplication generalApplication) {
+    private void createGeneralApplicationCase(String caseId, GeneralApplication generalApplication) {
         Map<String, Object> map = generalApplication.toMap(mapper);
         map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
         map.put("applicationTypes", String.join(", ", getTypesString(generalApplication)));
         map.put("parentCaseReference", caseId);
-        map.put("caseNameGaInternal", caseName);
         List<Element<CaseDocument>> addlDoc =
                 DocUploadUtils.prepareDocuments(generalApplication.getGeneralAppEvidenceDocument(),
                         DocUploadUtils.APPLICANT, CaseEvent.INITIATE_GENERAL_APPLICATION);
