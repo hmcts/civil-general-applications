@@ -94,16 +94,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-
                 GeneralApplication generalApplication = genApps.get().getValue();
-
                 createGeneralApplicationCase(caseId, generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
-
                 withoutNoticeNoConsent(generalApplication, caseData);
-
             }
         }
+
         caseData.setCaseNameGaInternal(caseData.getCaseNameHmctsInternal());
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
