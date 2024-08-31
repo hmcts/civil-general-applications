@@ -96,7 +96,6 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             if (genApps.isPresent()) {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
-                generalApplication.setCaseNameGaInternal(caseData.getCaseNameHmctsInternal());
 
                 createGeneralApplicationCase(caseId, generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
@@ -105,7 +104,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
             }
         }
-
+        caseData.setCaseNameGaInternal(caseData.getCaseNameHmctsInternal());
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
                                                    applications,

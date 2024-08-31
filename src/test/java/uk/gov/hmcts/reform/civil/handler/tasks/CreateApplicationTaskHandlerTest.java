@@ -135,7 +135,6 @@ public class CreateApplicationTaskHandlerTest {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, NO, NO);
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
-            assertThat(generalApplication.getCaseNameGaInternal()).isEqualTo("Internal v Internal");
             assertThat(data.getClaimantGaAppDetails()).hasSize(2);
             assertThat(data.getRespondentSolGaAppDetails()).hasSize(1);
             assertThat(data.getRespondentSolTwoGaAppDetails()).isEmpty();
@@ -255,7 +254,6 @@ public class CreateApplicationTaskHandlerTest {
                                                   .build())
                 .isMultiParty(YES)
                 .isDocumentVisible(isDocumentVisible)
-                .caseNameGaInternal("Internal v Internal")
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
@@ -352,7 +350,7 @@ public class CreateApplicationTaskHandlerTest {
         }
 
         @Test
-        void shouldAddRespondentOneSolListForWithoutNoticeAppln1v1Scenario2() {
+        void shouldAddRespondentOneSolListForWithoutNoticeAppln1v1Scenario() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, NO, NO, NO, NO, null);
             CaseData data = buildData(generalApplication, NO, NO, false);
@@ -551,7 +549,6 @@ public class CreateApplicationTaskHandlerTest {
                                        .build());
 
             return builder
-                .caseNameGaInternal("Internal v Internal")
                 .parentClaimantIsApplicant(parentClaimantIsApplicant)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                    .hasAgreed(isGeneralAppAgreed).build())
@@ -698,7 +695,6 @@ public class CreateApplicationTaskHandlerTest {
                 .isMultiParty(NO)
                 .isDocumentVisible(NO)
                 .parentClaimantIsApplicant(YES)
-                .caseNameGaInternal("Internal v Internal")
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
@@ -836,7 +832,6 @@ public class CreateApplicationTaskHandlerTest {
             .generalApplications(generalApplications)
             .isMultiParty(YES)
             .addApplicant2(addApplicant2)
-            .caseNameGaInternal("Internal v Internal")
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .generalApplicationsDetails(generalApplicationsDetailsList)
