@@ -21,6 +21,9 @@ public class NotificationsProperties {
     private String lipGeneralAppRespondentEmailTemplate;
 
     @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplate;
+
+    @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
 
     @NotEmpty
@@ -79,4 +82,21 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String evidenceUploadTemplate;
+
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeeded;
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemission;
+    @NotEmpty
+    private String notifyApplicantForNoRemission;
+    @NotEmpty
+    private String notifyApplicantForHwfPaymentOutcome;
+
 }

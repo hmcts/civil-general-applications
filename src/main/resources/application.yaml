@@ -18,6 +18,8 @@ management:
     case-document-am-api:
       enabled: true
 spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/civil/, optional:configtree:/mnt/secrets/civil-gen-apps/"
   application:
     name: civil-general-applications
   main:
@@ -137,6 +139,7 @@ notifications:
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
   urgentGeneralAppRespondentEmailTemplate: "3ae23a46-a83b-4768-a066-198e80958cea"
   lipGeneralAppRespondentEmailTemplate: "39d8c00f-2597-4e39-80a9-0f53c05715be"
+  lipGeneralAppApplicantEmailTemplate: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
   writtenRepConcurrentRepresentationApplicantEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
   writtenRepConcurrentRepresentationRespondentEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
@@ -157,6 +160,12 @@ notifications:
   judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
   hearingNoticeTemplate: "3122b710-2c42-4635-8bbc-e0ac72fc27f5"
   evidenceUploadTemplate: "7bf848bc-ff64-471e-b780-2961a010b6f0"
+  notifyApplicantForHwFMoreInformationNeeded: "02956398-fffb-4461-93a0-3713788363a8"
+  notifyApplicantForHwfInvalidRefNumber: "8d7cb08f-96ae-4469-944d-c92650f45fb6"
+  notifyApplicantForHwfUpdateRefNumber: "7f87e629-6473-4732-8d80-4174d06696d5"
+  notifyApplicantForHwfPartialRemission: "2c5c5cae-f1b1-41b5-afe5-0ce2e68f8d3c"
+  notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
+  notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find

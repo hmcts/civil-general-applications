@@ -2,14 +2,14 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
-import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
@@ -20,13 +20,13 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 
 @Service
-@RequiredArgsConstructor
-public class InvalidHwFCallbackHandler extends CallbackHandler {
+@Slf4j
+public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
 
     private static final List<CaseEvent> EVENTS = List.of(INVALID_HWF_REFERENCE_GA);
-    private final ObjectMapper objectMapper;
 
     private final Map<String, Callback> callbackMap = Map.of(
         callbackKey(ABOUT_TO_START), this::setData,
@@ -34,27 +34,28 @@ public class InvalidHwFCallbackHandler extends CallbackHandler {
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
 
+    public InvalidHwFCallbackHandler(ObjectMapper objectMapper) {
+        super(objectMapper, EVENTS);
+    }
+
     @Override
     protected Map<String, Callback> callbacks() {
         return callbackMap;
     }
 
-    @Override
-    public List<CaseEvent> handledEvents() {
-        return EVENTS;
-    }
-
     private CallbackResponse aboutToSubmit(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        CaseData updatedCaseData = setUpBusinessProcess(caseData);
+
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseData.toMap(objectMapper))
+            .data(updatedCaseData.toMap(objectMapper))
             .build();
     }
 
-    private CallbackResponse setData(CallbackParams callbackParams) {
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(callbackParams.getCaseData());
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataBuilder.build().toMap(objectMapper))
-            .build();
+    private CaseData setUpBusinessProcess(CaseData caseData) {
+        CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
+                .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, INVALID_HWF_REFERENCE_GA);
+        return updatedData.build();
     }
 }

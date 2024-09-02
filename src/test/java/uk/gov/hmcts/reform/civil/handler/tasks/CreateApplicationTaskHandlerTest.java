@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -107,6 +108,8 @@ public class CreateApplicationTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     @Autowired
     private CreateApplicationTaskHandler createApplicationTaskHandler;
@@ -378,6 +381,21 @@ public class CreateApplicationTaskHandlerTest {
         void shouldAddRespondentOneSolListForWithNoticeAppln1v1Scenario() {
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, YES, NO, NO, YES, null);
+            CaseData data = buildData(generalApplication, NO, NO, false);
+
+            assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);
+            assertThat(data.getClaimantGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getRespondentSolTwoGaAppDetails().size()).isEqualTo(0);
+            assertThat(data.getGaDetailsMasterCollection().size()).isEqualTo(0);
+        }
+
+        @Test
+        void shouldAddRespondentOneSolListForWithNoticeAppln1v1LipScenario() {
+            when(featureToggleService.isGaForLipsEnabled())
+                    .thenReturn(true);
+            GeneralApplication generalApplication =
+                    getGeneralApplication(null, NO, YES, NO, NO, YES, null)
+                    .toBuilder().isGaApplicantLip(YES).build();
             CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails().size()).isEqualTo(1);

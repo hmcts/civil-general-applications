@@ -20,6 +20,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLIC
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_HEARING_SCHEDULED_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FULL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTICE_DOCUMENT;
@@ -39,6 +40,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
@@ -89,6 +91,8 @@ public class FlowStateAllowedEventService {
                       UPDATE_HELP_WITH_FEE_NUMBER_GA,
                       MORE_INFORMATION_HWF_GA,
                       FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
+                      FEE_PAYMENT_OUTCOME_GA,
                       MAIN_CASE_CLOSED)
         ),
 
@@ -158,6 +162,8 @@ public class FlowStateAllowedEventService {
                       UPDATE_HELP_WITH_FEE_NUMBER_GA,
                       MORE_INFORMATION_HWF_GA,
                       FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
+                      FEE_PAYMENT_OUTCOME_GA,
                       MAIN_CASE_CLOSED)
         ),
 

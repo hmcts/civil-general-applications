@@ -39,7 +39,6 @@ public class DocmosisServiceTest {
         .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
                 LocationRefData.builder().epimmsId("2").venueName("London").build(),
                 LocationRefData.builder().epimmsId("3").venueName("Manchester").build(),
-                LocationRefData.builder().epimmsId("192280").venueName("CCMCC").build(),
                 LocationRefData.builder().epimmsId("420219").venueName("CNBC").build());
 
     @Test
@@ -66,15 +65,15 @@ public class DocmosisServiceTest {
     }
 
     @Test
-    void shouldReturnLocationRefData_whenUspecAndCcmcc() {
-        when(generalAppLocationRefDataService.getCcmccLocation(any())).thenReturn(locationRefData);
+    void shouldReturnLocationRefData_whenUspecAndCnbc() {
+        when(generalAppLocationRefDataService.getCnbcLocation(any())).thenReturn(locationRefData);
 
         CaseData caseData = CaseData.builder()
             .caseAccessCategory(CaseCategory.UNSPEC_CLAIM)
-            .caseManagementLocation(GACaseLocation.builder().baseLocation("192280").build()).build();
-        LocationRefData ccmccLocationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
-        assertThat(ccmccLocationRefData.getVenueName())
-            .isEqualTo("CCMCC");
+            .caseManagementLocation(GACaseLocation.builder().baseLocation("420219").build()).build();
+        LocationRefData cnbcLocationRefData = docmosisService.getCaseManagementLocationVenueName(caseData, "auth");
+        assertThat(cnbcLocationRefData.getVenueName())
+            .isEqualTo("CNBC");
     }
 
     @Test

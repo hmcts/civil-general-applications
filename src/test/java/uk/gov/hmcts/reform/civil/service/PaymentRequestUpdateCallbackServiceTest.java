@@ -16,8 +16,10 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.ServiceRequestUpdateDto;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
@@ -26,6 +28,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -37,6 +40,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.FAILED;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
@@ -339,4 +343,32 @@ class PaymentRequestUpdateCallbackServiceTest {
         return new NotificationException(new Exception("Notification Exception"));
     }
 
+    @Test
+    public void shouldProcessHwf() {
+        CaseData caseData = CaseData.builder()
+                .ccdState(AWAITING_APPLICATION_PAYMENT)
+                .ccdCaseReference(1L)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .fee(Fee.builder().calculatedAmountInPence(BigDecimal.ONE).build()).build())
+                .generalAppHelpWithFees(HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ref").build())
+                .build();
+        CaseData updatedCaseData = paymentRequestUpdateCallbackService.processHwf(caseData);
+        verify(coreCaseDataService, never()).startGaUpdate(any(), any());
+        assertThat(updatedCaseData).isNotNull();
+    }
+
+    @Test
+    public void shouldNotProcessHwf() {
+        CaseData caseData = CaseData.builder()
+                .ccdState(PENDING_APPLICATION_ISSUED)
+                .ccdCaseReference(1L)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .fee(Fee.builder().calculatedAmountInPence(BigDecimal.ONE).build()).build())
+                .generalAppHelpWithFees(HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ref").build())
+                .build();
+        CaseData updatedCaseData = paymentRequestUpdateCallbackService.processHwf(caseData);
+        assertThat(updatedCaseData).isNull();
+    }
 }
