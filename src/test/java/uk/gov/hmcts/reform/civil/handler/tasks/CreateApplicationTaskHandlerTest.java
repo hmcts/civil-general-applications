@@ -584,6 +584,7 @@ public class CreateApplicationTaskHandlerTest {
             GeneralApplication generalApplication = getGeneralApplication();
             CaseData data = buildData(generalApplication, NO, NO, false);
 
+            assertThat(data.getCaseNameGaInternal()).isEqualTo("applicant v respondent");
             assertThat(data.getRespondentSolGaAppDetails()).isEmpty();
             assertThat(data.getClaimantGaAppDetails()).hasSize(1);
         }
@@ -695,6 +696,7 @@ public class CreateApplicationTaskHandlerTest {
                 .isMultiParty(NO)
                 .isDocumentVisible(NO)
                 .parentClaimantIsApplicant(YES)
+                .caseNameGaInternal("applicant v respondent")
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
@@ -747,7 +749,6 @@ public class CreateApplicationTaskHandlerTest {
             .generalApplications(generalApplications)
             .isMultiParty(YES)
             .addApplicant2(addApplicant2)
-            .caseNameGaInternal("Internal v Internal")
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .gaDetailsMasterCollection(gaDetailsMasterCollection)
             .generalApplicationsDetails(generalApplicationsDetailsList)
@@ -838,7 +839,7 @@ public class CreateApplicationTaskHandlerTest {
             .gaDetailsRespondentSol(gaDetailsRespondentSolList)
             .gaDetailsRespondentSolTwo(gaDetailsRespondentSolTwoList)
             .businessProcess(BusinessProcess.builder().status(STARTED)
-                                 .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
+            .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
         caseData = caseData.toBuilder()
                 .generalAppEvidenceDocument(generalAppEvidenceDocument).build();
         VariableMap variables = Variables.createVariables();
