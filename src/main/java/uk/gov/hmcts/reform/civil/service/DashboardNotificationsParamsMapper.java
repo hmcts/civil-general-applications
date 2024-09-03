@@ -15,7 +15,7 @@ public class DashboardNotificationsParamsMapper {
     public HashMap<String, Object> mapCaseDataToParams(CaseData caseData) {
         HashMap<String, Object> params = new HashMap<>();
 
-        if(Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
+        if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
             params.put("judgeRequestMoreInfoByDateCy",
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));

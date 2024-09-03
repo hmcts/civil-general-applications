@@ -17,19 +17,20 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT;
-@Service
-public class CreateMakeDecisionDashboardNotificationForRespondent extends DashboardCallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_DASHBOARD_NOTIFICATION_FOR_RESPONDENT);
+@Service
+public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends DashboardCallbackHandler {
+
+    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION);
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
 
-    public CreateMakeDecisionDashboardNotificationForRespondent(DashboardApiClient dashboardApiClient,
-                                                                DashboardNotificationsParamsMapper mapper,
-                                                                CoreCaseDataService coreCaseDataService,
-                                                                CaseDetailsConverter caseDetailsConverter,
-                                                                FeatureToggleService featureToggleService) {
+    public CreateMakeDecisionDashboardNotificationForRespondentHandler(DashboardApiClient dashboardApiClient,
+                                                                       DashboardNotificationsParamsMapper mapper,
+                                                                       CoreCaseDataService coreCaseDataService,
+                                                                       CaseDetailsConverter caseDetailsConverter,
+                                                                       FeatureToggleService featureToggleService) {
         super(dashboardApiClient, mapper, featureToggleService);
         this.coreCaseDataService = coreCaseDataService;
         this.caseDetailsConverter = caseDetailsConverter;
