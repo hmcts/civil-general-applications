@@ -45,6 +45,11 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
 
     }
 
+    @Override
+    public boolean isMainCase() {
+        return true;
+    }
+    
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;

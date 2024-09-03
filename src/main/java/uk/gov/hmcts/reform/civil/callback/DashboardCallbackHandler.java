@@ -40,6 +40,10 @@ public abstract class DashboardCallbackHandler extends CallbackHandler {
         return true;
     }
 
+    protected boolean isMainCase() {
+        return false;
+    }
+
     public CallbackResponse configureDashboardScenario(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
@@ -49,7 +53,7 @@ public abstract class DashboardCallbackHandler extends CallbackHandler {
 
         if (!Strings.isNullOrEmpty(scenario) && shouldRecordScenario(callbackParams)) {
             dashboardApiClient.recordScenario(
-                caseData.getParentCaseReference(),
+                isMainCase() ? caseData.getParentCaseReference() : caseData.getCcdCaseReference().toString(),
                 scenario,
                 authToken,
                 scenarioParams

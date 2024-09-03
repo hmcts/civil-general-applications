@@ -44,6 +44,11 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
             || isWithNoticeOrConsent(caseData));
     }
 
+    @Override
+    public boolean isMainCase() {
+        return true;
+    }
+
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;

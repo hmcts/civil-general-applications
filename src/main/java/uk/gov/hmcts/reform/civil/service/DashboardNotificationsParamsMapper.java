@@ -13,7 +13,6 @@ public class DashboardNotificationsParamsMapper {
     public HashMap<String, Object> mapCaseDataToParams(CaseData caseData) {
         HashMap<String, Object> params = new HashMap<>();
 
-        System.out.println(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence());
         if (caseData.getGeneralAppPBADetails() != null) {
             params.put("applicationFee",
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
