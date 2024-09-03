@@ -179,22 +179,22 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             if (!gaForLipService.isLipApp(caseData)) {
                 log.info("Assigning case to Applicant Solicitor One: {} and caseId: {}", applicantSolicitor.getId(), caseId);
                 coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                        applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
+                    applicantSolicitor.getOrganisationIdentifier(), APPLICANTSOLICITORONE
                 );
                 List<Element<GASolicitorDetailsGAspec>> addlApplicantSolList = caseData.getGeneralAppApplicantAddlSolicitors();
                 if (Objects.nonNull(addlApplicantSolList) && !addlApplicantSolList.isEmpty()) {
                     for (Element<GASolicitorDetailsGAspec> addlApplicantSolElement : addlApplicantSolList) {
-                      log.info("Assigning case to GA Applicant Solicitor One: {} and caseId: {}", addlApplicantSolElement.getValue().getId(), caseId);
+                        log.info("Assigning case to GA Applicant Solicitor One: {} and caseId: {}", addlApplicantSolElement.getValue().getId(), caseId);
                         coreCaseUserService.assignCase(caseId, addlApplicantSolElement.getValue().getId(),
-                                addlApplicantSolElement.getValue().getOrganisationIdentifier(),
-                                APPLICANTSOLICITORONE
+                            addlApplicantSolElement.getValue().getOrganisationIdentifier(),
+                            APPLICANTSOLICITORONE
                         );
                     }
                 }
             } else {
                 log.info("Assigning case to Applicant Solicitor: {} and caseId: {} with no org", applicantSolicitor.getId(), caseId);
                 coreCaseUserService.assignCase(caseId, applicantSolicitor.getId(),
-                        null, CLAIMANT
+                    null, CLAIMANT
                 );
             }
 
@@ -211,7 +211,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
             || (caseData.getGeneralAppRespondentAgreement() != null
             && caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES))))
             || (generalAppFeesService.isFreeApplication(caseData))) {
-            log.info("Assigning case to Respondent Solicitor for caseId: {}",  caseId);
+            log.info("Assigning case to Respondent Solicitor for caseId: {}", caseId);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
         }
 
