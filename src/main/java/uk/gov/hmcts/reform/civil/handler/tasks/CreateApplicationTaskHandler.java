@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -40,6 +41,7 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent1Solic
 import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2SolicitorOrgId;
 
 @RequiredArgsConstructor
+@Slf4j
 @Component
 public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
@@ -70,7 +72,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
 
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-
+        log.info("CaseNameHmctsInternal for caseId {} is {}", caseId, caseData.getCaseNameHmctsInternal());
         generalApplications = caseData.getGeneralApplications();
 
         judgeApplications =
@@ -104,7 +106,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
 
             }
         }
-
+        caseData.setCaseNameHmctsPublic(caseData.getCaseNameHmctsInternal());
         data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, getUpdatedCaseData(caseData, generalApplications,
                                                    applications,

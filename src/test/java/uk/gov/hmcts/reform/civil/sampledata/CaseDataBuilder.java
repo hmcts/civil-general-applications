@@ -407,6 +407,7 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(judicialMakeAnOrder)
             .generalAppType(generalAppType)
             .approveConsentOrder(approveConsentOrder)
+            .caseNameHmctsInternal("Applicant v Respondent")
             .build();
     }
 
