@@ -108,12 +108,12 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
         throws NotificationException {
         try {
-            notificationService.sendMail(
+           /* notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
-            );
+            );*/
         } catch (NotificationException e) {
             throw new NotificationException(e);
         }
