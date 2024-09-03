@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -1225,16 +1226,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
-            GAHearingDuration respondent1HearingDuration = null;
-            GAHearingDuration respondent2HearingDuration = null;
-            if (responseElementOptional1.isPresent()) {
-                respondent1HearingDuration = responseElementOptional1.get().getValue()
-                        .getGaHearingDetails().getHearingDuration();
-            }
-            if (responseElementOptional2.isPresent()) {
-                respondent2HearingDuration = responseElementOptional2.get().getValue()
-                        .getGaHearingDetails().getHearingDuration();
-            }
+            GAHearingDuration respondent1HearingDuration = responseElementOptional1.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
+            GAHearingDuration respondent2HearingDuration = responseElementOptional2.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
             if (applicantHearingDuration == null && respondent1HearingDuration == null && respondent2HearingDuration == null) {
                 return ESTIMATES_NOT_PROVIDED;
             }
