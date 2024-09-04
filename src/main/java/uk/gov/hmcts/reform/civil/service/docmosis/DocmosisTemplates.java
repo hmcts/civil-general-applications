@@ -19,6 +19,7 @@ public enum DocmosisTemplates {
     RESPOND_FOR_INFORMATION("CV-UNS-GAP-ENG-01079.docx", "Respond_for_information_for_application_%s.pdf"),
     RESPOND_FOR_WRITTEN_REPRESENTATION("CV-SPC-GAP-ENG-01080.docx", "Respond_for_written_representation_for_application_%s.pdf");
 
+
     private final String template;
     private final String documentTitle;
 
