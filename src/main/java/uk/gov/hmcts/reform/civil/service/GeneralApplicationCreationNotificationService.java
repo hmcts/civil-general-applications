@@ -53,15 +53,15 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
          * */
         if (isNotificationCriteriaSatisfied) {
 
-//            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
-//                .getGeneralAppRespondentSolicitors();
-//
-//            respondentSolicitor
-//                .forEach((RS) ->
-//                             sendNotificationToGeneralAppRespondent(updatedCaseData,
-//                                                                    RS.getValue().getEmail(),
-//                                     getTemplate(updatedCaseData, false)
-//                             ));
+            List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
+                .getGeneralAppRespondentSolicitors();
+
+            respondentSolicitor
+                .forEach((RS) ->
+                             sendNotificationToGeneralAppRespondent(updatedCaseData,
+                                                                    RS.getValue().getEmail(),
+                                     getTemplate(updatedCaseData, false)
+                             ));
         }
 
         /*
