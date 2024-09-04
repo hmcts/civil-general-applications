@@ -18,8 +18,6 @@ public enum DocmosisTemplates {
     REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY("CV-SPC-GAP-ENG-SEND-TO-OTHER-PARTY.docx", "make-with-notice_%s.pdf"),
     RESPOND_FOR_INFORMATION("CV-UNS-GAP-ENG-01079.docx", "Respond_for_information_for_application_%s.pdf"),
     RESPOND_FOR_WRITTEN_REPRESENTATION("CV-SPC-GAP-ENG-01080.docx", "Respond_for_written_representation_for_application_%s.pdf");
-
-
     private final String template;
     private final String documentTitle;
 
