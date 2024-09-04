@@ -18,7 +18,6 @@ public class DashboardNotificationsParamsMapperTest {
     @InjectMocks
     private DashboardNotificationsParamsMapper mapper;
 
-
     @Test
     void shouldMapAllParametersWhenIsRequested() {
 
