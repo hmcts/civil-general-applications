@@ -1277,4 +1277,10 @@ public class CaseDataBuilder {
                 .listItems(List.of(location1, location2, location3, location4))
                 .value(location1).build();
     }
+
+    public CaseData buildJudicialDecisionRequestMoreInfo() {
+        return CaseData.builder()
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.of(2024, 9, 04)).build()).build();
+    }
 }
