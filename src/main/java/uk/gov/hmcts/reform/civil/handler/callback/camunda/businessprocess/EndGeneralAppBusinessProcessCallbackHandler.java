@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -57,20 +58,38 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        if (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
-            || (data.getCcdState().equals(PENDING_APPLICATION_ISSUED)
-            && Objects.nonNull(data.getGeneralAppPBADetails())
-            && Objects.nonNull(data.getGeneralAppPBADetails().getFee())
-            && (data.getGeneralAppPBADetails().getFee().getCode().equalsIgnoreCase(FREE_KEYWORD)))) {
+        if (!gaForLipService.isGaForLip(data)
+            && (data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT) || isFreeFeeCode(data))) {
 
             parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
+
+        /*
+        * GA for LIP
+        * When payment is done via Service Request for GA then,
+        * Add GA into collections
+        * */
+        if (gaForLipService.isGaForLip(data)
+            && (isLipPaymentViaServiceRequest(data) || isFreeFeeCode(data))) {
+
+            parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
+        }
+
         CaseState newState;
         if (data.getGeneralAppPBADetails().getPaymentDetails() == null) {
             newState = AWAITING_APPLICATION_PAYMENT;
-            if (gaForLipService.isLipApp(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())) {
+
+            /*
+             * GA for LIP
+             * When Caseworker should have access to GA to perform HelpWithFee then,
+             * Add GA into collections
+             * */
+            if (gaForLipService.isGaForLip(data) && Objects.nonNull(data.getGeneralAppHelpWithFees())
+                && data.getGeneralAppHelpWithFees().getHelpWithFee().equals(YesOrNo.YES)) {
+
                 parentCaseUpdateHelper.updateMasterCollectionForHwf(data);
             }
+
         } else if (Objects.nonNull(data.getFinalOrderSelection())) {
             if (data.getFinalOrderSelection().equals(ASSISTED_ORDER)
                 && Objects.nonNull(data.getAssistedOrderFurtherHearingDetails())) {
@@ -105,5 +124,18 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             .state(newState.toString())
             .data(output)
             .build();
+    }
+
+    private boolean isFreeFeeCode(CaseData data) {
+        return (data.getCcdState().equals(PENDING_APPLICATION_ISSUED)
+            && Objects.nonNull(data.getGeneralAppPBADetails())
+            && Objects.nonNull(data.getGeneralAppPBADetails().getFee())
+            && (FREE_KEYWORD.equalsIgnoreCase(data.getGeneralAppPBADetails().getFee().getCode())));
+    }
+
+    private boolean isLipPaymentViaServiceRequest(CaseData data) {
+        return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
+            && (Objects.isNull(data.getGeneralAppHelpWithFees())
+            || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
     }
 }
