@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
 import java.util.List;
 
@@ -24,24 +25,26 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CreateMakeDecisionDashboardNotificationForApplicantHandler(DashboardApiClient dashboardApiClient,
                                                                       DashboardNotificationsParamsMapper mapper,
                                                                       CoreCaseDataService coreCaseDataService,
                                                                       CaseDetailsConverter caseDetailsConverter,
-                                                                      FeatureToggleService featureToggleService) {
+                                                                      FeatureToggleService featureToggleService,
+                                                                      JudicialDecisionHelper judicialDecisionHelper) {
         super(dashboardApiClient, mapper, featureToggleService);
         this.coreCaseDataService = coreCaseDataService;
         this.caseDetailsConverter = caseDetailsConverter;
+        this.judicialDecisionHelper = judicialDecisionHelper;
     }
 
     @Override
     protected String getScenario(CaseData caseData) {
         if (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            .equals(REQUEST_MORE_INFORMATION)) {
+            && REQUEST_MORE_INFORMATION.equals(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT.getScenario();
-        } else if (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)) {
+        } else if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT.getScenario();
         }
         return "";

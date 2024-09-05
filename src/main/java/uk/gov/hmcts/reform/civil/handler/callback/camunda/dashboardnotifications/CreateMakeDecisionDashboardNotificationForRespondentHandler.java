@@ -39,8 +39,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     @Override
     protected String getScenario(CaseData caseData) {
         if (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            .equals(REQUEST_MORE_INFORMATION)) {
+            && REQUEST_MORE_INFORMATION.equals(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
         }
         return "";
