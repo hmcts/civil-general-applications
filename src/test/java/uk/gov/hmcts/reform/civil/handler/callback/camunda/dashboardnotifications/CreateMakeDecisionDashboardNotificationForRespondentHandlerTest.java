@@ -92,7 +92,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
         }
 
         @Test
-        void shouldRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
+        void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
@@ -119,7 +119,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
         }
 
         @Test
-        void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenInvoked() {
+        void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenGALipsToggleIsDisableInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())

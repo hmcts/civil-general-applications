@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -15,7 +16,6 @@ import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT;
 
 @Service
@@ -39,7 +39,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     @Override
     protected String getScenario(CaseData caseData) {
         if (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && REQUEST_MORE_INFORMATION.equals(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())) {
+            && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
         }
         return "";
