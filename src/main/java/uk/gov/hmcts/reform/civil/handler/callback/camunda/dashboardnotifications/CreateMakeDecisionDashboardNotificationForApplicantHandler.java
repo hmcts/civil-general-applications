@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT;
 
 @Service
