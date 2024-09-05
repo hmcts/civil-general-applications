@@ -16,8 +16,8 @@ public enum DocmosisTemplates {
     CONSENT_ORDER_FORM("CV-UNS-GAP-ENG-01078.docx", "Consent_order_for_application_%s.pdf"),
     GENERAL_APPLICATION_DRAFT("CV-UNS-GAP-ENG-01077.docx", "Draft_application_%s.pdf"),
     REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY("CV-SPC-GAP-ENG-SEND-TO-OTHER-PARTY.docx", "make-with-notice_%s.pdf"),
-    RESPOND_FOR_INFORMATION("CV-UNS-GAP-ENG-01079.docx", "Respond_for_information_for_application_%s.pdf");
-
+    RESPOND_FOR_INFORMATION("CV-UNS-GAP-ENG-01079.docx", "Respond_for_information_for_application_%s.pdf"),
+    RESPOND_FOR_WRITTEN_REPRESENTATION("CV-SPC-GAP-ENG-01080.docx", "Respond_for_written_representation_for_application_%s.pdf");
     private final String template;
     private final String documentTitle;
 
