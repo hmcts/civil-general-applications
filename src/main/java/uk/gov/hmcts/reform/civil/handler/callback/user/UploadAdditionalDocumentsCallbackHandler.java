@@ -11,15 +11,22 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
+import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
+import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 import java.time.LocalDateTime;
@@ -33,6 +40,8 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TO
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
 
 @Slf4j
 @Service
@@ -47,6 +56,10 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     private final IdamClient idamClient;
+    private final DashboardApiClient dashboardApiClient;
+    private final FeatureToggleService featureToggleService;
+    private final GaForLipService gaForLipService;
+    private final DashboardNotificationsParamsMapper mapper;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -57,16 +70,23 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        String userId = idamClient.getUserInfo(authToken).getUid();
         caseData = buildBundleData(caseData, userId);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
         DocUploadUtils.addUploadDocumentByTypeToAddl(caseData, caseDataBuilder,
-                caseData.getUploadDocument(), role, true);
+                                                     caseData.getUploadDocument(), role, true
+        );
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
+
+        if (isWithNoticeOrConsent(caseData)) {
+            createDashboardNotification(caseData, role, authToken);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
@@ -76,22 +96,23 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String role = DocUploadUtils.getUserRole(caseData, userId);
         if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
-                    .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
-                    .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .map(byType -> ElementUtils.element(CaseDocument.builder()
-                            .documentLink(byType.getValue().getAdditionalDocument())
-                            .documentName(byType.getValue().getDocumentType())
-                            .createdBy(role)
-                            .createdDatetime(LocalDateTime.now()).build()))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .map(byType -> ElementUtils.element(CaseDocument.builder()
+                                                        .documentLink(byType.getValue().getAdditionalDocument())
+                                                        .documentName(byType.getValue().getDocumentType())
+                                                        .createdBy(role)
+                                                        .createdDatetime(LocalDateTime.now()).build()))
+                .collect(Collectors.toList());
             assignCategoryId.assignCategoryIdToCollection(
-                    bundle,
-                    document -> document.getValue().getDocumentLink(),
-                    AssignCategoryId.APPLICATIONS);
+                bundle,
+                document -> document.getValue().getDocumentLink(),
+                AssignCategoryId.APPLICATIONS
+            );
             if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
                 bundle.addAll(caseData.getGaAddlDocBundle());
             }
@@ -113,4 +134,34 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         return EVENTS;
     }
 
+    private void createDashboardNotification(CaseData caseData, String role, String authToken) {
+
+        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+            String scenario = getDashboardScenario(role, caseData);
+            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+                caseData)).build();
+            if (scenario != null) {
+                dashboardApiClient.recordScenario(
+                    caseData.getCcdCaseReference().toString(),
+                    scenario,
+                    authToken,
+                    scenarioParams
+                );
+            }
+        }
+    }
+
+    private String getDashboardScenario(String role, CaseData caseData) {
+        if (DocUploadUtils.APPLICANT.equals(role) && gaForLipService.isLipResp(caseData)) {
+            return SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT.getScenario();
+        } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipApp(caseData)) {
+            return SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT.getScenario();
+        }
+        return null;
+    }
+
+    private boolean isWithNoticeOrConsent(CaseData caseData) {
+        return JudicialDecisionNotificationUtil.isWithNotice(caseData)
+            || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
+    }
 }
