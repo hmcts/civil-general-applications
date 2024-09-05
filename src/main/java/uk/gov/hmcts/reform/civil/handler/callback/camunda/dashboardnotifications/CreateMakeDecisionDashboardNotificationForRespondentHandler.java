@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
@@ -38,7 +37,8 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
 
     @Override
     protected String getScenario(CaseData caseData) {
-        if (caseData.getJudicialDecisionRequestMoreInfo() != null
+        if (isWithNoticeOrConsent(caseData)
+            && caseData.getJudicialDecisionRequestMoreInfo() != null
             && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
         }
@@ -48,13 +48,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
-    }
-
-    @Override
-    public boolean shouldRecordScenario(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        return caseData.getIsGaApplicantLip() == YesOrNo.YES
-            &&  isWithNoticeOrConsent(caseData);
     }
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
