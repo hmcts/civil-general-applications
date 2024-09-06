@@ -63,6 +63,11 @@ public class DocUploadDashboardNotificationServiceTest {
                                                                               .documentBinaryUrl(
                                                                                   "http://dm-store:8080/documents")
                                                                               .build()).build()));
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
             CaseData caseData = CaseDataBuilder.builder()
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
@@ -81,11 +86,6 @@ public class DocUploadDashboardNotificationServiceTest {
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
 
                 .build();
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             docUploadDashboardNotificationService.createDashboardNotification(caseData, "Applicant", "BEARER_TOKEN");
 
@@ -115,6 +115,11 @@ public class DocUploadDashboardNotificationServiceTest {
                                              .email(DUMMY_EMAIL)
                                              .organisationIdentifier("2").build()));
 
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
             CaseData caseData = CaseDataBuilder.builder()
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
@@ -133,11 +138,6 @@ public class DocUploadDashboardNotificationServiceTest {
                 .generalAppRespondentSolicitors(gaRespSolicitors)
 
                 .build();
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,
