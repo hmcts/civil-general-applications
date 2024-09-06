@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
@@ -8,13 +9,14 @@ import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT;
 
 @Service
 public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler extends DashboardCallbackHandler {
@@ -29,8 +31,12 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
     @Override
     protected String getScenario(CaseData caseData) {
-        if (isNonUrgentAndWithNoticeOrConsent(caseData)) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_RESPONDENT.getScenario();
+        if (isWithNoticeOrConsent(caseData)) {
+            if (isUrgent(caseData)) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT.getScenario();
+            } else {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_RESPONDENT.getScenario();
+            }
         }
         return "";
     }
@@ -42,12 +48,18 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
     @Override
     public boolean shouldRecordScenario(CallbackParams callbackParams) {
-        return isNonUrgentAndWithNoticeOrConsent(callbackParams.getCaseData());
+        return isWithNoticeOrConsent(callbackParams.getCaseData());
     }
 
-    private boolean isNonUrgentAndWithNoticeOrConsent(CaseData caseData) {
-        return NO.equals(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())
-            && (YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+    private boolean isWithNoticeOrConsent(CaseData caseData) {
+        return (YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES);
+    }
+
+    private boolean isUrgent(CaseData caseData) {
+        return Optional.ofNullable(caseData.getGeneralAppUrgencyRequirement())
+            .map(GAUrgencyRequirement::getGeneralAppUrgency)
+            .filter(urgency -> urgency == YES)
+            .isPresent();
     }
 }
