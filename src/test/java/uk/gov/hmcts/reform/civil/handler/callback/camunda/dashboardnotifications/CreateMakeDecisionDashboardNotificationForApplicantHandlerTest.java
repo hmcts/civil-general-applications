@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +45,8 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
     private FeatureToggleService featureToggleService;
     @InjectMocks
     private CreateMakeDecisionDashboardNotificationForApplicantHandler handler;
+    @Mock
+    private JudicialDecisionHelper judicialDecisionHelper;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -101,6 +105,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                     LocalDateTime.now().plusDays(5)).build()).build();
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+            when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
@@ -109,6 +114,38 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             handler.handle(params);
             verifyNoInteractions(dashboardApiClient);
+        }
+
+        @Test
+        void shouldRecordPayAdditionalPaymentApplicantScenarioWhenInvoked() {
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaApplicantLip(YesOrNo.YES)
+                .parentClaimantIsApplicant(YesOrNo.YES)
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
+                    LocalDateTime.now().plusDays(5)).build())
+                .build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
     }
 }
