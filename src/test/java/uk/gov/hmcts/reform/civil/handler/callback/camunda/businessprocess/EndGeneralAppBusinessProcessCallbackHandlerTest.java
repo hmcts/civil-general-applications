@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,6 +33,7 @@ import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
@@ -84,6 +86,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -124,6 +127,268 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
     private static final Long PARENT_CCD_REF = 1645779506193000L;
     private static final String DUMMY_EMAIL = "test@gmail.com";
     List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+    @Nested
+    class AboutToSubmitCallbackGaForLip {
+
+        private ArgumentCaptor<String> parentCaseId = ArgumentCaptor.forClass(String.class);
+        private ArgumentCaptor<CaseDataContent> caseDataContent = ArgumentCaptor.forClass(CaseDataContent.class);
+
+        @BeforeEach
+        void setUp() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        }
+
+        @Test
+        void shouldAddGatoJudgeCollectionFreeApplication() {
+            CaseData updatedCaseDate = CaseData.builder()
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
+                .isGaRespondentOneLip(NO)
+                .parentClaimantIsApplicant(YES)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(NO).build())
+                .isMultiParty(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .ccdState(PENDING_APPLICATION_ISSUED)
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .ccdCaseReference(1234L)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .build();
+
+            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
+                .build();
+            GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
+                .caseState("Awaiting Application Payment")
+                .caseLink(CaseLink.builder()
+                              .caseReference("1234")
+                              .build())
+                .build();
+            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
+
+            CaseData parentCaseData = CaseData.builder()
+                .claimantGaAppDetails(wrapElements(claimantCollection))
+                .build();
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(caseDetailsConverter.toCaseData(getCallbackParamsGaForLipCaseData(NO).getRequest().getCaseDetails()))
+                .thenReturn(updatedCaseDate);
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse());
+            when(caseDetailsConverter.toCaseData(getStartEventResponse().getCaseDetails())).thenReturn(parentCaseData);
+            handler.handle(getCallbackParamsGaForLipCaseData(NO));
+            verify(coreCaseDataService, times(2))
+                .submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            assertThat(caseDataContent.getAllValues()).hasSize(2);
+
+            Map<String, Object> map = objectMapper
+                .convertValue(caseDataContent.getAllValues().get(0).getData(),
+                              new TypeReference<Map<String, Object>>() {});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(map
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            assertThat(gaDetailsMasterCollection).hasSize(1);
+        }
+
+        @Test
+        void shouldAddGaToJudgeCollectionPaymentThroughServiceRequestAndHwfIsNull() {
+            CaseData updatedCaseDate = CaseData.builder()
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
+                .isGaRespondentOneLip(NO)
+                .parentClaimantIsApplicant(YES)
+                .isMultiParty(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .ccdState(AWAITING_APPLICATION_PAYMENT)
+                .ccdCaseReference(1234L)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("PAY").build()).build())
+                .build();
+
+            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
+                .build();
+            GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
+                .caseState("Awaiting Application Payment")
+                .caseLink(CaseLink.builder()
+                              .caseReference("1234")
+                              .build())
+                .build();
+            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
+
+            CaseData parentCaseData = CaseData.builder()
+                .claimantGaAppDetails(wrapElements(claimantCollection))
+                .build();
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(caseDetailsConverter.toCaseData(getCallbackParamsGaForLipCaseData(NO).getRequest().getCaseDetails()))
+                .thenReturn(updatedCaseDate);
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse());
+            when(caseDetailsConverter.toCaseData(getStartEventResponse().getCaseDetails())).thenReturn(parentCaseData);
+            handler.handle(getCallbackParamsGaForLipCaseData(NO));
+            verify(coreCaseDataService, times(2))
+                .submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            assertThat(caseDataContent.getAllValues()).hasSize(2);
+
+            Map<String, Object> map = objectMapper
+                .convertValue(caseDataContent.getAllValues().get(0).getData(),
+                              new TypeReference<Map<String, Object>>() {});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(map
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            assertThat(gaDetailsMasterCollection).hasSize(1);
+        }
+
+        @Test
+        void shouldAddGaToJudgeCollectionPaymentThroughServiceRequest() {
+            CaseData updatedCaseDate = CaseData.builder()
+                .isGaApplicantLip(NO)
+                .isGaRespondentTwoLip(NO)
+                .isGaRespondentOneLip(NO)
+                .parentClaimantIsApplicant(YES)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(NO).build())
+                .isMultiParty(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .ccdState(AWAITING_APPLICATION_PAYMENT)
+                .ccdCaseReference(1234L)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("PAY").build()).build())
+                .build();
+
+            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
+                .build();
+            GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
+                .caseState("Awaiting Application Payment")
+                .caseLink(CaseLink.builder()
+                              .caseReference("1234")
+                              .build())
+                .build();
+            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
+
+            CaseData parentCaseData = CaseData.builder()
+                .claimantGaAppDetails(wrapElements(claimantCollection))
+                .build();
+
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(caseDetailsConverter.toCaseData(getCallbackParamsGaForLipCaseData(NO).getRequest().getCaseDetails()))
+                .thenReturn(updatedCaseDate);
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse());
+            when(caseDetailsConverter.toCaseData(getStartEventResponse().getCaseDetails())).thenReturn(parentCaseData);
+            handler.handle(getCallbackParamsGaForLipCaseData(NO));
+            verify(coreCaseDataService, times(2))
+                .submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            assertThat(caseDataContent.getAllValues()).hasSize(2);
+
+            Map<String, Object> map = objectMapper
+                .convertValue(caseDataContent.getAllValues().get(0).getData(),
+                              new TypeReference<Map<String, Object>>() {});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(map
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            assertThat(gaDetailsMasterCollection).hasSize(1);
+        }
+
+        @Test
+        void shouldAddGatoJudgeCollectionForCaseWorker() {
+            CaseData updatedCaseDate = CaseData.builder()
+                .isGaApplicantLip(YES)
+                .isGaRespondentTwoLip(YES)
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(YES)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YES).build())
+                .isMultiParty(NO)
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+                .ccdState(PENDING_APPLICATION_ISSUED)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAY").build()).build())
+                .ccdCaseReference(1234L)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .build();
+
+            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
+                .build();
+            GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
+                .caseState("Awaiting Application Payment")
+                .caseLink(CaseLink.builder()
+                              .caseReference("1234")
+                              .build())
+                .build();
+            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
+
+            CaseData parentCaseData = CaseData.builder()
+                .claimantGaAppDetails(wrapElements(claimantCollection))
+                .build();
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(caseDetailsConverter.toCaseData(getCallbackParamsGaForLipCaseData(NO).getRequest().getCaseDetails()))
+                .thenReturn(updatedCaseDate);
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse());
+            when(caseDetailsConverter.toCaseData(getStartEventResponse().getCaseDetails())).thenReturn(parentCaseData);
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            handler.handle(getCallbackParamsGaForLipCaseData(NO));
+            verify(coreCaseDataService, times(2))
+                .submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            verify(coreCaseDataService, times(2))
+                .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
+            assertThat(caseDataContent.getAllValues()).hasSize(2);
+
+            Map<String, Object> map = objectMapper
+                .convertValue(caseDataContent.getAllValues().get(0).getData(),
+                              new TypeReference<Map<String, Object>>() {});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(map
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            assertThat(gaDetailsMasterCollection).hasSize(1);
+
+        }
+
+        public CallbackParams getCallbackParamsGaForLipCaseData(YesOrNo hwf) {
+            List<GeneralApplicationTypes> types = Arrays.asList(STRIKE_OUT);
+            CaseData caseData = CaseData.builder()
+                .isGaApplicantLip(YES)
+                .generalAppType(GAApplicationType.builder().types(types).build())
+                .ccdState(AWAITING_APPLICATION_PAYMENT)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(hwf).build())
+                .build();
+
+            CaseDetails caseDetails = CaseDetails
+                .builder()
+                .data(objectMapper.convertValue(caseData, new TypeReference<Map<String, Object>>() {}))
+                .build();
+
+            return CallbackParams.builder()
+                .type(ABOUT_TO_SUBMIT)
+                .request(CallbackRequest.builder().caseDetails(caseDetails)
+                             .build())
+                .caseData(caseData)
+                .build();
+        }
+
+        public StartEventResponse getStartEventResponse() {
+            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
+                .build();
+            GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
+                .caseState("Awaiting Application Payment")
+                .caseLink(CaseLink.builder()
+                              .caseReference("1234L")
+                              .build())
+                .build();
+            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
+
+            CaseData caseData = CaseData.builder()
+                .claimantGaAppDetails(wrapElements(claimantCollection))
+                .build();
+            CaseDetails caseDetails = CaseDetails.builder().data(objectMapper.convertValue(
+                caseData,
+                new TypeReference<Map<String, Object>>() {})).build();
+
+            return StartEventResponse.builder().caseDetails(caseDetails).build();
+        }
+    }
 
     @Nested
     class AboutToSubmitCallback {
