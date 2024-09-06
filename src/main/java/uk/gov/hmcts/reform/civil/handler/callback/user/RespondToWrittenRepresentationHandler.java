@@ -68,18 +68,25 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         }
         if (Objects.nonNull(caseData.getGeneralAppWrittenRepText())) {
             CaseDocument caseDocument = respondToWrittenRepresentation.generate(caseData,
-                                                                                callbackParams.getParams().get(BEARER_TOKEN).toString(), role);
+                                                                                callbackParams.getParams().get(
+                                                                                    BEARER_TOKEN).toString(), role
+            );
             responseDocumentToBeAdded.add(ElementUtils.element(caseDocument.getDocumentLink()));
         }
-        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                                         responseDocumentToBeAdded, role, CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION, false);
+        DocUploadUtils.addDocumentToAddl(caseData,
+                                         caseDataBuilder,
+                                         responseDocumentToBeAdded,
+                                         role,
+                                         CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                                         false
+        );
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
         caseDataBuilder.generalAppWrittenRepText(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
 
         // Generate Dashboard Notification for Lip Party
-        if(gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData)) {
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
         }
 

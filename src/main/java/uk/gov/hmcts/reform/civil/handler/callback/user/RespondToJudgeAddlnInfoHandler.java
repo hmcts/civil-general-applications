@@ -68,17 +68,20 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         }
         if (Objects.nonNull(caseData.getGeneralAppAddlnInfoText())) {
             CaseDocument caseDocument = respondForInformationGenerator.generate(caseData,
-                    callbackParams.getParams().get(BEARER_TOKEN).toString(), role);
+                                                                                callbackParams.getParams().get(
+                                                                                    BEARER_TOKEN).toString(), role
+            );
             tobeAdded.add(ElementUtils.element(caseDocument.getDocumentLink()));
         }
         DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false);
+                                         tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false
+        );
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
         caseDataBuilder.generalAppAddlnInfoText(null);
 
         // Generate Dashboard Notification for Lip Party
-        if(gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData)) {
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
         }
 

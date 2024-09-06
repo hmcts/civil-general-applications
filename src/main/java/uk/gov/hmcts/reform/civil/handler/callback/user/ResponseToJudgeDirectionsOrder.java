@@ -54,14 +54,19 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
         String userId = idamClient.getUserInfo(authToken).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
-        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                caseData.getGeneralAppDirOrderUpload(), role, CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS, false);
+        DocUploadUtils.addDocumentToAddl(caseData,
+                                         caseDataBuilder,
+                                         caseData.getGeneralAppDirOrderUpload(),
+                                         role,
+                                         CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS,
+                                         false
+        );
         caseDataBuilder.generalAppDirOrderUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_DIRECTIONS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
 
         // Generate Dashboard Notification for Lip Party
-        if(gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData)) {
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
         }
 
