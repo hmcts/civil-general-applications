@@ -651,7 +651,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .generalAppConsentOrder(YES)
                 .isGaApplicantLip(YES)
                 .isGaRespondentOneLip(YES)
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("123456789").forename("GAApplnSolicitor")
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                 .generalAppRespondentSolicitors(gaRespSolicitors)
 
