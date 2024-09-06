@@ -12,12 +12,19 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
+import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
@@ -32,6 +39,7 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
+    private final RespondForInformationGenerator respondForInformationGenerator;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -49,10 +57,20 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
+        List<Element<Document>> tobeAdded = caseData.getGeneralAppAddlnInfoUpload();
+        if (Objects.isNull(tobeAdded)) {
+            tobeAdded = new ArrayList<>();
+        }
+        if (Objects.nonNull(caseData.getGeneralAppAddlnInfoText())) {
+            CaseDocument caseDocument = respondForInformationGenerator.generate(caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(), role);
+            tobeAdded.add(ElementUtils.element(caseDocument.getDocumentLink()));
+        }
         DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                caseData.getGeneralAppAddlnInfoUpload(), role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false);
+                tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false);
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
+        caseDataBuilder.generalAppAddlnInfoText(null);
         CaseData updatedCaseData = caseDataBuilder.build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
