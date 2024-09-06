@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -40,7 +41,7 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
     private final RespondForInformationGenerator respondForInformationGenerator;
-
+    private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
     @Override
@@ -54,7 +55,8 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private CallbackResponse submitClaim(CallbackParams callbackParams) {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        String userId = idamClient.getUserInfo(authToken).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
         List<Element<Document>> tobeAdded = caseData.getGeneralAppAddlnInfoUpload();
@@ -71,6 +73,10 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
         caseDataBuilder.generalAppAddlnInfoText(null);
+
+        // Generate Dashboard Notification for Lip Party
+        docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+
         CaseData updatedCaseData = caseDataBuilder.build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -82,4 +88,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
+
 }
