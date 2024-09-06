@@ -620,6 +620,42 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testAboutToStartForHearingDetails_noTimeEstimates() {
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CaseData caseData = getHearingOrderApplnAndResp1and2(types, NO, YES, YES);
+            List<Element<GARespondentResponse>> respondentResponses = new ArrayList<>();
+            caseData.getRespondentsResponses().stream().forEach(
+                response -> respondentResponses.add(Element.<GARespondentResponse>builder()
+                    .id(response.getId())
+                    .value(response.getValue().toBuilder()
+                         .gaHearingDetails(response.getValue().getGaHearingDetails().toBuilder()
+                             .hearingDuration(null).build())
+                         .build())
+                    .build()));
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .respondentsResponses(respondentResponses)
+                .build();
+            CallbackParams params = callbackParamsOf(
+                caseData,
+                ABOUT_TO_START
+            );
+            String expectedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expectedJudicialTimeEstimateText);
+        }
+
+        @Test
         void shouldReturnEmptyStringForNullSupportReq() {
 
             List<Element<GARespondentResponse>> respondentResponse = null;
@@ -671,6 +707,28 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(expecetedJudicialSupportReqText);
 
+        }
+
+        @Test
+        void testAboutToStartForHearingScreenForUrgentApp_noTimeEstimates() {
+
+            String expecetedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+
+            CaseData caseData = getCaseDateForUrgentApp();
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
         }
 
         @Test
@@ -768,6 +826,40 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(expecetedJudicialSupportReqText);
 
+        }
+
+        @Test
+        void shouldMatchHearingReqForDifferentPreferences_noTimeEstimates() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CaseData caseData = getCaseDateWithHearingScreeen1V1(types, NO, YES);
+            List<Element<GARespondentResponse>> respondentResponses = new ArrayList<>();
+            caseData.getRespondentsResponses().stream().forEach(
+                response -> respondentResponses.add(Element.<GARespondentResponse>builder()
+                    .id(response.getId())
+                    .value(response.getValue().toBuilder()
+                        .gaHearingDetails(response.getValue().getGaHearingDetails().toBuilder()
+                            .hearingDuration(null).build())
+                        .build())
+                    .build()));
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .respondentsResponses(respondentResponses)
+                .build();
+
+            String expecetedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
         }
 
         @Test

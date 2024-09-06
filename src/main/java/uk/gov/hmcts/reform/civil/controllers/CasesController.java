@@ -107,7 +107,9 @@ public class CasesController {
                 matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
                 List.of("data.applicationTypes",
                         "data.generalAppInformOtherParty.isWithNotice",
-                        "data.generalAppRespondentAgreement.hasAgreed"),
+                        "data.generalAppRespondentAgreement.hasAgreed",
+                        "data.parentClaimantIsApplicant",
+                        "data.applicationIsUncloakedOnce"),
                 0
         ), authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
