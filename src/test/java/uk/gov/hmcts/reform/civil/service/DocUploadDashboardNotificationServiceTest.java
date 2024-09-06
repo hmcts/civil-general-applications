@@ -138,7 +138,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
-            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
