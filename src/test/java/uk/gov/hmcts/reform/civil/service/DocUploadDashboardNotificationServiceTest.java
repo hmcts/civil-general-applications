@@ -48,7 +48,6 @@ public class DocUploadDashboardNotificationServiceTest {
 
     private static final String DUMMY_EMAIL = "test@gmail.com";
 
-
     @Nested
     class AboutToSubmitCallback {
 
@@ -155,7 +154,6 @@ public class DocUploadDashboardNotificationServiceTest {
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
-
 
         @Test
         void shouldNotCreateDashboardNotificationWhenGaFlagIsDisabled() {

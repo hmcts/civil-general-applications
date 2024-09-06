@@ -88,6 +88,4 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-
-
 }
