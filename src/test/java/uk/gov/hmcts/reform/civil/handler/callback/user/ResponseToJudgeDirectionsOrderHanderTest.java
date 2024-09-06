@@ -37,7 +37,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -153,6 +155,33 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(4);
         assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(2);
         assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldCreateDashboardNotificationIfGaForLipIsTrue() {
+
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+
+        Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
+
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, null);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
+
+        handler.handle(params);
+        verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
