@@ -105,7 +105,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                     LocalDateTime.now().plusDays(5)).build()).build();
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
-            when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
@@ -124,7 +123,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
-                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
+                    GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
                 .build();
 
