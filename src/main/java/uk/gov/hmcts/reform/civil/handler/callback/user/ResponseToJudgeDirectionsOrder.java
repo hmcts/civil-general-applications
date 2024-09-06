@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
@@ -34,6 +35,7 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
     private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    private final GaForLipService gaForLipService;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_DIRECTIONS);
 
@@ -59,7 +61,9 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
         CaseData updatedCaseData = caseDataBuilder.build();
 
         // Generate Dashboard Notification for Lip Party
-        docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        if(gaForLipService.isGaForLip(caseData)) {
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))

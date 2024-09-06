@@ -21,9 +21,10 @@ public class DocUploadDashboardNotificationService {
     private final FeatureToggleService featureToggleService;
     private final GaForLipService gaForLipService;
     private final DashboardNotificationsParamsMapper mapper;
+
     public void createDashboardNotification(CaseData caseData, String role, String authToken) {
 
-        if (isWithNoticeOrConsent(caseData) && featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+        if (isWithNoticeOrConsent(caseData) && featureToggleService.isDashboardServiceEnabled()) {
             String scenario = getDashboardScenario(role, caseData);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();

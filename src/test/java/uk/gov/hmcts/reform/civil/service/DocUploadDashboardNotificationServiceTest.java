@@ -83,7 +83,6 @@ public class DocUploadDashboardNotificationServiceTest {
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
             when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
@@ -136,7 +135,6 @@ public class DocUploadDashboardNotificationServiceTest {
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
@@ -156,7 +154,7 @@ public class DocUploadDashboardNotificationServiceTest {
         }
 
         @Test
-        void shouldNotCreateDashboardNotificationWhenGaFlagIsDisabled() {
+        void shouldNotCreateDashboardNotificationWhenDashboardServiceFlagIsDisabled() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -185,8 +183,7 @@ public class DocUploadDashboardNotificationServiceTest {
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
 
                 .build();
-            when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(false);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(false);
 
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -65,6 +66,9 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
     RespondForInformationGenerator respondForInformationGenerator;
     @MockBean
     DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+
+    @MockBean
+    GaForLipService gaForLipService;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";

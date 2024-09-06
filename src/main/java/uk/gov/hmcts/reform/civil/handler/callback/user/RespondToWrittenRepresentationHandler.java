@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.RespondToWrittenRepresentationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -42,6 +43,8 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
     private final IdamClient idamClient;
     private final RespondToWrittenRepresentationGenerator respondToWrittenRepresentation;
     private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    private final GaForLipService gaForLipService;
+
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
 
     @Override
@@ -76,7 +79,9 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         CaseData updatedCaseData = caseDataBuilder.build();
 
         // Generate Dashboard Notification for Lip Party
-        docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        if(gaForLipService.isGaForLip(caseData)) {
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
