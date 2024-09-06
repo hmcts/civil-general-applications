@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class MonthNamesWelshTest {
+class MonthNamesWelshTest {
 
     static Stream<Arguments> monthNames() {
         return Stream.of(
