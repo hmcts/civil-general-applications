@@ -32,6 +32,9 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
     }
 
     @Override
+    protected boolean isMainCase() { return true; }
+
+    @Override
     public String getScenario(CaseData caseData) {
         return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT.getScenario();
     }
