@@ -43,13 +43,13 @@ public class ApplicationCompleteTaskListForClaimantUpdateHandler extends Dashboa
     }
 
     @Override
-    protected boolean isMainCase() {
-        return true;
+    public String getScenario(CaseData caseData) {
+        return SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT.getScenario();
     }
 
     @Override
-    public String getScenario(CaseData caseData) {
-        return SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT.getScenario();
+    protected boolean isMainCase() {
+        return true;
     }
 
     @Override

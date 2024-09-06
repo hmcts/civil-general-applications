@@ -44,13 +44,13 @@ public class ApplicationCompleteTaskListForRespondentUpdateHandler extends Dashb
     }
 
     @Override
-    protected boolean isMainCase() {
-        return true;
+    public String getScenario(CaseData caseData) {
+        return SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT.getScenario();
     }
 
     @Override
-    public String getScenario(CaseData caseData) {
-        return SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT.getScenario();
+    protected boolean isMainCase() {
+        return true;
     }
 
     @Override
