@@ -32,7 +32,9 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
     }
 
     @Override
-    protected boolean isMainCase() { return true; }
+    protected boolean isMainCase() {
+        return true;
+    }
 
     @Override
     public String getScenario(CaseData caseData) {
