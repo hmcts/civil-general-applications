@@ -26,7 +26,7 @@ class DeleteExpiredResponseRespondentNotificationsEventHandlerTest {
 
         handler.triggerNotificationDeletionProcess(event);
 
-        verify(coreCaseDataService).triggerGaEvent(event.getCaseId(), RESPONDENT_RESPONSE_DEADLINE_CHECK);
+        verify(coreCaseDataService).triggerGaEvent(event.caseId(), RESPONDENT_RESPONSE_DEADLINE_CHECK);
     }
 
 }

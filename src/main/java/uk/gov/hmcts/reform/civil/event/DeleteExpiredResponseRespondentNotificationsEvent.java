@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.civil.event;
 
 import lombok.Value;
 
-@Value
-public class DeleteExpiredResponseRespondentNotificationsEvent {
+public record DeleteExpiredResponseRespondentNotificationsEvent(Long caseId) {
 
-    Long caseId;
 }
