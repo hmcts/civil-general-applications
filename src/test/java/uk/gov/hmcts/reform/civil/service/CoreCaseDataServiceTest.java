@@ -30,7 +30,6 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
