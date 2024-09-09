@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -44,12 +45,15 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @ExtendWith(MockitoExtension.class)
 class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     public static final long CCD_CASE_REFERENCE = 1234L;
+    public static final String PARENT_CASE_REFERENCE = "123498";
 
     @Mock
     private ParentCaseUpdateHelper parentCaseUpdateHelper;
@@ -259,9 +263,36 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                           .email("test@gmail.com").organisationIdentifier("org1").build())
             .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
+            .ccdCaseReference(CCD_CASE_REFERENCE)
             .isGaApplicantLip(NO)
-            .isGaRespondentOneLip(NO)
-            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+            .isGaRespondentOneLip(NO).build();
+
+        HashMap<String, Object> scenarioParams = new HashMap<>();
+
+        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+        when(gaForLipService.isGaForLip(caseData)).thenReturn(false);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        handler.handle(params);
+
+        verifyNoInteractions(dashboardApiClient);
+    }
+
+    @Test
+    void shouldCreateDashboardNotificationForRespondentWhenJudgeUncloaksNonUrgentApplication() {
+
+        CaseData caseData = CaseDataBuilder.builder()
+            .isMultiParty(NO)
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .requestMoreInfoOption(
+                                                     GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build().toBuilder()
+            .parentCaseReference(PARENT_CASE_REFERENCE)
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build()).build();
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
@@ -274,7 +305,45 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         handler.handle(params);
 
-        verifyNoInteractions(dashboardApiClient);
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+    }
+
+    @Test
+    void shouldCreateDashboardNotificationForRespondentWhenJudgeUncloaksUrgentApplication() {
+
+        CaseData caseData = CaseDataBuilder.builder()
+            .isMultiParty(NO)
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .requestMoreInfoOption(
+                                                     GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build().toBuilder()
+            .parentCaseReference(PARENT_CASE_REFERENCE)
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build()).build();
+
+        HashMap<String, Object> scenarioParams = new HashMap<>();
+
+        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+        when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
+        when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        handler.handle(params);
+
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
     }
 
     public List<Element<GASolicitorDetailsGAspec>> getRespondentSolicitors() {
