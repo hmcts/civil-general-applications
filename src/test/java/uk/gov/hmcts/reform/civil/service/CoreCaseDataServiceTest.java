@@ -190,7 +190,7 @@ class CoreCaseDataServiceTest {
 
         @Test
         void shouldStartAndSubmitEvent_WhenCalled() {
-            service.triggerGaEvent(Long.valueOf(CASE_ID), CaseEvent.valueOf(EVENT_ID), new HashMap<>());
+            service.triggerGaEvent(Long.valueOf(CASE_ID), CaseEvent.valueOf(EVENT_ID));
 
             verify(coreCaseDataApi).startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
                                                             JURISDICTION, GENERAL_APPLICATION_CASE_TYPE,
