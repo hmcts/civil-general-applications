@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -15,6 +17,7 @@ import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT;
 
 @Service
@@ -37,10 +40,19 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
 
     @Override
     protected String getScenario(CaseData caseData) {
-        if (isWithNoticeOrConsent(caseData)
-            && caseData.getJudicialDecisionRequestMoreInfo() != null
-            && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+        if (isWithNoticeOrConsent(caseData)) {
+            if (caseData.getJudicialDecisionRequestMoreInfo() != null
+                && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData
+                .getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
+
+                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+
+            } else if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING) && caseData
+                .getJudicialDecision().getDecision().equals(
+                GAJudgeDecisionOption.LIST_FOR_A_HEARING) && caseData.getGaHearingNoticeApplication() != null
+                && caseData.getGaHearingNoticeDetail() != null) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT.getScenario();
+            }
         }
         return "";
     }
