@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
 import java.util.ArrayList;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
@@ -50,15 +49,11 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
                 .should(boolQuery()
                             .must(rangeQuery("data.generalAppNotificationDeadlineDate").lt(LocalDate.now()
                                                                                               .atTime(LocalTime.MIN)
-                                                                                              .toString()))),
+                                                                                              .toString()))
+                            .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))),
             List.of("reference"),
             startIndex
         );
-    }
-
-    private QueryBuilder beState(CaseState caseState) {
-        return boolQuery()
-            .must(matchQuery("state", caseState.toString()));
     }
 
     @Override

@@ -333,6 +333,7 @@ public class CaseData implements MappableObject {
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
     private String generalAppAddlnInfoText;
     private String generalAppWrittenRepText;
+    private YesOrNo respondentResponseDeadlineChecked;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -49,6 +50,7 @@ public class RespondentResponseDeadlineCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData().toBuilder()
                 .build();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.respondentResponseDeadlineChecked(YesOrNo.YES);
         HashMap<String, Object> paramsMap = mapper.mapCaseDataToParams(caseData);
         dashboardApiClient.recordScenario(callbackParams.getRequest().getCaseDetails().getId().toString(),
                 DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_DELETE_RESPONDENT.getScenario(),
