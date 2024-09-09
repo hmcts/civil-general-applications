@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESP
 @Service
 public class DeleteExpiredResponseRespondentNotificationSearchService extends ElasticSearchService {
 
+    public static final LocalTime END_OF_BUSINESS_DAY = LocalTime.of(16, 0, 0);
+
     public DeleteExpiredResponseRespondentNotificationSearchService(CoreCaseDataService coreCaseDataService) {
         super(coreCaseDataService);
     }
@@ -45,12 +48,14 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
     }
 
     public Query query(int startIndex) {
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalDateTime.now().toLocalTime();
+        LocalDate targetDate = currentTime.isAfter(END_OF_BUSINESS_DAY) ? currentDate.plusDays(1) : currentDate;
         return new Query(
             boolQuery()
                 .minimumShouldMatch(1)
                 .should(boolQuery()
-                            .must(rangeQuery("data.generalAppNotificationDeadlineDate").lt(LocalDate.now()
-                                                                                              .atTime(LocalTime.MIN)
+                            .must(rangeQuery("data.judicialDecisionRequestMoreInfo.judgeRequestMoreInfoByDate").lt(targetDate
                                                                                               .toString()))
                             .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))
                             .must(beState(AWAITING_RESPONDENT_RESPONSE))),

@@ -18,6 +18,6 @@ public class DeleteExpiredResponseRespondentNotificationsEventHandler {
 
     @EventListener
     public void triggerNotificationDeletionProcess(DeleteExpiredResponseRespondentNotificationsEvent event) {
-        coreCaseDataService.triggerGaEvent(event.getCaseId(), RESPONDENT_RESPONSE_DEADLINE_CHECK);
+        coreCaseDataService.triggerGaEvent(event.caseId(), RESPONDENT_RESPONSE_DEADLINE_CHECK);
     }
 }

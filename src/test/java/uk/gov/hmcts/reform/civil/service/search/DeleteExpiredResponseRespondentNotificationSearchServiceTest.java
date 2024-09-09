@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.elasticsearch.index.query.QueryBuilder;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -31,6 +32,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 public class DeleteExpiredResponseRespondentNotificationSearchServiceTest {
+
+    public static final LocalTime END_OF_BUSINESS_DAY = LocalTime.of(16, 0, 0);
 
     @Captor
     protected ArgumentCaptor<Query> queryCaptor;
@@ -58,16 +61,17 @@ public class DeleteExpiredResponseRespondentNotificationSearchServiceTest {
     }
 
     private Query query(int startIndex) {
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalDateTime.now().toLocalTime();
+        LocalDate targetDate = currentTime.isAfter(END_OF_BUSINESS_DAY) ? currentDate.plusDays(1) : currentDate;
         return new Query(
             boolQuery()
                 .minimumShouldMatch(1)
                 .should(boolQuery()
-                            .must(rangeQuery("data.generalAppNotificationDeadlineDate").lt(LocalDate.now()
-                                                                                               .atTime(LocalTime.MIN)
-                                                                                               .toString()))
+                            .must(rangeQuery("data.judicialDecisionRequestMoreInfo.judgeRequestMoreInfoByDate").lt(targetDate
+                                                                                                                       .toString()))
                             .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))
                             .must(beState(AWAITING_RESPONDENT_RESPONSE))),
-
             List.of("reference"),
             startIndex
         );
