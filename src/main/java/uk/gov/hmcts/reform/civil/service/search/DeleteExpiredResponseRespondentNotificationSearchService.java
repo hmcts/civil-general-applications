@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
 import java.util.ArrayList;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
@@ -17,6 +18,7 @@ import java.util.List;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static org.elasticsearch.index.query.QueryBuilders.rangeQuery;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @Service
 public class DeleteExpiredResponseRespondentNotificationSearchService extends ElasticSearchService {
@@ -50,7 +52,8 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
                             .must(rangeQuery("data.generalAppNotificationDeadlineDate").lt(LocalDate.now()
                                                                                               .atTime(LocalTime.MIN)
                                                                                               .toString()))
-                            .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))),
+                            .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))
+                            .must(beState(AWAITING_RESPONDENT_RESPONSE))),
             List.of("reference"),
             startIndex
         );
@@ -69,6 +72,11 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
     @Override
     Query queryForBusinessProcessStatus(final int startIndex, final BusinessProcessStatus processStatus) {
         return null;
+    }
+
+    private QueryBuilder beState(CaseState caseState) {
+        return boolQuery()
+            .must(matchQuery("state", caseState.toString()));
     }
 }
 

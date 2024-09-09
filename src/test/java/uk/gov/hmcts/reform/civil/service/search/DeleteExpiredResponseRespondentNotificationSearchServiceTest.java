@@ -8,11 +8,14 @@ import static org.elasticsearch.index.query.QueryBuilders.rangeQuery;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import org.elasticsearch.index.query.QueryBuilder;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
@@ -62,7 +65,9 @@ public class DeleteExpiredResponseRespondentNotificationSearchServiceTest {
                             .must(rangeQuery("data.generalAppNotificationDeadlineDate").lt(LocalDate.now()
                                                                                                .atTime(LocalTime.MIN)
                                                                                                .toString()))
-                            .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))),
+                            .mustNot(matchQuery("data.respondentResponseDeadlineChecked", "Yes"))
+                            .must(beState(AWAITING_RESPONDENT_RESPONSE))),
+
             List.of("reference"),
             startIndex
         );
@@ -73,5 +78,10 @@ public class DeleteExpiredResponseRespondentNotificationSearchServiceTest {
             .total(i)
             .cases(caseDetails)
             .build();
+    }
+
+    private QueryBuilder beState(CaseState caseState) {
+        return boolQuery()
+            .must(matchQuery("state", caseState.toString()));
     }
 }
