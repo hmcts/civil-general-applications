@@ -11,10 +11,12 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
-import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT;
 
 @Service
@@ -42,6 +44,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
             && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
         }
+        else if (isWithoutNotice(caseData)
+            && caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES)
+            && caseData.getMakeAppVisibleToRespondents() != null) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT.getScenario();
+        }
         return "";
     }
 
@@ -49,9 +57,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-
     private boolean isWithNoticeOrConsent(CaseData caseData) {
-        return JudicialDecisionNotificationUtil.isWithNotice(caseData)
+        return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
+    }
+
+    private boolean isWithoutNotice(CaseData caseData) {
+        return NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
     }
 }

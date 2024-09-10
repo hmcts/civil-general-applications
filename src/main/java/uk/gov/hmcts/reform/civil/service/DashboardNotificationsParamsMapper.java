@@ -20,6 +20,8 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateCy",
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
         }
+        //ToDO: refactor below string to allow for notifications that do not require additional params
+        params.put("testRef", "string");
         return params;
     }
 
