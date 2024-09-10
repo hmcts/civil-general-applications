@@ -46,7 +46,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
             && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING)
             && caseData.getGaHearingNoticeApplication() != null
             && caseData.getGaHearingNoticeDetail() != null) {
-            
+
             return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT.getScenario();
 
         }

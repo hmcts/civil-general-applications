@@ -35,4 +35,22 @@ class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
         assertFalse(result.containsKey("judgeRequestMoreInfoByDateEn"));
     }
+
+    @Test
+    void shouldMapAllParametersWhenIsRequestedForHearingScheduled() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildCaseWorkerHearingScheduledInfo();
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+        assertThat(result).extracting("hearingNoticeApplicationDateEn").isEqualTo("4 September 2024");
+        assertThat(result).extracting("hearingNoticeApplicationDateCy").isEqualTo("4 Medi 2024");
+    }
+
+    @Test
+    void shouldNotMapCaseworkerHearingDateInfoDateNotPresent() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        caseData = caseData.toBuilder().generalAppPBADetails(null).build();
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+        assertFalse(result.containsKey("hearingNoticeApplicationDateEn"));
+    }
 }
