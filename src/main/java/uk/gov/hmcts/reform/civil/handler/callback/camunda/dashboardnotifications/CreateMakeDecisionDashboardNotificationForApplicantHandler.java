@@ -39,8 +39,8 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
     @Override
     protected String getScenario(CaseData caseData) {
         if (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo()
-            .getRequestMoreInfoOption()) {
+            && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+            || caseData.getCcdState().equals(CaseState.AWAITING_ADDITIONAL_INFORMATION))) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT.getScenario();
         } else if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING)
             && caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING)
