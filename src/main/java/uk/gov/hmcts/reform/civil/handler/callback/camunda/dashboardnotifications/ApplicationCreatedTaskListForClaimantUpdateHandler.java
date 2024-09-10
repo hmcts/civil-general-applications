@@ -37,7 +37,7 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
     }
 
     @Override
-    protected boolean isMainCase() {
+    public boolean isMainCase() {
         return true;
     }
 
@@ -47,11 +47,6 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
         return caseData.getIsGaApplicantLip() == YesOrNo.YES
             && (caseData.getParentClaimantIsApplicant() == YesOrNo.YES
             || isWithNoticeOrConsent(caseData));
-    }
-
-    @Override
-    public boolean isMainCase() {
-        return true;
     }
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
