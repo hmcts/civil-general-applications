@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.docmosis.RespondToWrittenRepresentationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
@@ -58,6 +60,9 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     IdamClient idamClient;
+    @MockBean
+    RespondToWrittenRepresentationGenerator respondToWrittenRepresentationGenerator;
+
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
     private static final String ACTIVITY_ID = "anyActivity";
@@ -71,6 +76,9 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
                 .sub(DUMMY_EMAIL)
                 .uid(APP_UID)
                 .build());
+        when(respondToWrittenRepresentationGenerator.generate(any(), anyString(), anyString()))
+            .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
+
     }
 
     @Test
@@ -95,7 +103,7 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         generalAppWrittenRepUpload.add(element(document1));
         generalAppWrittenRepUpload.add(element(document2));
 
-        CaseData caseData = getCase(generalAppWrittenRepUpload, null);
+        CaseData caseData = getCase(generalAppWrittenRepUpload, null, null);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -134,7 +142,7 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
 
         CaseData caseData = getCase(generalAppWrittenRepUpload,
                 DocUploadUtils.prepareDocuments(gaWrittenRepDocList, DocUploadUtils.APPLICANT,
-                        RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION));
+                        RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION), null);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -149,19 +157,39 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
     }
 
+    @Test
+    void shouldConvertToDocAndReturnNullWrittenRepText() {
+        CaseData caseData = getCase(null, null, "writtenRep text");
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        var responseCaseData = getCaseData(response);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getGeneralAppWrittenRepUpload()).isEqualTo(null);
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGeneralAppWrittenRepText()).isEqualTo(null);
+    }
+
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData;
     }
 
     private CaseData getCase(List<Element<Document>> generalAppWrittenRepUpload,
-                             List<Element<CaseDocument>> gaAddlDoc) {
+                             List<Element<CaseDocument>> gaAddlDoc,
+                             String generalAppWrittenRepText) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder().parentClaimantIsApplicant(YES)
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
             .email("abc@gmail.com").id(APP_UID).build())
             .generalAppWrittenRepUpload(generalAppWrittenRepUpload)
+            .generalAppWrittenRepText(generalAppWrittenRepText)
             .gaAddlDoc(gaAddlDoc)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()

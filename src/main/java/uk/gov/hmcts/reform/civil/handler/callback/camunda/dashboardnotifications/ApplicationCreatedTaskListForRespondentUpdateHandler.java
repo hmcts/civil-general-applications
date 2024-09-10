@@ -37,6 +37,11 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
     }
 
     @Override
+    protected boolean isMainCase() {
+        return true;
+    }
+
+    @Override
     public boolean shouldRecordScenario(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         return caseData.getIsGaRespondentOneLip() == YesOrNo.YES

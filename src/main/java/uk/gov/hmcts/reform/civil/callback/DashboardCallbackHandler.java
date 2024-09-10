@@ -30,6 +30,10 @@ public abstract class DashboardCallbackHandler extends CallbackHandler {
 
     protected abstract String getScenario(CaseData caseData);
 
+    protected boolean isMainCase() {
+        return false;
+    }
+
     /**
      * Depending on the case data, the scenario may or may not be applicable.
      *

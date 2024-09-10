@@ -331,6 +331,8 @@ public class CaseData implements MappableObject {
     private final BigDecimal applicationFeeAmountInPence;
     @JsonUnwrapped
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
+    private String generalAppAddlnInfoText;
+    private String generalAppWrittenRepText;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
