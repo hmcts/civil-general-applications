@@ -32,10 +32,12 @@ public class EndGaDocUploadProcessTaskHandler implements BaseExternalTaskHandler
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
+        log.info("Calling end business process event for caseId {}", caseId);
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_DOC_UPLOAD_BUSINESS_PROCESS_GASPEC);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
+        log.info("Resetting end business process id for caseId {}", caseId);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
     }
 
