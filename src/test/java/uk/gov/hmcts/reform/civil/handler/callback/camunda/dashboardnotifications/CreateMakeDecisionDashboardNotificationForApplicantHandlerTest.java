@@ -161,7 +161,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .gaHearingNoticeApplication(GAHearingNoticeApplication.builder().build())
                 .gaHearingNoticeDetail(GAHearingNoticeDetail.builder().build())
                 .build();
-            
+
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
 
