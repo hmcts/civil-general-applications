@@ -43,8 +43,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
             && caseData.getJudicialDecisionRequestMoreInfo() != null
             && GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
-        }
-        else if (isWithoutNotice(caseData)
+        } else if (isWithoutNotice(caseData)
             && caseData.getApplicationIsUncloakedOnce() != null
             && caseData.getApplicationIsUncloakedOnce().equals(YES)
             && caseData.getMakeAppVisibleToRespondents() != null) {
@@ -57,6 +56,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
