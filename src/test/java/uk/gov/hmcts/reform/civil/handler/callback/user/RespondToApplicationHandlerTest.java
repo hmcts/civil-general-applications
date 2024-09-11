@@ -618,6 +618,46 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
     }
+    
+    @Test
+    void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1ResponseLip() {
+
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+
+        CaseData caseData = getCase(respondentSols, respondentsResponses);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+
+        // Civil Claim CaseDate
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(civil))
+            .thenReturn(new CaseDataBuilder()
+                            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                                          .forename("GAApplnSolicitor")
+                                                          .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                            .respondentSolicitor1EmailAddress(DUMMY_EMAIL)
+                            .build());
+        when(gaForLipService.isLipResp(any())).thenReturn(true);
+        // GA CaseData
+        CaseDetails ga = CaseDetails.builder().id(456L).build();
+        when(coreCaseDataService.getCase(456L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(ga))
+            .thenReturn(caseData);
+
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
+        callbackParamsBuilder.request(CallbackRequest.builder().caseDetails(ga).build());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(callbackParamsBuilder.build());
+        CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+    }
 
     @Test
     void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1Response_test() {
