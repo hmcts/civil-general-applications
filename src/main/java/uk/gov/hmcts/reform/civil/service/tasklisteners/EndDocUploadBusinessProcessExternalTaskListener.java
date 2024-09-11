@@ -4,7 +4,7 @@ import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.EndJudgeMakesDecisionBusinessProcessTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.EndGaDocUploadProcessTaskHandler;
 
 @Component
 public class EndDocUploadBusinessProcessExternalTaskListener {
@@ -13,7 +13,7 @@ public class EndDocUploadBusinessProcessExternalTaskListener {
 
     @Autowired
     private EndDocUploadBusinessProcessExternalTaskListener(
-        EndJudgeMakesDecisionBusinessProcessTaskHandler handler,
+        EndGaDocUploadProcessTaskHandler handler,
         ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(handler).open();
