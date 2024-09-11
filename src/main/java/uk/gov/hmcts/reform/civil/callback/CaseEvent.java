@@ -12,7 +12,7 @@ import static uk.gov.hmcts.reform.civil.callback.UserType.USER;
 public enum CaseEvent {
     INITIATE_GENERAL_APPLICATION(USER),
     RESPOND_TO_APPLICATION(USER),
-
+    RESPOND_TO_APPLICATION_URGENT_LIP(USER),
     MAKE_DECISION(USER),
 
     HEARING_SCHEDULED_GA(USER),
