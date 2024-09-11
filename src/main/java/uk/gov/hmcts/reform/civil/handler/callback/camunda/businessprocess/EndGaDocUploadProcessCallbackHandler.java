@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -16,6 +17,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_DOC_UPLOAD_BUSINESS_PROCESS_GASPEC;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EndGaDocUploadProcessCallbackHandler extends CallbackHandler {
 
@@ -32,6 +34,8 @@ public class EndGaDocUploadProcessCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams) {
+        log.info("in end of doc upload callback handler for caseId {}",
+                 callbackParams.getCaseData().getCcdCaseReference());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(output)
