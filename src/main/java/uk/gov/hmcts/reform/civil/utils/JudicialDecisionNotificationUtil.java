@@ -38,7 +38,6 @@ public class JudicialDecisionNotificationUtil {
     private JudicialDecisionNotificationUtil() {
         // Utilities class, no instance
     }
-
     private static final String JUDGES_DECISION = "MAKE_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
@@ -285,5 +284,11 @@ public class JudicialDecisionNotificationUtil {
         return caseData.getGeneralAppUrgencyRequirement() != null
             && caseData.getGeneralAppUrgencyRequirement()
                 .getGeneralAppUrgency() == NO;
+    }
+
+    public static boolean isUrgent(CaseData caseData) {
+        return caseData.getGeneralAppUrgencyRequirement() != null
+            && caseData.getGeneralAppUrgencyRequirement()
+            .getGeneralAppUrgency() == YES;
     }
 }
