@@ -70,6 +70,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION_URGENT_LIP;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -163,7 +164,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(RESPOND_TO_APPLICATION);
+        assertThat(handler.handledEvents()).contains(RESPOND_TO_APPLICATION, RESPOND_TO_APPLICATION_URGENT_LIP);
     }
 
     @Test
