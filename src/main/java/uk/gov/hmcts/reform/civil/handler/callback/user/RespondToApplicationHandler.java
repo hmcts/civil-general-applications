@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -370,10 +369,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
                                        CaseData civilCaseData, CaseData gaCaseData) {
 
         // civil claim claimant
-        if (!gaCaseData.getParentClaimantIsApplicant().equals(YES) &&
-            (Objects.nonNull(civilCaseData.getApplicantSolicitor1UserDetails())
-                && userInfo.getSub().equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail()) ||
-                gaForLipService.isLipResp(gaCaseData))) {
+        if (!gaCaseData.getParentClaimantIsApplicant().equals(YES)
+            && (Objects.nonNull(civilCaseData.getApplicantSolicitor1UserDetails())
+            && userInfo.getSub().equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail())
+            || gaForLipService.isLipResp(gaCaseData))) {
 
             log.info("Return Civil Claim Defendant two party Name if GA Solicitor Email ID "
                          + "as same as Civil Claim Claimant Solicitor Two Email");
