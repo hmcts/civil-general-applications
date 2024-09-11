@@ -618,7 +618,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseData responseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(response).isNotNull();
     }
-    
+
     @Test
     void shouldReturn_Application_Submitted_Awaiting_Judicial_Decision_1Def_1ResponseLip() {
 
@@ -630,8 +630,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent1));
 
         CaseData caseData = getCase(respondentSols, respondentsResponses);
+        CaseData updatedCaseData = caseData.toBuilder().parentClaimantIsApplicant(NO).build();
 
-        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        Map<String, Object> dataMap = objectMapper.convertValue(updatedCaseData, new TypeReference<>() {
         });
 
         // Civil Claim CaseDate
@@ -649,7 +650,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CaseDetails ga = CaseDetails.builder().id(456L).build();
         when(coreCaseDataService.getCase(456L)).thenReturn(ga);
         when(caseDetailsConverter.toCaseData(ga))
-            .thenReturn(caseData);
+            .thenReturn(updatedCaseData);
 
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
         CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
