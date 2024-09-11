@@ -74,7 +74,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
-                .ccdState(CaseState.AWAITING_ADDITIONAL_INFORMATION)
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();
 

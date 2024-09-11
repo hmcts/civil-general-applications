@@ -73,7 +73,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
-                .ccdState(CaseState.AWAITING_ADDITIONAL_INFORMATION)
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
