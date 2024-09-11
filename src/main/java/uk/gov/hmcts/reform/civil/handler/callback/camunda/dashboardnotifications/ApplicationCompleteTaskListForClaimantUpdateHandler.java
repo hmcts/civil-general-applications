@@ -48,7 +48,7 @@ public class ApplicationCompleteTaskListForClaimantUpdateHandler extends Dashboa
     }
 
     @Override
-    protected boolean isMainCase() {
+    public boolean isMainCase() {
         return true;
     }
 

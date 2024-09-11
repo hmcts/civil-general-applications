@@ -10,7 +10,8 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT("Scenario.AAA6.GeneralApplication.Complete.Claimant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_DEFENDANT("Scenario.AAA6.GeneralApplication.Complete.Defendant"),
     SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT("Scenario.AAA6.GeneralApps.OtherPartyUploadedDocuments.Applicant"),
-    SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT("Scenario.AAA6.GeneralApps.OtherPartyUploadedDocuments.Respondent");
+    SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT("Scenario.AAA6.GeneralApps.OtherPartyUploadedDocuments.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationFeeRequired.Applicant");
 
     private final String scenario;
 
