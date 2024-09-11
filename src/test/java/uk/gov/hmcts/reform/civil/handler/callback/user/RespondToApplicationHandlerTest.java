@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAs
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -200,6 +201,31 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         assertThat(response.getErrors()).isEqualTo(errors);
     }
 
+    @Test
+    void aboutToStartCallbackChecksApplicationStateBeforeProceedingForUrgentLip() {
+
+        List<LocationRefData> locations = new ArrayList<>();
+        locations.add(LocationRefData.builder().siteName("siteName").courtAddress("court Address").postcode("post code")
+                          .courtName("Court Name").region("Region").build());
+        when(locationRefDataService.getCourtLocations(any())).thenReturn(locations);
+        when(gaForLipService.isLipResp(any())).thenReturn(true);
+        CaseData.CaseDataBuilder caseData =
+            CaseData.builder().ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).generalAppUrgencyRequirement(
+                    GAUrgencyRequirement.builder().generalAppUrgency(YES).build()).generalAppType(
+                    GAApplicationType
+                        .builder()
+                        .types(List.of(
+                            (GeneralApplicationTypes.SUMMARY_JUDGEMENT))).build())
+                .parentClaimantIsApplicant(NO);
+        CallbackParams params = callbackParamsOf(
+            caseData.build(),
+            CallbackType.ABOUT_TO_START
+        );
+        List<String> errors = new ArrayList<>();
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        assertThat(response).isNotNull();
+        assertThat(response.getErrors()).isEqualTo(errors);
+    }
     @Test
     void aboutToStartCallbackChecksRespondendResponseBeforeProceeding() {
 
