@@ -418,7 +418,7 @@ public class CaseDataBuilder {
             .ccdCaseReference(1644495739087775L)
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
-            .ccdState(CaseState.AWAITING_ADDITIONAL_INFORMATION)
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
@@ -1281,7 +1281,7 @@ public class CaseDataBuilder {
 
     public CaseData buildJudicialDecisionRequestMoreInfo() {
         return CaseData.builder()
-            .ccdState(CaseState.AWAITING_ADDITIONAL_INFORMATION)
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                 REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.of(2024, 9, 04)).build()).build();
     }

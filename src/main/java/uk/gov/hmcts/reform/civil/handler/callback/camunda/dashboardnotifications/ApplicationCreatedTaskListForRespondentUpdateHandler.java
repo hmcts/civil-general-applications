@@ -49,7 +49,7 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
             || isWithNoticeOrConsent(caseData));
 
     }
-
+    
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
