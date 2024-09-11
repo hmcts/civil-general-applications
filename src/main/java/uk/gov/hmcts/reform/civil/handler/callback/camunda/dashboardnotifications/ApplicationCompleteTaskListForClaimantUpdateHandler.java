@@ -48,6 +48,11 @@ public class ApplicationCompleteTaskListForClaimantUpdateHandler extends Dashboa
     }
 
     @Override
+    public boolean isMainCase() {
+        return true;
+    }
+
+    @Override
     public boolean shouldRecordScenario(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.parseLong(caseData.getParentCaseReference()));

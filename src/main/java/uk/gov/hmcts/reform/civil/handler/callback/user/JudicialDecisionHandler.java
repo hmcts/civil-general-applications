@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -122,11 +124,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String POPULATE_HEARING_ORDER_DOC = "populate-hearing-order-doc";
     private static final String POPULATE_WRITTEN_REP_PREVIEW_DOC = "populate-written-rep-preview-doc";
 
-    private static final String APPLICANT_ESTIMATES = "Applicant estimates ";
-    private static final String JUDICIAL_TIME_EST_TEXT_1 = APPLICANT_ESTIMATES + "%s. Respondent estimates %s.";
-    private static final String JUDICIAL_TIME_EST_TEXT_2 = "Both applicant and respondent estimate it would take %s.";
-    private static final String JUDICIAL_TIME_EST_TEXT_3 = APPLICANT_ESTIMATES
-            + "%s. Respondent 1 estimates %s. Respondent 2 estimates %s.";
+    private static final String APPLICANT_ESTIMATES = "Applicant estimates %s";
+    private static final String RESPONDENT_ESTIMATES = "Respondent estimates %s";
+    private static final String RESPONDENT1_ESTIMATES = "Respondent 1 estimates %s";
+    private static final String RESPONDENT2_ESTIMATES = "Respondent 2 estimates %s";
+    private static final String ESTIMATES_NOT_PROVIDED = "Applicant and respondent have not provided estimates";
+
+    private static final String JUDICIAL_TIME_EST_TEXT_BOTH = "Both applicant and respondent estimate it would take %s.";
     private static final String APPLICANT_REQUIRES = "Applicant requires ";
     private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = APPLICANT_REQUIRES + "support with regards to "
             + "vulnerability\n";
@@ -312,9 +316,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameTimeEst = (caseData.getGeneralAppHearingDetails() != null
                 && caseData.getRespondentsResponses() != null
                 && caseData.getRespondentsResponses().size() == 1
-                && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
-                .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingDuration().getDisplayedValue()))
+                && caseData.getGeneralAppHearingDetails().getHearingDuration() != null
+                && caseData.getGeneralAppHearingDetails().getHearingDuration()
+                    == caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails().getHearingDuration())
                 ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
@@ -1200,47 +1204,59 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return StringUtils.EMPTY;
     }
 
-    private String getRespondentHearingDuration(CaseData caseData) {
-
-        return caseData.getRespondentsResponses() == null
-                ? StringUtils.EMPTY : caseData.getRespondentsResponses()
-                .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
-                .getDisplayedValue();
-
-    }
-
     private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
-        String respondet1HearingDuration = null;
-        String respondent2HearingDuration = null;
-
+        GAHearingDuration applicantHearingDuration = caseData.getGeneralAppHearingDetails().getHearingDuration();
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
-            return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData
-                    .getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue())
-                    : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue(), getRespondentHearingDuration(caseData));
+            GAHearingDuration respondentHearingDuration =
+                caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails().getHearingDuration();
+            if (isAppAndRespSameTimeEst == YES) {
+                return format(JUDICIAL_TIME_EST_TEXT_BOTH, applicantHearingDuration.getDisplayedValue());
+            }
+            if (applicantHearingDuration == null && respondentHearingDuration == null) {
+                return ESTIMATES_NOT_PROVIDED;
+            }
+            String hearingTimeEst = StringUtils.EMPTY;
+            if (applicantHearingDuration != null) {
+                hearingTimeEst += format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue());
+            }
+            if (respondentHearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT_ESTIMATES, respondentHearingDuration.getDisplayedValue()));
+            }
+            return hearingTimeEst + (hearingTimeEst.contains(".") ? "." : StringUtils.EMPTY);
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
-            if (responseElementOptional1.isPresent()) {
-                respondet1HearingDuration = responseElementOptional1.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            GAHearingDuration respondent1HearingDuration = responseElementOptional1.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
+            GAHearingDuration respondent2HearingDuration = responseElementOptional2.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
+            if (applicantHearingDuration == null && respondent1HearingDuration == null && respondent2HearingDuration == null) {
+                return ESTIMATES_NOT_PROVIDED;
             }
-            if (responseElementOptional2.isPresent()) {
-                respondent2HearingDuration = responseElementOptional2.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            String hearingTimeEst = StringUtils.EMPTY;
+            if (applicantHearingDuration != null) {
+                hearingTimeEst += format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue());
             }
-
-            return format(JUDICIAL_TIME_EST_TEXT_3, caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue(), respondet1HearingDuration, respondent2HearingDuration);
+            if (respondent1HearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT1_ESTIMATES, respondent1HearingDuration.getDisplayedValue()));
+            }
+            if (respondent2HearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT2_ESTIMATES, respondent2HearingDuration.getDisplayedValue()));
+            }
+            return hearingTimeEst + (hearingTimeEst.contains(".") ? "." : StringUtils.EMPTY);
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
                 && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
-                || caseData.getGeneralAppHearingDetails().getHearingDuration() != null) {
-            return APPLICANT_ESTIMATES.concat(caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue());
+                || applicantHearingDuration != null) {
+            return applicantHearingDuration != null
+                ? format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue())
+                : ESTIMATES_NOT_PROVIDED;
         }
 
         return StringUtils.EMPTY;

@@ -37,6 +37,11 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
     }
 
     @Override
+    public boolean isMainCase() {
+        return true;
+    }
+
+    @Override
     public boolean shouldRecordScenario(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         return caseData.getIsGaApplicantLip() == YesOrNo.YES

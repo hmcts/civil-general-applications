@@ -37,6 +37,11 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
     }
 
     @Override
+    protected boolean isMainCase() {
+        return true;
+    }
+
+    @Override
     public boolean shouldRecordScenario(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         return caseData.getIsGaRespondentOneLip() == YesOrNo.YES
@@ -44,7 +49,7 @@ public class ApplicationCreatedTaskListForRespondentUpdateHandler extends Dashbo
             || isWithNoticeOrConsent(caseData));
 
     }
-
+    
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
