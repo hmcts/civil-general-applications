@@ -31,6 +31,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAs
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -76,6 +78,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final IdamClient idamClient;
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final CoreCaseDataService coreCaseDataService;
+    private final GaForLipService gaForLipService;
+    private final DocUploadDashboardNotificationService dashboardNotificationService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -103,6 +107,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
+
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -169,6 +174,14 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildResponseConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        // Generate Dashboard Notification for Lip Party
+        if (gaForLipService.isGaForLip(caseData)) {
+            dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+            dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+
+        }
+
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(RESPONSE_MESSAGE)
             .confirmationBody(buildConfirmationSummary(caseData))
@@ -307,7 +320,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondConsentDocument(null);
         caseDataBuilder.generalAppRespondDebtorDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
-
         CaseData updatedCaseData = caseDataBuilder.build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()

@@ -10,8 +10,7 @@ import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +36,34 @@ public class DocUploadDashboardNotificationService {
                 );
             }
         }
+    }
+
+    public void createResponseDashboardNotification(CaseData caseData, String role, String authToken) {
+
+        if (role.equalsIgnoreCase("APPLICANT")
+            || (isWithNoticeOrConsent(caseData) && role.equalsIgnoreCase("RESPONDENT"))
+            && featureToggleService.isDashboardServiceEnabled()) {
+            String scenario = getResponseDashboardScenario(role, caseData);
+            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+                caseData)).build();
+            if (scenario != null) {
+                dashboardApiClient.recordScenario(
+                    caseData.getCcdCaseReference().toString(),
+                    scenario,
+                    authToken,
+                    scenarioParams
+                );
+            }
+        }
+    }
+
+    private String getResponseDashboardScenario(String role, CaseData caseData) {
+        if (DocUploadUtils.APPLICANT.equals(role) && gaForLipService.isLipApp(caseData)) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario();
+        } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipResp(caseData)) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT.getScenario();
+        }
+        return null;
     }
 
     private String getDashboardScenario(String role, CaseData caseData) {
