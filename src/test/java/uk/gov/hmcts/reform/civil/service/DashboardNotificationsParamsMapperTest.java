@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -35,6 +36,7 @@ public class DashboardNotificationsParamsMapperTest {
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .generalAppPBADetails(
                 GAPbaDetails.builder()
                     .fee(
