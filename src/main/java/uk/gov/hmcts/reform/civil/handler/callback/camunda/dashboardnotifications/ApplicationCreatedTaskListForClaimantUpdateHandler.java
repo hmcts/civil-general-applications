@@ -37,7 +37,7 @@ public class ApplicationCreatedTaskListForClaimantUpdateHandler extends Dashboar
     }
 
     @Override
-    protected boolean isMainCase() {
+    public boolean isMainCase() {
         return true;
     }
 
