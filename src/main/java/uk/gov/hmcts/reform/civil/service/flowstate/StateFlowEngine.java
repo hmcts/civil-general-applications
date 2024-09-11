@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isSetAsideJudgment;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
@@ -41,7 +42,7 @@ public class StateFlowEngine {
         return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME)
             .initial(DRAFT)
             .transitionTo(APPLICATION_SUBMITTED)
-                .onlyIf((withNoticeApplication.or(withOutNoticeApplication)))
+                .onlyIf((withNoticeApplication.or(withOutNoticeApplication).or(isSetAsideJudgment.and(isLipApplication.or(isLipRespondent)))))
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                     flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));

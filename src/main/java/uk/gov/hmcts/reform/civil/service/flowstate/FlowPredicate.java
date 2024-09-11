@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.flowstate;
 
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.function.Predicate;
@@ -66,5 +67,8 @@ public class FlowPredicate {
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS);
 
     public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
-    public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaApplicantLip() == YES;
+    public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaRespondentOneLip() == YES;
+
+    public static final Predicate<CaseData> isSetAsideJudgment = caseData ->
+        caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT);
 }
