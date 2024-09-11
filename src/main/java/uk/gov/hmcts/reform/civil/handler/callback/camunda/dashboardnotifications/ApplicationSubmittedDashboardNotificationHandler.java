@@ -20,6 +20,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 public class ApplicationSubmittedDashboardNotificationHandler extends DashboardCallbackHandler {
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.UPDATE_GA_DASHBOARD_NOTIFICATION);
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(callbackKey(ABOUT_TO_SUBMIT), this::gaAppSubmitNotification);
@@ -40,6 +41,7 @@ public class ApplicationSubmittedDashboardNotificationHandler extends DashboardC
     public String getScenario(CaseData caseData) {
         return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
     }
+
     private CallbackResponse gaAppSubmitNotification(CallbackParams callbackParams) {
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
         return AboutToStartOrSubmitCallbackResponse.builder()
