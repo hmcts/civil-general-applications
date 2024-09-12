@@ -9,19 +9,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,11 +29,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT;
 
 @ExtendWith(MockitoExtension.class)
-public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest extends BaseCallbackHandlerTest {
+public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandlerTest {
 
     @Mock
     private DashboardApiClient dashboardApiClient;
@@ -43,11 +42,11 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
     @Mock
     private FeatureToggleService featureToggleService;
     @InjectMocks
-    private CreateMakeDecisionDashboardNotificationForApplicantHandler handler;
+    private ApplicationIssuedFeeRequiredHandler handler;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION);
+        assertThat(handler.handledEvents()).contains(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT);
     }
 
     @Test
@@ -60,15 +59,17 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
     class AboutToSubmitCallback {
 
         @Test
-        void shouldRecordMoreInfoRequiredApplicantScenarioWhenInvoked() {
+        void shouldRecordApplicationIssueFeeRequiredScenarioWhenInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
-                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().deadlineForMoreInfoSubmission(
-                    LocalDateTime.now().plusDays(5)).build())
-                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder()
+                                                   .calculatedAmountInPence(new BigDecimal(100000))
+                                                   .build())
+                                          .build())
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -77,39 +78,68 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
+                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT.name())
                     .build()
             ).build();
 
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT.getScenario(),
+                SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
 
         @Test
-        void shouldNotRecordMoreInfoRequiredApplicantScenarioWhenInvoked() {
+        void shouldNotRecordApplicationIssueFeeRequiredScenarioWhenGaFlagIsDisable() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
-                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
-                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
-                    LocalDateTime.now().plusDays(5)).build()).build();
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder()
+                                                   .calculatedAmountInPence(new BigDecimal(100000))
+                                                   .build())
+                                          .build())
+                .build();
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
+                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT.name())
                     .build()
             ).build();
 
             handler.handle(params);
             verifyNoInteractions(dashboardApiClient);
         }
+
+        @Test
+        void shouldNotRecordApplicationIssueFeeRequiredScenarioWhenDashboardFlagIsDisable() {
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaApplicantLip(YesOrNo.YES)
+                .parentClaimantIsApplicant(YesOrNo.YES)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder()
+                                                   .calculatedAmountInPence(new BigDecimal(100000))
+                                                   .build())
+                                          .build())
+                .build();
+
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(false);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verifyNoInteractions(dashboardApiClient);
+        }
+
     }
 }
