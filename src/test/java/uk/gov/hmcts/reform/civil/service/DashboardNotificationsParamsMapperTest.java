@@ -42,5 +42,12 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("21 March 2024");
         assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("21 Mawrth 2024");
     }
+  
+    @Test
+    void shouldMapAllParametersWhenIsRequested() {
 
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+        assertThat(result).extracting("applicationFee").isEqualTo("£275.00");
+    }
 }

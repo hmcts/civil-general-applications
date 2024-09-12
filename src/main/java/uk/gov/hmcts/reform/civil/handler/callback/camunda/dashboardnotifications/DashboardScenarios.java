@@ -13,7 +13,8 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT("Scenario.AAA6.GeneralApps.UrgentApplicationMade.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT("Scenario.AAA6.GeneralApps.NonUrgentApplicationUncloaked.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT("Scenario.AAA6.GeneralApps.UrgentApplicationUncloaked.Respondent"),
-    SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_DELETE_RESPONDENT("Scenario.AAA6.GeneralApps.ApplicationMade.Delete.Respondent");
+    SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_DELETE_RESPONDENT("Scenario.AAA6.GeneralApps.ApplicationMade.Delete.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationFeeRequired.Applicant");
 
     private final String scenario;
 

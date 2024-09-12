@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.utils.DateUtils;
+import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,11 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(date));
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
+        if (caseData.getGeneralAppPBADetails() != null) {
+            params.put("applicationFee",
+                       "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
+        }
+
         return params;
     }
 
