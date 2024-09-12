@@ -54,7 +54,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
     private final GAMakeApplicationAvailableCheck gaMakeApplicationAvailableCheck = GAMakeApplicationAvailableCheck.builder()
         .makeAppAvailableCheck(makeAppAvailableCheck).build();
 
-
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION);
