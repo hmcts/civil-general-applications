@@ -32,6 +32,8 @@ public class HearingScheduledNotificationService implements NotificationData {
     private final Map<String, String> customProps;
     private final GaForLipService gaForLipService;
     private static final String REFERENCE_TEMPLATE_HEARING = "general-apps-notice-of-hearing-%s";
+    private static final String RESPONDENT = "respondent";
+    private static final String APPLICANT = "applicant";
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
@@ -44,22 +46,6 @@ public class HearingScheduledNotificationService implements NotificationData {
         customProps.put(GA_HEARING_DATE, DateFormatHelper
             .formatLocalDate(caseData.getGaHearingNoticeDetail().getHearingDate(), DATE));
         customProps.put(GA_HEARING_TIME, hearingTime.toString());
-
-        if (gaForLipService.isLipApp(caseData)) {
-            String isLipAppName = caseData.getApplicantPartyName();
-            customProps.put(
-                GA_LIP_APPLICANT_NAME,
-                Objects.requireNonNull(isLipAppName)
-            );
-            customProps.remove(GA_LIP_RESP_NAME);
-        }
-
-        if (gaForLipService.isLipResp(caseData)) {
-            String isLipRespondentName = caseData.getDefendant1PartyName();
-            customProps.remove(GA_LIP_APPLICANT_NAME);
-            customProps.put(GA_LIP_RESP_NAME, Objects.requireNonNull(isLipRespondentName));
-        }
-
         if (gaForLipService.isGaForLip(caseData)) {
             customProps.put(CASE_TITLE, Objects.requireNonNull(JudicialFinalDecisionHandler
                                                                    .getAllPartyNames(caseData)));
@@ -72,10 +58,30 @@ public class HearingScheduledNotificationService implements NotificationData {
         return customProps;
     }
 
-    private void sendNotification(CaseData caseData, String recipient, String template) throws NotificationException {
+    public Map<String, String> addPropertiesByType(CaseData caseData, String gaLipType) {
+        if (gaForLipService.isLipApp(caseData) && gaLipType.equals(APPLICANT)) {
+            String isLipAppName = caseData.getApplicantPartyName();
+            customProps.put(
+                GA_LIP_APPLICANT_NAME,
+                Objects.requireNonNull(isLipAppName)
+            );
+            customProps.remove(GA_LIP_RESP_NAME);
+        }
+
+        if (gaForLipService.isLipResp(caseData) && gaLipType.equals(RESPONDENT)) {
+            String isLipRespondentName = caseData.getDefendant1PartyName();
+            customProps.remove(GA_LIP_APPLICANT_NAME);
+            customProps.put(GA_LIP_RESP_NAME, Objects.requireNonNull(isLipRespondentName));
+        }
+
+        addProperties(caseData);
+        return customProps;
+    }
+
+    private void sendNotification(CaseData caseData, String recipient, String template, String gaLipType) throws NotificationException {
         try {
             notificationService.sendMail(recipient,  template,
-                                         addProperties(caseData),
+                                         addPropertiesByType(caseData, gaLipType),
                                          String.format(REFERENCE_TEMPLATE_HEARING,
                                                        caseData.getGeneralAppParentCaseLink().getCaseReference()));
         } catch (NotificationException e) {
@@ -94,7 +100,7 @@ public class HearingScheduledNotificationService implements NotificationData {
         sendNotification(caseData,  caseData.getGeneralAppApplnSolicitor().getEmail(),
                          gaForLipService.isLipApp(caseData)
                              ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
-                             : notificationProperties.getHearingNoticeTemplate());
+                             : notificationProperties.getHearingNoticeTemplate(), APPLICANT);
 
         return caseData;
     }
@@ -114,9 +120,8 @@ public class HearingScheduledNotificationService implements NotificationData {
             updatedCaseData,
             respondent.getValue().getEmail(), gaForLipService.isLipResp(updatedCaseData)
                 ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
-                : notificationProperties.getHearingNoticeTemplate()));
+                : notificationProperties.getHearingNoticeTemplate(), RESPONDENT));
 
         return caseData;
     }
-
 }
