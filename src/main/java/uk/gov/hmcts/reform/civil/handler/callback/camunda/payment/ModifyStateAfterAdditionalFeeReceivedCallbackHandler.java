@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 
 @Slf4j
 @Service
@@ -71,12 +72,35 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         if (caseData.getMakeAppVisibleToRespondents() != null
             || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId.toString());
-            updateDashboardTaskList(callbackParams);
+            updateDashboardTaskListAndNotification(callbackParams, getDashboardScenario(caseData), caseData.getParentCaseReference());
         }
+
+        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(), caseData.getCcdCaseReference().toString());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newCaseState)
             .build();
+    }
+
+    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, String scenario, String caseReference) {
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        CaseData caseData = callbackParams.getCaseData();
+        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+                caseData)).build();
+            if (scenario != null) {
+                dashboardApiClient.recordScenario(
+                    caseReference,
+                    scenario,
+                    authToken,
+                    scenarioParams
+                );
+            }
+        }
+    }
+
+    private String getDashboardNotificationScenarioForApplicant() {
+        return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
     }
 
     private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
@@ -102,24 +126,6 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         );
 
         return SubmittedCallbackResponse.builder().build();
-    }
-
-    private void updateDashboardTaskList(CallbackParams callbackParams) {
-        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
-        CaseData caseData = callbackParams.getCaseData();
-        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
-            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
-                caseData)).build();
-            String scenario = getDashboardScenario(caseData);
-            if (scenario != null) {
-                dashboardApiClient.recordScenario(
-                    caseData.getParentCaseReference(),
-                    scenario,
-                    authToken,
-                    scenarioParams
-                );
-            }
-        }
     }
 
     private String getDashboardScenario(CaseData caseData) {
