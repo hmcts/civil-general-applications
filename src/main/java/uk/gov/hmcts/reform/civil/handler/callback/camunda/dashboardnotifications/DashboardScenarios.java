@@ -13,7 +13,9 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_APPLICANT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT("Scenario.AAA6.GeneralApps.ApplicationUncloaked.OrderMade.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationSubmitted.Applicant"),
-    SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Respondent");
+    SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_APPLICANT("Scenario.AAA6.GeneralApps.OrderMade.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT("Scenario.AAA6.GeneralApps.OrderMade.Respondent");
 
     private final String scenario;
 
