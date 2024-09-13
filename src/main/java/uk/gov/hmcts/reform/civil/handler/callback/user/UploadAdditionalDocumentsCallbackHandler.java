@@ -62,7 +62,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
         DocUploadUtils.addUploadDocumentByTypeToAddl(caseData, caseDataBuilder,
-                caseData.getUploadDocument(), role, true);
+                                                     caseData.getUploadDocument(), role, true);
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
@@ -76,22 +76,22 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String role = DocUploadUtils.getUserRole(caseData, userId);
         if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
-                    .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
-                    .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .map(byType -> ElementUtils.element(CaseDocument.builder()
-                            .documentLink(byType.getValue().getAdditionalDocument())
-                            .documentName(byType.getValue().getDocumentType())
-                            .createdBy(role)
-                            .createdDatetime(LocalDateTime.now()).build()))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .map(byType -> ElementUtils.element(CaseDocument.builder()
+                                                        .documentLink(byType.getValue().getAdditionalDocument())
+                                                        .documentName(byType.getValue().getDocumentType())
+                                                        .createdBy(role)
+                                                        .createdDatetime(LocalDateTime.now()).build()))
+                .collect(Collectors.toList());
             assignCategoryId.assignCategoryIdToCollection(
-                    bundle,
-                    document -> document.getValue().getDocumentLink(),
-                    AssignCategoryId.APPLICATIONS);
+                bundle,
+                document -> document.getValue().getDocumentLink(),
+                AssignCategoryId.APPLICATIONS);
             if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
                 bundle.addAll(caseData.getGaAddlDocBundle());
             }
