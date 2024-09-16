@@ -43,8 +43,8 @@ public class DocUploadDashboardNotificationService {
 
     public void createResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
-        if (role.equalsIgnoreCase("APPLICANT")
-            || (isWithNoticeOrConsent(caseData) && role.equalsIgnoreCase("RESPONDENT"))
+        if ((role.equalsIgnoreCase("APPLICANT")
+            || (isWithNoticeOrConsent(caseData) && role.equalsIgnoreCase("RESPONDENT")))
             && featureToggleService.isDashboardServiceEnabled()) {
             String scenario = getResponseDashboardScenario(role, caseData);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
@@ -61,9 +61,9 @@ public class DocUploadDashboardNotificationService {
     }
 
     private String getResponseDashboardScenario(String role, CaseData caseData) {
-        if (DocUploadUtils.APPLICANT.equals(role) && gaForLipService.isLipApp(caseData)) {
+        if (role.equalsIgnoreCase("APPLICANT") && gaForLipService.isLipApp(caseData)) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario();
-        } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipResp(caseData)) {
+        } else if (role.equalsIgnoreCase("RESPONDENT") && gaForLipService.isLipResp(caseData)) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT.getScenario();
         }
         return null;
