@@ -450,7 +450,6 @@ class GAJudgeRevisitTaskHandlerTest {
         when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
         when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
 
-
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
@@ -469,7 +468,6 @@ class GAJudgeRevisitTaskHandlerTest {
             .thenReturn(List.of(caseDetailsWrittenRepresentationS));
         when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(false);
         when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
-
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
