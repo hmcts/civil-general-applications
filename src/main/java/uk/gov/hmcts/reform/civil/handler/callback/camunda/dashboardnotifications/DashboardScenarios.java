@@ -19,7 +19,6 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationSubmitted.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Respondent");
 
-
     private final String scenario;
 
     DashboardScenarios(String scenario) {
