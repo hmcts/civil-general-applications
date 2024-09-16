@@ -184,7 +184,6 @@ public class ResponseToJudgeDirectionsOrderHanderTest extends BaseCallbackHandle
         verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
         verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(CaseData.class), anyString(), anyString());
         verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(CaseData.class), anyString(), anyString());
-
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {

@@ -211,7 +211,6 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
         verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(CaseData.class), anyString(), anyString());
         verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(CaseData.class), anyString(), anyString());
-
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {

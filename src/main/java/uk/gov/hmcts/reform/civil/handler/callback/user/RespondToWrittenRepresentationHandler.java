@@ -90,7 +90,6 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
-
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()

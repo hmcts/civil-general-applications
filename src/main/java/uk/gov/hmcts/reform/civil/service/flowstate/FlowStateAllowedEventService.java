@@ -44,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION_URGENT_LIP;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
@@ -101,6 +102,7 @@ public class FlowStateAllowedEventService {
             List.of(START_GA_BUSINESS_PROCESS,
                     NOTIFY_GENERAL_APPLICATION_RESPONDENT,
                     RESPOND_TO_APPLICATION,
+                    RESPOND_TO_APPLICATION_URGENT_LIP,
                     MAKE_DECISION,
                     APPROVE_CONSENT_ORDER,
                     MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
@@ -123,6 +125,7 @@ public class FlowStateAllowedEventService {
                     START_GA_BUSINESS_PROCESS,
                     NOTIFY_GENERAL_APPLICATION_RESPONDENT,
                     RESPOND_TO_APPLICATION,
+                    RESPOND_TO_APPLICATION_URGENT_LIP,
                     MAKE_DECISION,
                     REFER_TO_JUDGE,
                     REFER_TO_LEGAL_ADVISOR,
@@ -154,6 +157,7 @@ public class FlowStateAllowedEventService {
               List.of(RESPOND_TO_JUDGE_ADDITIONAL_INFO,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       RESPOND_TO_APPLICATION,
+                      RESPOND_TO_APPLICATION_URGENT_LIP,
                       MAKE_DECISION,
                       TRIGGER_LOCATION_UPDATE,
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
