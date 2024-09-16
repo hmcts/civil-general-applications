@@ -72,7 +72,6 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
 
         @Test
         void shouldRecordClaimantScenarioApplicationFee_whenInvoked() {
-            CaseDetails caseDetails = CaseDetails.builder().build();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -81,8 +80,6 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
                                   .hwfCaseEvent(NO_REMISSION_HWF_GA)
                                   .build())
                 .build();
-            when(coreCaseDataService.getCase(any())).thenReturn(caseDetails);
-            when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
 
@@ -104,7 +101,6 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
 
         @Test
         void shouldRecordClaimantScenarioAdditionalApplicationFee_whenInvoked() {
-            CaseDetails caseDetails = CaseDetails.builder().build();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -113,8 +109,6 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
                                   .hwfCaseEvent(NO_REMISSION_HWF_GA)
                                   .build())
                 .build();
-            when(coreCaseDataService.getCase(any())).thenReturn(caseDetails);
-            when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
 
