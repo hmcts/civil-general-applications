@@ -36,6 +36,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 
 @Slf4j
 @Service
@@ -79,9 +80,32 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
                                                    caseData.getCcdCaseReference().toString());
         }
 
+        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(), caseData.getCcdCaseReference().toString());
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newCaseState)
             .build();
+    }
+
+    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, String scenario, String caseReference) {
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        CaseData caseData = callbackParams.getCaseData();
+        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+                caseData)).build();
+            if (scenario != null) {
+                dashboardApiClient.recordScenario(
+                    caseReference,
+                    scenario,
+                    authToken,
+                    scenarioParams
+                );
+            }
+        }
+    }
+
+    private String getDashboardNotificationScenarioForApplicant() {
+        return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
     }
 
     private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
