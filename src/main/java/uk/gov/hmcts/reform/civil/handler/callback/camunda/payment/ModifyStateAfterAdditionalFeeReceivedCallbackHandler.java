@@ -133,23 +133,6 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         return SubmittedCallbackResponse.builder().build();
     }
 
-    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, String scenario, String caseReference) {
-        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
-        CaseData caseData = callbackParams.getCaseData();
-        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
-            ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
-                caseData)).build();
-            if (scenario != null) {
-                dashboardApiClient.recordScenario(
-                    caseReference,
-                    scenario,
-                    authToken,
-                    scenarioParams
-                );
-            }
-        }
-    }
-
     private String getDashboardScenario(CaseData caseData) {
         if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
