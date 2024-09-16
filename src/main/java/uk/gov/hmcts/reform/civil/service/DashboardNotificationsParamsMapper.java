@@ -37,7 +37,7 @@ public class DashboardNotificationsParamsMapper {
                 params.put("applicationFeeTypeCy", "cais");
             } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
                 params.put("applicationFeeTypeEn", "additional application");
-                params.put("applicationFeeTypeCy","cais ychwanegol");
+                params.put("applicationFeeTypeCy", "cais ychwanegol");
             }
         }
 
