@@ -290,4 +290,9 @@ public class CoreCaseDataService {
             .data(data)
             .build();
     }
+
+    public String getSystemUpdateUserToken() {
+        UserAuthContent systemUpdateUser = getSystemUpdateUser();
+        return systemUpdateUser.getUserToken();
+    }
 }

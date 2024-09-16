@@ -6,24 +6,20 @@ import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.civil.config.SystemUpdateUserConfiguration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
-import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
@@ -35,17 +31,12 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseStateSearchService;
-    private final UserService userService;
 
     private final CoreCaseDataService coreCaseDataService;
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final GaForLipService gaForLipService;
     private final DocUploadDashboardNotificationService dashboardNotificationService;
-    private final SystemUpdateUserConfiguration userConfig;
-
-    String userToken = userService.getAccessToken(userConfig.getUserName(), userConfig.getPassword());
-
 
     @Override
     public void handleTask(ExternalTask externalTask) {
@@ -68,20 +59,19 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
     protected void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
-
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
         try {
+            coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
             // Generate Dashboard Notification for Lip Party
             if (gaForLipService.isGaForLip(caseData)) {
+                String userToken = coreCaseDataService.getSystemUpdateUserToken();
                 dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", userToken);
                 dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", userToken);
 
             }
-
-            coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         } catch (Exception exception) {
             log.error("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: " + exception);
         }

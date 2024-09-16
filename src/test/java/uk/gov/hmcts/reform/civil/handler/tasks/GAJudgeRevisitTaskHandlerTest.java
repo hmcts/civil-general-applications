@@ -18,11 +18,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
@@ -34,6 +37,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -68,6 +73,10 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private DocUploadDashboardNotificationService dashboardNotificationService;
+    @MockBean
+    private GaForLipService gaForLipService;
 
     @Autowired
     private GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
@@ -109,6 +118,7 @@ class GAJudgeRevisitTaskHandlerTest {
                        .judgeRequestMoreInfoByDate(LocalDate.now())
                        .judgeRequestMoreInfoText("test").build()
             )).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+        when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
     }
 
     @Test
@@ -117,8 +127,9 @@ class GAJudgeRevisitTaskHandlerTest {
         logger.addAppender(listAppender);
         doThrow(buildFeignExceptionWithUnprocessableEntity()).when(coreCaseDataService)
             .triggerEvent(any(), any());
-
-        gaJudgeRevisitTaskHandler.fireEventForStateChange(CaseDetails.builder().id(1L).build());
+        CaseDetails caseDetailRequestForInformation = CaseDetails.builder().id(1L).data(
+            Map.of("generalAppConsentOrder", "Yes")).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+        gaJudgeRevisitTaskHandler.fireEventForStateChange(caseDetailRequestForInformation);
 
         List<ILoggingEvent> logsList = listAppender.list;
         assertEquals("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: "
@@ -433,16 +444,39 @@ class GAJudgeRevisitTaskHandlerTest {
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
+    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday_whenCaseIsLip() {
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationS));
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
+        when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
+
 
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
-        verifyNoMoreInteractions(coreCaseDataService);
+        verify(coreCaseDataService)
+            .getSystemUpdateUserToken();
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
+        verify(externalTaskService).complete(externalTask);
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentationS));
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(false);
+        when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
+
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(dashboardNotificationService);
         verify(externalTaskService).complete(externalTask);
     }
 
@@ -505,6 +539,8 @@ class GAJudgeRevisitTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsPast() {
 
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(false);
+        when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
         CaseDetails caseDetailRequestForInformationWithPastDate = caseDetailRequestForInformation.toBuilder().data(
             Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
                    "judicialDecisionRequestMoreInfo", GAJudicialRequestMoreInfo.builder()
@@ -520,7 +556,35 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
-        verifyNoMoreInteractions(coreCaseDataService);
+        verifyNoMoreInteractions(dashboardNotificationService);
+        verify(externalTaskService).complete(externalTask);
+
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenRequestForInformationDateIsPast_whenLipCase() {
+
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
+        when(coreCaseDataService.getSystemUpdateUserToken()).thenReturn("userToken");
+        CaseDetails caseDetailRequestForInformationWithPastDate = caseDetailRequestForInformation.toBuilder().data(
+            Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
+                   "judicialDecisionRequestMoreInfo", GAJudicialRequestMoreInfo.builder()
+                       .requestMoreInfoOption(REQUEST_MORE_INFORMATION)
+                       .judgeRequestMoreInfoByDate(LocalDate.now().minusDays(1))
+                       .judgeRequestMoreInfoText("test").build()
+            )).state(AWAITING_ADDITIONAL_INFORMATION.toString()).build();
+
+        when(caseStateSearchService.getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION))
+            .thenReturn(List.of(caseDetailRequestForInformationWithPastDate));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
+        verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService)
+            .getSystemUpdateUserToken();
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
         verify(externalTaskService).complete(externalTask);
 
     }
