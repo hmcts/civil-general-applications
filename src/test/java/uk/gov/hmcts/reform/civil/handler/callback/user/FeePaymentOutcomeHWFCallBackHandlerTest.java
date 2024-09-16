@@ -8,11 +8,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.*;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
-import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
@@ -124,7 +125,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
             verify(service, times(1)).processHwf(any());
-            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(CaseEvent.FEE_PAYMENT_OUTCOME_GA));
+            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(FEE_PAYMENT_OUTCOME_GA));
             assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.toString());
         }
 
@@ -149,7 +150,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
             verify(service, times(1)).processHwf(any());
-            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(CaseEvent.FEE_PAYMENT_OUTCOME_GA));
+            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(FEE_PAYMENT_OUTCOME_GA));
             assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(UPDATE_GA_ADD_HWF.toString());
         }
     }
