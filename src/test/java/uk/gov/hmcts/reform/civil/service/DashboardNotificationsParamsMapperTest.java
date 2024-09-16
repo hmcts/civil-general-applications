@@ -29,8 +29,6 @@ public class DashboardNotificationsParamsMapperTest {
     private DashboardNotificationsParamsMapper mapper;
     public static final String CUSTOMER_REFERENCE = "12345";
 
-    private CaseData caseData;
-
     @BeforeEach
     void setup() {
         mapper = new DashboardNotificationsParamsMapper();
@@ -64,7 +62,7 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("21 March 2024");
         assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("21 Mawrth 2024");
     }
-  
+
     @Test
     void shouldNotMapDataWhenNotPresent() {
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
