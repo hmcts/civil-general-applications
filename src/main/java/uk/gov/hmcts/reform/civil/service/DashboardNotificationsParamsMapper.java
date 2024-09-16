@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.utils.DateUtils;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
-import uk.gov.hmcts.reform.civil.utils.DateUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -32,13 +30,13 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(date));
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
-      
+
         if (caseData.getGeneralAppPBADetails() != null) {
             params.put("applicationFee",
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
-      return params;
+        return params;
     }
 
     private static Optional<LocalDate> getGeneralAppNotificationDeadlineDate(CaseData caseData) {
