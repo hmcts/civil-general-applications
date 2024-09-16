@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,10 +39,12 @@ public class DashboardNotificationsParamsMapperTest {
 
     @Test
     void shouldMapAllParametersWhenIsRequested() {
+        LocalDateTime deadline = LocalDateTime.of(2024, 3, 21, 16, 0);
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppNotificationDeadlineDate(deadline)
             .generalAppPBADetails(
                 GAPbaDetails.builder()
                     .fee(
@@ -60,13 +63,14 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("applicationFee").isEqualTo("£275.00");
         assertThat(result).extracting("generalAppNotificationDeadlineDateEn").isEqualTo("21 March 2024");
         assertThat(result).extracting("generalAppNotificationDeadlineDateCy").isEqualTo("21 Mawrth 2024");
-        assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("21 March 2024");
-        assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("21 Mawrth 2024");
+        assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("4 September 2024");
+        assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("4 Medi 2024");
     }
 
     @Test
     void shouldNotMapDataWhenNotPresent() {
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        caseData = caseData.toBuilder().generalAppPBADetails(null).build();
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
         assertFalse(result.containsKey("applicationFee"));
         assertFalse(result.containsKey("judgeRequestMoreInfoByDateEn"));
