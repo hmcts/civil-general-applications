@@ -4,8 +4,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.*;
 
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -112,7 +111,8 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                               .hwfReferenceNumber(caseData
                                                                       .getGeneralAppHelpWithFees()
                                                                       .getHelpWithFeesReferenceNumber()).build())
-                    .businessProcess(BusinessProcess.ready(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID)).build();
+                    .businessProcess(BusinessProcess.ready(UPDATE_GA_ADD_HWF))
+                    .build();
             } else {
                 errors.add(CASE_STATE_INVALID);
             }
