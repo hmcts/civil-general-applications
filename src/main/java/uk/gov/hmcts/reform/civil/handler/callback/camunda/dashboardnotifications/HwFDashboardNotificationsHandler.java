@@ -39,12 +39,10 @@ public class HwFDashboardNotificationsHandler extends DashboardCallbackHandler {
         NO_REMISSION_HWF_GA, SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT.getScenario()
     );
 
-
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-
 
     @Override
     public String getScenario(CaseData caseData) {

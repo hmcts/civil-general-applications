@@ -30,8 +30,7 @@ public class DashboardNotificationsParamsMapper {
         //ToDo: refactor below string to allow for notifications that do not require additional params
         params.put("testRef", "string");
 
-        if (caseData.getHwfFeeType() != null)
-        {
+        if (caseData.getHwfFeeType() != null) {
             if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
                 params.put("applicationFeeTypeEn", "application");
                 params.put("applicationFeeTypeCy", "cais");
