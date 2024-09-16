@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 import uk.gov.hmcts.reform.civil.utils.DateUtils;
@@ -28,6 +29,17 @@ public class DashboardNotificationsParamsMapper {
         }
         //ToDo: refactor below string to allow for notifications that do not require additional params
         params.put("testRef", "string");
+
+        if (caseData.getHwfFeeType() != null)
+        {
+            if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
+                params.put("applicationFeeTypeEn", "application");
+                params.put("applicationFeeTypeCy", "cais");
+            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
+                params.put("applicationFeeTypeEn", "additional application");
+                params.put("applicationFeeTypeCy","cais ychwanegol");
+            }
+        }
 
         return params;
     }
