@@ -35,7 +35,7 @@ public class HwFDashboardNotificationsHandler extends DashboardCallbackHandler {
         this.caseDetailsConverter = caseDetailsConverter;
     }
 
-    public final Map<CaseEvent, String> dashboardScenariosClaimIssue = Map.of(
+    public final Map<CaseEvent, String> dashboardScenarios = Map.of(
         NO_REMISSION_HWF_GA, SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT.getScenario()
     );
 
@@ -47,9 +47,9 @@ public class HwFDashboardNotificationsHandler extends DashboardCallbackHandler {
     @Override
     public String getScenario(CaseData caseData) {
         if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
-            return dashboardScenariosClaimIssue.get(caseData.getGaHwfDetails().getHwfCaseEvent());
+            return dashboardScenarios.get(caseData.getGaHwfDetails().getHwfCaseEvent());
         } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
-            return dashboardScenariosClaimIssue.get(caseData.getAdditionalHwfDetails().getHwfCaseEvent());
+            return dashboardScenarios.get(caseData.getAdditionalHwfDetails().getHwfCaseEvent());
         }
         return "";
     }
