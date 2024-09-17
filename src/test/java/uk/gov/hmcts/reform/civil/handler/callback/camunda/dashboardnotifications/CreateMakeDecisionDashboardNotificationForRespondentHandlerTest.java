@@ -196,6 +196,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .applicationIsUncloakedOnce(YesOrNo.NO)
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();

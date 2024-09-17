@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
-import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.List;
 
