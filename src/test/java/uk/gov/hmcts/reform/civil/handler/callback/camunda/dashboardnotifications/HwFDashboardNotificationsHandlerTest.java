@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +63,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioApplicationFee_whenInvoked() {
+        void shouldRecordClaimantScenarioApplicationFee_NoRemission_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -79,7 +78,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE.name())
+                CallbackRequest.builder().eventId(APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION.name())
                     .build()
             ).build();
 
@@ -93,7 +92,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioAdditionalApplicationFee_whenInvoked() {
+        void shouldRecordClaimantScenarioAdditionalApplicationFee_NoRemission_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -108,7 +107,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE.name())
+                CallbackRequest.builder().eventId(APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION.name())
                     .build()
             ).build();
 
