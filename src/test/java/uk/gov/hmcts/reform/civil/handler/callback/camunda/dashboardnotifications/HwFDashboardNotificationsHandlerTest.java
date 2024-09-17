@@ -63,7 +63,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioApplicationFee_NoRemission_whenInvoked() {
+        void shouldRecordApplicantScenarioApplicationFee_NoRemission_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -92,7 +92,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioAdditionalApplicationFee_NoRemission_whenInvoked() {
+        void shouldRecordApplicantScenarioAdditionalApplicationFee_NoRemission_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
