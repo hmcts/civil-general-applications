@@ -22,6 +22,18 @@ public class DashboardNotificationsParamsMapper {
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
+        if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
+            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
+            params.put("outstandingFeeInPounds", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getOutstandingFeeInPounds()));
+        } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
+            && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
+            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
+                                                                                        .getRemissionAmount()));
+            params.put("outstandingFeeInPounds", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
+                                                                                               .getOutstandingFeeInPounds()));
+
+        }
+
         if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
             params.put("judgeRequestMoreInfoByDateCy",
