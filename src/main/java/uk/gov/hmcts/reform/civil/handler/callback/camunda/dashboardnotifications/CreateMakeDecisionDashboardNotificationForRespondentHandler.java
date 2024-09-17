@@ -17,7 +17,10 @@ import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT;
 
 @Service
@@ -40,6 +43,14 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
 
     @Override
     protected String getScenario(CaseData caseData) {
+
+        if (isWithoutNotice(caseData)
+            && caseData.getApplicationIsUncloakedOnce() != null
+            && caseData.getApplicationIsUncloakedOnce().equals(YES)
+            && caseData.getMakeAppVisibleToRespondents() != null) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT.getScenario();
+        }
+
         if (isWithNoticeOrConsent(caseData)) {
             if (caseData.getJudicialDecisionRequestMoreInfo() != null
                 && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData
@@ -65,7 +76,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     }
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
-        return JudicialDecisionNotificationUtil.isWithNotice(caseData)
+        return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
             || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
     }
+
+    private boolean isWithoutNotice(CaseData caseData) {
+        return NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+    }
+
 }

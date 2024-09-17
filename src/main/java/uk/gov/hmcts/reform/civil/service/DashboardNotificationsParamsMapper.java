@@ -16,19 +16,16 @@ public class DashboardNotificationsParamsMapper {
 
     public HashMap<String, Object> mapCaseDataToParams(CaseData caseData) {
         HashMap<String, Object> params = new HashMap<>();
-
+        params.put("ccdCaseReference", caseData.getCcdCaseReference());
         if (caseData.getGeneralAppPBADetails() != null) {
             params.put("applicationFee",
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
         if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
-            params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData
-                                                                                .getJudicialDecisionRequestMoreInfo()
-                                                                                .getJudgeRequestMoreInfoByDate()));
+            params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
             params.put("judgeRequestMoreInfoByDateCy",
-                       DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo()
-                                                       .getJudgeRequestMoreInfoByDate()));
+                       DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
         }
 
         if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING)
@@ -39,6 +36,10 @@ public class DashboardNotificationsParamsMapper {
             params.put("hearingNoticeApplicationDateCy",
                        DateUtils.formatDateInWelsh(caseData.getGaHearingNoticeDetail().getHearingDate()));
         }
+
+        //ToDo: refactor below string to allow for notifications that do not require additional params
+        params.put("testRef", "string");
+
         return params;
     }
 
