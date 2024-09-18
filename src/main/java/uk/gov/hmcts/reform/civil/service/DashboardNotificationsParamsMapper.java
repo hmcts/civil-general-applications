@@ -15,7 +15,7 @@ public class DashboardNotificationsParamsMapper {
 
     public HashMap<String, Object> mapCaseDataToParams(CaseData caseData) {
         HashMap<String, Object> params = new HashMap<>();
-
+        params.put("ccdCaseReference", caseData.getCcdCaseReference());
         if (caseData.getGeneralAppPBADetails() != null) {
             params.put("applicationFee",
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
@@ -28,6 +28,7 @@ public class DashboardNotificationsParamsMapper {
         }
         //ToDo: refactor below string to allow for notifications that do not require additional params
         params.put("testRef", "string");
+
         return params;
     }
 
