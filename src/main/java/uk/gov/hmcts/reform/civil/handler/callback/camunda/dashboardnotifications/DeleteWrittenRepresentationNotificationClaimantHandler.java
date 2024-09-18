@@ -19,7 +19,6 @@ public class DeleteWrittenRepresentationNotificationClaimantHandler extends Dash
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
 
-
     public DeleteWrittenRepresentationNotificationClaimantHandler(DashboardApiClient dashboardApiClient,
                                                                        DashboardNotificationsParamsMapper mapper,
                                                                        FeatureToggleService featureToggleService) {

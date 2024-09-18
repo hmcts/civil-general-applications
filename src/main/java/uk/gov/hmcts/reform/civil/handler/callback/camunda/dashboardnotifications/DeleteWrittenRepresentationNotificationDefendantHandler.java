@@ -19,7 +19,6 @@ public class DeleteWrittenRepresentationNotificationDefendantHandler extends Das
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
 
-
     public DeleteWrittenRepresentationNotificationDefendantHandler(DashboardApiClient dashboardApiClient,
                                                                    DashboardNotificationsParamsMapper mapper,
                                                                    FeatureToggleService featureToggleService) {

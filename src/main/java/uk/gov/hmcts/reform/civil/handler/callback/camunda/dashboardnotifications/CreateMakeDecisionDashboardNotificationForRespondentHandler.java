@@ -24,7 +24,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION);
 
-
     public CreateMakeDecisionDashboardNotificationForRespondentHandler(DashboardApiClient dashboardApiClient,
                                                                        DashboardNotificationsParamsMapper mapper,
                                                                        FeatureToggleService featureToggleService) {
