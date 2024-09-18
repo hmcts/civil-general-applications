@@ -126,6 +126,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                     GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
