@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 
 @Service
 public class ApplicationSubmittedDashboardNotificationHandler extends DashboardCallbackHandler {
@@ -30,7 +31,11 @@ public class ApplicationSubmittedDashboardNotificationHandler extends DashboardC
 
     @Override
     public String getScenario(CaseData caseData) {
-        return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
+        if (caseData.claimIssueFeePaymentDoneWithHWF(caseData) && caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
+            return SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario();
+        } else {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
+        }
     }
 
 }

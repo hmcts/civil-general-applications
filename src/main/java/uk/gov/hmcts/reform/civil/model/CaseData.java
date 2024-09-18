@@ -74,8 +74,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Data
 @Builder(toBuilder = true)
@@ -353,6 +356,19 @@ public class CaseData implements MappableObject {
         return businessProcess == null
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
+    }
+
+    @JsonIgnore
+    public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
+            && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())
+            && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber());
+    }
+
+    @JsonIgnore
+    public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
     }
 
 }

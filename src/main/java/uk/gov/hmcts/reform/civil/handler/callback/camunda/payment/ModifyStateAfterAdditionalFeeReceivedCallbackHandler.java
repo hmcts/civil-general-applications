@@ -35,6 +35,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SE
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 
 @Slf4j
 @Service
@@ -129,11 +130,17 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     }
 
     private String getDashboardScenario(CaseData caseData) {
-        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
+
+        if (caseData.getIsGaApplicantLip() == YES
+            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)
+            && caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
+            return SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario();
         } else if (caseData.getIsGaApplicantLip() == YES) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT.getScenario();
+        } else if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
         }
+
         return null;
     }
 }
