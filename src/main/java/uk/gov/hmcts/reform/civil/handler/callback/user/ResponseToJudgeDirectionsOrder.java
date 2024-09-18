@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
@@ -32,6 +34,8 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final CaseDetailsConverter caseDetailsConverter;
     private final IdamClient idamClient;
+    private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    private final GaForLipService gaForLipService;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_DIRECTIONS);
 
@@ -46,14 +50,25 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
     protected CallbackResponse submitClaim(CallbackParams callbackParams) {
 
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-        String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        String userId = idamClient.getUserInfo(authToken).getUid();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
-        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                caseData.getGeneralAppDirOrderUpload(), role, CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS, false);
+        DocUploadUtils.addDocumentToAddl(caseData,
+                                         caseDataBuilder,
+                                         caseData.getGeneralAppDirOrderUpload(),
+                                         role,
+                                         CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS,
+                                         false
+        );
         caseDataBuilder.generalAppDirOrderUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_DIRECTIONS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
+
+        // Generate Dashboard Notification for Lip Party
+        if (gaForLipService.isGaForLip(caseData)) {
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
