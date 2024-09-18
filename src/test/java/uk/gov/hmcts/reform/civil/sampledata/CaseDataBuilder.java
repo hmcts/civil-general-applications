@@ -1278,9 +1278,4 @@ public class CaseDataBuilder {
                 .value(location1).build();
     }
 
-    public CaseData buildJudicialDecisionRequestMoreInfo() {
-        return CaseData.builder()
-            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
-                REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.of(2024, 9, 04)).build()).build();
-    }
 }

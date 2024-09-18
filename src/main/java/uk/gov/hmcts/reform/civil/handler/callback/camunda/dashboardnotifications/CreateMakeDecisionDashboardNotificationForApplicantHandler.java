@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
-import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
 import java.util.List;
 
@@ -26,6 +25,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CreateMakeDecisionDashboardNotificationForApplicantHandler(DashboardApiClient dashboardApiClient,
                                                                       DashboardNotificationsParamsMapper mapper,
