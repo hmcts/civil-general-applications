@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
@@ -74,6 +76,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 
@@ -353,6 +356,27 @@ public class CaseData implements MappableObject {
         return businessProcess == null
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
+    }
+
+    @JsonIgnore
+    public boolean isJudicialDecision() {
+        return this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
+            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+    }
+
+    @JsonIgnore
+    public boolean isApplicationApprovedOrEditOrDismiss() {
+        if (!Objects.nonNull(this.getJudicialDecisionMakeOrder()))
+            return false;
+        GAJudgeMakeAnOrderOption.valueOf(this.getJudicialDecisionMakeOrder().getMakeAnOrder().toString());
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean judgeHasMadeAnOrder() {
+        return (this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+            && this.isApplicationApprovedOrEditOrDismiss())
+            || (this.isJudicialDecision());
     }
 
 }
