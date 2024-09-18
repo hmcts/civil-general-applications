@@ -32,22 +32,22 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
 
     @Override
     protected String getScenario(CaseData caseData) {
-        if (isWithNoticeOrConsent(caseData)
-            && caseData.getJudicialDecisionRequestMoreInfo() != null
-            && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+        if (isWithNoticeOrConsent(caseData)) {
+            if (caseData.getJudicialDecisionRequestMoreInfo() != null
+                && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+                || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+            }
+            if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+                && caseData.getJudicialDecision() != null
+                && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario();
+            }
         } else if (isWithoutNotice(caseData)
             && caseData.getApplicationIsUncloakedOnce() != null
             && caseData.getApplicationIsUncloakedOnce().equals(YES)
             && caseData.getMakeAppVisibleToRespondents() != null) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT.getScenario();
-        }
-        if (isWithNoticeOrConsent(caseData)
-            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
-            && caseData.getJudicialDecision() != null
-            && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario();
         }
         return "";
     }
