@@ -23,17 +23,10 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION);
 
-    private final CoreCaseDataService coreCaseDataService;
-    private final CaseDetailsConverter caseDetailsConverter;
-
     public CreateMakeDecisionDashboardNotificationForApplicantHandler(DashboardApiClient dashboardApiClient,
                                                                       DashboardNotificationsParamsMapper mapper,
-                                                                      CoreCaseDataService coreCaseDataService,
-                                                                      CaseDetailsConverter caseDetailsConverter,
                                                                       FeatureToggleService featureToggleService) {
         super(dashboardApiClient, mapper, featureToggleService);
-        this.coreCaseDataService = coreCaseDataService;
-        this.caseDetailsConverter = caseDetailsConverter;
     }
 
     @Override

@@ -17,7 +17,9 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationSubmitted.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Applicant"),
-    SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Respondent");
+    SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Respondent");
 
     private final String scenario;
 

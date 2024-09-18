@@ -41,6 +41,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
@@ -159,10 +161,7 @@ class GAJudgeRevisitTaskHandlerTest {
             Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_WRITTEN_REPRESENTATIONS.toString())
             .build();
 
-        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
-            .thenReturn(List.of(caseDetailsWrittenRepresentation));
-
-        gaJudgeRevisitTaskHandler.getWrittenRepCaseReadyToJudgeRevisit();
+        gaJudgeRevisitTaskHandler.filterForClaimantWrittenRepExpired(List.of(caseDetailsWrittenRepresentation));
 
         List<ILoggingEvent> logsList = listAppender.list;
         assertEquals("Error GAJudgeRevisitTaskHandler::getWrittenRepCaseReadyToJudgeRevisit : "
@@ -201,6 +200,8 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
@@ -252,8 +253,8 @@ class GAJudgeRevisitTaskHandlerTest {
                          + "not one of the values accepted for Enum class: [No, Yes]\n"
                          + " at [Source: UNKNOWN; byte offset: #UNKNOWN] (through reference chain: "
                          + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
-                     logsList.get(1).getMessage());
-        assertEquals(Level.ERROR, logsList.get(1).getLevel());
+                     logsList.get(2).getMessage());
+        assertEquals(Level.ERROR, logsList.get(2).getLevel());
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
@@ -442,6 +443,8 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
@@ -463,6 +466,8 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
