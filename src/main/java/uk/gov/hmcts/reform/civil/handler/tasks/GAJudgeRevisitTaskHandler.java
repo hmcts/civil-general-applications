@@ -42,13 +42,16 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         List<CaseDetails> claimantNotificationCases = filterForClaimantWrittenRepExpired(writtenRepresentationCases);
         log.info("Job '{}' found {} written representation case(s) with claimant deadline expired",
                  externalTask.getTopicName(), claimantNotificationCases.size());
-        claimantNotificationCases.forEach(this::fireEventForStateChange);
         claimantNotificationCases.forEach(this::fireEventForDeleteClaimantNotification);
 
         List<CaseDetails> defendantNotificationCases = filterForDefendantWrittenRepExpired(writtenRepresentationCases);
         log.info("Job '{}' found {} written representation case(s) with defendant deadline expired",
                  externalTask.getTopicName(), defendantNotificationCases.size());
         defendantNotificationCases.forEach(this::fireEventForDeleteDefendantNotification);
+
+        // Change state for all cases where both deadlines have passed
+        claimantNotificationCases.stream().filter(caseDetails -> defendantNotificationCases.contains(caseDetails))
+            .forEach(this::fireEventForStateChange);
 
         List<CaseDetails> directionOrderCases = getDirectionOrderCaseReadyToJudgeRevisit();
         log.info("Job '{}' found {} direction order case(s)",

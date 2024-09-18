@@ -103,6 +103,7 @@ class GAJudgeRevisitTaskHandlerTest {
             Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
                 .writtenOption(SEQUENTIAL_REPRESENTATIONS)
                 .sequentialApplicantMustRespondWithin(LocalDate.now())
+                .writtenSequentailRepresentationsBy(LocalDate.now())
                 .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
         caseDetailRequestForInformation = CaseDetails.builder().id(4L).data(
             Map.of("judicialDecision", GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build(),
@@ -282,8 +283,8 @@ class GAJudgeRevisitTaskHandlerTest {
                          + " at [Source: UNKNOWN; byte offset: #UNKNOWN] "
                          + "(through reference chain: "
                          + "uk.gov.hmcts.reform.civil.model.CaseData[\"generalAppConsentOrder\"])",
-                     logsList.get(2).getMessage());
-        assertEquals(Level.ERROR, logsList.get(2).getLevel());
+                     logsList.get(3).getMessage());
+        assertEquals(Level.ERROR, logsList.get(3).getLevel());
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
@@ -385,6 +386,8 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -406,6 +409,8 @@ class GAJudgeRevisitTaskHandlerTest {
         gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
@@ -442,9 +447,11 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService)
-            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
-        verify(coreCaseDataService)
             .triggerEvent(3L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
@@ -456,6 +463,7 @@ class GAJudgeRevisitTaskHandlerTest {
             Map.of("judicialDecisionMakeAnOrderForWrittenRepresentations", GAJudicialWrittenRepresentations.builder()
                 .writtenOption(SEQUENTIAL_REPRESENTATIONS)
                 .sequentialApplicantMustRespondWithin(LocalDate.now().minusDays(1))
+                .writtenSequentailRepresentationsBy(LocalDate.now().minusDays(1))
                 .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
 
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
@@ -465,9 +473,11 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService)
-            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
-        verify(coreCaseDataService)
             .triggerEvent(3L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
     }
