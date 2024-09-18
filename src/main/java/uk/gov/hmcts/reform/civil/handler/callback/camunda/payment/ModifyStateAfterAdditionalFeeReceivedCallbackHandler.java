@@ -76,7 +76,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             updateDashboardTaskListAndNotification(callbackParams, getDashboardScenario(caseData), caseData.getParentCaseReference());
         }
 
-        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(), caseData.getCcdCaseReference().toString());
+        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(caseData), caseData.getCcdCaseReference().toString());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newCaseState)
@@ -100,7 +100,13 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         }
     }
 
-    private String getDashboardNotificationScenarioForApplicant() {
+    private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+        if (caseData.getIsGaApplicantLip() == YES
+            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)
+            && caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
+            return SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario();
+        }
+
         return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
     }
 
@@ -130,17 +136,11 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     }
 
     private String getDashboardScenario(CaseData caseData) {
-
-        if (caseData.getIsGaApplicantLip() == YES
-            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)
-            && caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
-            return SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario();
+        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
         } else if (caseData.getIsGaApplicantLip() == YES) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT.getScenario();
-        } else if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
         }
-
         return null;
     }
 }

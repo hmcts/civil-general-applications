@@ -292,7 +292,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
-            caseData.getParentCaseReference(),
+            caseData.getCcdCaseReference().toString(),
             SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
