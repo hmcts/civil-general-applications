@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +33,7 @@ public class RespondForInformationGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @Mock
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @Mock
     private DocumentGeneratorService documentGeneratorService;
     @InjectMocks
