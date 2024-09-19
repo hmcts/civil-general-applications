@@ -47,6 +47,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -294,6 +295,45 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         verify(dashboardApiClient).recordScenario(
             caseData.getCcdCaseReference().toString(),
             SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+    }
+
+    @Test
+    void shouldUpdateClaimantTaskListIfGaApplicantLipAndFeeIsPaidFullRemission() {
+
+        CaseData caseData = CaseData.builder()
+            .isMultiParty(NO)
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                          .email("test@gmail.com").organisationIdentifier("org1").build())
+            .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(YES)
+            .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
+                                          .builder()
+                                          .hwfFullRemissionGrantedForGa(YES).build())
+            .generalAppHelpWithFees(
+                HelpWithFees.builder()
+                    .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                    .helpWithFee(YES).build())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+
+        HashMap<String, Object> scenarioParams = new HashMap<>();
+
+        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+        when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
+        when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );

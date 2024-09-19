@@ -31,6 +31,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_DASHBOARD_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
 @ExtendWith(MockitoExtension.class)
 class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackHandlerTest {
@@ -108,5 +109,33 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
 
         }
 
+        @Test
+        void shouldRecordWhenLipApplicationIsFeePaidFullRemission() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            CaseData caseData = CaseData.builder()
+                .ccdCaseReference(123456L)
+                .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
+                                              .builder()
+                                              .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
+                .generalAppHelpWithFees(
+                    HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                        .helpWithFee(YesOrNo.YES).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(UPDATE_GA_DASHBOARD_NOTIFICATION.name())
+                    .build()
+            ).build();
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+
+        }
     }
 }

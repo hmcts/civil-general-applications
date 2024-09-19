@@ -36,6 +36,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
 @Slf4j
 @Service
@@ -102,9 +103,10 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
         if (caseData.getIsGaApplicantLip() == YES
-            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)
-            && caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
-            return SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario();
+            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
+            return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
+                ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
+                : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();
         }
 
         return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
