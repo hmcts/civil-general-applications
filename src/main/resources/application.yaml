@@ -99,7 +99,6 @@ idam:
 
 document_management:
   userRoles: "caseworker-civil,caseworker-civil-solicitor"
-  secured: true
 
 bankHolidays:
   api:

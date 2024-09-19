@@ -105,8 +105,8 @@ class GAResponseDeadlineTaskHandlerTest {
         List<ILoggingEvent> logsList = listAppender.list;
         assertEquals("Error in GAResponseDeadlineTaskHandler::fireEventForStateChange: "
                          + "feign.FeignException$FeignClientException: Unprocessable Entity",
-                     logsList.get(2).getMessage());
-        assertEquals(Level.ERROR, logsList.get(2).getLevel());
+                     logsList.get(4).getMessage());
+        assertEquals(Level.ERROR, logsList.get(4).getLevel());
         listAppender.stop();
     }
 
