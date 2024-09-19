@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.utils.DateUtils;
@@ -31,12 +32,26 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
 
+        if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING)) {
+
+            getGeneralAppListingForHearingDate(caseData).ifPresent(date -> {
+                params.put("hearingNoticeApplicationDateEn", DateUtils.formatDate(date));
+                params.put("hearingNoticeApplicationDateCy",
+                           DateUtils.formatDateInWelsh(date));
+            });
+
+        }
+
         if (caseData.getGeneralAppPBADetails() != null) {
             params.put("applicationFee",
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
         return params;
+    }
+
+    private static Optional<LocalDate> getGeneralAppListingForHearingDate(CaseData caseData) {
+        return Optional.ofNullable(caseData.getGaHearingNoticeDetail().getHearingDate());
     }
 
     private static Optional<LocalDate> getGeneralAppNotificationDeadlineDate(CaseData caseData) {
