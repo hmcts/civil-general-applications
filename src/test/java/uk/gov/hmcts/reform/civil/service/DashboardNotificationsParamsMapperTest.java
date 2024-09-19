@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +76,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfApplicationFeeIsRequested() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
@@ -91,6 +93,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfApplicationFeeIsRequestedAndIsPartAdmitted() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
@@ -111,6 +114,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndIsPartAdmitted() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
@@ -131,6 +135,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequested() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
