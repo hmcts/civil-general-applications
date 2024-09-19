@@ -21,12 +21,10 @@ import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.ca
  */
 public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
-    static String FLOW_STATE = "flowState";
-    static String FLOW_FLAGS = "flowFlags";
+    protected static String FLOW_STATE = "flowState";
+    protected static String FLOW_FLAGS = "flowFlags";
 
-
-
-    Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
+    protected static Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
 
     /**
      * Executed for each fetched and locked task.
