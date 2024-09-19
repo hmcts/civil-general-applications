@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,7 +64,7 @@ class FreeFormOrderGeneratorTest {
             .build();
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
 
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
