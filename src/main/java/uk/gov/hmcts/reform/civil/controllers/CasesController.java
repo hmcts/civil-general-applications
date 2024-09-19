@@ -109,7 +109,9 @@ public class CasesController {
                         "data.generalAppInformOtherParty.isWithNotice",
                         "data.generalAppRespondentAgreement.hasAgreed",
                         "data.parentClaimantIsApplicant",
-                        "data.applicationIsUncloakedOnce"),
+                        "data.applicationIsUncloakedOnce",
+                        "data.judicialDecisionRequestMoreInfo",
+                        "data.generalAppPBADetails"),
                 0
         ), authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
