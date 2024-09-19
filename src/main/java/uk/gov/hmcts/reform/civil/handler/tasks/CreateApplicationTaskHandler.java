@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -41,49 +44,25 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2Solic
 
 @RequiredArgsConstructor
 @Component
-public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
-    private static final String GENERAL_APPLICATIONS = "generalApplications";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT = "claimantGaAppDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
-    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private CaseData data;
     private CaseData generalAppCaseData;
-    private List<Element<GeneralApplication>> generalApplications;
-    private List<Element<GeneralApplicationsDetails>> judgeApplications;
-    private List<Element<GeneralApplicationsDetails>> applications;
-    private List<Element<GADetailsRespondentSol>> respondentSpecficGADetails;
-    private List<Element<GADetailsRespondentSol>> respondentTwoSpecficGADetails;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
-
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-
-        generalApplications = caseData.getGeneralApplications();
-
-        judgeApplications =
-            ofNullable(caseData.getGaDetailsMasterCollection()).orElse(newArrayList());
-
-        applications =
-            ofNullable(caseData.getClaimantGaAppDetails()).orElse(newArrayList());
-
-        respondentSpecficGADetails =
-            ofNullable(caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
-
-        respondentTwoSpecficGADetails =
-            ofNullable(caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
+        var generalApplications = caseData.getGeneralApplications();
 
         if (generalApplications != null && !generalApplications.isEmpty()) {
 
@@ -100,25 +79,26 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
                 createGeneralApplicationCase(caseId, generalApplication);
                 updateParentCaseGeneralApplication(variables, generalApplication);
 
-                withoutNoticeNoConsent(generalApplication, caseData);
+                caseData = withoutNoticeNoConsent(generalApplication, caseData);
 
             }
         }
 
-        data = coreCaseDataService.submitUpdate(caseId, coreCaseDataService.caseDataContentFromStartEventResponse(
-            startEventResponse, getUpdatedCaseData(caseData, generalApplications,
-                                                   applications,
-                                                   respondentSpecficGADetails,
-                                                   respondentTwoSpecficGADetails,
-                                                   judgeApplications)));
+        return Optional.of(coreCaseDataService.submitUpdate(caseId,
+                                                            coreCaseDataService.caseDataContentFromStartEventResponse(
+                                                                startEventResponse,
+                                                                caseData.toMap(mapper))));
     }
 
-    private void withoutNoticeNoConsent(GeneralApplication generalApplication, CaseData caseData) {
+    private CaseData withoutNoticeNoConsent(GeneralApplication generalApplication,
+                                            CaseData caseData) {
 
         /*
          * Add the case to applicant solicitor collection if parent claimant is applicant
          * Hide the case if parent claimant isn't GA applicant and initiate without notice application
          * */
+        var applications = ofNullable(caseData.getClaimantGaAppDetails()).orElse(newArrayList());
+
         if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
             applications = addApplication(
                     buildApplication(generalApplication),
@@ -129,6 +109,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         /*
          * Add the GA in respondent one collection if he/she initiate without notice application.
          * */
+
+        var respondentSpecficGADetails =
+            ofNullable(caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
 
         if (generalApplication.getGeneralAppApplnSolicitor() != null
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier() != null
@@ -146,6 +129,9 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
         /*
          * Add the GA in respondent one collection if he/she initiate without notice application, and he is Lip.
          * */
+
+        var respondentTwoSpecficGADetails =
+            ofNullable(caseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
         if (generalApplication.getGeneralAppApplnSolicitor() != null
                 && featureToggleService.isGaForLipsEnabled()
                 && generalApplication.getParentClaimantIsApplicant().equals(NO)
@@ -177,6 +163,13 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             }
         }
 
+        var data = caseData.toBuilder()
+            .claimantGaAppDetails(applications)
+            .respondentSolGaAppDetails(respondentSpecficGADetails)
+            .respondentSolTwoGaAppDetails(respondentTwoSpecficGADetails)
+            .build();
+
+        return data;
     }
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication) {
@@ -252,7 +245,7 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             map.put("gaAddlDocClaimant", addlDoc);
             map.put("generalAppEvidenceDocument", null);
         }
-        generalAppCaseData = coreCaseDataService.createGeneralAppCase(map);
+        generalAppCaseData  = coreCaseDataService.createGeneralAppCase(map);
     }
 
     private String getTypesString(final GeneralApplication generalApplication) {
@@ -294,7 +287,8 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(Optional<CaseData> caseData) {
+        var data = caseData.orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
@@ -303,24 +297,5 @@ public class CreateApplicationTaskHandler implements BaseExternalTaskHandler {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());
         }
         return variables;
-    }
-
-    private Map<String, Object> getUpdatedCaseData(CaseData caseData,
-                                                   List<Element<GeneralApplication>> generalApplications,
-                                                   List<Element<GeneralApplicationsDetails>>
-                                                       claimantGaAppDetails,
-                                                   List<Element<GADetailsRespondentSol>>
-                                                       respondentSolGaAppDetails,
-                                                   List<Element<GADetailsRespondentSol>>
-                                                       respondentSolTwoGaAppDetails,
-                                                   List<Element<GeneralApplicationsDetails>>
-                                                       judgeApplications) {
-        Map<String, Object> output = caseData.toMap(mapper);
-        output.put(GENERAL_APPLICATIONS, generalApplications);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_CLAIMANT, claimantGaAppDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
-        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, judgeApplications);
-        return output;
     }
 }

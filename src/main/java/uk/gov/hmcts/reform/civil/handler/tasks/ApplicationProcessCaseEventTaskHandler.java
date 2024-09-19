@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -20,20 +21,19 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskHandler {
+public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHandler {
 
-    private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private CaseData data;
+    private final CoreCaseDataService coreCaseDataService;
+    private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
@@ -42,16 +42,18 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
         BusinessProcess businessProcess = startEventData.getBusinessProcess();
         businessProcess.updateActivityId(externalTask.getActivityId());
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
-        data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        var data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        return Optional.ofNullable(data);
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(Optional<CaseData> data) {
+        var caseData = data.orElseThrow();
         VariableMap variables = Variables.createVariables();
-        var stateFlow = stateFlowEngine.evaluate(data);
+        var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
-        variables.putValue("generalAppParentCaseLink", data.getGeneralAppParentCaseLink().getCaseReference());
+        variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
         return variables;
     }
 

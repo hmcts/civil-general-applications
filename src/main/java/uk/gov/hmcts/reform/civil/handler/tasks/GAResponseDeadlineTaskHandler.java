@@ -7,10 +7,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
@@ -20,7 +22,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESP
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${response.deadline.check.event.emitter.enabled:true}")
-public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
+public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -29,11 +31,13 @@ public class GAResponseDeadlineTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         List<CaseDetails> cases = getAwaitingResponseCasesThatArePastDueDate();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+
+        return Optional.empty();
     }
 
     private void fireEventForStateChange(CaseDetails caseDetails) {

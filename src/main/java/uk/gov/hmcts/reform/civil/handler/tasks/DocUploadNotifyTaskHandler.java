@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.service.search.EvidenceUploadNotificationSearch
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,19 +19,20 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class DocUploadNotifyTaskHandler implements BaseExternalTaskHandler {
+public class DocUploadNotifyTaskHandler extends BaseExternalTaskHandler {
 
     private final EvidenceUploadNotificationSearchService caseSearchService;
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         List<CaseData> cases = caseSearchService.getApplications().stream()
                 .map(caseDetailsConverter::toCaseData).toList();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+        return Optional.empty();
     }
 
     private void fireEventForStateChange(CaseData caseData) {

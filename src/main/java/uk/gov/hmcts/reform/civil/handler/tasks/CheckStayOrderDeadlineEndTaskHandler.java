@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static java.time.LocalDate.now;
@@ -29,7 +30,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.stayOrder.event.emitter.enabled:true}")
-public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
+public class CheckStayOrderDeadlineEndTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -39,11 +40,12 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         List<CaseData> cases = getOrderMadeCasesThatAreEndingToday();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+        return Optional.empty();
     }
 
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {

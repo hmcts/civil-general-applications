@@ -7,11 +7,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
@@ -25,7 +27,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.check.event.emitter.enabled:true}")
-public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
+public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseStateSearchService;
 
@@ -34,7 +36,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         List<CaseDetails> writtenRepresentationCases = getWrittenRepCaseReadyToJudgeRevisit();
         log.info("Job '{}' found {} written representation case(s)",
                  externalTask.getTopicName(), writtenRepresentationCases.size());
@@ -49,6 +51,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         log.info("Job '{}' found {} request for information case(s)",
                  externalTask.getTopicName(), requestForInformationCases.size());
         requestForInformationCases.forEach(this::fireEventForStateChange);
+
+        return Optional.empty();
     }
 
     protected void fireEventForStateChange(CaseDetails caseDetails) {

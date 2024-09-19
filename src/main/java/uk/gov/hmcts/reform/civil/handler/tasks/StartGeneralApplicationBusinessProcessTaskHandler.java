@@ -19,10 +19,11 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseExternalTaskHandler {
+public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExternalTaskHandler {
 
     public static final String BUSINESS_PROCESS = "businessProcess";
     private final CoreCaseDataService coreCaseDataService;
@@ -33,7 +34,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
     private VariableMap variables;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         CaseData caseData = startGeneralApplicationBusinessProcess(externalTask);
         variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(caseData);
@@ -42,10 +43,11 @@ public class StartGeneralApplicationBusinessProcessTaskHandler implements BaseEx
         if (caseData.getGeneralAppParentCaseLink() != null) {
             variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
         }
+        return Optional.of(caseData);
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(Optional<CaseData> data) {
         return variables;
     }
 

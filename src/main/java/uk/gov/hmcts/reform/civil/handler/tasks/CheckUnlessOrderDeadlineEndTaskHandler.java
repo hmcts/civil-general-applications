@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE;
@@ -26,7 +27,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.unlessOrder.event.emitter.enabled:true}")
-public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
+public class CheckUnlessOrderDeadlineEndTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -36,11 +37,12 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public Optional<CaseData> handleTask(ExternalTask externalTask) {
         List<CaseData> cases = getUnlessOrderCasesThatAreEndingToday();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+        return Optional.empty();
     }
 
     private List<CaseData> getUnlessOrderCasesThatAreEndingToday() {
