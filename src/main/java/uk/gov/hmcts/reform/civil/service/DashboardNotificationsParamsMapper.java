@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
@@ -30,11 +31,13 @@ public class DashboardNotificationsParamsMapper {
         //ToDo: refactor below string to allow for notifications that do not require additional params
         params.put("testRef", "string");
 
-        if (caseData.getHwfFeeType() != null) {
-            if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
+        if (caseData.getHwfFeeType() != null || caseData.getGeneralAppType() != null) {
+            if (FeeType.APPLICATION == caseData.getHwfFeeType()
+            || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "application");
                 params.put("applicationFeeTypeCy", "cais");
-            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
+            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()
+                || caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "additional application");
                 params.put("applicationFeeTypeCy", "cais ychwanegol");
             }
