@@ -6,6 +6,7 @@ import org.camunda.bpm.client.task.ExternalTask;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 import static java.time.LocalDateTime.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPONDENT_RESPONSE_DEADLINE_CHECK;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @Slf4j
@@ -35,9 +37,24 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
         List<CaseDetails> cases = getAwaitingResponseCasesThatArePastDueDate();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
+        cases.forEach(this::deleteDashboardNotifications);
         cases.forEach(this::fireEventForStateChange);
 
         return Optional.empty();
+    }
+
+    private void deleteDashboardNotifications(CaseDetails caseDetails) {
+        Long caseId = caseDetails.getId();
+        CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
+        log.info("Firing Event to delete dashboard notification caseId: {}", caseId);
+        if (YesOrNo.YES == caseData.getIsGaApplicantLip() || YesOrNo.YES == caseData.getIsGaRespondentOneLip()) {
+            try {
+                log.info("calling triggerEvent");
+                coreCaseDataService.triggerEvent(caseId, RESPONDENT_RESPONSE_DEADLINE_CHECK);
+            } catch (Exception e) {
+                log.error("Error in GAResponseDeadlineTaskHandler::deleteDashboardNotifications: " + e);
+            }
+        }
     }
 
     private void fireEventForStateChange(CaseDetails caseDetails) {
