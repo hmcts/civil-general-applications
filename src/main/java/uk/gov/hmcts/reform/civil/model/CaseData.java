@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
@@ -368,25 +367,12 @@ public class CaseData implements MappableObject {
             .filter(urgency -> urgency == YES)
             .isPresent();
     }
-    @JsonIgnore
-    public boolean isJudicialDecision() {
-        return this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
-            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
-    }
-
-    @JsonIgnore
-    public boolean isApplicationApprovedOrEditOrDismiss() {
-        if (!Objects.nonNull(this.getJudicialDecisionMakeOrder()))
-            return false;
-        GAJudgeMakeAnOrderOption.valueOf(this.getJudicialDecisionMakeOrder().getMakeAnOrder().toString());
-        return true;
-    }
 
     @JsonIgnore
     public boolean judgeHasMadeAnOrder() {
-        return (this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
-            && this.isApplicationApprovedOrEditOrDismiss())
-            || (this.isJudicialDecision());
+        return (Objects.nonNull(this.getJudicialDecision())
+            && this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
+            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING));
     }
-
 }
