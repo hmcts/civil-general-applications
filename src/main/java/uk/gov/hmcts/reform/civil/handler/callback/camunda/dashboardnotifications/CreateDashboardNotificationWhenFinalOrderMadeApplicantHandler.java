@@ -14,6 +14,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 
 @Service
 public class CreateDashboardNotificationWhenFinalOrderMadeApplicantHandler extends DashboardCallbackHandler {
+
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_APPLICANT_DASHBOARD_NOTIFICATION_ORDER_MADE);
 
     public CreateDashboardNotificationWhenFinalOrderMadeApplicantHandler(DashboardApiClient dashboardApiClient,

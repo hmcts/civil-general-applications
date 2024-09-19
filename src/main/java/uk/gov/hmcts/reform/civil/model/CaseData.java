@@ -370,8 +370,8 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public boolean judgeHasMadeAnOrder() {
-        return (Objects.nonNull(this.getJudicialDecision())
-            && this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+        return (Objects.nonNull(this.getJudicialDecision()))
+            && (this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
             || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
             || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING));
     }

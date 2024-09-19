@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeApplication;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -363,40 +362,9 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             verifyNoInteractions(dashboardApiClient);
         }
 
-        @Test
-        void shouldRecordOrderMadeRespondentScenarioWhenAppIsWithNoticeInvoked() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .applicationIsUncloakedOnce(YesOrNo.YES)
-                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder().makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
-                .build();
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
-                    .build()
-            ).build();
-
-            handler.handle(params);
-            verify(dashboardApiClient).recordScenario(
-                caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT.getScenario(),
-                "BEARER_TOKEN",
-                ScenarioRequestParams.builder().params(scenarioParams).build()
-            );
-        }
-
         @ParameterizedTest
         @MethodSource("provideOrderType")
-        void shouldRecordOrderMadeRespondentScenarioWhenInvoked_isWIthNoticeAPplication(GAJudgeDecisionOption decisionOption, GAJudgeMakeAnOrderOption orderOption) {
+        void shouldRecordOrderMadeRespondentScenarioWhenInvoked_isWIthNoticeApplication(GAJudgeDecisionOption decisionOption, GAJudgeMakeAnOrderOption orderOption) {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())

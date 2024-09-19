@@ -13,6 +13,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT;
 
 public class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler extends DashboardCallbackHandler {
+
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE);
 
     public CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler(DashboardApiClient dashboardApiClient,
