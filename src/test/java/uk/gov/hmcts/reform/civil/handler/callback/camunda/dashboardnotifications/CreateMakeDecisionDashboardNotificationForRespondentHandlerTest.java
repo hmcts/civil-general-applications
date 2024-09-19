@@ -84,7 +84,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -108,7 +107,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
 
         @Test
         void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withoutNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
@@ -116,7 +115,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                     GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -143,7 +141,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                     GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
@@ -159,14 +156,13 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
 
         @Test
         void shouldRecordApplicationUncloakedRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withoutNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .applicationIsUncloakedOnce(YesOrNo.YES)
                 .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
-                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
