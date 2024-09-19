@@ -79,7 +79,6 @@ public class DashboardNotificationsParamsMapperTest {
         assertFalse(result.containsKey("applicationFee"));
     }
 
-
     @Test
     void shouldMapAllParametersWhenIsRequestedForHearingScheduled() {
 

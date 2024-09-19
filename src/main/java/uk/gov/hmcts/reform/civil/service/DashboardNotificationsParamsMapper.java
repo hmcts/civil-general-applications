@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -33,13 +32,14 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
 
-        if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING)
-            && Objects.nonNull(caseData.getGaHearingNoticeDetail())) {
+        if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING)) {
 
-            params.put("hearingNoticeApplicationDateEn", DateUtils.formatDate(caseData.getGaHearingNoticeDetail()
-                                                                                  .getHearingDate()));
-            params.put("hearingNoticeApplicationDateCy",
-                       DateUtils.formatDateInWelsh(caseData.getGaHearingNoticeDetail().getHearingDate()));
+            getGeneralAppListingForHearingDate(caseData).ifPresent(date -> {
+                params.put("hearingNoticeApplicationDateEn", DateUtils.formatDate(date));
+                params.put("hearingNoticeApplicationDateCy",
+                           DateUtils.formatDateInWelsh(date));
+            });
+
         }
 
         if (caseData.getGeneralAppPBADetails() != null) {
@@ -48,6 +48,10 @@ public class DashboardNotificationsParamsMapper {
         }
 
         return params;
+    }
+
+    private static Optional<LocalDate> getGeneralAppListingForHearingDate(CaseData caseData) {
+        return Optional.ofNullable(caseData.getGaHearingNoticeDetail().getHearingDate());
     }
 
     private static Optional<LocalDate> getGeneralAppNotificationDeadlineDate(CaseData caseData) {
