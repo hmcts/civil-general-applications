@@ -77,8 +77,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Data
 @Builder(toBuilder = true)
@@ -336,6 +338,7 @@ public class CaseData implements MappableObject {
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
     private String generalAppAddlnInfoText;
     private String generalAppWrittenRepText;
+    private YesOrNo respondentResponseDeadlineChecked;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -358,6 +361,13 @@ public class CaseData implements MappableObject {
             || businessProcess.getStatus() == FINISHED;
     }
 
+    @JsonIgnore
+    public boolean isUrgent() {
+        return Optional.ofNullable(this.getGeneralAppUrgencyRequirement())
+            .map(GAUrgencyRequirement::getGeneralAppUrgency)
+            .filter(urgency -> urgency == YES)
+            .isPresent();
+    }
     @JsonIgnore
     public boolean isJudicialDecision() {
         return this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
