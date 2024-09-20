@@ -419,6 +419,7 @@ public class CaseDataBuilder {
             .ccdCaseReference(1644495739087775L)
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppPBADetails(
                 GAPbaDetails.builder()
@@ -1279,4 +1280,17 @@ public class CaseDataBuilder {
                 .value(location1).build();
     }
 
+    public CaseData buildJudicialDecisionRequestMoreInfo() {
+        return CaseData.builder()
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.of(2024, 9, 04)).build()).build();
+    }
+
+    public CaseData buildCaseWorkerHearingScheduledInfo() {
+        return CaseData.builder()
+            .ccdState(LISTING_FOR_A_HEARING)
+            .gaHearingNoticeDetail(GAHearingNoticeDetail.builder().hearingDate(
+                (LocalDate.of(2024, 9, 04))).build()).build();
+    }
 }
