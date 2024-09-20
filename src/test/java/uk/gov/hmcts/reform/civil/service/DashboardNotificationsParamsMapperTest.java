@@ -78,6 +78,7 @@ public class DashboardNotificationsParamsMapperTest {
         LocalDate claimantDate = LocalDate.of(2024, 3, 1);
         LocalDate defendantDate = LocalDate.of(2024, 3, 2);
         caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .parentClaimantIsApplicant(YesOrNo.YES)
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
@@ -99,6 +100,7 @@ public class DashboardNotificationsParamsMapperTest {
         LocalDate claimantDate = LocalDate.of(2024, 3, 1);
         LocalDate defendantDate = LocalDate.of(2024, 3, 2);
         caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .parentClaimantIsApplicant(YesOrNo.NO)
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
@@ -119,6 +121,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapWrittenRepConcurrentDeadlinesWhenIsRequested() {
         LocalDate date = LocalDate.of(2024, 3, 1);
         caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .judicialDecisionMakeAnOrderForWrittenRepresentations(
                 GAJudicialWrittenRepresentations.builder()
                     .writtenOption(GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS)
