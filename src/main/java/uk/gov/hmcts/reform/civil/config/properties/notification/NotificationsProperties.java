@@ -99,4 +99,15 @@ public class NotificationsProperties {
     @NotEmpty
     private String notifyApplicantForHwfPaymentOutcome;
 
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeededWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfNoRemissionWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemissionBilingual;
+
 }
