@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -45,6 +46,7 @@ public class DashboardNotificationsParamsMapperTest {
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppNotificationDeadlineDate(deadline)
+            .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .generalAppPBADetails(
                 GAPbaDetails.builder()
                     .fee(
@@ -75,5 +77,23 @@ public class DashboardNotificationsParamsMapperTest {
         assertFalse(result.containsKey("applicationFee"));
         assertFalse(result.containsKey("judgeRequestMoreInfoByDateEn"));
         assertFalse(result.containsKey("applicationFee"));
+    }
+
+    @Test
+    void shouldMapAllParametersWhenIsRequestedForHearingScheduled() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildCaseWorkerHearingScheduledInfo();
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+        assertThat(result).extracting("hearingNoticeApplicationDateEn").isEqualTo("4 September 2024");
+        assertThat(result).extracting("hearingNoticeApplicationDateCy").isEqualTo("4 Medi 2024");
+    }
+
+    @Test
+    void shouldNotMapCaseworkerHearingDateInfoDateNotPresent() {
+
+        CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        caseData = caseData.toBuilder().generalAppPBADetails(null).build();
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+        assertFalse(result.containsKey("hearingNoticeApplicationDateEn"));
     }
 }
