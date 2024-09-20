@@ -133,7 +133,6 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("writtenRepRespondentDeadlineDateCy").isEqualTo("1 Mawrth 2024");
     }
 
-
     @Test
     void shouldMapParametersWhenHwfApplicationFeeIsRequested() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
