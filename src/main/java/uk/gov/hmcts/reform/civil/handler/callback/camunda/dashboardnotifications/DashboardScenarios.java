@@ -26,7 +26,6 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_MORE_INFORMATION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.MoreInfoRequired.Applicant");
 
-
     private final String scenario;
 
     DashboardScenarios(String scenario) {
