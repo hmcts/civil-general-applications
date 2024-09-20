@@ -54,10 +54,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
                 && caseData.getGaHearingNoticeDetail() != null) {
 
                 return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT.getScenario();
-            } else if (caseData.getJudicialDecisionRequestMoreInfo() != null
-                && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-                || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
             }
             if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
                 && caseData.getJudicialDecision() != null
