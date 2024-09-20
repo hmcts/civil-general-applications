@@ -78,6 +78,7 @@ public class DashboardNotificationsParamsMapperTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.APPLICATION)
+            .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -94,6 +95,7 @@ public class DashboardNotificationsParamsMapperTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
+            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
