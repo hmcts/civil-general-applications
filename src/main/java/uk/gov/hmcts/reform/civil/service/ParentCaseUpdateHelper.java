@@ -167,9 +167,7 @@ public class ParentCaseUpdateHelper {
 
         List<Element<GeneralApplication>> civilGeneralApplications = caseData.getGeneralApplications();
 
-        if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
-            if (!isEmpty(civilGeneralApplications)) {
-
+        if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED) && !isEmpty(civilGeneralApplications)) {
                 List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
                     .filter(app -> app.getValue().getCaseLink() != null && !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .toList();
@@ -188,9 +186,7 @@ public class ParentCaseUpdateHelper {
                         buildGeneralApplication(generalApplication),
                         generalApplicationsList
                     );
-
             }
-        }
 
         Map<String, Object> updateMap = getUpdatedCaseData(caseData, civilGeneralApplications, generalApplications,
                 respondentSpecficGADetails,
