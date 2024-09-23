@@ -358,11 +358,11 @@ public class CaseData implements MappableObject {
     public boolean isApplicantBilingual(YesOrNo parentClaimant) {
         if (YES.equals(parentClaimant)) {
             return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.getDisplayedValue());
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
         } else {
             return Objects.nonNull(respondent1LiPResponse)
                 && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.getDisplayedValue());
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
         }
     }
 
@@ -371,10 +371,10 @@ public class CaseData implements MappableObject {
         if (YES.equals(parentClaimant)) {
             return Objects.nonNull(respondent1LiPResponse)
                 && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.getDisplayedValue());
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
         } else {
             return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.getDisplayedValue());
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
         }
     }
 
