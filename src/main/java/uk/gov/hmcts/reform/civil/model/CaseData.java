@@ -353,8 +353,8 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
-    public boolean isApplicantBilingual() {
-        if (YES.equals(parentClaimantIsApplicant)) {
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
             return Objects.nonNull(claimantBilingualLanguagePreference)
                 && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.getDisplayedValue());
         } else {
@@ -365,8 +365,8 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
-    public boolean isRespondentBilingual() {
-        if (YES.equals(parentClaimantIsApplicant)) {
+    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
             return Objects.nonNull(respondent1LiPResponse)
                 && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
                 && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.getDisplayedValue());

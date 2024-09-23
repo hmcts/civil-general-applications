@@ -57,7 +57,7 @@ public class HwfNotificationService implements NotificationData {
         this.event = event;
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                civilCaseData.isApplicantBilingual() ? getTemplateBilingual(event) : getTemplate(event),
+                civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ? getTemplateBilingual(event) : getTemplate(event),
                 addProperties(caseData),
                 caseData.getGeneralAppParentCaseLink().getCaseReference()
         );
