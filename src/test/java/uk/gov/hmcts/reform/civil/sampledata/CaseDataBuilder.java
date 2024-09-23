@@ -372,6 +372,7 @@ public class CaseDataBuilder {
             .ccdState(ccdState)
             .applicantPartyName(applicantPartyName)
             .claimant1PartyName(claimant1PartyName)
+            .caseNameGaInternal("applicant v respondent")
             .defendant1PartyName(defendant1PartyName)
             .isGaRespondentOneLip(isGaRespondentOneLip)
             .isGaRespondentTwoLip(isGaRespondentTwoLip)
