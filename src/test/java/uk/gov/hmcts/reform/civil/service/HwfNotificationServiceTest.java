@@ -12,18 +12,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.APPLICANT_NAME;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CASE_REFERENCE;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CASE_TITLE;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.CLAIMANT_NAME;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.FEE_AMOUNT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DATE;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_MORE_INFO_DOCUMENTS;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HWF_REFERENCE_NUMBER;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.NO_REMISSION_REASONS;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.PART_AMOUNT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.REMAINING_AMOUNT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.TYPE_OF_FEE;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.*;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 
@@ -68,6 +57,12 @@ public class HwfNotificationServiceTest {
     private static final String EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION = "test-hwf-partialRemission-id";
     private static final String EMAIL_TEMPLATE_NO_REMISSION = "test-hwf-noRemission-id";
     private static final String EMAIL_TEMPLATE_HWF_PAYMENT_OUTCOME = "test-hwf-paymentoutcome-id";
+    private static final String EMAIL_TEMPLATE_MORE_INFO_HWF_BILINGUAL = "test-hwf-more-info-bilingual-id";
+    private static final String EMAIL_TEMPLATE_INVALID_HWF_REFERENCE_BILINGUAL = "test-hwf-invalidrefnumber-bilingual-id";
+    private static final String EMAIL_TEMPLATE_UPDATE_REF_NUMBER_BILINGUAL = "test-hwf-updaterefnumber-bilingual-id";
+    private static final String EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION_BILINGUAL = "test-hwf-partialRemission-bilingual-id";
+    private static final String EMAIL_TEMPLATE_NO_REMISSION_BILINGUAL = "test-hwf-noremission-bilingual-id";
+    private static final String EMAIL_TEMPLATE_HWF_PAYMENT_OUTCOME_BILINGUAL = "test-hwf-feePayment-outcome-bilingual-id";
     private static final String EMAIL = "test@email.com";
     private static final String APPLICANT = "Mr. John Rambo";
     private static final String CLAIMANT = "Mr. John Rambo";
@@ -146,6 +141,17 @@ public class HwfNotificationServiceTest {
             EMAIL_TEMPLATE_NO_REMISSION);
         when(notificationsProperties.getNotifyApplicantForHwfPaymentOutcome()).thenReturn(
                 EMAIL_TEMPLATE_HWF_PAYMENT_OUTCOME);
+
+        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeededWelsh()).thenReturn(
+            EMAIL_TEMPLATE_MORE_INFO_HWF_BILINGUAL);
+        when(notificationsProperties.getNotifyApplicantForHwfUpdateRefNumberBilingual()).thenReturn(
+            EMAIL_TEMPLATE_UPDATE_REF_NUMBER_BILINGUAL);
+        when(notificationsProperties.getNotifyApplicantForHwfInvalidRefNumberBilingual()).thenReturn(
+            EMAIL_TEMPLATE_INVALID_HWF_REFERENCE_BILINGUAL);
+        when(notificationsProperties.getNotifyApplicantForHwfPartialRemissionBilingual()).thenReturn(
+            EMAIL_TEMPLATE_HWF_PARTIAL_REMISSION_BILINGUAL);
+        when(notificationsProperties.getNotifyApplicantForHwfNoRemissionWelsh()).thenReturn(
+            EMAIL_TEMPLATE_NO_REMISSION_BILINGUAL);
     }
 
     @Test
@@ -160,6 +166,7 @@ public class HwfNotificationServiceTest {
                                 getMoreInformationDocumentList()).build())
                 .gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
 
@@ -185,7 +192,7 @@ public class HwfNotificationServiceTest {
                 .additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
-
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
 
@@ -208,7 +215,9 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
                 HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentListString(),
+                HWF_MORE_INFO_DOCUMENTS_WELSH, getMoreInformationDocumentListStringWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE
         );
     }
@@ -219,7 +228,9 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
                 HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentListString(),
+                HWF_MORE_INFO_DOCUMENTS_WELSH, getMoreInformationDocumentListStringWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE
         );
     }
@@ -239,6 +250,21 @@ public class HwfNotificationServiceTest {
         return documentList.toString();
     }
 
+    private String getMoreInformationDocumentListStringWelsh() {
+        List<HwFMoreInfoRequiredDocuments> list = getMoreInformationDocumentList();
+        StringBuilder documentList = new StringBuilder();
+        for (HwFMoreInfoRequiredDocuments doc : list) {
+            documentList.append(doc.getNameBilingual());
+            if (!doc.getDescriptionBilingual().isEmpty()) {
+                documentList.append(" - ");
+                documentList.append(doc.getDescriptionBilingual());
+            }
+            documentList.append("\n");
+            documentList.append("\n");
+        }
+        return documentList.toString();
+    }
+
     @Test
     void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_ClaimIssued() {
         // Given
@@ -247,9 +273,9 @@ public class HwfNotificationServiceTest {
                 .build();
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -267,9 +293,9 @@ public class HwfNotificationServiceTest {
                 .build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -288,9 +314,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -310,9 +336,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -327,6 +353,7 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE
         );
     }
@@ -336,6 +363,7 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE
         );
     }
@@ -352,9 +380,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -376,9 +404,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -398,9 +426,9 @@ public class HwfNotificationServiceTest {
             .build();
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
             EMAIL,
@@ -420,9 +448,9 @@ public class HwfNotificationServiceTest {
             .build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
             EMAIL,
@@ -437,9 +465,11 @@ public class HwfNotificationServiceTest {
             CLAIMANT_NAME, APPLICANT,
             CASE_REFERENCE, GA_REFERENCE,
             TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+            TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
             FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
-            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel()
+            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
+            NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
     }
 
@@ -448,9 +478,11 @@ public class HwfNotificationServiceTest {
             CLAIMANT_NAME, APPLICANT,
             CASE_REFERENCE, GA_REFERENCE,
             TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+            TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
             FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
-            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel()
+            NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
+            NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
     }
 
@@ -459,6 +491,7 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
                 REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
@@ -470,6 +503,7 @@ public class HwfNotificationServiceTest {
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
+                TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
                 REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
@@ -488,9 +522,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -512,9 +546,9 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
         // When
         service.sendNotification(caseData);
-
         // Then
         verify(notificationService, times(1)).sendMail(
                 EMAIL,
@@ -529,6 +563,7 @@ public class HwfNotificationServiceTest {
             CLAIMANT_NAME, APPLICANT,
             CASE_REFERENCE, GA_REFERENCE,
             TYPE_OF_FEE, feeType.getLabel(),
+            TYPE_OF_FEE_WELSH, feeType.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
             CASE_TITLE, "Mr. John Rambo v Mr. Joe Doe",
             APPLICANT_NAME, "Mr. John Rambo"
