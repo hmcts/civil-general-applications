@@ -34,6 +34,8 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         + " until this fee is paid.</p>"
         + "%n%n To pay this fee, click the link below, or else open your application from the"
         + " Applications tab of this case listing and then click on the service request tab."
+        + "%n%n If necessary, all documents relating to this application, including any response from the court, will be translated."
+        + " You will be notified when these are available."
         + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
 
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
