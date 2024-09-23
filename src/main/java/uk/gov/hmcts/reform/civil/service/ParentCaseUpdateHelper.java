@@ -171,13 +171,13 @@ public class ParentCaseUpdateHelper {
             if (!isEmpty(civilGeneralApplications)) {
 
                 List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
-                    .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                    .filter(app -> app.getValue().getCaseLink() != null && !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .toList();
                 Optional<Element<GeneralApplication>> newApplicationElement = civilGeneralApplications.stream()
-                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                    .filter(app -> app.getValue().getCaseLink() != null && app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .findFirst();
                 GeneralApplication generalApplication = civilGeneralApplications.stream()
-                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
+                    .filter(app -> app.getValue().getCaseLink() != null && app.getValue().getCaseLink().getCaseReference().equals(applicationId))
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue();
