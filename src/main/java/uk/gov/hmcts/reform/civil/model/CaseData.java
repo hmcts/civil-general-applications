@@ -336,6 +336,7 @@ public class CaseData implements MappableObject {
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
     private String generalAppAddlnInfoText;
     private String generalAppWrittenRepText;
+    private YesOrNo respondentResponseDeadlineChecked;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -356,6 +357,14 @@ public class CaseData implements MappableObject {
         return businessProcess == null
             || businessProcess.getStatus() == null
             || businessProcess.getStatus() == FINISHED;
+    }
+
+    @JsonIgnore
+    public boolean isUrgent() {
+        return Optional.ofNullable(this.getGeneralAppUrgencyRequirement())
+            .map(GAUrgencyRequirement::getGeneralAppUrgency)
+            .filter(urgency -> urgency == YES)
+            .isPresent();
     }
 
     @JsonIgnore

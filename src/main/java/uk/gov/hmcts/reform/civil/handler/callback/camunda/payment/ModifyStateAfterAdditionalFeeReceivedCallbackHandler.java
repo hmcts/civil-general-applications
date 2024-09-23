@@ -34,6 +34,8 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
@@ -74,7 +76,10 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         if (caseData.getMakeAppVisibleToRespondents() != null
             || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId.toString());
-            updateDashboardTaskListAndNotification(callbackParams, getDashboardScenario(caseData), caseData.getParentCaseReference());
+            updateDashboardTaskListAndNotification(callbackParams, getDashboardScenario(caseData),
+                                                   caseData.getParentCaseReference());
+            updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationRespondentScenario(caseData),
+                                                   caseData.getCcdCaseReference().toString());
         }
 
         updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(caseData), caseData.getCcdCaseReference().toString());
@@ -145,4 +150,13 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         }
         return null;
     }
+
+    private String getDashboardNotificationRespondentScenario(CaseData caseData) {
+        if (caseData.isUrgent()) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT.getScenario();
+        } else {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT.getScenario();
+        }
+    }
+
 }

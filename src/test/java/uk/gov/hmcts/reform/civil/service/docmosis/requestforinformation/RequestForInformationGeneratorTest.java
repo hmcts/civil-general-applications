@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 
 import static java.time.LocalDate.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +45,7 @@ class RequestForInformationGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @Mock
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @Mock
     private DocumentGeneratorService documentGeneratorService;
     @InjectMocks
