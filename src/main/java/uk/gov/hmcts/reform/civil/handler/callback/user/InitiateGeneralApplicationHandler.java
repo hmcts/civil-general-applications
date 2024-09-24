@@ -92,7 +92,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
                                     + " Applications tab of this case listing and then click on the service request tab.");
 
-        if(featureToggleService.isGaForLipsEnabled()){
+        if (featureToggleService.isGaForLipsEnabled()) {
             bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
                                         + "including any response from the court, will be translated."
                                         + " You will be notified when these are available.");
