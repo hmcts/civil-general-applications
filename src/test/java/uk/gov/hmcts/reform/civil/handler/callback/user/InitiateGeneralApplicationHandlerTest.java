@@ -86,25 +86,6 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         return getReadyTestCaseData(caseData, multipleGenAppTypes, withOrWithoutConsent, withOrWithoutNotice);
     }
 
-    private String confirmationBodyBasedOnToggle(Boolean isGaForLipsEnabled) {
-        StringBuilder bodyConfirmation = new StringBuilder();
-        bodyConfirmation.append("<br/>");
-        bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
-                                    + " is now due for payment. Your application will not be processed further"
-                                    + " until this fee is paid.</p>");
-        bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
-                                    + " Applications tab of this case listing and then click on the service request tab.");
-
-        if(isGaForLipsEnabled){
-            bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
-                                        + "including any response from the court, will be translated."
-                                        + " You will be notified when these are available.");
-        }
-
-        bodyConfirmation.append("%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n");
-        return bodyConfirmation.toString();
-    }
-
     private CaseData getReadyTestCaseData(CaseData caseData,
                                           boolean multipleGenAppTypes,
                                           GARespondentOrderAgreement hasAgreed,
@@ -141,6 +122,25 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
                 .toBuilder()
                 .generalApplications(wrapElements(application))
                 .build();
+    }
+
+    private String confirmationBodyBasedOnToggle(Boolean isGaForLipsEnabled) {
+        StringBuilder bodyConfirmation = new StringBuilder();
+        bodyConfirmation.append("<br/>");
+        bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+                                    + " is now due for payment. Your application will not be processed further"
+                                    + " until this fee is paid.</p>");
+        bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
+                                    + " Applications tab of this case listing and then click on the service request tab.");
+
+        if (isGaForLipsEnabled) {
+            bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
+                                        + "including any response from the court, will be translated."
+                                        + " You will be notified when these are available.");
+        }
+
+        bodyConfirmation.append("%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n");
+        return bodyConfirmation.toString();
     }
 
     @Nested
