@@ -167,29 +167,28 @@ public class ParentCaseUpdateHelper {
 
         List<Element<GeneralApplication>> civilGeneralApplications = caseData.getGeneralApplications();
 
-        if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
-            if (!isEmpty(civilGeneralApplications)) {
+        if (generalAppCaseData.getCcdState().equals(PENDING_APPLICATION_ISSUED) && !isEmpty(civilGeneralApplications)) {
+            List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
+                .filter(app -> app.getValue().getCaseLink() != null && !app.getValue().getCaseLink().getCaseReference().equals(
+                    applicationId))
+                .toList();
+            Optional<Element<GeneralApplication>> newApplicationElement = civilGeneralApplications.stream()
+                .filter(app -> app.getValue().getCaseLink() != null && app.getValue().getCaseLink().getCaseReference().equals(
+                    applicationId))
+                .findFirst();
+            GeneralApplication generalApplication = civilGeneralApplications.stream()
+                .filter(app -> app.getValue().getCaseLink() != null && app.getValue().getCaseLink().getCaseReference().equals(
+                    applicationId))
+                .findAny()
+                .orElseThrow(IllegalArgumentException::new)
+                .getValue();
 
-                List<Element<GeneralApplication>> generalApplicationsList = civilGeneralApplications.stream()
-                    .filter(app -> !app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                    .toList();
-                Optional<Element<GeneralApplication>> newApplicationElement = civilGeneralApplications.stream()
-                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                    .findFirst();
-                GeneralApplication generalApplication = civilGeneralApplications.stream()
-                    .filter(app -> app.getValue().getCaseLink().getCaseReference().equals(applicationId))
-                    .findAny()
-                    .orElseThrow(IllegalArgumentException::new)
-                    .getValue();
-
-                civilGeneralApplications =
-                    addApplication(
-                        newApplicationElement,
-                        buildGeneralApplication(generalApplication),
-                        generalApplicationsList
-                    );
-
-            }
+            civilGeneralApplications =
+                addApplication(
+                    newApplicationElement,
+                    buildGeneralApplication(generalApplication),
+                    generalApplicationsList
+                );
         }
 
         Map<String, Object> updateMap = getUpdatedCaseData(caseData, civilGeneralApplications, generalApplications,
