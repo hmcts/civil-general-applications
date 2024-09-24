@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
@@ -42,6 +43,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
     private final AssignCategoryId assignCategoryId;
 
     private final GeneralAppFeesService generalAppFeesService;
+    private final GaForLipService gaForLipService;
 
     @Override
     public String camundaActivityId() {
@@ -94,34 +96,53 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument gaDraftDocument;
 
-        /*
-          1. Draft document should not be generated if judge had made the decision on application
-          2. Draft document should be generated only if all the respondents responded in Multiparty
-          3. Draft document should be generated only if Free fee application
-          4. Draft document should be generated only after payment is made for urgent application and without notice
-         */
-        if ((isApplicationUrgentAndFreeFee(caseData)
-            || isGANonUrgentWithOutNoticeFeePaid(caseData)
-            || isApplicationUrgentAndFeePaid(caseData)
-            || isRespondentsResponseSatisfied(caseData, caseDataBuilder.build()))
-            && isNull(caseData.getJudicialDecision())) {
+        if (gaForLipService.isGaForLip(caseData)) {
+            if (generalAppFeesService.isFreeApplication(caseData) || isFeePaid(caseData)) {
+                gaDraftDocument = gaDraftGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
+                caseDataBuilder.gaDraftDocument(null);
+                List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
-            gaDraftDocument = gaDraftGenerator.generate(
-                caseDataBuilder.build(),
-                callbackParams.getParams().get(BEARER_TOKEN).toString()
-            );
+                draftApplicationList.addAll(wrapElements(gaDraftDocument));
 
-            List<Element<CaseDocument>> draftApplicationList = newArrayList();
+                assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                              document -> document.getValue().getDocumentLink(),
+                                                              AssignCategoryId.APPLICATIONS);
+                caseDataBuilder.gaDraftDocument(draftApplicationList);
+            }
+        } else {
+            /*
+            1. Draft document should not be generated if judge had made the decision on application
+            2. Draft document should be generated only if all the respondents responded in Multiparty
+            3. Draft document should be generated only if Free fee application
+            4. Draft document should be generated only after payment is made for urgent application and without notice
+            */
+            if ((isApplicationUrgentAndFreeFee(caseData)
+                || isGANonUrgentWithOutNoticeFeePaid(caseData)
+                || isApplicationUrgentAndFeePaid(caseData)
+                || isRespondentsResponseSatisfied(caseData, caseDataBuilder.build()))
+                && isNull(caseData.getJudicialDecision())) {
 
-            draftApplicationList.addAll(wrapElements(gaDraftDocument));
+                gaDraftDocument = gaDraftGenerator.generate(
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString()
+                );
 
-            assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS);
-            caseDataBuilder.gaDraftDocument(draftApplicationList);
+                List<Element<CaseDocument>> draftApplicationList = newArrayList();
+
+                draftApplicationList.addAll(wrapElements(gaDraftDocument));
+
+                assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
+                                                              document -> document.getValue().getDocumentLink(),
+                                                              AssignCategoryId.APPLICATIONS);
+                caseDataBuilder.gaDraftDocument(draftApplicationList);
+            }
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
+
 }
