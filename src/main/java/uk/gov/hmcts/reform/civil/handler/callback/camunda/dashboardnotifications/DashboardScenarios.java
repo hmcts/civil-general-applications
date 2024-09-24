@@ -25,6 +25,8 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_SWITCH_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT_APPLICANT(
+        "Scenario.AAA6.GeneralApps.SwitchWrittenRepresentationRequired.RespondentApplicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT("Scenario.AAA6.GeneralApps.HearingScheduled.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT("Scenario.AAA6.GeneralApps.HearingScheduled.Respondent"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant");
