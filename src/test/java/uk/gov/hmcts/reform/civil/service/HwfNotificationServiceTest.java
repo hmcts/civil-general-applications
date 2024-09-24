@@ -360,6 +360,28 @@ public class HwfNotificationServiceTest {
     }
 
     @Test
+    void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_Ga_Bilingual_Def() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
+            .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentClaimantIsApplicant(YesOrNo.NO)
+            .gaHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-updaterefnumber-bilingual-id",
+            getNotificationCommonDataMapForGa(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
     void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_Additional() {
         // Given
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
@@ -376,6 +398,26 @@ public class HwfNotificationServiceTest {
                 "test-hwf-updaterefnumber-id",
                 getNotificationCommonDataMapForAdditional(),
                 REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_RefNumberUpdated_Additional_Bilingual() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
+            .build();
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-updaterefnumber-bilingual-id",
+            getNotificationCommonDataMapForAdditional(),
+            REFERENCE_NUMBER
         );
     }
 
@@ -401,6 +443,27 @@ public class HwfNotificationServiceTest {
     }
 
     @Test
+    void shouldNotifyApplicant_HwfOutcome_InvalidRefNumber_ClaimIssued_Bilingual() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
+            .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-invalidrefnumber-bilingual-id",
+            getNotificationCommonDataMapForGa(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
     void shouldNotifyApplicant_HwfOutcome_InvalidRefNumber_Hearing() {
         // Given
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
@@ -419,6 +482,29 @@ public class HwfNotificationServiceTest {
                 "test-hwf-invalidrefnumber-id",
                 getNotificationCommonDataMapForAdditional(),
                 REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_InvalidRefNumber_Hearing_Bilingual_Def() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
+            .build();
+
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentClaimantIsApplicant(YesOrNo.NO).additionalHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-invalidrefnumber-bilingual-id",
+            getNotificationCommonDataMapForAdditional(),
+            REFERENCE_NUMBER
         );
     }
 
@@ -467,6 +553,30 @@ public class HwfNotificationServiceTest {
     }
 
     @Test
+    void shouldNotifyApplicant_HwfOutcome_PartialRemission_Ga_Bilingual() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+            .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-partialRemission-bilingual-id",
+            getNotificationDataMapPartialRemissionGa(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
     void shouldNotifyApplicant_HwfOutcome_PartialRemission_Additional() {
         // Given
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
@@ -487,6 +597,32 @@ public class HwfNotificationServiceTest {
                 "test-hwf-partialRemission-id",
                 getNotificationDataMapPartialRemissionAdditional(),
                 REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfOutcome_PartialRemission_Additional_Bilingual_Def() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+            .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentClaimantIsApplicant(YesOrNo.NO)
+            .additionalHwfDetails(hwfeeDetails).build();
+
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-partialRemission-bilingual-id",
+            getNotificationDataMapPartialRemissionAdditional(),
+            REFERENCE_NUMBER
         );
     }
 
@@ -513,6 +649,28 @@ public class HwfNotificationServiceTest {
     }
 
     @Test
+    void shouldNotifyApplicant_HwfNoRemission_ClaimIssued_Bilingual() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(NO_REMISSION_HWF_GA)
+            .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-noremission-bilingual-id",
+            getNotificationDataMapNoRemissionApplication(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
     void shouldNotifyApplicant_HwfNoRemission_AdditionalFee() {
         // Given
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
@@ -529,6 +687,30 @@ public class HwfNotificationServiceTest {
         verify(notificationService, times(1)).sendMail(
             EMAIL,
             "test-hwf-noRemission-id",
+            getNotificationDataMapNoRemissionAdditional(),
+            REFERENCE_NUMBER
+        );
+    }
+
+    @Test
+    void shouldNotifyApplicant_HwfNoRemission_AdditionalFee_Bilingual_Def() {
+        // Given
+        HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
+            .hwfCaseEvent(NO_REMISSION_HWF_GA)
+            .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
+            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .build();
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentClaimantIsApplicant(YesOrNo.NO)
+            .additionalHwfDetails(hwfeeDetails).build();
+        when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
+        // When
+        service.sendNotification(caseData);
+        // Then
+        verify(notificationService, times(1)).sendMail(
+            EMAIL,
+            "test-hwf-noremission-bilingual-id",
             getNotificationDataMapNoRemissionAdditional(),
             REFERENCE_NUMBER
         );
