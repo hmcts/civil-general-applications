@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,11 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -56,18 +57,12 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
 
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
     @Value("${civil.response-pack-url}")
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
-    private static final String CONFIRMATION_BODY = "<br/>"
-        + "<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
-        + " is now due for payment. Your application will not be processed further"
-        + " until this fee is paid.</p>"
-        + "%n%n To pay this fee, click the link below, or else open your application from the"
-        + " Applications tab of this case listing and then click on the service request tab."
-        + "%n%n If necessary, all documents relating to this application, including any response from the court, will be translated."
-        + " You will be notified when these are available."
-        + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
             + " on this application."
             + "<br/> <p>  The other party's legal representative has been notified that you have"
@@ -89,6 +84,25 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
                 .hasAgreed(NO).build();
 
         return getReadyTestCaseData(caseData, multipleGenAppTypes, withOrWithoutConsent, withOrWithoutNotice);
+    }
+
+    private String getConformationBody(Boolean isGaForLipsEnabled) {
+        StringBuilder bodyConfirmation = new StringBuilder();
+        bodyConfirmation.append("<br/>");
+        bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+                                    + " is now due for payment. Your application will not be processed further"
+                                    + " until this fee is paid.</p>");
+        bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
+                                    + " Applications tab of this case listing and then click on the service request tab.");
+
+        if(isGaForLipsEnabled){
+            bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
+                                        + "including any response from the court, will be translated."
+                                        + " You will be notified when these are available.");
+        }
+
+        bodyConfirmation.append("%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n");
+        return bodyConfirmation.toString();
     }
 
     private CaseData getReadyTestCaseData(CaseData caseData,
@@ -131,7 +145,10 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Nested
     class SubmittedCallback {
-
+        @BeforeEach
+        void setup() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+        }
         @Test
         void handleEventsReturnsTheExpectedCallbackEvent() {
             assertThat(handler.handledEvents()).contains(INITIATE_GENERAL_APPLICATION);
@@ -144,7 +161,31 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
             when(generalAppFeesService.isFreeGa(any())).thenReturn(false);
             String body = format(
-                CONFIRMATION_BODY,
+                getConformationBody(false),
+                genapp.getGeneralAppPBADetails().getFee().toPounds(),
+                format("/cases/case-details/%s#Applications", CASE_ID));
+
+            var response = (SubmittedCallbackResponse) handler.handle(params);
+            assertThat(response).isNotNull();
+            assertThat(response).usingRecursiveComparison().isEqualTo(
+                SubmittedCallbackResponse.builder()
+                    .confirmationHeader(
+                        "# You have submitted an application")
+                    .confirmationBody(body)
+                    .build());
+            assertThat(response).isNotNull();
+            assertThat(response.getConfirmationBody()).isEqualTo(body);
+        }
+
+        @Test
+        void shouldReturnExpectedSubmittedCallbackResponse_whengaLips_is_enable() {
+            CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().ccdCaseReference(CASE_ID).build(), true);
+            CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
+            when(generalAppFeesService.isFreeGa(any())).thenReturn(false);
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            String body = format(
+                getConformationBody(true),
                 genapp.getGeneralAppPBADetails().getFee().toPounds(),
                 format("/cases/case-details/%s#Applications", CASE_ID));
 
@@ -164,7 +205,6 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         void shouldReturnFreeGAConfirmationBodyBody_whenFreeGA() {
             CaseData caseData = getReadyTestCaseData(CaseDataBuilder.builder().ccdCaseReference(CASE_ID).build(), true);
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
-            GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
             when(generalAppFeesService.isFreeGa(any())).thenReturn(true);
 
             var response = (SubmittedCallbackResponse) handler.handle(params);
