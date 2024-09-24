@@ -86,7 +86,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
         return getReadyTestCaseData(caseData, multipleGenAppTypes, withOrWithoutConsent, withOrWithoutNotice);
     }
 
-    private String getConformationBody(Boolean isGaForLipsEnabled) {
+    private String confirmationBodyBasedOnToggle(Boolean isGaForLipsEnabled) {
         StringBuilder bodyConfirmation = new StringBuilder();
         bodyConfirmation.append("<br/>");
         bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
@@ -161,7 +161,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             GeneralApplication genapp = caseData.getGeneralApplications().get(0).getValue();
             when(generalAppFeesService.isFreeGa(any())).thenReturn(false);
             String body = format(
-                getConformationBody(false),
+                confirmationBodyBasedOnToggle(false),
                 genapp.getGeneralAppPBADetails().getFee().toPounds(),
                 format("/cases/case-details/%s#Applications", CASE_ID));
 
@@ -185,7 +185,7 @@ class InitiateGeneralApplicationHandlerTest extends BaseCallbackHandlerTest {
             when(generalAppFeesService.isFreeGa(any())).thenReturn(false);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             String body = format(
-                getConformationBody(true),
+                confirmationBodyBasedOnToggle(true),
                 genapp.getGeneralAppPBADetails().getFee().toPounds(),
                 format("/cases/case-details/%s#Applications", CASE_ID));
 

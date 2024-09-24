@@ -77,13 +77,13 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
         BigDecimal fee = application.getGeneralAppPBADetails().getFee().toPounds();
 
         return generalAppFeesService.isFreeGa(application) ? CONFIRMATION_BODY_FREE : format(
-            getConformationBody(),
+            generateConfirmationBody(),
             fee,
             format("/cases/case-details/%s#Applications", ccdCaseReference)
         );
     }
 
-    private String getConformationBody() {
+    private String generateConfirmationBody() {
         StringBuilder bodyConfirmation = new StringBuilder();
         bodyConfirmation.append("<br/>");
         bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
