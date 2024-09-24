@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
@@ -70,6 +71,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
     private final ConsentOrderGenerator consentOrderGenerator;
     private final ObjectMapper objectMapper;
+    private final SendFinalOrderPrintService sendFinalOrderPrintService;
 
     private final AssignCategoryId assignCategoryId;
     private final GaForLipService gaForLipService;
@@ -253,6 +255,13 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.generalOrderDocument(documentList);
 
             }
+        }
+
+        if (gaForLipService.isGaForLip(caseData) && Objects.nonNull(decision)) {
+            sendFinalOrderPrintService
+                .sendJudgeFinalOrderToPrintForLIP(
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    decision.getDocumentLink(), caseData);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
