@@ -52,7 +52,7 @@ public class DashboardNotificationsParamsMapper {
 
         if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
             params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
-            params.put("outstandingFeeInPounds", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getOutstandingFeeInPounds()));
+            params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
         } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
             && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
             params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
