@@ -49,14 +49,14 @@ public class DashboardNotificationsParamsMapper {
         }
 
         if (caseData.getHwfFeeType() != null || caseData.getGeneralAppType() != null) {
-            if (FeeType.APPLICATION == caseData.getHwfFeeType()
-                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
-                params.put("applicationFeeTypeEn", "application");
-                params.put("applicationFeeTypeCy", "cais");
-            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()
+            if (FeeType.ADDITIONAL == caseData.getHwfFeeType()
                 || caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "additional application");
                 params.put("applicationFeeTypeCy", "cais ychwanegol");
+            } else if (FeeType.APPLICATION == caseData.getHwfFeeType()
+                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
+                params.put("applicationFeeTypeEn", "application");
+                params.put("applicationFeeTypeCy", "cais");
             }
         }
 
