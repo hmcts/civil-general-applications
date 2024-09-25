@@ -25,6 +25,7 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT("Scenario.AAA6.GeneralApps.OrderMade.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT("Scenario.AAA6.GeneralApps.HearingScheduled.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT("Scenario.AAA6.GeneralApps.HearingScheduled.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT("Scenario.AAA6.GeneralApps.AdditionalApplicationFeeRequired.Applicant");
     SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_MORE_INFORMATION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.MoreInfoRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_INVALID_REFERENCE_APPLICANT("Scenario.AAA6.GeneralApps.HwF.InvalidRef.Applicant"),
