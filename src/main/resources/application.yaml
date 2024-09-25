@@ -50,7 +50,7 @@ spring:
 
 location:
   api:
-    baseUrl: ${GENAPP_LRD_URL:http://localhost:8765}
+    baseUrl: ${GENAPP_LRD_URL:http://localhost:6669}
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
