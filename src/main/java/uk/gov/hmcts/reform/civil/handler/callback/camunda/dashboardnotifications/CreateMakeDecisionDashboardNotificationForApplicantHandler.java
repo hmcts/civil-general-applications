@@ -7,8 +7,10 @@ import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 
@@ -37,11 +39,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
         this.coreCaseDataService = coreCaseDataService;
         this.caseDetailsConverter = caseDetailsConverter;
         this.judicialDecisionHelper = judicialDecisionHelper;
-
-    public CreateMakeDecisionDashboardNotificationForApplicantHandler(DashboardApiClient dashboardApiClient,
-                                                                      DashboardNotificationsParamsMapper mapper,
-                                                                      FeatureToggleService featureToggleService) {
-        super(dashboardApiClient, mapper, featureToggleService);
     }
 
     @Override
