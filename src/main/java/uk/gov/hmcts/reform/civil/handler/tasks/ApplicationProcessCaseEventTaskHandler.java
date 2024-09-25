@@ -12,12 +12,12 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
@@ -29,7 +29,7 @@ public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHand
     private final ObjectMapper mapper;
 
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
@@ -39,12 +39,12 @@ public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHand
         businessProcess.updateActivityId(externalTask.getActivityId());
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         var data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
-        return Optional.ofNullable(data);
+        return ExternalTaskData.builder().caseData(data).build();
     }
 
     @Override
-    public VariableMap getVariableMap(Optional<CaseData> data) {
-        var caseData = data.orElseThrow();
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        var caseData = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());

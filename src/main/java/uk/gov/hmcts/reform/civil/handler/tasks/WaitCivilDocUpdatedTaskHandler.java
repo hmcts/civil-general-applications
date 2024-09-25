@@ -1,23 +1,22 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
-import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
-import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
-import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
-import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.delegate.BpmnError;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -31,7 +30,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
     private final ObjectMapper mapper;
 
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) throws Exception {
+    public ExternalTaskData handleTask(ExternalTask externalTask) throws Exception {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                 ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
@@ -52,7 +51,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
             throw new BpmnError("ABORT");
         }
 
-        return Optional.empty();
+        return ExternalTaskData.builder().build();
     }
 
     protected boolean checkCivilDocUpdated(CaseData gaCaseData) {

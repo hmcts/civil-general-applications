@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
@@ -30,7 +31,6 @@ import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -53,16 +53,16 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
     private final FeatureToggleService featureToggleService;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private CaseData generalAppCaseData;
 
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         var generalApplications = caseData.getGeneralApplications();
+        CaseData generalAppCaseData = null;
 
         if (generalApplications != null && !generalApplications.isEmpty()) {
 
@@ -76,22 +76,27 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
-                createGeneralApplicationCase(caseId, generalApplication);
-                updateParentCaseGeneralApplication(variables, generalApplication);
+                generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication);
+                updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
 
-                caseData = withoutNoticeNoConsent(generalApplication, caseData);
+                caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
 
             }
         }
 
-        return Optional.of(coreCaseDataService.submitUpdate(caseId,
-                                                            coreCaseDataService.caseDataContentFromStartEventResponse(
-                                                                startEventResponse,
-                                                                caseData.toMap(mapper))));
+        var parentCaseData = coreCaseDataService.submitUpdate(caseId,
+                                                              coreCaseDataService.caseDataContentFromStartEventResponse(
+                                                                  startEventResponse,
+                                                                  caseData.toMap(mapper)));
+        return ExternalTaskData.builder()
+            .caseData(parentCaseData)
+            .generalApplicationCaseData(generalAppCaseData)
+            .build();
     }
 
     private CaseData withoutNoticeNoConsent(GeneralApplication generalApplication,
-                                            CaseData caseData) {
+                                            CaseData caseData,
+                                            CaseData generalAppCaseData) {
 
         /*
          * Add the case to applicant solicitor collection if parent claimant is applicant
@@ -101,7 +106,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
         if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
             applications = addApplication(
-                    buildApplication(generalApplication),
+                    buildApplication(generalApplication, generalAppCaseData),
                     caseData.getClaimantGaAppDetails()
             );
         }
@@ -118,7 +123,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                 .equals(getRespondent1SolicitorOrgId(caseData))) {
 
-            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, generalAppCaseData);
 
             if (gaDetailsRespondentSol != null) {
                 respondentSpecficGADetails = addRespApplication(
@@ -138,7 +143,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 && Objects.nonNull(generalApplication.getIsGaApplicantLip())
                 && generalApplication.getIsGaApplicantLip().equals(YES)) {
 
-            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication);
+            GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, generalAppCaseData);
 
             if (gaDetailsRespondentSol != null) {
                 respondentSpecficGADetails = addRespApplication(
@@ -155,7 +160,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 .equals(getRespondent2SolicitorOrgId(caseData))) {
 
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
-                    generalApplication);
+                    generalApplication, generalAppCaseData);
 
             if (gaDetailsRespondentSolTwo != null) {
                 respondentTwoSpecficGADetails = addRespApplication(
@@ -172,7 +177,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         return data;
     }
 
-    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication) {
+    private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication,
+                                                        CaseData generalAppCaseData) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
@@ -184,7 +190,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
     }
 
-    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication) {
+    private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication,
+                                                        CaseData generalAppCaseData) {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
@@ -217,7 +224,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
     }
 
     private void updateParentCaseGeneralApplication(ExternalTaskInput variables,
-                                                    GeneralApplication generalApplication) {
+                                                    GeneralApplication generalApplication,
+                                                    CaseData generalAppCaseData) {
         generalApplication.getBusinessProcess().setStatus(BusinessProcessStatus.FINISHED);
         if (Objects.nonNull(generalApplication.getGeneralAppEvidenceDocument())) {
             generalApplication.getGeneralAppEvidenceDocument().clear();
@@ -230,7 +238,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         }
     }
 
-    private void createGeneralApplicationCase(String caseId, GeneralApplication generalApplication) {
+    private CaseData createGeneralApplicationCase(String caseId, GeneralApplication generalApplication) {
         Map<String, Object> map = generalApplication.toMap(mapper);
         map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
@@ -245,7 +253,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             map.put("gaAddlDocClaimant", addlDoc);
             map.put("generalAppEvidenceDocument", null);
         }
-        generalAppCaseData  = coreCaseDataService.createGeneralAppCase(map);
+        return coreCaseDataService.createGeneralAppCase(map);
     }
 
     private String getTypesString(final GeneralApplication generalApplication) {
@@ -287,12 +295,13 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
     }
 
     @Override
-    public VariableMap getVariableMap(Optional<CaseData> caseData) {
-        var data = caseData.orElseThrow();
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        var data = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
+        var generalAppCaseData = externalTaskData.getGeneralApplicationCaseData();
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());
         }

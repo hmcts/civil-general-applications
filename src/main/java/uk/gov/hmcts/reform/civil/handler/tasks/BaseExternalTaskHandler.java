@@ -8,10 +8,9 @@ import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
@@ -51,7 +50,7 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
     private void completeTask(ExternalTask externalTask,
                               ExternalTaskService externalTaskService,
-                              Optional<CaseData> data) {
+                              ExternalTaskData data) {
         String topicName = externalTask.getTopicName();
 
         try {
@@ -108,7 +107,7 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
      *
      * @return the variables to add to the external task.
      */
-    VariableMap getVariableMap(Optional<CaseData> data) {
+    VariableMap getVariableMap(ExternalTaskData externalTaskData) {
         return null;
     }
 
@@ -117,5 +116,5 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
      *
      * @param externalTask the external task to be handled.
      */
-    abstract Optional<CaseData> handleTask(ExternalTask externalTask) throws Exception;
+    abstract ExternalTaskData handleTask(ExternalTask externalTask) throws Exception;
 }

@@ -14,12 +14,12 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -31,24 +31,22 @@ public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExter
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
 
-    private VariableMap variables;
-
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         CaseData caseData = startGeneralApplicationBusinessProcess(externalTask);
-        variables = Variables.createVariables();
+        VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
         if (caseData.getGeneralAppParentCaseLink() != null) {
             variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
         }
-        return Optional.of(caseData);
+        return ExternalTaskData.builder().caseData(caseData).variables(variables).build();
     }
 
     @Override
-    public VariableMap getVariableMap(Optional<CaseData> data) {
-        return variables;
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        return externalTaskData.getVariables();
     }
 
     private CaseData startGeneralApplicationBusinessProcess(ExternalTask externalTask) {
@@ -62,21 +60,23 @@ public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExter
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         switch (businessProcess.getStatusOrDefault()) {
-            case READY:
-            case DISPATCHED:
+            case READY, DISPATCHED -> {
                 return updateBusinessProcess(caseId, externalTask, startEventResponse, businessProcess);
-            case STARTED:
+            }
+            case STARTED -> {
                 if (businessProcess.hasSameProcessInstanceId(externalTask.getProcessInstanceId())) {
                     throw new BpmnError("ABORT");
                 }
                 return data;
-            default:
+            }
+            default -> {
                 log.error("----------------CAMUNDAERROR -START------------------");
                 log.error("CAMUNDAERROR CaseId ({})", caseId);
                 log.error("CAMUNDAERROR CaseEvent ({})", caseEvent);
                 log.error("CAMUNDAERROR BusinessProcessStatus ({})", businessProcess.getStatusOrDefault());
                 log.error("----------------CAMUNDAERROR -END------------------");
                 throw new BpmnError("ABORT");
+            }
         }
     }
 

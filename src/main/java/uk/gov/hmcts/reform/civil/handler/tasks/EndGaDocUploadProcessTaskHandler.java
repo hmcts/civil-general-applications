@@ -11,11 +11,11 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_DOC_UPLOAD_BUSINESS_PROCESS_GASPEC;
 
@@ -29,7 +29,7 @@ public class EndGaDocUploadProcessTaskHandler extends BaseExternalTaskHandler {
     private final ObjectMapper mapper;
 
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                                                                   ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
@@ -41,7 +41,7 @@ public class EndGaDocUploadProcessTaskHandler extends BaseExternalTaskHandler {
         log.info("Resetting end business process id for caseId {}", caseId);
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));
 
-        return Optional.empty();
+        return ExternalTaskData.builder().build();
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {

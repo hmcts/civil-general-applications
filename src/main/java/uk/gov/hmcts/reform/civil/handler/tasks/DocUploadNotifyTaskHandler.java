@@ -1,20 +1,19 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GA_EVIDENCE_UPLOAD_CHECK;
-
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.client.task.ExternalTask;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.EvidenceUploadNotificationSearchService;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.client.task.ExternalTask;
-import org.springframework.stereotype.Component;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GA_EVIDENCE_UPLOAD_CHECK;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,13 +25,13 @@ public class DocUploadNotifyTaskHandler extends BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     @Override
-    public Optional<CaseData> handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         List<CaseData> cases = caseSearchService.getApplications().stream()
                 .map(caseDetailsConverter::toCaseData).toList();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
-        return Optional.empty();
+        return ExternalTaskData.builder().build();
     }
 
     private void fireEventForStateChange(CaseData caseData) {
