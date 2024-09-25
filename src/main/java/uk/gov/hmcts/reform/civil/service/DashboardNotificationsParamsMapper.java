@@ -57,8 +57,8 @@ public class DashboardNotificationsParamsMapper {
             && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
             params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
                                                                                         .getRemissionAmount()));
-            params.put("outstandingFeeInPounds", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
-                                                                                               .getOutstandingFeeInPounds()));
+            params.put("outstandingFeeInPounds", "£" +caseData.getAdditionalHwfDetails()
+                                                                                               .getOutstandingFeeInPounds());
 
         }
 
