@@ -30,6 +30,9 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE;
+=========
+>>>>>>>>> Temporary merge branch 2
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_PARTIAL_REMISSION_APPLICANT;
 
@@ -65,7 +68,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioApplicationFee_whenInvoked() {
+        void shouldRecordApplicantScenarioApplicationFee_NoRemission_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -80,7 +83,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION.name())
+            	CallbackRequest.builder().eventId(APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION.name())
                     .build()
             ).build();
 
@@ -94,7 +97,9 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
+<<<<<<<<< Temporary merge branch 1
         void shouldRecordClaimantScenarioAdditionalApplicationFee_whenInvoked() {
+
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -109,7 +114,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(APPLICANT_LIP_HWF_DASHBOARD_NOTIFICATION.name())
+                CallbackRequest.builder().eventId(UPDATE_CLAIMANT_TASK_LIST_GA_COMPLETE.name())
                     .build()
             ).build();
 
@@ -123,13 +128,13 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
-        void shouldRecordClaimantScenarioApplicationFee_whenPartialRemissionInvoked() {
+        void shouldRecordApplicantScenarioApplicationFee_InvalidHwfRef_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .hwfFeeType(FeeType.APPLICATION)
                 .gaHwfDetails(HelpWithFeesDetails.builder()
-                                  .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                                  .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
                                   .build())
                 .build();
 
@@ -145,20 +150,20 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPS_HWF_PARTIAL_REMISSION_APPLICANT.getScenario(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_INVALID_REFERENCE_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
 
         @Test
-        void shouldRecordClaimantScenarioAdditionalApplicationFee_whenPartialRemissionInvoked() {
+        void shouldRecordApplicantScenarioAdditionalApplicationFee_InvalidHwfRef_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .hwfFeeType(FeeType.ADDITIONAL)
                 .additionalHwfDetails(HelpWithFeesDetails.builder()
-                                          .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
+                                          .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
                                           .build())
                 .build();
 
@@ -174,7 +179,7 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPS_HWF_PARTIAL_REMISSION_APPLICANT.getScenario(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_INVALID_REFERENCE_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
