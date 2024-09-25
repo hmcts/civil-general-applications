@@ -149,7 +149,7 @@ public class SecuredDocumentManagementService implements DocumentManagementServi
                                                   documentMetadata.mimeType);
         } catch (Exception ex) {
             log.error("Failed downloading document {}", documentPath, ex);
-            throw new uk.gov.hmcts.reform.civil.documentmanagement.DocumentDownloadException(documentPath, ex);
+            throw new DocumentDownloadException(documentPath, ex);
         }
     }
 

@@ -171,6 +171,9 @@ os-postcode-lookup:
   key: ${OS_POSTCODE_LOOKUP_API_KEY:}
   offline-mode: false
 
+send-letter:
+  url: ${SEND_LETTER_URL:http://localhost:8765}
+
 stitching:
   api:
     url: http://localhost:8084/api/stitch-ccd-bundles
@@ -366,3 +369,5 @@ idam:
     url: http://ccd-test-stubs-service:5555
   api:
     url: http://ccd-test-stubs-service:5555
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY:false}
