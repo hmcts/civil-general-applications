@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
@@ -70,6 +71,9 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     @Autowired
     private GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
@@ -184,6 +188,7 @@ class GAJudgeRevisitTaskHandlerTest {
             Map.of("generalAppConsentOrder", "maybe")).state(AWAITING_WRITTEN_REPRESENTATIONS.toString())
             .build();
 
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentation, caseDetailsWrittenRepresentationC));
 
@@ -380,6 +385,7 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenWrittenRepConcurrentDateIsToday() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationC));
 
@@ -403,6 +409,7 @@ class GAJudgeRevisitTaskHandlerTest {
                 .writtenConcurrentRepresentationsBy(LocalDate.now().minusDays(1))
                 .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
 
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationConWithPastDate));
 
@@ -440,6 +447,7 @@ class GAJudgeRevisitTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenWrittenRepSequentialDateIsToday() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationS));
 
@@ -466,6 +474,7 @@ class GAJudgeRevisitTaskHandlerTest {
                 .writtenSequentailRepresentationsBy(LocalDate.now().minusDays(1))
                 .build())).state(AWAITING_WRITTEN_REPRESENTATIONS.toString()).build();
 
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
         when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
             .thenReturn(List.of(caseDetailsWrittenRepresentationSeqWithPastDate));
 
@@ -561,6 +570,21 @@ class GAJudgeRevisitTaskHandlerTest {
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(externalTask);
 
+    }
+
+    @Test
+    void shouldNotEmitNotificationEvents_whenGAForLipsDisabled() {
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+        when(caseStateSearchService.getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS))
+            .thenReturn(List.of(caseDetailsWrittenRepresentationS));
+
+        gaJudgeRevisitTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
+        verify(coreCaseDataService)
+            .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
     }
 
     @Test

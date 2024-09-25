@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
@@ -35,6 +36,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
 
     private final CaseDetailsConverter caseDetailsConverter;
 
+    private final FeatureToggleService featureToggleService;
+
     @Override
     public void handleTask(ExternalTask externalTask) {
         List<CaseDetails> writtenRepresentationCases = caseStateSearchService
@@ -42,12 +45,16 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         List<CaseDetails> claimantNotificationCases = filterForClaimantWrittenRepExpired(writtenRepresentationCases);
         log.info("Job '{}' found {} written representation case(s) with claimant deadline expired",
                  externalTask.getTopicName(), claimantNotificationCases.size());
-        claimantNotificationCases.forEach(this::fireEventForDeleteClaimantNotification);
+        if (featureToggleService.isGaForLipsEnabled()) {
+            claimantNotificationCases.forEach(this::fireEventForDeleteClaimantNotification);
+        }
 
         List<CaseDetails> defendantNotificationCases = filterForDefendantWrittenRepExpired(writtenRepresentationCases);
         log.info("Job '{}' found {} written representation case(s) with defendant deadline expired",
                  externalTask.getTopicName(), defendantNotificationCases.size());
-        defendantNotificationCases.forEach(this::fireEventForDeleteDefendantNotification);
+        if (featureToggleService.isGaForLipsEnabled()) {
+            defendantNotificationCases.forEach(this::fireEventForDeleteDefendantNotification);
+        }
 
         // Change state for all cases where both deadlines have passed
         claimantNotificationCases.stream().filter(caseDetails -> defendantNotificationCases.contains(caseDetails))
