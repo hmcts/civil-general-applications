@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -67,6 +68,40 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("generalAppNotificationDeadlineDateCy").isEqualTo("21 Mawrth 2024");
         assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("4 September 2024");
         assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("4 Medi 2024");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfApplicationFeeIsRequested() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
+            .hwfFeeType(FeeType.APPLICATION)
+            .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequested() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
+            .hwfFeeType(FeeType.ADDITIONAL)
+            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
     }
 
     @Test
