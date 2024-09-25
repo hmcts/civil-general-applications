@@ -99,7 +99,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.APPLICATION)
             .gaHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(BigDecimal.valueOf(20000)).build())
+                              .outstandingFeeInPounds(BigDecimal.valueOf(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -120,7 +120,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
             .additionalHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(BigDecimal.valueOf(20000)).build())
+                              .outstandingFeeInPounds(BigDecimal.valueOf(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
