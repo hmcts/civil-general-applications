@@ -50,7 +50,8 @@ public class DashboardNotificationsParamsMapper {
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
-        if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
+        if ((caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType()))
+            || (FeeType.ADDITIONAL == caseData.getHwfFeeType() || caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT))) {
             params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
             params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
         } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
@@ -76,6 +77,10 @@ public class DashboardNotificationsParamsMapper {
             } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
                 params.put("applicationFeeTypeEn", "additional application");
                 params.put("applicationFeeTypeCy", "cais ychwanegol");
+            } else if (FeeType.APPLICATION == caseData.getHwfFeeType()
+                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
+                params.put("applicationFeeTypeEn", "application");
+                params.put("applicationFeeTypeCy", "cais");
             }
         }
 
