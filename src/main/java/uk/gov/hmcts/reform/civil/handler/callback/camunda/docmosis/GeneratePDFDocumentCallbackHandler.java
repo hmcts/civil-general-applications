@@ -52,6 +52,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +60,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
+    private static final String LIP_APPLICANT = "Applicant";
+    private static final String LIP_RESPONDENT = "Respondent";
 
     private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
@@ -257,11 +260,18 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
         }
 
-        if (gaForLipService.isGaForLip(caseData) && Objects.nonNull(decision)) {
+        if (gaForLipService.isLipApp(caseData) && Objects.nonNull(decision)) {
             sendFinalOrderPrintService
                 .sendJudgeFinalOrderToPrintForLIP(
                     callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    decision.getDocumentLink(), caseData);
+                    decision, caseData, LIP_APPLICANT);
+        }
+
+        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData) && Objects.nonNull(decision)) {
+            sendFinalOrderPrintService
+                .sendJudgeFinalOrderToPrintForLIP(
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    decision, caseData, LIP_RESPONDENT);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
