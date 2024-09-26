@@ -11,13 +11,13 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.math.BigDecimal;
@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
 @ExtendWith(MockitoExtension.class)
@@ -146,7 +147,7 @@ public class DashboardNotificationsParamsMapperTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.APPLICATION)
-            .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
