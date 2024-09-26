@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -131,62 +132,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
         }
 
         @Test
-        void shouldRecordHearingScheduledApplicantScenarioWhenInvoked() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .ccdState(CaseState.LISTING_FOR_A_HEARING)
-                .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
-                .gaHearingNoticeApplication(GAHearingNoticeApplication.builder().build())
-                .gaHearingNoticeDetail(GAHearingNoticeDetail.builder().build())
-                .build();
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
-                    .build()
-            ).build();
-
-            handler.handle(params);
-            verify(dashboardApiClient).recordScenario(
-                caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT.getScenario(),
-                "BEARER_TOKEN",
-                ScenarioRequestParams.builder().params(scenarioParams).build()
-            );
-        }
-
-        @Test
-        void shouldNotRecordHearingScheduledApplicantScenarioWhenInvoked() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .ccdState(CaseState.LISTING_FOR_A_HEARING)
-                .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
-                 .build();
-
-            HashMap<String, Object> scenarioParams = new HashMap<>();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
-                    .build()
-            ).build();
-
-            handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
-        }
-
-        @Test
         void shouldRecordPayAdditionalPaymentApplicantScenarioWhenInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
@@ -198,7 +143,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                     LocalDateTime.now().plusDays(5)).build())
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
-          
+
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
@@ -218,7 +163,7 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
-  
+
         @ParameterizedTest
         @MethodSource("provideOrderType")
         void shouldRecordOrderMadeApplicantScenarioWhenInvoked_isWIthNoticeApplication(GAJudgeDecisionOption decisionOption, GAJudgeMakeAnOrderOption orderOption) {
@@ -260,8 +205,8 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 Arguments.of(GAJudgeDecisionOption.LIST_FOR_A_HEARING, null)
             );
         }
-      
-       @Test
+
+        @Test
         void shouldRecordHearingScheduledApplicantScenarioWhenInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()

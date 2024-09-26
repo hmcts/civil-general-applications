@@ -371,7 +371,7 @@ public class CaseData implements MappableObject {
             .isPresent();
     }
 
-  @JsonIgnore
+    @JsonIgnore
     public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
         return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
             && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())
