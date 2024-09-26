@@ -29,6 +29,8 @@ public enum DashboardScenarios {
         "Scenario.AAA6.GeneralApps.SwitchWrittenRepresentationRequired.RespondentApplicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT("Scenario.AAA6.GeneralApps.HearingScheduled.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT("Scenario.AAA6.GeneralApps.HearingScheduled.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_PARTIAL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.PartRemission.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_INVALID_REFERENCE_APPLICANT("Scenario.AAA6.GeneralApps.HwF.InvalidRef.Applicant");
     SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant");
 
     private final String scenario;
