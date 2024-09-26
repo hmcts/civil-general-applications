@@ -50,8 +50,7 @@ public class DashboardNotificationsParamsMapper {
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
-        if ((caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType()))
-            || (FeeType.ADDITIONAL == caseData.getHwfFeeType() || caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT))) {
+        if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
             params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
             params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
         } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
@@ -67,14 +66,9 @@ public class DashboardNotificationsParamsMapper {
             params.put("judgeRequestMoreInfoByDateCy",
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
         }
-        //ToDo: refactor below string to allow for notifications that do not require additional params
-        params.put("testRef", "string");
 
         if (caseData.getHwfFeeType() != null) {
-            if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
-                params.put("applicationFeeTypeEn", "application");
-                params.put("applicationFeeTypeCy", "cais");
-            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
+           if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
                 params.put("applicationFeeTypeEn", "additional application");
                 params.put("applicationFeeTypeCy", "cais ychwanegol");
             } else if (FeeType.APPLICATION == caseData.getHwfFeeType()

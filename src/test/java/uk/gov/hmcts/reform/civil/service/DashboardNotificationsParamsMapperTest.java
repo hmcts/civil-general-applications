@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 
@@ -144,6 +145,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                 .build())
             .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
+            .hwfFeeType(FeeType.APPLICATION)
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -156,7 +158,7 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequested() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
-            .ccdState(AWAITING_APPLICATION_PAYMENT)
+            .ccdState(APPLICATION_ADD_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
@@ -178,7 +180,8 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                 .build())
-            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+            .ccdState(APPLICATION_ADD_PAYMENT)
+            .hwfFeeType(FeeType.ADDITIONAL)
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
