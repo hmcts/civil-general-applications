@@ -153,6 +153,40 @@ public class DeleteWrittenRepresentationNotificationClaimantHandlerTest extends 
         }
 
         @Test
+        void shouldRecordSwitchWrittenRepsRequiredApplicantRespondentScenarioWhenRespondentNotLiP() {
+            LocalDate defendantDeadline = LocalDateTime.now().isAfter(LocalDate.now().atTime(DeadlinesCalculator.END_OF_BUSINESS_DAY))
+                ? LocalDate.now()
+                : LocalDate.now().plusDays(-1);
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaRespondentOneLip(YesOrNo.NO)
+                .parentClaimantIsApplicant(YesOrNo.NO)
+                .judicialDecisionMakeAnOrderForWrittenRepresentations(GAJudicialWrittenRepresentations.builder()
+                                                                          .writtenOption(SEQUENTIAL_REPRESENTATIONS)
+                                                                          .sequentialApplicantMustRespondWithin(defendantDeadline)
+                                                                          .writtenSequentailRepresentationsBy(LocalDate.now().plusDays(1)).build())
+                .build();
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SWITCH_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
         void shouldNotRecordDeleteWrittenRepsRequiredScenarioWhenGaFlagIsDisabled() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
