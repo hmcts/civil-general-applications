@@ -11,9 +11,12 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -22,6 +25,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -199,13 +203,50 @@ public class DashboardNotificationsParamsMapperTest {
     }
 
     @Test
-    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequested() {
+    void shouldMapParametersWhenHwfApplicationFeeIsRequestedAndCaseStateIsAwaitingApplicationPayment() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
+            .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
+                                .build())
+            .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequested() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
+            .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndCaseStateIsApplicationAddPayment() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
+            .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
+                                .build())
             .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
             .build();
 
