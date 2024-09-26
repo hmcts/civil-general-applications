@@ -91,6 +91,7 @@ public class HearingScheduledNotificationService implements NotificationData {
 
     public CaseData sendNotificationForClaimant(CaseData caseData) throws NotificationException {
 
+
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -99,10 +100,16 @@ public class HearingScheduledNotificationService implements NotificationData {
 
         sendNotification(caseData,  caseData.getGeneralAppApplnSolicitor().getEmail(),
                          gaForLipService.isLipApp(caseData)
-                             ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                             ? getLiPApplicantTemplates(civilCaseData, caseData)
                              : notificationProperties.getHearingNoticeTemplate(), APPLICANT);
 
         return caseData;
+    }
+
+    private String getLiPApplicantTemplates(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
 
     public CaseData sendNotificationForDefendant(CaseData caseData) throws NotificationException {
@@ -119,9 +126,15 @@ public class HearingScheduledNotificationService implements NotificationData {
         respondentSolicitor.forEach((respondent) -> sendNotification(
             updatedCaseData,
             respondent.getValue().getEmail(), gaForLipService.isLipResp(updatedCaseData)
-                ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                ? getLiPRespondentTemplate(civilCaseData, updatedCaseData)
                 : notificationProperties.getHearingNoticeTemplate(), RESPONDENT));
 
         return caseData;
+    }
+
+    private String getLiPRespondentTemplate(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 }

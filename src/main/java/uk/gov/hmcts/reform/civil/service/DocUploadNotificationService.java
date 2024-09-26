@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.Map;
@@ -23,6 +24,8 @@ public class DocUploadNotificationService implements NotificationData {
     private static final String REFERENCE_TEMPLATE_DOC_UPLOAD = "general-apps-notice-of-document-upload-%s";
     private final GaForLipService gaForLipService;
     private final Map<String, String> customProps;
+    private final CoreCaseDataService coreCaseDataService;
+    private final CaseDetailsConverter caseDetailsConverter;
 
     public void notifyApplicantEvidenceUpload(CaseData caseData) throws NotificationException {
         String email = caseData.getGeneralAppApplnSolicitor().getEmail();
@@ -41,12 +44,16 @@ public class DocUploadNotificationService implements NotificationData {
     }
 
     public void notifyRespondentEvidenceUpload(CaseData caseData) throws NotificationException {
+
+        CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
         caseData.getGeneralAppRespondentSolicitors().forEach(
                 respondentSolicitor -> {
                     notificationService.sendMail(
                             respondentSolicitor.getValue().getEmail(),
                             gaForLipService.isLipResp(caseData)
-                                ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                                ? getLiPTemplate(civilCaseData, caseData)
                                 : notificationProperties.getEvidenceUploadTemplate(),
                             addProperties(caseData),
                             String.format(
@@ -55,6 +62,12 @@ public class DocUploadNotificationService implements NotificationData {
                             )
                     );
                 });
+    }
+
+    private String getLiPTemplate(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
     @Override
