@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
@@ -29,6 +30,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DRAFT_DOCUMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
@@ -98,14 +100,17 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
         if (gaForLipService.isGaForLip(caseData)) {
             if (generalAppFeesService.isFreeApplication(caseData) || isFeePaid(caseData)) {
+
+                List<Element<CaseDocument>> draftApplicationList = caseData.getGaDraftDocument();
+                if (Objects.isNull(draftApplicationList)) {
+                    draftApplicationList = newArrayList();
+                }
                 gaDraftDocument = gaDraftGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-                caseDataBuilder.gaDraftDocument(null);
-                List<Element<CaseDocument>> draftApplicationList = newArrayList();
 
-                draftApplicationList.addAll(wrapElements(gaDraftDocument));
+                draftApplicationList.add(element(gaDraftDocument));
 
                 assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
                                                               document -> document.getValue().getDocumentLink(),
