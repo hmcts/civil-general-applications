@@ -692,10 +692,28 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .sequentialApplicantMustRespondWithin(deadlinesCalculator
                                                                   .getJudicialOrderDeadlineDate(LocalDateTime.now(),
                                                                                                 21)).build());
+        caseDataBuilder.bilingualHint(setBilingualHint(caseData));
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
                 .build();
+    }
+
+    private YesOrNo setBilingualHint(CaseData caseData) {
+        if (Objects.nonNull(caseData.getJudicialDecision())) {
+            switch (caseData.getJudicialDecision().getDecision()) {
+                case LIST_FOR_A_HEARING:
+                case FREE_FORM_ORDER:
+                case MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS:
+                    return gaForLipService.isWelshApp(caseData) ? YES : NO;
+                case MAKE_AN_ORDER:
+                case REQUEST_MORE_INFO:
+                    return gaForLipService.anyWelsh(caseData) ? YES : NO;
+               default:
+                   return NO;
+            }
+        }
+        return NO;
     }
 
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
@@ -868,7 +886,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .judgeHearingSupportReqText1(null)
                                                    .build());
         }
-
+        dataBuilder.bilingualHint(null);
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();

@@ -343,6 +343,7 @@ public class CaseData implements MappableObject {
     private String caseNameGaInternal;
     private RespondentLiPResponse respondent1LiPResponse;
     private String claimantBilingualLanguagePreference;
+    private YesOrNo bilingualHint;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
