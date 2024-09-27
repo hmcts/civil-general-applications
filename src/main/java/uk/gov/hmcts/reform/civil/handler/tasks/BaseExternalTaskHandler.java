@@ -15,9 +15,6 @@ import java.util.Arrays;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
 
-/**
- * Interface for standard implementation of task handler that is invoked for each fetched and locked task.
- */
 public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
     protected static String FLOW_STATE = "flowState";
@@ -25,20 +22,14 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
     protected static Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
 
-    /**
-     * Executed for each fetched and locked task.
-     *
-     * @param externalTask        the context is represented of.
-     * @param externalTaskService to interact with fetched and locked tasks.
-     */
     @Override
     public void execute(ExternalTask externalTask, ExternalTaskService externalTaskService) {
         String topicName = externalTask.getTopicName();
 
         try {
             log.info("External task '{}' started", topicName);
-            var data = handleTask(externalTask);
-            completeTask(externalTask, externalTaskService, data);
+            var externalTaskData = handleTask(externalTask);
+            completeTask(externalTask, externalTaskService, externalTaskData);
         } catch (BpmnError e) {
             externalTaskService.handleBpmnError(externalTask, e.getErrorCode());
             log.error("Bpmn error for external task '{}'", topicName, e);
@@ -64,13 +55,6 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
         }
     }
 
-    /**
-     * Called when an exception arises from the {@link BaseExternalTaskHandler handleTask(externalTask)} method.
-     *
-     * @param externalTask        the external task to be handled.
-     * @param externalTaskService to interact with fetched and locked tasks.
-     * @param e                   the exception thrown by business logic.
-     */
     void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
         int maxRetries = getMaxAttempts();
         int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
@@ -91,11 +75,6 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
         return Arrays.toString(throwable.getStackTrace());
     }
-    /**
-     * Defines the number of attempts for a given external task.
-     *
-     * @return the number of attempts for an external task.
-     */
 
     int getMaxAttempts() {
         return 3;
