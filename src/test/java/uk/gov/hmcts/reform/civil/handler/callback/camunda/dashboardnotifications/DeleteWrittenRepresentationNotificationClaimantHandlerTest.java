@@ -217,7 +217,6 @@ public class DeleteWrittenRepresentationNotificationClaimantHandlerTest extends 
             verifyNoInteractions(dashboardApiClient);
         }
 
-
         @Test
         void shouldNotRecordDeleteWrittenRepsRequiredScenarioWhenGaFlagIsDisabled() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
