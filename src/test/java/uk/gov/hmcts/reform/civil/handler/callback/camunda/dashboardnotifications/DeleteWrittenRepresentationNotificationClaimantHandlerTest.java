@@ -160,6 +160,7 @@ public class DeleteWrittenRepresentationNotificationClaimantHandlerTest extends 
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaApplicantLip(YesOrNo.YES)
                 .isGaRespondentOneLip(YesOrNo.NO)
                 .parentClaimantIsApplicant(YesOrNo.NO)
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(GAJudicialWrittenRepresentations.builder()
@@ -185,6 +186,37 @@ public class DeleteWrittenRepresentationNotificationClaimantHandlerTest extends 
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
+
+        @Test
+        void shouldNotRecordSwitchWrittenRepsRequiredApplicantRespondentScenarioWhenRespondentAndApplicantNotLiP() {
+            LocalDate defendantDeadline = LocalDateTime.now().isAfter(LocalDate.now().atTime(DeadlinesCalculator.END_OF_BUSINESS_DAY))
+                ? LocalDate.now()
+                : LocalDate.now().plusDays(-1);
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaApplicantLip(YesOrNo.NO)
+                .isGaRespondentOneLip(YesOrNo.NO)
+                .parentClaimantIsApplicant(YesOrNo.NO)
+                .judicialDecisionMakeAnOrderForWrittenRepresentations(GAJudicialWrittenRepresentations.builder()
+                                                                          .writtenOption(SEQUENTIAL_REPRESENTATIONS)
+                                                                          .sequentialApplicantMustRespondWithin(defendantDeadline)
+                                                                          .writtenSequentailRepresentationsBy(LocalDate.now().plusDays(1)).build())
+                .build();
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verifyNoInteractions(dashboardApiClient);
+        }
+
 
         @Test
         void shouldNotRecordDeleteWrittenRepsRequiredScenarioWhenGaFlagIsDisabled() {

@@ -49,7 +49,8 @@ public class DeleteWrittenRepresentationNotificationClaimantHandler extends Dele
         if (caseData.getParentClaimantIsApplicant() == YES) {
             return caseData.getIsGaApplicantLip() == YES;
         } else {
-            return caseData.getIsGaRespondentOneLip() == YES || shouldTriggerApplicantNotification(caseData);
+            return caseData.getIsGaRespondentOneLip() == YES
+                || (shouldTriggerApplicantNotification(caseData) && caseData.getIsGaApplicantLip() == YES);
         }
     }
 }
