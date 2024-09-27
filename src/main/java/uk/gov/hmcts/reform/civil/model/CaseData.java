@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -70,12 +69,15 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.BeSpokeCostDeta
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Data
 @Builder(toBuilder = true)
@@ -333,6 +335,9 @@ public class CaseData implements MappableObject {
     private FeePaymentOutcomeDetails feePaymentOutcomeDetails;
     private String generalAppAddlnInfoText;
     private String generalAppWrittenRepText;
+    private YesOrNo respondentResponseDeadlineChecked;
+    //Case name for manage case
+    private String caseNameGaInternal;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -355,4 +360,11 @@ public class CaseData implements MappableObject {
             || businessProcess.getStatus() == FINISHED;
     }
 
+    @JsonIgnore
+    public boolean isUrgent() {
+        return Optional.ofNullable(this.getGeneralAppUrgencyRequirement())
+            .map(GAUrgencyRequirement::getGeneralAppUrgency)
+            .filter(urgency -> urgency == YES)
+            .isPresent();
+    }
 }

@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 
 import java.time.LocalDate;
 
@@ -57,7 +57,7 @@ class DismissalOrderGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
     @Autowired

@@ -149,6 +149,10 @@ public class CoreCaseDataService {
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
+    public void triggerGaEvent(Long caseId, CaseEvent eventName) {
+        triggerGaEvent(caseId, eventName, Map.of());
+    }
+
     public void triggerGaEvent(Long caseId, CaseEvent eventName, Map<String, Object> contentModified) {
         StartEventResponse startEventResponse = startGaUpdate(caseId.toString(), eventName);
         submitGaUpdate(caseId.toString(), caseDataContentFromStartEventResponse(startEventResponse, contentModified));
