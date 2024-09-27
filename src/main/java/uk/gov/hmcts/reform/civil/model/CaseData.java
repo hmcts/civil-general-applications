@@ -90,8 +90,6 @@ public class CaseData implements MappableObject {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private final LocalDateTime createdDate;
     private final String detailsOfClaim;
-    private Party applicant1;
-    private Party respondent1;
     private final YesOrNo addApplicant2;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
@@ -340,13 +338,6 @@ public class CaseData implements MappableObject {
     private YesOrNo respondentResponseDeadlineChecked;
     //Case name for manage case
     private String caseNameGaInternal;
-
-    @Builder.Default
-    private final List<Value<Document>> caseDocuments = new ArrayList<>();
-    private final String caseDocument1Name;
-
-    @Builder.Default
-    private final List<IdValue<Bundle>> caseBundles = new ArrayList<>();
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {

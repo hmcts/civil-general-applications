@@ -17,7 +17,6 @@ import java.util.Map;
 
 @Service
 public class BulkPrintService {
-
     private static final Logger log = LoggerFactory.getLogger(BulkPrintService.class);
     public static final String XEROX_TYPE_PARAMETER = "CMC001";
     protected static final String ADDITIONAL_DATA_LETTER_TYPE_KEY = "letterType";
