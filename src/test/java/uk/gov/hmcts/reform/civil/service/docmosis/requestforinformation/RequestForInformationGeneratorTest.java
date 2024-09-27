@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import static java.time.LocalDate.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -127,7 +128,7 @@ class RequestForInformationGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
-            var templateData = requestForInformationGenerator.getTemplateData(caseData, "auth");
+            var templateData = requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
         }
@@ -164,7 +165,7 @@ class RequestForInformationGeneratorTest {
                 .build();
 
             var templateData =
-                requestForInformationGenerator.getTemplateData(caseData, "auth");
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation_1v1(templateData, caseData);
         }
@@ -201,7 +202,7 @@ class RequestForInformationGeneratorTest {
                 .build();
 
             var templateData =
-                requestForInformationGenerator.getTemplateData(caseData, "auth");
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             Assertions.assertAll(
                 "Request For Information Document data should be as expected",

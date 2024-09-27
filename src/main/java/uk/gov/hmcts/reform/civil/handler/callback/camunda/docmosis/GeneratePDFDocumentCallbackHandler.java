@@ -11,10 +11,12 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
@@ -27,6 +29,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
@@ -52,6 +55,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +63,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
+    private static final String LIP_APPLICANT = "LipApplicant";
+    private static final String LIP_RESPONDENT = "LipRespondent";
 
     private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
@@ -75,6 +81,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private final AssignCategoryId assignCategoryId;
     private final GaForLipService gaForLipService;
+
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
 
     @Override
     public String camundaActivityId() {
@@ -102,8 +111,18 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
         CaseData caseData = callbackParams.getCaseData();
 
+        CaseData civilCaseData = CaseData.builder().build();
+        if (gaForLipService.isGaForLip(caseData)) {
+            civilCaseData = caseDetailsConverter
+                .toCaseData(coreCaseDataService
+                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
+        }
+
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument decision = null;
+        CaseDocument postJudgeOrderToLipApplicant = null;
+        CaseDocument postJudgeOrderToLipRespondent = null;
         if (Objects.nonNull(caseData.getApproveConsentOrder())) {
             decision = consentOrderGenerator.generate(
                 caseDataBuilder.build(),
@@ -234,6 +253,24 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                                                           AssignCategoryId.APPLICATIONS
             );
 
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = requestForInformationGenerator.generate(
+                    civilCaseData,
+                    caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    FlowFlag.LIP_APPLICANT
+                );
+            }
+
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
+                    civilCaseData,
+                    caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    FlowFlag.LIP_RESPONDENT
+                );
+            }
+
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         } else if (Objects.nonNull(caseData.getJudicialDecision())) {
             if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
@@ -257,16 +294,28 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
         }
 
-        if (gaForLipService.isGaForLip(caseData) && Objects.nonNull(decision)) {
-            sendFinalOrderPrintService
-                .sendJudgeFinalOrderToPrintForLIP(
-                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    decision.getDocumentLink(), caseData);
+        if (Objects.nonNull(postJudgeOrderToLipApplicant)) {
+            sendJudgeFinalOrderPrintService(
+                callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                postJudgeOrderToLipApplicant, caseData, civilCaseData, LIP_APPLICANT);
+        }
+
+        if (Objects.nonNull(postJudgeOrderToLipRespondent)) {
+            sendJudgeFinalOrderPrintService(
+                callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                postJudgeOrderToLipRespondent, caseData, civilCaseData, LIP_RESPONDENT);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private void sendJudgeFinalOrderPrintService(String callbackParams, CaseDocument decision, CaseData caseData, CaseData civilCaseData, String lipUserType) {
+        sendFinalOrderPrintService
+            .sendJudgeFinalOrderToPrintForLIP(
+                callbackParams,
+                decision.getDocumentLink(), caseData, civilCaseData, lipUserType);
     }
 
     private boolean isRequestMoreInfo(final CaseData caseData) {

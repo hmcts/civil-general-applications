@@ -68,6 +68,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderRe
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.BeSpokeCostDetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailText;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -76,8 +77,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag.LIP_APPLICANT;
 
 @Data
 @Builder(toBuilder = true)
@@ -130,6 +133,8 @@ public class CaseData implements MappableObject {
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
     private final CaseLink caseLink;
+    private Party applicant1;
+    private Party respondent1;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final IdamUserDetails civilServiceUserRoles;
@@ -366,5 +371,113 @@ public class CaseData implements MappableObject {
             .map(GAUrgencyRequirement::getGeneralAppUrgency)
             .filter(urgency -> urgency == YES)
             .isPresent();
+    }
+
+    @JsonIgnore
+    public boolean identifyParentClaimantIsApplicant(CaseData caseData) {
+
+        return caseData.getParentClaimantIsApplicant() == null
+            || YES.equals(caseData.getParentClaimantIsApplicant());
+
+    }
+
+    @JsonIgnore
+    public String getPartyName(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? civilCaseData.getApplicant1().getPartyName()
+                : civilCaseData.getRespondent1().getPartyName();
+        } else {
+            return parentClaimantIsApplicant
+                ? civilCaseData.getRespondent1().getPartyName()
+                : civilCaseData.getApplicant1().getPartyName();
+        }
+    }
+
+    @JsonIgnore
+    public String partyAddressAddressLine1(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine1())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine1())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        } else {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine1())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine1())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        }
+    }
+
+    @JsonIgnore
+    public String partyAddressAddressLine2(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine2())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine2())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        } else {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine2())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine2())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        }
+    }
+
+    @JsonIgnore
+    public String partyAddressAddressLine3(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine3())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine3())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        } else {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getAddressLine3())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine3())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        }
+    }
+
+    @JsonIgnore
+    public String partyAddressPostCode(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostCode())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getPostCode())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        } else {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getPostCode())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostCode())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        }
+    }
+
+    @JsonIgnore
+    public String partyAddressPostTown(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
+        if (userType.equals(LIP_APPLICANT)) {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostTown())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getPostTown())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        } else {
+            return parentClaimantIsApplicant
+                ? ofNullable(civilCaseData.getRespondent1().getPrimaryAddress().getPostTown())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
+                : ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostTown())
+                .orElse(org.apache.commons.lang3.StringUtils.EMPTY);
+        }
     }
 }

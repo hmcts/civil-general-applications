@@ -18,12 +18,14 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
@@ -39,7 +41,18 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     private final GaForLipService gaForLipService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
+        JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+        return generateDocmosisDocument(templateData, caseData, authorisation);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+        JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+
+        return generateDocmosisDocument(templateData, caseData, authorisation);
+    }
+
+    public CaseDocument generateDocmosisDocument(JudgeDecisionPdfDocument templateData, CaseData caseData, String authorisation) {
 
         DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
         DocumentType documentType = getDocumentType(caseData);
@@ -62,7 +75,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -72,18 +85,25 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
-                .siteName(caseData.getCaseManagementLocation().getSiteName())
-                .address(caseData.getCaseManagementLocation().getAddress())
-                .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
                 .submittedOn(LocalDate.now())
                 .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate())
                 .additionalApplicationFee(getAdditionalApplicationFee(caseData))
                 .applicationCreatedDate(caseData.getCreatedDate().toLocalDate());
-            ;
 
+        if (List.of(FlowFlag.LIP_APPLICANT, FlowFlag.LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            return judgeDecisionPdfDocumentBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
         return judgeDecisionPdfDocumentBuilder.build();
     }
 

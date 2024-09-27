@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 import uk.gov.hmcts.reform.civil.service.Time;
@@ -85,6 +86,12 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private HearingOrderGenerator hearingOrderGenerator;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
 
     @MockBean
     private WrittenRepresentationConcurrentOrderGenerator writtenRepresentationConcurrentOrderGenerator;
