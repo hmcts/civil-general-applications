@@ -311,10 +311,10 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             .build();
     }
 
-    private void sendJudgeFinalOrderPrintService(String callbackParams, CaseDocument decision, CaseData caseData, CaseData civilCaseData, String lipUserType) {
+    private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, String lipUserType) {
         sendFinalOrderPrintService
             .sendJudgeFinalOrderToPrintForLIP(
-                callbackParams,
+                authorisation,
                 decision.getDocumentLink(), caseData, civilCaseData, lipUserType);
     }
 

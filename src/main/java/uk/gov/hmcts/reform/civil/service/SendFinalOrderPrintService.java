@@ -53,14 +53,9 @@ public class SendFinalOrderPrintService {
             recipients.add(caseData.getPartyName(parentClaimantIsApplicant, FlowFlag.LIP_RESPONDENT, civilCaseData));
         }
 
-        sendBulkPrint(letterContent, caseData, civilCaseData, recipients);
-
-    }
-
-    private void sendBulkPrint(byte[] letterContent, CaseData caseData, CaseData civilCaseData, List<String> recipients) {
-
         bulkPrintService.printLetter(letterContent, caseData.getCcdCaseReference().toString(),
                                      civilCaseData.getLegacyCaseReference(),
                                      SendFinalOrderPrintService.FINAL_ORDER_PACK_LETTER_TYPE, recipients);
+
     }
 }

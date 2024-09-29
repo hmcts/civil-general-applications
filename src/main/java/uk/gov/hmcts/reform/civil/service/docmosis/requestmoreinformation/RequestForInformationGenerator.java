@@ -30,7 +30,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
 
 @Service
 @RequiredArgsConstructor
@@ -86,10 +86,6 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
-                .siteName(caseData.getCaseManagementLocation().getSiteName())
-                .address(caseData.getCaseManagementLocation().getAddress())
-                .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .judgeRecital(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRecitalText())
                 .judgeComments(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoText())
                 .submittedOn(LocalDate.now())
@@ -116,7 +112,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = getGAJudgeRequestMoreInfoOption(caseData);
 
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
-            return POST_JUDGE_ORDER_LIP;
+            return POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
         }
 
         if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
