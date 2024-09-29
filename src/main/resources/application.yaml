@@ -166,6 +166,9 @@ notifications:
   notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
   notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
 
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:false}
+
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
   key: ${OS_POSTCODE_LOOKUP_API_KEY:}
@@ -356,7 +359,7 @@ rd_professional:
     url: http://localhost:6665
 
 sendgrid:
-  api-key: fake-key
+  api-key: ${SENDGRID_API_KEY:fake-key}
 ---
 
 spring:
@@ -369,5 +372,4 @@ idam:
     url: http://ccd-test-stubs-service:5555
   api:
     url: http://ccd-test-stubs-service:5555
-  sendgrid:
-    api-key: ${SENDGRID_API_KEY:false}
+
