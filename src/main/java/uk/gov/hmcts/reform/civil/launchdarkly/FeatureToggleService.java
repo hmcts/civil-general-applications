@@ -32,7 +32,7 @@ public class FeatureToggleService {
     }
 
     public boolean isGaForLipsEnabled() {
-        return true;
+        return internalClient.boolVariation("GaForLips", createLDUser().build(), false);
     }
 
     public boolean isOrganisationOnboarded(String orgId) {
@@ -53,7 +53,7 @@ public class FeatureToggleService {
     }
 
     public boolean isDashboardServiceEnabled() {
-        return true;
+        return internalClient.boolVariation("dashboard-service", createLDUser().build(), false);
     }
 
     public LDUser.Builder createLDUser() {

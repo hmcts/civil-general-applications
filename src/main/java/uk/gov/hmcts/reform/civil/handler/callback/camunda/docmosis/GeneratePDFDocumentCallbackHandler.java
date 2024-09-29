@@ -258,7 +258,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     civilCaseData,
                     caseData,
                     callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    FlowFlag.LIP_APPLICANT
+                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
                 );
             }
 
@@ -267,7 +267,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     civilCaseData,
                     caseData,
                     callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    FlowFlag.LIP_RESPONDENT
+                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
                 );
             }
 
