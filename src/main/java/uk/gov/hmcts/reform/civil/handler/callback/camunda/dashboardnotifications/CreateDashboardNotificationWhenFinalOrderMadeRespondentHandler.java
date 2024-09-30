@@ -19,8 +19,8 @@ public class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler exte
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE);
 
     public CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler(DashboardApiClient dashboardApiClient,
-                                                                          DashboardNotificationsParamsMapper mapper,
-                                                                          FeatureToggleService featureToggleService) {
+                                                                         DashboardNotificationsParamsMapper mapper,
+                                                                         FeatureToggleService featureToggleService) {
         super(dashboardApiClient, mapper, featureToggleService);
     }
 

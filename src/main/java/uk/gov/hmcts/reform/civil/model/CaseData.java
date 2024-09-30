@@ -81,6 +81,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Data
@@ -375,12 +376,26 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
+    public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
+            && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())
+            && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber());
+    }
+
+    @JsonIgnore
     public boolean judgeHasMadeAnOrder() {
-        return (Objects.nonNull(this.getJudicialDecision())
-            && this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+        return (Objects.nonNull(this.getJudicialDecision()))
+            && (this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
             || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
             || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING));
     }
+
+    @JsonIgnore
+    public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
+    }
+
 
     @JsonIgnore
     public boolean isApplicantBilingual(YesOrNo parentClaimant) {
