@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +30,7 @@ public class HearingScheduledNotificationService implements NotificationData {
     private final NotificationsProperties notificationProperties;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final CoreCaseDataService coreCaseDataService;
-    private final Map<String, String> customProps;
+    private final Map<String, String> customProps = new HashMap<>();
     private final GaForLipService gaForLipService;
     private static final String REFERENCE_TEMPLATE_HEARING = "general-apps-notice-of-hearing-%s";
     private static final String RESPONDENT = "respondent";
@@ -90,7 +91,6 @@ public class HearingScheduledNotificationService implements NotificationData {
     }
 
     public CaseData sendNotificationForClaimant(CaseData caseData) throws NotificationException {
-
 
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService

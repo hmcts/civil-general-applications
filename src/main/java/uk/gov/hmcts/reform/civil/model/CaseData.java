@@ -396,7 +396,6 @@ public class CaseData implements MappableObject {
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
     }
 
-
     @JsonIgnore
     public boolean isApplicantBilingual(YesOrNo parentClaimant) {
         if (YES.equals(parentClaimant)) {
