@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
@@ -28,14 +29,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 @RequiredArgsConstructor
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
-    private static final String CONFIRMATION_BODY = "<br/>"
-        + "<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
-        + " is now due for payment. Your application will not be processed further"
-        + " until this fee is paid.</p>"
-        + "%n%n To pay this fee, click the link below, or else open your application from the"
-        + " Applications tab of this case listing and then click on the service request tab."
-        + "%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n";
-
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
             + " on this application."
             + "<br/> <p>  The other party's legal representative has been notified that you have"
@@ -43,6 +36,8 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
     private final GeneralAppFeesService generalAppFeesService;
+    private final FeatureToggleService featureToggleService;
+
     @Override
     protected Map<String, Callback> callbacks() {
         return Map.of(
@@ -80,11 +75,30 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
     private String buildConfirmationSummary(GeneralApplication application, Long ccdCaseReference) {
 
         BigDecimal fee = application.getGeneralAppPBADetails().getFee().toPounds();
+
         return generalAppFeesService.isFreeGa(application) ? CONFIRMATION_BODY_FREE : format(
-            CONFIRMATION_BODY,
+            generateConfirmationBody(),
             fee,
             format("/cases/case-details/%s#Applications", ccdCaseReference)
         );
     }
 
+    private String generateConfirmationBody() {
+        StringBuilder bodyConfirmation = new StringBuilder();
+        bodyConfirmation.append("<br/>");
+        bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+                                    + " is now due for payment. Your application will not be processed further"
+                                    + " until this fee is paid.</p>");
+        bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
+                                    + " Applications tab of this case listing and then click on the service request tab.");
+
+        if (featureToggleService.isGaForLipsEnabled()) {
+            bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
+                                        + "including any response from the court, will be translated."
+                                        + " You will be notified when these are available.");
+        }
+
+        bodyConfirmation.append("%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n");
+        return bodyConfirmation.toString();
+    }
 }

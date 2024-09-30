@@ -21,11 +21,26 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT("Scenario.AAA6.GeneralApps.ApplicationUncloaked.OrderMade.Respondent"),
     SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT("Scenario.AAA6.GeneralApps.ApplicationSubmitted.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT("Scenario.AAA6.GeneralApps.MoreInfoRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.WrittenRepresentationRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_DELETE_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT("Scenario.AAA6.GeneralApps.DeleteWrittenRepresentationRequired.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_SWITCH_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT_APPLICANT(
+        "Scenario.AAA6.GeneralApps.SwitchWrittenRepresentationRequired.RespondentApplicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT("Scenario.AAA6.GeneralApps.HearingScheduled.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT("Scenario.AAA6.GeneralApps.HearingScheduled.Respondent"),
-    SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT("Scenario.AAA6.GeneralApps.RespondentResponseSubmitted.Applicant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT("Scenario.AAA6.GeneralApps.RespondentResponseSubmitted.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_PARTIAL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.PartRemission.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_INVALID_REFERENCE_APPLICANT("Scenario.AAA6.GeneralApps.HwF.InvalidRef.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_APPLICANT("Scenario.AAA6.GeneralApps.OrderMade.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT("Scenario.AAA6.GeneralApps.OrderMade.Respondent"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_REJECTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRejected.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_REQUESTED_APPLICANT("Scenario.AAA6.GeneralApps.HwFRequested.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT("Scenario.AAA6.GeneralApps.AdditionalApplicationFeeRequired.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_MORE_INFORMATION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.MoreInfoRequired.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FeePaid.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FullRemission.Applicant");
 
     private final String scenario;
 
