@@ -405,7 +405,7 @@ public class CaseData implements MappableObject {
         } else {
             return Objects.nonNull(respondent1LiPResponse)
                 && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Lang.ENGLISH.name());
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
         }
     }
 
