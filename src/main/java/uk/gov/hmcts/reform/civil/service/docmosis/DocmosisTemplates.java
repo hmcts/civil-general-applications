@@ -22,7 +22,8 @@ public enum DocmosisTemplates {
     POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP("CV-UNS-GAP-ENG-01080.docx", "Post_judge_request_for_information_order_%s.pdf"),
     POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP("CV-UNS-GAP-ENG-01081.docx", "Post_judge_request_for_information_with_notice_%s.pdf"),
     POST_JUDGE_FREE_FORM_ORDER_LIP("CV-UNS-GAP-ENG-01082.docx", "Post_judge_free_form_order_%s.pdf"),
-    POST_JUDGE_GENERAL_ORDER_LIP("CV-UNS-GAP-ENG-01083.docx", "Post_judge_general_order_for_application_%s.pdf");
+    POST_JUDGE_GENERAL_ORDER_LIP("CV-UNS-GAP-ENG-01083.docx", "Post_judge_general_order_for_application_%s.pdf"),
+    POST_JUDGE_DIRECTION_ORDER_LIP("CV-UNS-GAP-ENG-01084.docx", "Post_judge_direction_order_for_application_%s.pdf");
     private final String template;
     private final String documentTitle;
 
