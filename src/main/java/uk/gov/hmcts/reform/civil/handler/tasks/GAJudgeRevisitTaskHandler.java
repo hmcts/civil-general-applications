@@ -58,7 +58,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
         }
 
         // Change state for all cases where both deadlines have passed
-        claimantNotificationCases.stream().filter(caseDetails -> defendantNotificationCases.contains(caseDetails))
+        claimantNotificationCases.stream().filter(defendantNotificationCases::contains)
             .forEach(this::fireEventForStateChange);
 
         List<CaseDetails> directionOrderCases = getDirectionOrderCaseReadyToJudgeRevisit();
