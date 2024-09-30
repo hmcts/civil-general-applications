@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -173,7 +174,7 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
     }
 
     @Test
@@ -186,7 +187,7 @@ class FreeFormOrderGeneratorTest {
                             .epimmsId("2")
                             .externalShortName("London")
                             .build());
-        FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
+        FreeFormOrder templateDate = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThatFieldsAreCorrect_FreeFormOrder(templateDate, caseData);
     }
 
@@ -219,7 +220,7 @@ class FreeFormOrderGeneratorTest {
                             .epimmsId("2")
                             .externalShortName("Manchester")
                             .build());
-        FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
+        FreeFormOrder templateDate = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
     }
 

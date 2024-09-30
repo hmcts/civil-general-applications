@@ -144,7 +144,31 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+
+                if (gaForLipService.isLipApp(caseData)) {
+                    postJudgeOrderToLipApplicant = freeFormOrderGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                    );
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                    postJudgeOrderToLipRespondent = freeFormOrderGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+                }
+
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
+
+                // to do
                 decision = assistedOrderFormGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
@@ -253,15 +277,22 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                                                           AssignCategoryId.APPLICATIONS
             );
 
+            /*
+            * Generate Judge Request for Information order document with LIP Applicant Post Address
+            * */
+
             if (gaForLipService.isLipApp(caseData)) {
                 postJudgeOrderToLipApplicant = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
                     callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
                 );
             }
 
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * */
             if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
                 postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
                     civilCaseData,
@@ -294,12 +325,18 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
         }
 
+        /*
+        * Send Judge order document to Lip Applicant
+        * */
         if (Objects.nonNull(postJudgeOrderToLipApplicant)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
                 postJudgeOrderToLipApplicant, caseData, civilCaseData, LIP_APPLICANT);
         }
 
+        /*
+         * Send Judge order document to Lip Respondent
+         * */
         if (Objects.nonNull(postJudgeOrderToLipRespondent)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),

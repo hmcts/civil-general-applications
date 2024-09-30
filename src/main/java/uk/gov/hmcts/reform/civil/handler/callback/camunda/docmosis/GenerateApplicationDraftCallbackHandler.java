@@ -100,7 +100,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
           3. Draft document should be generated only if Free fee application
           4. Draft document should be generated only after payment is made for urgent application and without notice
          */
-        if ((isApplicationUrgentAndFreeFee(caseData)
+        /*if ((isApplicationUrgentAndFreeFee(caseData)
             || isGANonUrgentWithOutNoticeFeePaid(caseData)
             || isApplicationUrgentAndFeePaid(caseData)
             || isRespondentsResponseSatisfied(caseData, caseDataBuilder.build()))
@@ -119,7 +119,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                                                           document -> document.getValue().getDocumentLink(),
                                                           AssignCategoryId.APPLICATIONS);
             caseDataBuilder.gaDraftDocument(draftApplicationList);
-        }
+        }*/
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
