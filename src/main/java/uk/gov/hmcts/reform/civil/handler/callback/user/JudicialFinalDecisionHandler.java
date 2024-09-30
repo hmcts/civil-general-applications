@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMa
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -94,6 +95,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
     private final DeadlinesCalculator deadlinesCalculator;
     private final IdamClient idamClient;
+    private final GaForLipService gaForLipService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -161,6 +163,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .caseNameHmctsInternal(getAllPartyNames(caseData));
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
+        caseDataBuilder.bilingualHint(gaForLipService.anyWelshNotice(caseData) ? YES : NO);
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
@@ -294,6 +297,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private CallbackResponse setFinalDecisionBusinessProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.bilingualHint(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
