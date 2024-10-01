@@ -16,8 +16,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 public class GaForLipService {
 
     private final FeatureToggleService featureToggleService;
-    private final CaseDetailsConverter caseDetailsConverter;
-    private final CoreCaseDataService coreCaseDataService;
 
     public boolean isGaForLip(CaseData caseData) {
         return featureToggleService.isGaForLipsEnabled() && (Objects.nonNull(caseData.getIsGaApplicantLip())
@@ -41,42 +39,16 @@ public class GaForLipService {
                 && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 
-    public boolean isWelshApp(CaseData caseData) {
+    public boolean anyWelsh(CaseData civilCaseData, CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
-            CaseData civilCaseData = caseDetailsConverter
-                .toCaseData(coreCaseDataService
-                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
-            return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
-        }
-        return false;
-    }
-
-    public boolean isWelshResp(CaseData caseData) {
-        if (featureToggleService.isGaForLipsEnabled()) {
-            CaseData civilCaseData = caseDetailsConverter
-                .toCaseData(coreCaseDataService
-                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
-            return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
-        }
-        return false;
-    }
-
-    public boolean anyWelsh(CaseData caseData) {
-        if (featureToggleService.isGaForLipsEnabled()) {
-            CaseData civilCaseData = caseDetailsConverter
-                .toCaseData(coreCaseDataService
-                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
             return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
                 || civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
         }
         return false;
     }
 
-    public boolean anyWelshNotice(CaseData caseData) {
+    public boolean anyWelshNotice(CaseData civilCaseData, CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
-            CaseData civilCaseData = caseDetailsConverter
-                .toCaseData(coreCaseDataService
-                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
             if (!JudicialDecisionNotificationUtil.isWithNotice(caseData)) {
                 return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
             }
