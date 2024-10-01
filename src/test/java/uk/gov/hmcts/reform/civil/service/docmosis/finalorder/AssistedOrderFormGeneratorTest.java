@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -2071,7 +2072,7 @@ class AssistedOrderFormGeneratorTest {
 
     @Test
     void test_getTemplate() {
-        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
     }
 
     @Test
@@ -2121,7 +2122,7 @@ class AssistedOrderFormGeneratorTest {
             BEARER_TOKEN,
             new PDF(any(), any(), DocumentType.GENERAL_ORDER));
 
-        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        var templateData = generator.getTemplateData(null, caseData, BEARER_TOKEN, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
         assertThat(templateData.getAddress()).isEqualTo("london court");
         assertThat(templateData.getSiteName()).isEqualTo("testing");
@@ -2160,7 +2161,7 @@ class AssistedOrderFormGeneratorTest {
             BEARER_TOKEN,
             new PDF(any(), any(), DocumentType.GENERAL_ORDER));
 
-        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        var templateData = generator.getTemplateData(null, caseData, BEARER_TOKEN, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
         assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
         assertThat(templateData.getClaimant2Name()).isEqualTo(caseData.getClaimant2PartyName());

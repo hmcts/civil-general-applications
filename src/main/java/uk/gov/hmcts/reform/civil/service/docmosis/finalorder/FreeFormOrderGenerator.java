@@ -49,7 +49,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         return  generateDocmosisDocument(templateData, authorisation, userType);
     }
 
-    public CaseDocument generateDocmosisDocument(FreeFormOrder templateData, String authorisation, FlowFlag userType ) {
+    public CaseDocument generateDocmosisDocument(FreeFormOrder templateData, String authorisation, FlowFlag userType) {
 
         DocmosisTemplates template = getTemplate(userType);
         DocmosisDocument document =

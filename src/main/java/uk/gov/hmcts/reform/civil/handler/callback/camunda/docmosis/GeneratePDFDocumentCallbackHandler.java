@@ -177,6 +177,31 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Applicant Post Address
+                 * */
+                if (gaForLipService.isLipApp(caseData)) {
+                    postJudgeOrderToLipApplicant = assistedOrderFormGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                    );
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * if GA is with notice
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                    postJudgeOrderToLipRespondent = assistedOrderFormGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+                }
             }
             List<Element<CaseDocument>> newGeneralOrderDocumentList =
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
