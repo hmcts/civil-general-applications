@@ -14,14 +14,17 @@ public class GARespondentResponse implements MappableObject {
     private GAHearingDetails gaHearingDetails;
     private final YesOrNo generalAppRespondent1Representative;
     private final String gaRespondentDetails;
+    private final String gaRespondentResponseReason;
 
     @JsonCreator
     GARespondentResponse(@JsonProperty("gaHearingDetails") GAHearingDetails gaHearingDetails,
                          @JsonProperty("generalAppRespondent1Representative")
                              YesOrNo generalAppRespondent1Representative,
-                         @JsonProperty("gaRespondentDetails") String gaRespondentDetails) {
+                         @JsonProperty("gaRespondentDetails") String gaRespondentDetails,
+                         @JsonProperty("gaRespondentResponseReason") String gaRespondentResponseReason) {
         this.gaHearingDetails = gaHearingDetails;
         this.generalAppRespondent1Representative = generalAppRespondent1Representative;
         this.gaRespondentDetails = gaRespondentDetails;
+        this.gaRespondentResponseReason = gaRespondentResponseReason;
     }
 }

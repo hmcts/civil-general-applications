@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -16,11 +16,11 @@ import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Optional;
 
-@Api
+@Tag(name = "AssignCaseSupportController")
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -37,14 +37,15 @@ public class AssignCaseSupportController {
     private final OrganisationService organisationService;
 
     @PostMapping(value = {"/assign-case/{caseId}", "/assign-case/{caseId}/{caseRole}"})
-    @ApiOperation("Assign case to user")
+    @Operation(summary = "Assign case to user")
     public void assignCase(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
                            @PathVariable("caseId") String caseId,
                            @PathVariable("caseRole") Optional<CaseRole> caseRole) {
         String userId = idamClient.getUserInfo(authorisation).getUid();
+        boolean isCitizen = !caseRole.map(CaseRole::isProfessionalRole).orElse(false);
 
-        String organisationId = organisationService.findOrganisation(authorisation)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+        String organisationId = isCitizen ? null : organisationService.findOrganisation(authorisation)
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
 
         coreCaseUserService.assignCase(
             caseId,

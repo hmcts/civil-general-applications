@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -23,51 +24,67 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class GeneralApplication implements MappableObject {
 
-    private final GAApplicationType generalAppType;
-    private final GARespondentOrderAgreement generalAppRespondentAgreement;
+    private GAApplicationType generalAppType;
+    private GARespondentOrderAgreement generalAppRespondentAgreement;
+    private final YesOrNo generalAppConsentOrder;
     private final BusinessProcess businessProcess;
     private final GAPbaDetails generalAppPBADetails;
-    private final String generalAppDetailsOfOrder;
-    private final String generalAppReasonsOfOrder;
-    private final GAInformOtherParty generalAppInformOtherParty;
-    private final GAUrgencyRequirement generalAppUrgencyRequirement;
-    private final GAStatementOfTruth generalAppStatementOfTruth;
-    private final GAHearingDetails generalAppHearingDetails;
-    private final GASolicitorDetailsGAspec generalAppApplnSolicitor;
-    private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
-    private final List<Element<Document>> generalAppEvidenceDocument;
-    private final LocalDateTime generalAppDateDeadline;
-    private final YesOrNo isMultiParty;
-    private final YesOrNo parentClaimantIsApplicant;
+    private YesOrNo generalAppAskForCosts;
+    private String generalAppDetailsOfOrder;
+    private String generalAppReasonsOfOrder;
+    private GAInformOtherParty generalAppInformOtherParty;
+    private GAUrgencyRequirement generalAppUrgencyRequirement;
+    private GAStatementOfTruth generalAppStatementOfTruth;
+    private GAHearingDetails generalAppHearingDetails;
+    private GASolicitorDetailsGAspec generalAppApplnSolicitor;
+    private List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
+    private List<Element<GASolicitorDetailsGAspec>> generalAppApplicantAddlSolicitors;
+    private List<Element<Document>> generalAppEvidenceDocument;
+    private LocalDateTime generalAppDateDeadline;
+    private YesOrNo isMultiParty;
+    private YesOrNo isDocumentVisible;
+    private YesOrNo parentClaimantIsApplicant;
+    private String gaApplicantDisplayName;
     private CaseLink caseLink;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
-    private final IdamUserDetails civilServiceUserRoles;
+    private IdamUserDetails civilServiceUserRoles;
     private LocalDateTime generalAppSubmittedDateGAspec;
     private final List<Element<SolicitorDetails>> applicantSolicitors;
     private final List<Element<SolicitorDetails>> defendantSolicitors;
     private final List<Element<GARespondentResponse>> respondentsResponses;
-    private final String applicantPartyName;
-    private final String claimant1PartyName;
-    private final String claimant2PartyName;
-    private final String defendant1PartyName;
-    private final String defendant2PartyName;
+    private String applicantPartyName;
+    private String claimant1PartyName;
+    private String claimant2PartyName;
+    private String defendant1PartyName;
+    private String defendant2PartyName;
     private final String litigiousPartyID;
-    private final String generalAppSuperClaimType;
+    private String generalAppSuperClaimType;
     private final GACaseLocation caseManagementLocation;
-    private final YesOrNo isCcmccLocation;
-    private final GACaseManagementCategory caseManagementCategory;
-    private final String locationName;
-    private final CaseCategory caseAccessCategory;
-    private final YesOrNo generalAppVaryJudgementType;
-    private final Document generalAppN245FormUpload;
-    private final GAHearingDateGAspec generalAppHearingDate;
+    private YesOrNo isCcmccLocation;
+    private GACaseManagementCategory caseManagementCategory;
+    private String locationName;
+    private CaseCategory caseAccessCategory;
+    private YesOrNo generalAppVaryJudgementType;
+    private Document generalAppN245FormUpload;
+    private GAHearingDateGAspec generalAppHearingDate;
+
+    // GA for LIP
+    private final YesOrNo isGaApplicantLip;
+    private final YesOrNo isGaRespondentOneLip;
+    private final YesOrNo isGaRespondentTwoLip;
+    private HelpWithFees generalAppHelpWithFees;
+    //Case name for manage case
+    private String caseNameGaInternal;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
                        @JsonProperty("generalAppRespondentAgreement")
                            GARespondentOrderAgreement generalAppRespondentAgreement,
+                       @JsonProperty("generalAppConsentOrder")
+                       YesOrNo generalAppConsentOrder,
                        @JsonProperty("businessProcess") BusinessProcess businessProcess,
                        @JsonProperty("generalAppPBADetails") GAPbaDetails generalAppPBADetails,
+                       @JsonProperty("generalAppAskForCosts") YesOrNo generalAppAskForCosts,
                        @JsonProperty("generalAppDetailsOfOrder") String generalAppDetailsOfOrder,
                        @JsonProperty("generalAppReasonsOfOrder") String generalAppReasonsOfOrder,
                        @JsonProperty("generalAppInformOtherParty") GAInformOtherParty generalAppInformOtherParty,
@@ -77,10 +94,14 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppApplnSolicitor") GASolicitorDetailsGAspec generalAppApplnSolicitor,
                        @JsonProperty("generalAppRespondentSolicitors") List<Element<GASolicitorDetailsGAspec>>
                            generalAppRespondentSolicitors,
+                       @JsonProperty("generalAppApplicantAddlSolicitors") List<Element<GASolicitorDetailsGAspec>>
+                           generalAppApplicantAddlSolicitors,
                        @JsonProperty("generalAppEvidenceDocument") List<Element<Document>> generalAppEvidenceDocument,
                        @JsonProperty("generalAppDateDeadline") LocalDateTime generalAppDateDeadline,
                        @JsonProperty("isMultiParty") YesOrNo isMultiParty,
+                       @JsonProperty("isDocumentVisible") YesOrNo isDocumentVisible,
                        @JsonProperty("parentClaimantIsApplicant") YesOrNo parentClaimantIsApplicant,
+                       @JsonProperty("gaApplicantDisplayName") String gaApplicantDisplayName,
                        @JsonProperty("caseLink") CaseLink caseLink,
                        @JsonProperty("generalAppParentCaseLink") GeneralAppParentCaseLink generalAppParentCaseLink,
                        @JsonProperty("civilServiceUserRoles") IdamUserDetails civilServiceUserRoles,
@@ -102,11 +123,18 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,
                        @JsonProperty("generalAppVaryJudgementType") YesOrNo generalAppVaryJudgementType,
                        @JsonProperty("generalAppN245FormUpload") Document generalAppN245FormUpload,
-                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate) {
+                       @JsonProperty("generalAppHearingDate") GAHearingDateGAspec generalAppHearingDate,
+                       @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
+                       @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
+                       @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
+                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees,
+                       @JsonProperty("caseNameGaInternal") String caseNameGaInternal) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
+        this.generalAppConsentOrder = generalAppConsentOrder;
         this.businessProcess = businessProcess;
         this.generalAppPBADetails = generalAppPBADetails;
+        this.generalAppAskForCosts = generalAppAskForCosts;
         this.generalAppDetailsOfOrder = generalAppDetailsOfOrder;
         this.generalAppReasonsOfOrder = generalAppReasonsOfOrder;
         this.generalAppInformOtherParty = generalAppInformOtherParty;
@@ -115,10 +143,13 @@ public class GeneralApplication implements MappableObject {
         this.generalAppHearingDetails = generalAppHearingDetails;
         this.generalAppApplnSolicitor = generalAppApplnSolicitor;
         this.generalAppRespondentSolicitors = generalAppRespondentSolicitors;
+        this.generalAppApplicantAddlSolicitors = generalAppApplicantAddlSolicitors;
         this.generalAppEvidenceDocument = generalAppEvidenceDocument;
         this.generalAppDateDeadline = generalAppDateDeadline;
         this.isMultiParty = isMultiParty;
+        this.isDocumentVisible = isDocumentVisible;
         this.parentClaimantIsApplicant = parentClaimantIsApplicant;
+        this.gaApplicantDisplayName = gaApplicantDisplayName;
         this.caseLink = caseLink;
         this.generalAppParentCaseLink = generalAppParentCaseLink;
         this.civilServiceUserRoles = civilServiceUserRoles;
@@ -141,6 +172,11 @@ public class GeneralApplication implements MappableObject {
         this.generalAppVaryJudgementType = generalAppVaryJudgementType;
         this.generalAppN245FormUpload = generalAppN245FormUpload;
         this.generalAppHearingDate = generalAppHearingDate;
+        this.isGaApplicantLip = isGaApplicantLip;
+        this.isGaRespondentOneLip = isGaRespondentOneLip;
+        this.isGaRespondentTwoLip = isGaRespondentTwoLip;
+        this.generalAppHelpWithFees = generalAppHelpWithFees;
+        this.caseNameGaInternal = caseNameGaInternal;
     }
 
     @JsonIgnore

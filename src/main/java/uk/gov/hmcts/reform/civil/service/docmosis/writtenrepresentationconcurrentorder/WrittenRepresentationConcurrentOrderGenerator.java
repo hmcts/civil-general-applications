@@ -10,18 +10,19 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
-import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +32,13 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     private final DocumentGeneratorService documentGeneratorService;
     private final ListGeneratorService listGeneratorService;
 
-    public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
+    private final DocmosisService docmosisService;
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+    public CaseDocument generate(CaseData caseData, String authorisation) {
+
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
+
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -54,25 +58,28 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-
-        String defendantName = listGeneratorService.defendantsName(caseData);
-
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
         String collect = listGeneratorService.applicationType(caseData);
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .claimNumber(caseData.getCcdCaseReference().toString())
                 .applicationType(collect)
-                .claimantName(claimantName)
-                .defendantName(defendantName)
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .judgeRecital(caseData.getJudgeRecitalText())
                 .writtenOrder(caseData.getDirectionInRelationToHearingText())
                 .uploadDeadlineDate(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                                         .getWrittenConcurrentRepresentationsBy())
-                .submittedOn(getFormattedDate(new Date()))
-                .locationName(caseData.getLocationName())
+                .submittedOn(LocalDate.now())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .siteName(caseData.getCaseManagementLocation().getSiteName())
+                .address(caseData.getCaseManagementLocation().getAddress())
+                .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .judicialByCourtsInitiativeForWrittenRep(populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
@@ -84,10 +91,20 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
                                                                               .OPTION_3)) {
             return StringUtils.EMPTY;
         }
-        return caseData.getJudicialByCourtsInitiativeForWrittenRep().getDisplayedValue();
+
+        if (caseData.getJudicialByCourtsInitiativeForWrittenRep()
+            .equals(GAByCourtsInitiativeGAspec.OPTION_1)) {
+            return caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " "
+                .concat(caseData.getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiativeDate()
+                            .format(DATE_FORMATTER));
+        } else {
+            return caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNotice() + " "
+                .concat(caseData.getOrderWithoutNoticeForWrittenRep().getOrderWithoutNoticeDate()
+                            .format(DATE_FORMATTER));
+        }
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return WRITTEN_REPRESENTATION_CONCURRENT;
     }
 }

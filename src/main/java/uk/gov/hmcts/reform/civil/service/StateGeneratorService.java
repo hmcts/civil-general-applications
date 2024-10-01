@@ -7,8 +7,11 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import static java.util.Objects.nonNull;
+
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
@@ -16,6 +19,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESE
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
@@ -24,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROV
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +65,8 @@ public class StateGeneratorService {
             } else {
                 return ORDER_MADE;
             }
+        } else if (data.getApproveConsentOrder() != null || decision == FREE_FORM_ORDER) {
+            return ORDER_MADE;
         }
         return data.getCcdState();
     }
@@ -81,8 +88,13 @@ public class StateGeneratorService {
 
     private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
+                && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 return APPLICATION_ADD_PAYMENT;
+            } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
+                && nonNull(caseData.getGeneralAppConsentOrder())
+                && isRespondentsResponseSatisfied(caseData, caseData.toBuilder().build())) {
+                return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
             }

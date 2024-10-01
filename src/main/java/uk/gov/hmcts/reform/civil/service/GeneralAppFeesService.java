@@ -3,20 +3,23 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.civil.client.FeesApiClient;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URI;
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Slf4j
@@ -25,54 +28,137 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 public class GeneralAppFeesService {
 
     private static final BigDecimal PENCE_PER_POUND = BigDecimal.valueOf(100);
-    private static final int FREE_GA_DAYS = 14;
-    private final RestTemplate restTemplate;
+    public static final int FREE_GA_DAYS = 14;
+    private final FeesApiClient feesApiClient;
     private final GeneralAppFeesConfiguration feesConfiguration;
+    private static final String CHANNEL = "channel";
+    private static final String EVENT = "event";
+    private static final String JURISDICTION1 = "jurisdiction1";
+    private static final String JURISDICTION2 = "jurisdiction2";
+    private static final String SERVICE = "service";
+    private static final String KEYWORD = "keyword";
+    public static final String FREE_REF = "FREE";
+    private static final Fee FREE_FEE = Fee.builder()
+        .calculatedAmountInPence(BigDecimal.ZERO).code(FREE_REF).version("1").build();
+    protected static final List<GeneralApplicationTypes> VARY_TYPES
+        = Arrays.asList(
+        GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT,
+        GeneralApplicationTypes.VARY_ORDER
+    );
+    protected static final List<GeneralApplicationTypes> SET_ASIDE
+        = List.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT);
+    protected static final List<GeneralApplicationTypes> ADJOURN_TYPES
+        = List.of(GeneralApplicationTypes.ADJOURN_HEARING);
+    protected static final List<GeneralApplicationTypes> SD_CONSENT_TYPES
+        = List.of(GeneralApplicationTypes.SETTLE_BY_CONSENT);
 
-    public Fee getFeeForGA(String feeRegisterKeyword) {
-        String queryURL = feesConfiguration.getUrl() + feesConfiguration.getEndpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL)
-            .queryParam("channel", feesConfiguration.getChannel())
-            .queryParam("event", feesConfiguration.getEvent())
-            .queryParam("jurisdiction1", feesConfiguration.getJurisdiction1())
-            .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
-            .queryParam("service", feesConfiguration.getService())
-            .queryParam("keyword", feeRegisterKeyword);
-        //TODO remove this if block after we have real free fee for GA
-        if (feesConfiguration.getFreeKeyword().equals(feeRegisterKeyword)) {
-            builder = UriComponentsBuilder.fromUriString(queryURL)
-                    .queryParam("channel", feesConfiguration.getChannel())
-                    .queryParam("event", "copies")
-                    .queryParam("jurisdiction1", feesConfiguration.getJurisdiction1())
-                    .queryParam("jurisdiction2", feesConfiguration.getJurisdiction2())
-                    .queryParam("service", "insolvency")
-                    .queryParam("keyword", feeRegisterKeyword);
+    public Fee getFeeForGA(CaseData caseData) {
+        Fee result = Fee.builder().calculatedAmountInPence(BigDecimal.valueOf(Integer.MAX_VALUE)).build();
+        int typeSize = caseData.getGeneralAppType().getTypes().size();
+        if (CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), VARY_TYPES)) {
+            //only minus 1 as VARY_PAYMENT_TERMS_OF_JUDGMENT can't be multi selected
+            typeSize--;
+            result = getFeeForGA(feesConfiguration.getAppnToVaryOrSuspend(), "miscellaneous", "other");
         }
-        URI uri;
+        if (typeSize > 0
+            && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SD_CONSENT_TYPES)) {
+            typeSize--;
+            Fee sdConsentFeeForGA = getFeeForGA(feesConfiguration.getConsentedOrWithoutNoticeKeyword(), null, null);
+            if (sdConsentFeeForGA.getCalculatedAmountInPence()
+                .compareTo(result.getCalculatedAmountInPence()) < 0) {
+                result = sdConsentFeeForGA;
+            }
+        }
+        if (typeSize > 0
+            && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SET_ASIDE)) {
+            typeSize--;
+            Fee setAsideFeeForGA = getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null);
+            if (setAsideFeeForGA.getCalculatedAmountInPence()
+                .compareTo(result.getCalculatedAmountInPence()) < 0) {
+                result = setAsideFeeForGA;
+            }
+        }
+        if (typeSize > 0) {
+            Fee defaultFee = getDefaultFee(caseData);
+            if (defaultFee.getCalculatedAmountInPence()
+                .compareTo(result.getCalculatedAmountInPence()) < 0) {
+                result = defaultFee;
+            }
+        }
+        return result;
+    }
+
+    public Fee getFeeForGA(String keyword, String event, String service) {
+        if (Objects.isNull(event)) {
+            event = feesConfiguration.getEvent();
+        }
+        if (Objects.isNull(service)) {
+            service = feesConfiguration.getService();
+        }
+
         FeeLookupResponseDto feeLookupResponseDto;
         try {
-            uri = builder.buildAndExpand(new HashMap<>()).toUri();
-            feeLookupResponseDto = restTemplate.getForObject(uri, FeeLookupResponseDto.class);
+            feeLookupResponseDto = feesApiClient.lookupFee(
+                service,
+                feesConfiguration.getJurisdiction1(),
+                feesConfiguration.getJurisdiction2(),
+                feesConfiguration.getChannel(),
+                event,
+                keyword
+            );
         } catch (Exception e) {
             log.error("Fee Service Lookup Failed - " + e.getMessage(), e);
             throw new RuntimeException(e);
         }
         if (feeLookupResponseDto == null || feeLookupResponseDto.getFeeAmount() == null) {
-            log.error("No Fees returned for [{}].", uri);
+            log.error("No Fees returned");
             throw new RuntimeException("No Fees returned by fee-service while creating General Application");
         }
         return buildFeeDto(feeLookupResponseDto);
     }
 
+    private Fee getDefaultFee(CaseData caseData) {
+        if (isFreeApplication(caseData)) {
+            return FREE_FEE;
+        } else {
+            return getFeeForGA(getFeeRegisterKeyword(caseData), null, null);
+        }
+    }
+
+    protected String getFeeRegisterKeyword(CaseData caseData) {
+        boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
+            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            && caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
+        return isNotified
+            ? feesConfiguration.getWithNoticeKeyword()
+            : feesConfiguration.getConsentedOrWithoutNoticeKeyword();
+    }
+
     public boolean isFreeApplication(final CaseData caseData) {
         if (caseData.getGeneralAppType().getTypes().size() == 1
-                && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.ADJOURN_VACATE_HEARING)
-                && caseData.getGeneralAppRespondentAgreement() != null
-                && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                && caseData.getGeneralAppHearingDate() != null
-                && caseData.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
+            && caseData.getGeneralAppType().getTypes()
+            .contains(GeneralApplicationTypes.ADJOURN_HEARING)
+            && caseData.getGeneralAppRespondentAgreement() != null
+            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            && caseData.getGeneralAppHearingDate() != null
+            && caseData.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
             return caseData.getGeneralAppHearingDate().getHearingScheduledDate()
-                    .isAfter(LocalDate.now().plusDays(FREE_GA_DAYS));
+                .isAfter(LocalDate.now().plusDays(FREE_GA_DAYS));
+        }
+        return false;
+    }
+
+    public boolean isFreeGa(GeneralApplication application) {
+        if (application.getGeneralAppType().getTypes().size() == 1
+            && application.getGeneralAppType().getTypes()
+            .contains(GeneralApplicationTypes.ADJOURN_HEARING)
+            && application.getGeneralAppRespondentAgreement() != null
+            && YES.equals(application.getGeneralAppRespondentAgreement().getHasAgreed())
+            && application.getGeneralAppHearingDate() != null
+            && application.getGeneralAppHearingDate().getHearingScheduledDate() != null) {
+            return application.getGeneralAppHearingDate().getHearingScheduledDate()
+                .isAfter(LocalDate.now().plusDays(GeneralAppFeesService.FREE_GA_DAYS));
         }
         return false;
     }

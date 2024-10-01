@@ -26,7 +26,6 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-
     private CaseData data;
 
     @Override
@@ -36,11 +35,10 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId,
                                                                                 variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
-        BusinessProcess businessProcess = startEventData.getBusinessProcess()
-            .updateActivityId(externalTask.getActivityId());
-
-        String flowState = externalTask.getVariable(FLOW_STATE);
-        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess, flowState);
+        BusinessProcess businessProcess = startEventData
+            .getBusinessProcess().toBuilder()
+            .activityId(externalTask.getActivityId()).build();
+        CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         data = coreCaseDataService.submitUpdate(caseId, caseDataContent);
     }
 
@@ -54,27 +52,26 @@ public class CaseEventTaskHandler implements BaseExternalTaskHandler {
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse,
-                                            BusinessProcess businessProcess,
-                                            String flowState) {
-        Map<String, Object> data = startEventResponse.getCaseDetails().getData();
-        data.put("businessProcess", businessProcess);
+                                            BusinessProcess businessProcess) {
+        Map<String, Object> updatedData = startEventResponse.getCaseDetails().getData();
+        updatedData.put("businessProcess", businessProcess);
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId())
-                       .summary(getSummary(startEventResponse.getEventId(), flowState))
-                       .description(getDescription(startEventResponse.getEventId(), data))
+                       .summary(getSummary())
+                       .description(getDescription())
                        .build())
-            .data(data)
+            .data(updatedData)
             .build();
     }
 
-    private String getSummary(String eventId, String state) {
+    private String getSummary() {
 
         return null;
     }
 
-    private String getDescription(String eventId, Map data) {
+    private String getDescription() {
 
         return null;
     }

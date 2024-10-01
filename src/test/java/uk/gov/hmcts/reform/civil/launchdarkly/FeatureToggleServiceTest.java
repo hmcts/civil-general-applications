@@ -67,6 +67,15 @@ class FeatureToggleServiceTest {
         verifyBoolVariationCalled(FAKE_FEATURE, List.of("timestamp", "environment"));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValue_whenCaseFileViewEnabled(Boolean toggleStat) {
+        var caseFileKey = "case-file-view";
+        givenToggle(caseFileKey, toggleStat);
+
+        assertThat(featureToggleService.isCaseFileViewEnabled()).isEqualTo(toggleStat);
+    }
+
     @Test
     void shouldCallBoolVariation_whenIsMultipartyEnabledInvoked() {
         var multipartyFeatureKey = "multiparty";
@@ -74,6 +83,15 @@ class FeatureToggleServiceTest {
 
         assertThat(featureToggleService.isMultipartyEnabled()).isTrue();
         verifyBoolVariationCalled(multipartyFeatureKey, List.of("timestamp", "environment"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldCallBoolVariation_whenGaForLipInvoked(Boolean toggleStat) {
+        var gaForLipsFeatureKey = "GaForLips";
+        givenToggle(gaForLipsFeatureKey, toggleStat);
+
+        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(toggleStat);
     }
 
     @Test

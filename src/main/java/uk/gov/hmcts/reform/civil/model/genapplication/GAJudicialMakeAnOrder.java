@@ -7,16 +7,19 @@ import lombok.Data;
 import lombok.Setter;
 import uk.gov.hmcts.reform.civil.enums.GAJudgeOrderClaimantOrDefenseFixedList;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Setter
 @Data
 @Builder(toBuilder = true)
 public class GAJudicialMakeAnOrder {
 
+    private List<FinalOrderShowToggle> showJudgeRecitalText;
     private String judgeRecitalText;
     private GAJudgeMakeAnOrderOption makeAnOrder;
     private String orderText;
@@ -30,9 +33,18 @@ public class GAJudicialMakeAnOrder {
     private GAJudgeOrderClaimantOrDefenseFixedList judgeApproveEditOptionDoc;
     private YesOrNo isOrderProcessedByStayScheduler;
     private GAByCourtsInitiativeGAspec judicialByCourtsInitiative;
+    private YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder;
+    private LocalDate judgeApproveEditOptionDateForUnlessOrder;
+    private YesOrNo isOrderProcessedByUnlessScheduler;
+    private String orderCourtOwnInitiative;
+    private LocalDate orderCourtOwnInitiativeDate;
+    private String orderWithoutNotice;
+    private LocalDate orderWithoutNoticeDate;
+    private YesOrNo showReasonForDecision;
 
     @JsonCreator
-    GAJudicialMakeAnOrder(@JsonProperty("judgeRecitalText") String judgeRecitalText,
+    GAJudicialMakeAnOrder(@JsonProperty("showJudgeRecitalText") List<FinalOrderShowToggle> showJudgeRecitalText,
+                          @JsonProperty("judgeRecitalText") String judgeRecitalText,
                           @JsonProperty("makeAnOrder") GAJudgeMakeAnOrderOption makeAnOrder,
                           @JsonProperty("orderText") String orderText,
                           @JsonProperty("dismissalOrderText") String dismissalOrderText,
@@ -48,7 +60,19 @@ public class GAJudicialMakeAnOrder {
                           @JsonProperty("isOrderProcessedByStayScheduler")
                           YesOrNo isOrderProcessedByStayScheduler,
                           @JsonProperty("judicialByCourtsInitiative") GAByCourtsInitiativeGAspec
-                              judicialByCourtsInitiative) {
+                              judicialByCourtsInitiative,
+                          @JsonProperty("displayjudgeApproveEditOptionDateForUnlessOrder")
+                              YesOrNo displayjudgeApproveEditOptionDateForUnlessOrder,
+                          @JsonProperty("judgeApproveEditOptionDateForUnlessOrder")
+                              LocalDate judgeApproveEditOptionDateForUnlessOrder,
+                          @JsonProperty("isOrderProcessedByUnlessScheduler")
+                              YesOrNo isOrderProcessedByUnlessScheduler,
+                          @JsonProperty("orderCourtOwnInitiative") String orderCourtOwnInitiative,
+                          @JsonProperty("orderCourtOwnInitiativeDate") LocalDate orderCourtOwnInitiativeDate,
+                          @JsonProperty("orderWithoutNotice") String orderWithoutNotice,
+                          @JsonProperty("orderWithoutNoticeDate") LocalDate orderWithoutNoticeDate,
+                          @JsonProperty("showReasonForDecision") YesOrNo showReasonForDecision) {
+        this.showJudgeRecitalText = showJudgeRecitalText;
         this.judgeRecitalText = judgeRecitalText;
         this.makeAnOrder = makeAnOrder;
         this.orderText = orderText;
@@ -62,5 +86,13 @@ public class GAJudicialMakeAnOrder {
         this.judgeApproveEditOptionDoc = judgeApproveEditOptionDoc;
         this.isOrderProcessedByStayScheduler = isOrderProcessedByStayScheduler;
         this.judicialByCourtsInitiative = judicialByCourtsInitiative;
+        this.displayjudgeApproveEditOptionDateForUnlessOrder = displayjudgeApproveEditOptionDateForUnlessOrder;
+        this.judgeApproveEditOptionDateForUnlessOrder = judgeApproveEditOptionDateForUnlessOrder;
+        this.isOrderProcessedByUnlessScheduler = isOrderProcessedByUnlessScheduler;
+        this.orderCourtOwnInitiative = orderCourtOwnInitiative;
+        this.orderCourtOwnInitiativeDate = orderCourtOwnInitiativeDate;
+        this.orderWithoutNotice = orderWithoutNotice;
+        this.orderWithoutNoticeDate = orderWithoutNoticeDate;
+        this.showReasonForDecision = showReasonForDecision;
     }
 }

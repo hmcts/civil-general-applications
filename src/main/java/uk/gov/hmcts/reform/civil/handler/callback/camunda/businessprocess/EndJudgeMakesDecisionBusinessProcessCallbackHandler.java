@@ -69,7 +69,6 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     }
 
     private boolean isApplicationMakeVisibleToDefendant(CaseData caseData) {
-        return judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)
-            || judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData);
+        return judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData);
     }
 }

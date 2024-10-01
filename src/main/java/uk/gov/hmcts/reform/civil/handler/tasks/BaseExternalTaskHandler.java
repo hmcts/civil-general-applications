@@ -73,27 +73,27 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
         int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
 
         externalTaskService.handleFailure(
-            externalTask,
-            e.getMessage(),
-            getStackTrace(e),
-            remainingRetries - 1,
-            calculateExponentialRetryTimeout(500, maxRetries, remainingRetries)
+                externalTask,
+                e.getMessage(),
+                getStackTrace(e),
+                remainingRetries - 1,
+                calculateExponentialRetryTimeout(1000, maxRetries, remainingRetries)
         );
     }
 
-    private String getStackTrace(Throwable throwable) {
+    default String getStackTrace(Throwable throwable) {
         if (throwable instanceof FeignException) {
             return ((FeignException) throwable).contentUTF8();
         }
 
         return Arrays.toString(throwable.getStackTrace());
     }
-
     /**
      * Defines the number of attempts for a given external task.
      *
      * @return the number of attempts for an external task.
      */
+
     default int getMaxAttempts() {
         return 3;
     }
@@ -113,5 +113,5 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      *
      * @param externalTask the external task to be handled.
      */
-    void handleTask(ExternalTask externalTask);
+    void handleTask(ExternalTask externalTask) throws Exception;
 }

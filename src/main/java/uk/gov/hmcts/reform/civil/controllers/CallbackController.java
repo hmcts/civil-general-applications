@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-import com.google.common.collect.ImmutableMap;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -21,10 +21,10 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.callback.CallbackVersion;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 
+import java.util.Map;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 
-@Api
+@Tag(name = "CallbackController")
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -44,7 +44,7 @@ public class CallbackController {
         "/version/{version}/{callback-type}",
         "/version/{version}/{callback-type}/{page-id}"
     })
-    @ApiOperation("Handles all callbacks from CCD")
+    @Operation(summary = "Handles all callbacks from CCD")
     public CallbackResponse callback(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @PathVariable("callback-type") String callbackType,
@@ -59,7 +59,7 @@ public class CallbackController {
         CallbackParams callbackParams = CallbackParams.builder()
             .request(callback)
             .type(CallbackType.fromValue(callbackType))
-            .params(ImmutableMap.of(CallbackParams.Params.BEARER_TOKEN, authorisation))
+            .params(Map.of(CallbackParams.Params.BEARER_TOKEN, authorisation))
             .version(version.orElse(null))
             .pageId(pageId.orElse(null))
             .caseData(caseDetailsConverter.toCaseData(callback.getCaseDetails()))

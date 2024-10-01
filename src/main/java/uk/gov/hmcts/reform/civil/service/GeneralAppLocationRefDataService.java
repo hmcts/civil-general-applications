@@ -2,79 +2,93 @@ package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.civil.config.GeneralAppLRDConfiguration;
+import uk.gov.hmcts.reform.civil.client.LocationReferenceDataApiClient;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.apache.logging.log4j.util.Strings.concat;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralAppLocationRefDataService {
 
-    private final RestTemplate restTemplate;
-    private final GeneralAppLRDConfiguration lrdConfiguration;
+    public static final String CIVIL_NATIONAL_BUSINESS_CENTRE = "Civil National Business Centre";
+    public static final String COUNTY_COURT_MONEY_CLAIMS_CENTRE = "County Court Money Claims Centre";
+    private final LocationReferenceDataApiClient locationReferenceDataApiClient;
     private final AuthTokenGenerator authTokenGenerator;
+    private static final String DATA_LOOKUP_FAILED = "Location Reference Data Lookup Failed - ";
 
     public List<LocationRefData> getCourtLocations(String authToken) {
         try {
-            ResponseEntity<List<LocationRefData>> responseEntity = restTemplate.exchange(
-                buildURI(),
-                HttpMethod.GET,
-                getHeaders(authToken),
-                new ParameterizedTypeReference<>() {
-                }
-            );
-            return onlyEnglandAndWalesLocations(responseEntity.getBody())
+            List<LocationRefData> responseEntity =
+                locationReferenceDataApiClient.getCourtVenue(
+                    authTokenGenerator.generate(),
+                    authToken,
+                    "Y",
+                    "Y",
+                    "10",
+                    "Court"
+
+                );
+            return onlyEnglandAndWalesLocations(responseEntity)
                 .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Location Reference Data Lookup Failed - " + e.getMessage(), e);
+            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
         }
         return new ArrayList<>();
     }
 
-    private URI buildURI() {
-        String queryURL = lrdConfiguration.getUrl() + lrdConfiguration.getEndpoint();
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(queryURL)
-            .queryParam("is_hearing_location", "Y")
-            .queryParam("is_case_management_location", "Y")
-            .queryParam("court_type_id", "10")
-            .queryParam("location_type", "Court");
-        return builder.buildAndExpand(new HashMap<>()).toUri();
+    public List<LocationRefData> getCcmccLocation(String authToken) {
+        List<LocationRefData> ccmccLocations = null;
+        try {
+            ccmccLocations = locationReferenceDataApiClient.getCourtVenueByName(
+                authTokenGenerator.generate(),
+                authToken,
+                COUNTY_COURT_MONEY_CLAIMS_CENTRE
+            );
+        } catch (Exception e) {
+            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
+        }
+        return ccmccLocations;
     }
 
-    private HttpEntity<String> getHeaders(String authToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", authToken);
-        headers.add("ServiceAuthorization", authTokenGenerator.generate());
-        return new HttpEntity<>(headers);
+    public List<LocationRefData> getCnbcLocation(String authToken) {
+        List<LocationRefData> cnbcLocations = null;
+        try {
+            cnbcLocations = locationReferenceDataApiClient.getCourtVenueByName(
+                authTokenGenerator.generate(),
+                authToken,
+                CIVIL_NATIONAL_BUSINESS_CENTRE
+            );
+        } catch (Exception e) {
+            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
+        }
+        return cnbcLocations;
+    }
+
+    public List<LocationRefData> getCourtLocationsByEpimmsId(String authToken, String epimmsId) {
+        try {
+            List<LocationRefData> responseEntity =
+                locationReferenceDataApiClient.getCourtVenueByEpimmsId(
+                    authTokenGenerator.generate(),
+                    authToken, epimmsId
+                );
+            return responseEntity;
+        } catch (Exception e) {
+            log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
+        }
+        return new ArrayList<>();
     }
 
     private List<LocationRefData> onlyEnglandAndWalesLocations(List<LocationRefData> locationRefData) {
         return locationRefData == null
-                ? new ArrayList<>()
-                : locationRefData.stream().filter(location -> !"Scotland".equals(location.getRegion()))
-                .collect(Collectors.toList());
-    }
-
-    private String getDisplayEntry(LocationRefData location) {
-        return concat(concat(concat(location.getSiteName(), " - "), concat(location.getCourtAddress(), " - ")),
-                      location.getPostcode());
+            ? new ArrayList<>()
+            : locationRefData.stream().filter(location -> !"Scotland".equals(location.getRegion()))
+            .toList();
     }
 }

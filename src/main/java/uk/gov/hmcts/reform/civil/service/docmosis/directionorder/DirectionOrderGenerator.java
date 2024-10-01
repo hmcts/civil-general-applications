@@ -1,49 +1,48 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.directionorder;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
-import static uk.gov.hmcts.reform.civil.utils.DateFormatterUtil.getFormattedDate;
+import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 
 @Service
 @RequiredArgsConstructor
 public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
 
-    private final DocumentManagementService documentManagementService;
-    private final DocumentGeneratorService documentGeneratorService;
-    private final ListGeneratorService listGeneratorService;
+    private final DocmosisService docmosisService;
+    private final DocumentManagementService documentMangtService;
+    private final DocumentGeneratorService documentGenService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
+        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
 
-        DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
+        DocmosisTemplates docTemplate = getDocmosisTemplate();
+
+        DocmosisDocument docDocument = documentGenService.generateDocmosisDocument(
             templateData,
-            docmosisTemplate
+            docTemplate
         );
 
-        return documentManagementService.uploadDocument(
+        return documentMangtService.uploadDocument(
             authorisation,
-            new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),
+            new PDF(getFileName(docTemplate), docDocument.getBytes(),
                     DocumentType.DIRECTION_ORDER)
         );
     }
@@ -55,47 +54,33 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData) {
-        String claimantName = listGeneratorService.claimantsName(caseData);
-
-        String defendantName = listGeneratorService.defendantsName(caseData);
-
-        String collect = listGeneratorService.applicationType(caseData);
+    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
+                .judgeNameTitle(caseData.getJudgeTitle())
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .applicationType(collect)
-                .claimantName(claimantName)
-                .defendantName(defendantName)
-                .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                .isMultiParty(caseData.getIsMultiParty())
+                .claimant1Name(caseData.getClaimant1PartyName())
+                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+                .defendant1Name(caseData.getDefendant1PartyName())
+                .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
+                .siteName(caseData.getCaseManagementLocation().getSiteName())
+                .address(caseData.getCaseManagementLocation().getAddress())
+                .postcode(caseData.getCaseManagementLocation().getPostcode())
+                .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .judgeDirection(caseData.getJudicialDecisionMakeOrder().getDirectionsText())
                 .reasonForDecision(caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText())
-                .submittedOn(getFormattedDate(new Date()))
-                .reasonForDecision(populateJudgeReasonForDecisionText(caseData))
-                .judicialByCourtsInitiative(populateJudicialByCourtsInitiative(caseData))
-                .locationName(caseData.getLocationName());
+                .submittedOn(LocalDate.now())
+                .reasonAvailable(docmosisService.reasonAvailable(caseData))
+                .reasonForDecision(docmosisService.populateJudgeReason(caseData))
+                .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
 
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private String populateJudgeReasonForDecisionText(CaseData caseData) {
-        return caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText() != null
-            ? "Reasons for decision: \n" + caseData.getJudicialDecisionMakeOrder().getReasonForDecisionText()
-            : "";
-    }
-
-    private String populateJudicialByCourtsInitiative(CaseData caseData) {
-
-        if (caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative().equals(GAByCourtsInitiativeGAspec
-                                                                                               .OPTION_3)) {
-            return StringUtils.EMPTY;
-        }
-        return caseData.getJudicialDecisionMakeOrder().getJudicialByCourtsInitiative()
-            .getDisplayedValue();
-    }
-
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate() {
         return DIRECTION_ORDER;
     }
 }

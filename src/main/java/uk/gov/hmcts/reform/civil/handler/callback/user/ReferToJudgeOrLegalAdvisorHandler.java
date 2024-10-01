@@ -43,7 +43,6 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
     }
 
     private AboutToStartOrSubmitCallbackResponse courtValidation(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(courtAssignedValidation(callbackParams))
@@ -55,7 +54,8 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
         YesOrNo localCourtAssigned = caseData.getIsCcmccLocation();
 
         List<String> errors = new ArrayList<>();
-        if (YesOrNo.NO.equals(localCourtAssigned)) {
+        if (YesOrNo.NO.equals(localCourtAssigned)
+            && callbackParams.getRequest().getEventId().equals("REFER_TO_LEGAL_ADVISOR")) {
             errors.add(COURT_ASSIGNE_ERROR_MESSAGE);
         }
         return errors;

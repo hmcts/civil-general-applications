@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
+import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 
 import java.util.List;
@@ -40,17 +41,17 @@ public abstract class CallbackHandler {
         return String.format("%s%s%s", formattedVersion, type.getValue(), formattedPageId);
     }
 
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return DEFAULT;
     }
 
-    public boolean isEventAlreadyProcessed(CallbackParams callbackParams, BusinessProcess businessProcess) {
-        if (camundaActivityId(callbackParams).equals(DEFAULT)) {
-
+    public boolean isEventAlreadyProcessed(BusinessProcess businessProcess) {
+        if (camundaActivityId().equals(DEFAULT) || (businessProcess != null && camundaActivityId().equals(businessProcess.getActivityId()) && businessProcess.getStatus().equals(
+            BusinessProcessStatus.STARTED))) {
             return false;
         }
 
-        return businessProcess != null && camundaActivityId(callbackParams).equals(businessProcess.getActivityId());
+        return businessProcess != null && camundaActivityId().equals(businessProcess.getActivityId());
     }
 
     public void register(Map<String, CallbackHandler> handlers) {
@@ -64,7 +65,8 @@ public abstract class CallbackHandler {
         callbackKey = callbackKey(callbackParams.getVersion(), callbackParams.getType(), callbackParams.getPageId());
 
         if (ofNullable(callbacks().get(callbackKey)).isEmpty()) {
-            LOG.info(String.format("No implementation found for %s, falling back to default", callbackKey));
+            String logInfo = String.format("No implementation found for %s, falling back to default", callbackKey);
+            LOG.info(logInfo);
             callbackKey = callbackKey(callbackParams.getType(), callbackParams.getPageId());
         }
 

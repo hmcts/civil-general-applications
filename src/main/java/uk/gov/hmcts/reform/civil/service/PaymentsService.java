@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.payments.client.InvalidPaymentRequestException;
@@ -14,7 +15,7 @@ import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.prd.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.UUID;
 
@@ -44,7 +45,7 @@ public class PaymentsService {
             error = "Fees are not set correctly.";
         }
         if (caseData.getGeneralAppApplnSolicitor() == null
-                || isBlank(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier())) {
+                || (caseData.getIsGaApplicantLip() != YesOrNo.YES && isBlank(caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier()))) {
             error = "Applicant's organization details not received.";
         }
         if (!isBlank(error)) {
@@ -87,14 +88,12 @@ public class PaymentsService {
         FeeDto claimFee = generalAppPBADetails.getFee().toFeeDto();
         var organisationId = caseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
         var organisationName = organisationService.findOrganisationById(organisationId)
-            .map(Organisation::getName)
+            .map(OrganisationResponse::getName)
             .orElseThrow(RuntimeException::new);
 
         return PBAServiceRequestDTO.builder()
-            .accountNumber(generalAppPBADetails.getApplicantsPbaAccounts()
-                    .getValue().getLabel())
             .amount(claimFee.getCalculatedAmount())
-            .customerReference(generalAppPBADetails.getPbaReference())
+            .customerReference(generalAppPBADetails.getServiceReqReference())
             .organisationName(organisationName)
             .idempotencyKey(String.valueOf(UUID.randomUUID()))
             .build();

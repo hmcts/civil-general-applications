@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum GAJudicialHearingType {
 
-    IN_PERSON("In person"),
-    VIDEO("Video"),
-    TELEPHONE("Telephone");
+    IN_PERSON("held in person"),
+    VIDEO("held via video"),
+    TELEPHONE("held via telephone"),
+    PAPER_HEARING("decided on the papers. The parties are not to attend");
 
     private final String displayedValue;
 }

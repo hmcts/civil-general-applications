@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.civil.controllers.testingsupport;
 
 import feign.FeignException;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -21,7 +21,7 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CASE_DATA;
 
-@Api
+@Tag(name = "UpdateCaseDataController")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -58,7 +58,7 @@ public class UpdateCaseDataController {
         try {
             coreCaseDataService.triggerGaEvent(caseId, eventName, Map.of());
         } catch (FeignException e) {
-            log.error(String.format("Triggering event: %s on case %s failed due to: \n %s",
+            log.error(String.format("Triggering event: %s on case %s failed due to: %n %s",
                                     eventName, caseId, e.contentUTF8()));
             throw e;
         }

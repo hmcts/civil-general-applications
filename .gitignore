@@ -4,6 +4,7 @@
 *.class
 bin/main/application.yaml
 **/target
+/bin/*
 
 ### STS ###
 .apt_generated

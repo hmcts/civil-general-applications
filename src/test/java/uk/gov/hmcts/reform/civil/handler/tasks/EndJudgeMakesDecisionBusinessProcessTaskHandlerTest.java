@@ -79,6 +79,7 @@ class EndJudgeMakesDecisionBusinessProcessTaskHandlerTest {
 
         when(coreCaseDataService.startGaUpdate(CASE_ID, END_JUDGE_BUSINESS_PROCESS_GASPEC))
             .thenReturn(startEventResponse);
+
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
         CaseDataContent caseDataContentWithFinishedStatus = getCaseDataContent(caseDetails, startEventResponse);

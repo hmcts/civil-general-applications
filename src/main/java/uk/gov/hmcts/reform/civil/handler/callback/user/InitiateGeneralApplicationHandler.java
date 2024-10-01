@@ -8,36 +8,35 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
 @RequiredArgsConstructor
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
-    private static final String CONFIRMATION_SUMMARY = "<br/><p> You have made the following %s:"
-        + "<ul> %s </ul>"
-        + "</p> %s"
-        + " %s ";
-    private static final String URGENT_APPLICATION = "<p> You have marked this application as urgent. </p>";
-    private static final String PARTY_NOTIFIED = "<p> The other %s legal representative %s "
-        + "that you have submitted this application.";
+    private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
+            + " on this application."
+            + "<br/> <p>  The other party's legal representative has been notified that you have"
+            + " submitted this application";
+
     private static final List<CaseEvent> EVENTS = Collections.singletonList(INITIATE_GENERAL_APPLICATION);
+    private final GeneralAppFeesService generalAppFeesService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -53,6 +52,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        Long ccdCaseReference = caseData.getCcdCaseReference();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
         String body = null;
         if (generalApplications != null) {
@@ -62,36 +62,43 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
                     && app.getValue().getBusinessProcess().getProcessInstanceId() == null).findFirst();
             if (generalApplicationElementOptional.isPresent()) {
                 GeneralApplication generalApplicationElement = generalApplicationElementOptional.get().getValue();
-                body = buildConfirmationSummary(generalApplicationElement);
+                body = buildConfirmationSummary(generalApplicationElement, ccdCaseReference);
             }
         }
 
         return SubmittedCallbackResponse.builder()
-            .confirmationHeader("# You have made an application")
+            .confirmationHeader("# You have submitted an application")
             .confirmationBody(body)
             .build();
     }
 
-    private String buildConfirmationSummary(GeneralApplication application) {
-        List<GeneralApplicationTypes> types = application.getGeneralAppType().getTypes();
-        String collect = types.stream().map(appType -> "<li>" + appType.getDisplayedValue() + "</li>")
-            .collect(Collectors.joining());
-        boolean isApplicationUrgent = Optional.of(application.getGeneralAppUrgencyRequirement().getGeneralAppUrgency()
-                                                      == YES).orElse(true);
-        boolean isMultiParty = Optional.of(application.getIsMultiParty() == YES).orElse(true);
-        boolean isNotified = application.getGeneralAppRespondentAgreement() != null
-                && NO.equals(application.getGeneralAppRespondentAgreement().getHasAgreed())
-                && application.getGeneralAppInformOtherParty() != null
-                && YES.equals(application.getGeneralAppInformOtherParty().getIsWithNotice());
-        String lastLine = format(PARTY_NOTIFIED, isMultiParty ? "parties'" : "party's",
-                                 isNotified ? "has been notified" : "has not been notified"
+    private String buildConfirmationSummary(GeneralApplication application, Long ccdCaseReference) {
+
+        BigDecimal fee = application.getGeneralAppPBADetails().getFee().toPounds();
+
+        return generalAppFeesService.isFreeGa(application) ? CONFIRMATION_BODY_FREE : format(
+            generateConfirmationBody(),
+            fee,
+            format("/cases/case-details/%s#Applications", ccdCaseReference)
         );
-        return format(
-            CONFIRMATION_SUMMARY,
-            types.size() == 1 ? "application" : "applications",
-            collect,
-            isApplicationUrgent ? URGENT_APPLICATION : " ",
-            lastLine
-        );
+    }
+
+    private String generateConfirmationBody() {
+        StringBuilder bodyConfirmation = new StringBuilder();
+        bodyConfirmation.append("<br/>");
+        bodyConfirmation.append("<p class=\"govuk-body govuk-!-font-weight-bold\"> Your application fee of £%s"
+                                    + " is now due for payment. Your application will not be processed further"
+                                    + " until this fee is paid.</p>");
+        bodyConfirmation.append("%n%n To pay this fee, click the link below, or else open your application from the"
+                                    + " Applications tab of this case listing and then click on the service request tab.");
+
+        if (featureToggleService.isGaForLipsEnabled()) {
+            bodyConfirmation.append("%n%n If necessary, all documents relating to this application, "
+                                        + "including any response from the court, will be translated."
+                                        + " You will be notified when these are available.");
+        }
+
+        bodyConfirmation.append("%n%n <a href=\"%s\" target=\"_blank\">Pay your application fee </a> %n");
+        return bodyConfirmation.toString();
     }
 }

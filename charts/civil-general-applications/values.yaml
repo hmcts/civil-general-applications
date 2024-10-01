@@ -23,20 +23,14 @@ java:
   aadIdentityName: civil
   environment:
     LAUNCH_DARKLY_ENV: '{{ .Values.global.environment }}'
-    IDAM_CLIENT_ID: civil-service
-    IDAM_CLIENT_REDIRECT_URI: https://civil-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
+    IDAM_CLIENT_ID: civil-general-applications
+    IDAM_CLIENT_REDIRECT_URI: https://civil-general-applications-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback
     IDAM_API_URL: https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net
     IDAM_WEB_URL: https://idam-web-public.{{ .Values.global.environment }}.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     CORE_CASE_DATA_API_URL: http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     MANAGE_CASE_UI_BASE_URL: https://manage-case.{{ .Values.global.environment }}.platform.hmcts.net
     SPRING_SECURITY_ENABLED: true
-    CMC_DB_USERNAME: 'cmc@cmc-db-v11-{{ .Values.global.environment }}'
-    CMC_DB_HOST: cmc-db-v11-{{ .Values.global.environment }}.postgres.database.azure.com
-    CMC_DB_CONNECTION_OPTIONS: '?sslmode=require&gssEncMode=disable'
-    CMC_DB_NAME: cmc
-    CMC_DB_PORT: 5432
-    REFERENCE_DATABASE_MIGRATION: false
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: https://forgerock-am.service.core-compute-idam-{{ .Values.global.environment }}.internal:8443/openam/oauth2/hmcts
     SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net/o/jwks
     AUTH_IDAM_CLIENT_BASEURL: https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net
@@ -49,32 +43,49 @@ java:
     DOCMOSIS_TORNADO_URL: https://docmosis.{{ .Values.global.environment }}.platform.hmcts.net
     DOCUMENT_MANAGEMENT_URL: http://dm-store-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     CASE_DOCUMENT_AM_URL: http://ccd-case-document-am-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
-    FEIGN_CLIENT_CONFIG_REMOTERUNTIMESERVICE_URL: http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest/
-    FEIGN_CLIENT_CONFIG_REMOTEEXTERNALTASKSERVICE_URL: http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest/
-    FEIGN_CLIENT_CONFIG_REMOTEREPOSITORYSERVICE_URL: http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest/
+    CAMUNDA_URL: http://camunda-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/engine-rest/
     SPRING_CLOUD_BOOTSTRAP_ENABLED: true
     RD_PROFESSIONAL_API_URL: http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+    DASHBOARD_API_URL: http://civil-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     SOME_ENV_VARIABLE: true
-    DOCUMENT_MANAGEMENT_SECURED: false
+    GA_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service
+    CUI_URL: https://civil-citizen-ui.{{ .Values.global.environment }}.platform.hmcts.net
 
   keyVaults:
     civil:
       resourceGroup: civil
       secrets:
-        - civil-idam-client-secret
-        - microservicekey-civil-service
-        - system-update-user-username
-        - system-update-user-password
-        - cross-access-user-username
-        - cross-access-user-password
-        - prd-admin-user-username
-        - prd-admin-user-password
-        - AppInsightsInstrumentationKey
-        - docmosis-api-key
-        - cmc-db-password-v11
-        - gov-notify-api-key
-        - sendgrid-api-key
-        - robotics-notification-sender
-        - robotics-notification-recipient
-        - launch-darkly-sdk-key
-        - robotics-notification-multipartyrecipient
+        - name: civil-idam-client-secret
+          alias: idam.client.secret
+        - name: system-update-user-username
+          alias: CIVIL_SYSTEM_UPDATE_USERNAME
+        - name: system-update-user-password
+          alias: CIVIL_SYSTEM_UPDATE_PASSWORD
+        - name: cross-access-user-username
+          alias: CIVIL_CROSS_ACCESS_USERNAME
+        - name: cross-access-user-password
+          alias: CIVIL_CROSS_ACCESS_PASSWORD
+        - name: prd-admin-user-username
+          alias: CIVIL_PRD_ADMIN_USERNAME
+        - name: prd-admin-user-password
+          alias: CIVIL_PRD_ADMIN_PASSWORD
+        - name: docmosis-api-key
+          alias: docmosis.tornado.key
+        - name: gov-notify-api-key
+          alias: GOV_NOTIFY_API_KEY
+        - name: sendgrid-api-key
+          alias: SENDGRID_API_KEY
+        - name: launch-darkly-sdk-key
+          alias: LAUNCH_DARKLY_SDK_KEY
+        - name: AppInsightsInstrumentationKey
+          alias: azure.application-insights.instrumentation-key
+        - name: ordnance-survey-api-key
+          alias: OS_POSTCODE_LOOKUP_API_KEY
+        - name: genapp-appinsights-connection-string
+          alias: appinsights-connection-string
+    civil-gen-apps:
+        resourceGroup: civil
+        secrets:
+          - name: microservicekey-civil-general-applications
+            alias: idam.s2s-auth.totp_secret
+

@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,22 +15,32 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.Time;
+import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
+import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.time.LocalDate;
 
@@ -40,13 +52,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
     GeneratePDFDocumentCallbackHandler.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    AssignCategoryId.class
 })
 class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
@@ -55,6 +69,9 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private GeneralOrderGenerator generalOrderGenerator;
+
+    @MockBean
+    private ConsentOrderGenerator consentOrderGenerator;
 
     @MockBean
     private RequestForInformationGenerator requestForInformationGenerator;
@@ -73,6 +90,21 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private WrittenRepresentationSequentailOrderGenerator writtenRepresentationSequentailOrderGenerator;
+
+    @MockBean
+    private FreeFormOrderGenerator freeFormOrderGenerator;
+
+    @MockBean
+    private AssistedOrderFormGenerator assistedOrderFormGenerator;
+
+    @Autowired
+    private AssignCategoryId assignCategoryId;
+
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
+    @MockBean
+    private GaForLipService gaForLipService;
 
     @Autowired
     private GeneratePDFDocumentCallbackHandler handler;
@@ -98,7 +130,14 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
         when(requestForInformationGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+        when(freeFormOrderGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(assistedOrderFormGenerator.generate(any(CaseData.class), anyString()))
+                .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(consentOrderGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.CONSENT_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
     }
 
     @Nested
@@ -175,6 +214,24 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getDismissalOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.DISMISSAL_ORDER_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalled() {
+            CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.FREE_FORM_ORDER).build()).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
@@ -295,6 +352,28 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldGenerateSendAppToOtherParty_whenAboutToSubmitEventIsCalled() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getRequestForInformationDocument().get(0).getValue())
+                .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
         void shouldHaveListOfTwoGenerateRequestForInfotDocIfElementInListAlreadyPresent() {
 
             CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
@@ -318,13 +397,77 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldGenerateGeneralOrderDoc_whenAboutToSubmitEventIsCalled_withFinalOrder(
+                FinalOrderSelection selection) {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(selection)
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().get(0).getValue())
+                    .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldHaveListOfTwoGeneralOrderDocumentIfElementInListAlreadyPresent_withFinalOrder(
+                FinalOrderSelection selection) {
+
+            CaseDocument caseDocument = CaseDocument.builder().documentName("abcd")
+                    .documentLink(Document.builder().documentUrl("url")
+                            .documentFileName("filename").documentHash("hash")
+                            .documentBinaryUrl("binaryUrl").build())
+                    .documentType(DocumentType.GENERAL_ORDER).documentSize(12L).build();
+
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                    .build()
+                    .toBuilder()
+                    .finalOrderSelection(selection)
+                    .generalOrderDocument(wrapElements(caseDocument))
+                    .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getGeneralOrderDocument().size()).isEqualTo(2);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldGenerateConsentOrderDocument_whenAboutToSubmitEventIsCalled() {
+            CaseData caseData = CaseDataBuilder.builder().consentOrderApplication()
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(consentOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getConsentOrderDocument().get(0).getValue())
+                .isEqualTo(PDFBuilder.CONSENT_ORDER_DOCUMENT);
+
+        }
+
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
-            assertThat(handler.camundaActivityId(params)).isEqualTo("CreatePDFDocument");
+            assertThat(handler.camundaActivityId()).isEqualTo("CreatePDFDocument");
         }
     }
 }

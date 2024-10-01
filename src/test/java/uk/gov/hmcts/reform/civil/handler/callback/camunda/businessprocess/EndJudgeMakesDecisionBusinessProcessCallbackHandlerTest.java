@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
-import uk.gov.hmcts.reform.civil.utils.ApplicationNotificationUtil;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,7 +31,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
     EndJudgeMakesDecisionBusinessProcessCallbackHandler.class,
     CoreCaseDataService.class,
     ObjectMapper.class,
-    ApplicationNotificationUtil.class
+    JudicialDecisionNotificationUtil.class
 })
 class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallbackHandlerTest {
 
@@ -81,44 +81,6 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
-
-        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        handler.handle(params);
-
-        verify(parentCaseUpdateHelper, times(1))
-            .updateParentWithGAState(any(), any());
-
-    }
-
-    @Test
-    void shouldAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
-
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
-
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
-        when(judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData)).thenReturn(true);
-        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
-            .thenReturn(CaseState.LISTING_FOR_A_HEARING);
-
-        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        handler.handle(params);
-
-        verify(parentCaseUpdateHelper, times(1))
-            .updateParentApplicationVisibilityWithNewState(any(), any());
-
-    }
-
-    @Test
-    void shouldNotAddRespondentSolicitorDetail_WhenJudgeListForHearing_WithOutNoticeApplication() {
-
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
-
-        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
-        when(judicialDecisionHelper.isListForHearingMadeVisibleToDefendant(caseData)).thenReturn(false);
-        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
-            .thenReturn(CaseState.LISTING_FOR_A_HEARING);
 
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         handler.handle(params);

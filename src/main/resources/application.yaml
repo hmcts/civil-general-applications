@@ -13,9 +13,13 @@ management:
       exposure:
         include: health, info, prometheus
   health:
+    db:
+      enabled: false
     case-document-am-api:
       enabled: true
 spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/civil/, optional:configtree:/mnt/secrets/civil-gen-apps/"
   application:
     name: civil-general-applications
   main:
@@ -43,8 +47,13 @@ spring:
           oidc:
             client-id: internal
             client-secret: internal
-  flyway:
-    enabled: ${REFERENCE_DATABASE_MIGRATION:false}
+
+location:
+  api:
+    baseUrl: ${GENAPP_LRD_URL:http://localhost:6669}
+
+springdoc:
+  packagesToScan: uk.gov.hmcts.reform.civil.controllers
 
 oidc:
   issuer: ${OIDC_ISSUER:http://fr-am:8080/openam/oauth2/hmcts}
@@ -58,6 +67,7 @@ fees:
     event: issue
 
 genApp:
+  authorised-services: ${GA_S2S_AUTHORISED_SERVICES:payment_app,ccd_data,civil_service}
   fee:
     endpoint: /fees-register/fees/lookup
     service: general
@@ -69,7 +79,7 @@ genApp:
       withNotice: GAOnNotice
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
-      free: CopyPagesUpTo10
+      appnToVaryOrSuspend: AppnToVaryOrSuspend
   lrd:
     endpoint: /refdata/location/court-venues
 
@@ -83,11 +93,12 @@ payments:
 
 idam:
   s2s-auth:
-    microservice: civil_service
+    microservice: civil_general_applications
+  s2s-authorised:
+    services: ${GA_S2S_AUTHORISED_SERVICES:payment_app,ccd_data,civil_service}
 
 document_management:
   userRoles: "caseworker-civil,caseworker-civil-solicitor"
-  secured: true
 
 bankHolidays:
   api:
@@ -118,9 +129,16 @@ reference:
     enabled: true
     migration: false
 
+dashboard:
+  api:
+    url: ${DASHBOARD_API_URL:http://localhost:4000}
+
 notifications:
   govNotifyApiKey: ${GOV_NOTIFY_API_KEY:}
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
+  urgentGeneralAppRespondentEmailTemplate: "3ae23a46-a83b-4768-a066-198e80958cea"
+  lipGeneralAppRespondentEmailTemplate: "39d8c00f-2597-4e39-80a9-0f53c05715be"
+  lipGeneralAppApplicantEmailTemplate: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
   writtenRepConcurrentRepresentationApplicantEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
   writtenRepConcurrentRepresentationRespondentEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
@@ -139,7 +157,14 @@ notifications:
   judgeUncloakApplicationEmailTemplate: "251414bb-3f26-47c6-ba1d-d7254349c028"
   judgeApproveOrderToStrikeOutDamages: "073b4650-c4c5-478a-8824-3c495a8e29e5"
   judgeApproveOrderToStrikeOutOCMC: "5c6de4de-4a8b-4775-8b20-1fea6d0c1a6a"
-  generalApplicationPaymentFailure: "74b0a9db-6de9-4891-a984-618b34e8b4fc"
+  hearingNoticeTemplate: "3122b710-2c42-4635-8bbc-e0ac72fc27f5"
+  evidenceUploadTemplate: "7bf848bc-ff64-471e-b780-2961a010b6f0"
+  notifyApplicantForHwFMoreInformationNeeded: "02956398-fffb-4461-93a0-3713788363a8"
+  notifyApplicantForHwfInvalidRefNumber: "8d7cb08f-96ae-4469-944d-c92650f45fb6"
+  notifyApplicantForHwfUpdateRefNumber: "7f87e629-6473-4732-8d80-4174d06696d5"
+  notifyApplicantForHwfPartialRemission: "2c5c5cae-f1b1-41b5-afe5-0ce2e68f8d3c"
+  notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
+  notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
@@ -149,6 +174,12 @@ os-postcode-lookup:
 stitching:
   api:
     url: http://localhost:8084/api/stitch-ccd-bundles
+
+court-location:
+  specified-claim:
+    epimms-id: "420219"
+  unspecified-claim:
+    epimms-id: "192280"
 
 launchdarkly:
   sdk-key: ${LAUNCH_DARKLY_SDK_KEY:}
@@ -163,6 +194,24 @@ exit-survey:
   applicant-link: https://www.smartsurvey.co.uk/s/CivilDamages_ExitSurvey_Claimant/
   respondent-link: https://www.smartsurvey.co.uk/s/CivilDamages_ExitSurvey_Defendant/
 
+cui-front-end:
+  url: ${CUI_URL:http://localhost:3001}
+
+feign:
+  client:
+    config:
+      remoteRuntimeService:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processInstance:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      processDefinition:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      message:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      incident:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
+      externalTask:
+        url: ${CAMUNDA_URL:http://localhost:9404/engine-rest/}
 ---
 
 spring:
@@ -170,21 +219,9 @@ spring:
     activate:
       on-profile: local
 
-  datasource:
-    driverClassName: org.postgresql.Driver
-    username: ${CMC_DB_USERNAME:ccd}
-    password: ${CMC_DB_PASSWORD:ccd}
-    url: jdbc:postgresql://${CMC_DB_HOST:localhost}:${CMC_DB_PORT:5050}/${CMC_DB_NAME:cmc}
-
 feign:
   client:
     config:
-      remoteRuntimeService:
-        url: http://localhost:9404/engine-rest/
-      remoteRepositoryService:
-        url: http://localhost:9404/engine-rest/
-      remoteExternalTaskService:
-        url: http://localhost:9404/engine-rest/
       idam-api:
         loggerLevel: full
       core-case-data-api:
@@ -291,7 +328,7 @@ document_management:
 
 docmosis:
   tornado:
-    url: http://fake-docmosis-api
+    url: http://localhost:6660
     key: fake-key
 
 feign:
@@ -313,7 +350,7 @@ testing:
 
 rd_professional:
   api:
-    url: http://fake-prd-api
+    url: http://localhost:6665
 
 sendgrid:
   api-key: fake-key

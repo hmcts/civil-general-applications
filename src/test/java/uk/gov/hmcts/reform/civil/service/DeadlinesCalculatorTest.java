@@ -28,6 +28,8 @@ public class DeadlinesCalculatorTest {
 
     private DeadlinesCalculator calculator;
 
+    private static final int PLUS_7DAYS = 7;
+
     @BeforeEach
     public void setUp() throws IOException {
         WorkingDayIndicator workingDayIndicator = new WorkingDayIndicator(
@@ -81,6 +83,42 @@ public class DeadlinesCalculatorTest {
             LocalDateTime weekdayDate = LocalDate.of(2022, 10, 1).atTime(8, 0);
             LocalDateTime expectedDeadline = weekdayDate.toLocalDate().plusDays(8).atTime(END_OF_BUSINESS_DAY);
             LocalDateTime responseDeadline = calculator.calculateApplicantResponseDeadline(weekdayDate, 5);
+
+            assertThat(responseDeadline).isEqualTo(expectedDeadline);
+        }
+
+        @Test
+        void judgeOrderReturnDeadlinePlus1Day_whenResponseDateIsMonday() {
+            LocalDateTime weekdayDate = LocalDate.of(2024, 02, 05).atTime(2, 0);
+            LocalDate expectedDeadline = weekdayDate.toLocalDate().plusDays(7);
+            LocalDate responseDeadline = calculator.getJudicialOrderDeadlineDate(weekdayDate, PLUS_7DAYS);
+
+            assertThat(responseDeadline).isEqualTo(expectedDeadline);
+        }
+
+        @Test
+        void judgeOrderReturnDeadlinePlus1Day_whenResponseDateIsWeekday() {
+            LocalDateTime weekdayDate = LocalDate.of(2024, 03, 06).atTime(2, 0);
+            LocalDate expectedDeadline = weekdayDate.toLocalDate().plusDays(7);
+            LocalDate responseDeadline = calculator.getJudicialOrderDeadlineDate(weekdayDate, PLUS_7DAYS);
+
+            assertThat(responseDeadline).isEqualTo(expectedDeadline);
+        }
+
+        @Test
+        void judgeOrderReturnDeadlinePlus1day_whenResponseDateIsSaturday() {
+            LocalDateTime weekdayDate = LocalDate.of(2024, 02, 10).atTime(2, 0);
+            LocalDate expectedDeadline = weekdayDate.toLocalDate().plusDays(9);
+            LocalDate responseDeadline = calculator.getJudicialOrderDeadlineDate(weekdayDate, PLUS_7DAYS);
+
+            assertThat(responseDeadline).isEqualTo(expectedDeadline);
+        }
+
+        @Test
+        void judgeOrderReturnDeadlinePlus1day_whenResponseDateIsSunday() {
+            LocalDateTime weekdayDate = LocalDate.of(2024, 03, 03).atTime(2, 0);
+            LocalDate expectedDeadline = weekdayDate.toLocalDate().plusDays(8);
+            LocalDate responseDeadline = calculator.getJudicialOrderDeadlineDate(weekdayDate, PLUS_7DAYS);
 
             assertThat(responseDeadline).isEqualTo(expectedDeadline);
         }

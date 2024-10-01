@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
@@ -21,8 +20,6 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VALIDATE_FEE_GASPEC;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Slf4j
 @Service
@@ -36,10 +33,9 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private static final String TASK_ID = "GeneralApplicationValidateFee";
 
     private final GeneralAppFeesService feeService;
-    private final GeneralAppFeesConfiguration feesConfiguration;
 
     @Override
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return TASK_ID;
     }
 
@@ -58,7 +54,7 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
 
-        Fee feeForGA = feeService.getFeeForGA(getFeeRegisterKeyword(caseData));
+        Fee feeForGA = feeService.getFeeForGA(caseData);
 
         List<String> errors = compareFees(caseData, feeForGA);
 
@@ -68,29 +64,20 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     }
 
     private List<String> compareFees(CaseData caseData, Fee latestfee) {
+
         if (caseData.getGeneralAppPBADetails() == null
             || caseData.getGeneralAppPBADetails().getFee() == null) {
             return List.of(ERROR_MESSAGE_NO_FEE_IN_CASEDATA);
         }
         Fee caseDataFee = caseData.getGeneralAppPBADetails().getFee();
         if (!caseDataFee.equals(latestfee)) {
+            log.info("Fees not equal - latest fee {} for General Application with value: {} with casedata fee {} with value : {} ",
+                latestfee.getCode(), latestfee.getCalculatedAmountInPence(),  caseData.getGeneralAppPBADetails().getFee().getCode(),
+                caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence());
             return List.of(ERROR_MESSAGE_FEE_CHANGED);
         }
 
         return new ArrayList<>();
-    }
-
-    protected String getFeeRegisterKeyword(CaseData caseData) {
-        if (feeService.isFreeApplication(caseData)) {
-            return feesConfiguration.getFreeKeyword();
-        }
-        boolean isNotified = caseData.getGeneralAppRespondentAgreement() != null
-            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            && caseData.getGeneralAppInformOtherParty() != null
-            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice());
-        return isNotified
-            ? feesConfiguration.getWithNoticeKeyword()
-            : feesConfiguration.getConsentedOrWithoutNoticeKeyword();
     }
 
 }

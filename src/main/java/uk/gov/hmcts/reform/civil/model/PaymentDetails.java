@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 
 @Data
 @Builder(toBuilder = true)
-public class PaymentDetails {
+public class  PaymentDetails {
 
     private PaymentStatus status;
     private String reference;

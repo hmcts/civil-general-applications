@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.fee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
@@ -34,9 +39,10 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
     private final GeneralAppFeesConfiguration feesConfiguration;
     private final JudicialDecisionHelper judicialDecisionHelper;
     private final ObjectMapper objectMapper;
+    private final FeatureToggleService featureToggleService;
 
     @Override
-    public String camundaActivityId(CallbackParams callbackParams) {
+    public String camundaActivityId() {
         return TASK_ID;
     }
 
@@ -56,13 +62,19 @@ public class AdditionalFeeValueCallbackHandler extends CallbackHandler {
         var caseData = callbackParams.getCaseData();
 
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee());
-
+            Fee feeForGA = feeService.getFeeForGA(feesConfiguration.getApplicationUncloakAdditionalFee(), null, null);
+            BigDecimal applicationFee = Optional.ofNullable(caseData.getGeneralAppPBADetails())
+                .map(details -> details.getFee())
+                .map(fee -> fee.getCalculatedAmountInPence())
+                .orElse(null);
             GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails()
                 .toBuilder().fee(feeForGA).build();
-
-            caseData = caseData.toBuilder().generalAppPBADetails(generalAppPBADetails).build();
-
+            CaseData.CaseDataBuilder builder = caseData.toBuilder();
+            builder.generalAppPBADetails(generalAppPBADetails);
+            if (featureToggleService.isGaForLipsEnabled() && caseData.getIsGaApplicantLip() == YesOrNo.YES) {
+                builder.applicationFeeAmountInPence(applicationFee);
+            }
+            caseData = builder.build();
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseData.toMap(objectMapper))

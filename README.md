@@ -4,11 +4,10 @@
 
 ## Notes
 
-Since Spring Boot 2.1 bean overriding is disabled. If you want to enable it you will need to set `spring.main.allow-bean-definition-overriding` to `true`.
 
 JUnit 5 is now enabled by default in the project. Please refrain from using JUnit4 and use the next generation
 
-After updated to Springfox UI 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html for more details please see here http://springfox.github.io/springfox/docs/current/#changes-in-swagger-ui
+After updated to OpenApi 3.0, the swagger interface now is at http://localhost:4550/swagger-ui/index.html
 
 ## Building and deploying the application
 
@@ -22,6 +21,9 @@ To build the project execute the following command:
 ```bash
   ./gradlew build
 ```
+
+for running depdendency check locally
+./gradlew --no-daemon --stacktrace -DdependencyCheck.failBuild=true -Dnvd.api.check.validforhours=24 -Danalyzer.central.enabled=false -Danalyzer.retirejs.enabled=false -Danalyzer.ossindex.enabled=false -Dnvd.api.key=<your_nvd_api_key> dependencyCheckAggregate
 
 ### Running the application
 
@@ -98,6 +100,35 @@ Here are some other functionalities it provides:
  the number of concurrent calls to any given dependency
  * [Request caching](https://github.com/Netflix/Hystrix/wiki/How-it-Works#request-caching), allowing
  different code paths to execute Hystrix Commands without worrying about duplicating work
+
+## Adding Git Conventions
+
+### Include the git conventions.
+* Make sure your git version is at least 2.9 using the `git --version` command
+* Run the following command:
+```
+git config --local core.hooksPath .git-config/hooks
+```
+Once the above is done, you will be required to follow specific conventions for your commit messages and branch names.
+
+If you violate a convention, the git error message will report clearly the convention you should follow and provide
+additional information where necessary.
+
+*Optional:*
+* Install this plugin in Chrome: https://github.com/refined-github/refined-github
+
+  It will automatically set the title for new PRs according to the first commit message, so you won't have to change it manually.
+
+  Note that it will also alter other behaviours in GitHub. Hopefully these will also be improvements to you.
+
+*In case of problems*
+
+1. Get in touch with your Technical Lead so that they can get you unblocked
+2. If the rare eventuality that the above is not possible, you can disable enforcement of conventions using the following command
+
+   `git config --local --unset core.hooksPath`
+
+   Still, you shouldn't be doing it so make sure you get in touch with a Technical Lead soon afterwards.
 
 ## License
 

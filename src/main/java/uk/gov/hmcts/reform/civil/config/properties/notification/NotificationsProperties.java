@@ -1,9 +1,8 @@
 package uk.gov.hmcts.reform.civil.config.properties.notification;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.constraints.NotEmpty;
 
 @Validated
 @Data
@@ -14,6 +13,15 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String generalApplicationRespondentEmailTemplate;
+
+    @NotEmpty
+    private String urgentGeneralAppRespondentEmailTemplate;
+
+    @NotEmpty
+    private String lipGeneralAppRespondentEmailTemplate;
+
+    @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplate;
 
     @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
@@ -70,5 +78,25 @@ public class NotificationsProperties {
     private String judgeApproveOrderToStrikeOutOCMC;
 
     @NotEmpty
-    private String generalApplicationPaymentFailure;
+    private String hearingNoticeTemplate;
+
+    @NotEmpty
+    private String evidenceUploadTemplate;
+
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeeded;
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemission;
+    @NotEmpty
+    private String notifyApplicantForNoRemission;
+    @NotEmpty
+    private String notifyApplicantForHwfPaymentOutcome;
+
 }

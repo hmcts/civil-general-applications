@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum MakeAppAvailableCheckGAspec {
-    ConsentAgreementCheckBox("Make application visible to all parties");
+    CONSENT_AGREEMENT_CHECKBOX("Make application visible to all parties");
 
     private final String displayedValue;
 }
