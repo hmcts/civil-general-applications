@@ -17,9 +17,11 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -74,6 +76,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
@@ -312,7 +315,8 @@ public class CaseData implements MappableObject {
     private final String applicationTypes;
     private final String parentCaseReference;
     private final String judgeTitle;
-
+    private RespondentLiPResponse respondent1LiPResponse;
+    private String claimantBilingualLanguagePreference;
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
     // GA for LIP
@@ -366,5 +370,29 @@ public class CaseData implements MappableObject {
             .map(GAUrgencyRequirement::getGeneralAppUrgency)
             .filter(urgency -> urgency == YES)
             .isPresent();
+    }
+
+    @JsonIgnore
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(claimantBilingualLanguagePreference)
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+        } else {
+            return Objects.nonNull(respondent1LiPResponse)
+                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+        }
+    }
+
+    @JsonIgnore
+    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(respondent1LiPResponse)
+                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+        } else {
+            return Objects.nonNull(claimantBilingualLanguagePreference)
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+        }
     }
 }
