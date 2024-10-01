@@ -164,8 +164,7 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
                 .build();
 
         }
-
-            return assistedOrderFormBuilder.build();
+        return assistedOrderFormBuilder.build();
     }
 
     protected String getCostsReservedText(CaseData caseData) {

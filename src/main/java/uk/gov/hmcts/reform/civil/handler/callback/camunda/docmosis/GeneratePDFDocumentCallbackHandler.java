@@ -241,7 +241,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 );
             }
 
-
             assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.ORDER_DOCUMENTS);
 
@@ -404,10 +403,11 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * if GA is with notice
              * */
             if (gaForLipService.isLipApp(caseData)) {
-                postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator.generate(civilCaseData,
-                                                                                                      caseDataBuilder.build(),
-                                                                                                      callbackParams.getParams().get(BEARER_TOKEN).toString(), FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
-                );
+                postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
             }
 
             /*

@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -161,7 +162,7 @@ class HearingFormGeneratorTest {
                                                .build()).build())
             .build();
 
-        var templateData = generator.getTemplateData(caseData, "auth");
+        var templateData = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCourt()).isEqualTo("London");
         assertThat(templateData.getJudgeHearingLocation()).isEqualTo("sitename - location name - D12 8997");
     }
@@ -332,6 +333,6 @@ class HearingFormGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate()).isEqualTo(HEARING_APPLICATION);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(HEARING_APPLICATION);
     }
 }

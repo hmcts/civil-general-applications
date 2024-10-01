@@ -30,7 +30,8 @@ public enum DocmosisTemplates {
                                                      "Post_judge_order_Written_Representation_Sequential_for_application_%s.pdf"),
     POST_JUDGE_WRITTEN_REPRESENTATION_CONCURRENT_LIP("CV-UNS-GAP-ENG-01088.docx",
                                       "Post_judge_order_Written_Representation_Concurrent_for_application_%s.pdf"),
-    POST_JUDGE_ASSISTED_ORDER_FORM_LIP("CV-UNS-GAP-ENG-01089.docx", "Post_judge_assisted_form_order_%s.pdf");
+    POST_JUDGE_ASSISTED_ORDER_FORM_LIP("CV-UNS-GAP-ENG-01089.docx", "Post_judge_assisted_form_order_%s.pdf"),
+    POST_JUDGE_HEARING_APPLICATION_LIP("CV-UNS-GAP-ENG-01090.docx", "Post_judge_application_Hearing_Notice_%s.pdf");
 
     private final String template;
     private final String documentTitle;

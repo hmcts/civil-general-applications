@@ -67,8 +67,6 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         );
     }
 
-
-
     private String getFileName(DocmosisTemplates docmosisTemplate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -119,7 +117,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
             return POST_JUDGE_GENERAL_ORDER_LIP;
         }
-            return GENERAL_ORDER;
+        return GENERAL_ORDER;
     }
 
     public static boolean showRecital(CaseData caseData) {

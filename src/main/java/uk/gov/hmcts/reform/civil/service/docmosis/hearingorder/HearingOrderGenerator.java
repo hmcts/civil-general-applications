@@ -65,7 +65,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         );
     }
 
-        private String getFileName(DocmosisTemplates docmosisTemplate) {
+    private String getFileName(DocmosisTemplates docmosisTemplate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         return String.format(docmosisTemplate.getDocumentTitle(), LocalDateTime.now().format(formatter));

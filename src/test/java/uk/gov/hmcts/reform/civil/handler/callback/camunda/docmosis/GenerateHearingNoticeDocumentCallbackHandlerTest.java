@@ -16,6 +16,9 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
@@ -40,6 +43,15 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
     @Autowired
     private ObjectMapper mapper;
 
+    @MockBean
+    private GaForLipService gaForLipService;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private SendFinalOrderPrintService sendFinalOrderPrintService;
+
     @Autowired
     private AssignCategoryId assignCategoryId;
 
@@ -57,6 +69,7 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
             .documentLink(Document.builder().documentUrl("doc").build()).build();
 
         when(hearingFormGenerator.generate(any(), any())).thenReturn(caseDocument);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
             .build();
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);

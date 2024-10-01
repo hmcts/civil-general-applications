@@ -98,7 +98,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
                 .build();
         }
 
-            return freeFormOrderBuilder.build();
+        return freeFormOrderBuilder.build();
     }
 
     protected String getFreeFormOrderValue(CaseData caseData) {

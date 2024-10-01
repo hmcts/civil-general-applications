@@ -59,7 +59,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
         );
     }
 
-        private String getFileName(DocmosisTemplates docmosisTemplate) {
+    private String getFileName(DocmosisTemplates docmosisTemplate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         return String.format(docmosisTemplate.getDocumentTitle(), LocalDateTime.now().format(formatter));
@@ -88,16 +88,22 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
 
-        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT)
+            .contains(userType)) {
             boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
 
             judgeDecisionPdfDocumentBuilder
                 .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
-                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
-                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
-                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
-                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
-                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData
+                                              .partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData
+                                              .partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData
+                                              .partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData
+                                          .partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData
+                                          .partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
                 .build();
         }
 
@@ -105,10 +111,10 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
     }
 
     private DocmosisTemplates getDocmosisTemplate(FlowFlag userType) {
-
-        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT)
+            .contains(userType)) {
             return POST_JUDGE_DISMISSAL_ORDER_LIP;
         }
-            return DISMISSAL_ORDER;
+        return DISMISSAL_ORDER;
     }
 }

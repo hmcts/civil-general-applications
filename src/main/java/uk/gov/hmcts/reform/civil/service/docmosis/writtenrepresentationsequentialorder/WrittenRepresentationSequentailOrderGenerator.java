@@ -66,7 +66,7 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
         );
     }
 
-        private String getFileName(DocmosisTemplates docmosisTemplate) {
+    private String getFileName(DocmosisTemplates docmosisTemplate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return String.format(docmosisTemplate.getDocumentTitle(), LocalDateTime.now().format(formatter));
     }
@@ -138,6 +138,6 @@ public class WrittenRepresentationSequentailOrderGenerator implements TemplateDa
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
             return POST_JUDGE_WRITTEN_REPRESENTATION_SEQUENTIAL_LIP;
         }
-            return WRITTEN_REPRESENTATION_SEQUENTIAL;
+        return WRITTEN_REPRESENTATION_SEQUENTIAL;
     }
 }
