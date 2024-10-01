@@ -39,6 +39,9 @@
 ./bin/utils/ccd-add-role.sh "national-business-centre"
 ./bin/utils/ccd-add-role.sh "hearing-centre-team-leader"
 ./bin/utils/ccd-add-role.sh "court-officer-order"
+./bin/utils/ccd-add-role.sh "ctsc"
+./bin/utils/ccd-add-role.sh "ctsc-team-leader"
+./bin/utils/ccd-add-role.sh "nbc-team-leader"
 
 roles=("solicitor" "systemupdate" "admin" "staff" "judge")
 for role in "${roles[@]}"

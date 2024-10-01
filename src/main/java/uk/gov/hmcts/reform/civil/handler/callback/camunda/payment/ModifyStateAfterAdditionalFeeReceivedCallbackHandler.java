@@ -37,6 +37,8 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
 @Slf4j
 @Service
@@ -80,7 +82,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
                                                    caseData.getCcdCaseReference().toString());
         }
 
-        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(), caseData.getCcdCaseReference().toString());
+        updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationScenarioForApplicant(caseData), caseData.getCcdCaseReference().toString());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .state(newCaseState)
@@ -104,7 +106,14 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         }
     }
 
-    private String getDashboardNotificationScenarioForApplicant() {
+    private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+        if (caseData.getIsGaApplicantLip() == YES
+            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
+            return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
+                ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
+                : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();
+        }
+
         return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
     }
 
