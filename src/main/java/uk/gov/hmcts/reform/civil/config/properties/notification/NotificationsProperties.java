@@ -98,5 +98,12 @@ public class NotificationsProperties {
     private String notifyApplicantForNoRemission;
     @NotEmpty
     private String notifyApplicantForHwfPaymentOutcome;
+    @NotEmpty
+    private String notifyApplicantLiPTranslatedDocumentUploadedWhenParentCaseInBilingual;
+    @NotEmpty
+    private String notifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual;
+    @NotEmpty
+    private String notifyLRTranslatedDocumentUploaded;
+
 
 }
