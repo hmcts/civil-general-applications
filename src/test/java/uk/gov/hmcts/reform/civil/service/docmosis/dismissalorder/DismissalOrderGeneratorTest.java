@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 
@@ -121,7 +122,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder(templateData, caseData);
         }
@@ -161,7 +162,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_1v1(templateData, caseData);
         }
@@ -215,7 +216,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_Option2(templateData, updateData);
         }
@@ -265,7 +266,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_Option3(templateData, caseData);
         }
@@ -310,7 +311,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertEquals("", templateData.getReasonForDecision());
             assertEquals(YesOrNo.NO, templateData.getReasonAvailable());
