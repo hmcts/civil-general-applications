@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -55,5 +56,45 @@ public class GaForLipServiceTest {
             .build();
         CaseData caseData = CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).build();
         assertThat(gaForLipService.anyWelsh(civilCaseData, caseData)).isFalse();
+    }
+
+    @Test
+    void shouldReturnNoticeTrue_app_is_welsh() {
+        CaseData civilCaseData = CaseData.builder()
+            .claimantBilingualLanguagePreference(Language.WELSH.name()).build();
+        CaseData caseData = CaseData.builder()
+            .parentClaimantIsApplicant(YesOrNo.YES)
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YesOrNo.YES).build())
+            .build();
+        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isTrue();
+    }
+
+    @Test
+    void shouldReturnNoticeTrue_resp_is_welsh() {
+        CaseData civilCaseData = CaseData.builder()
+            .respondent1LiPResponse(RespondentLiPResponse.builder()
+                                        .respondent1ResponseLanguage(Language.WELSH.name()).build())
+            .build();
+        CaseData caseData = CaseData.builder()
+            .parentClaimantIsApplicant(YesOrNo.YES)
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YesOrNo.YES).build())
+            .build();
+        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isTrue();
+    }
+
+    @Test
+    void shouldReturnWithoutNoticeFalse_resp_is_welsh() {
+        CaseData civilCaseData = CaseData.builder()
+            .respondent1LiPResponse(RespondentLiPResponse.builder()
+                                        .respondent1ResponseLanguage(Language.WELSH.name()).build())
+            .build();
+        CaseData caseData = CaseData.builder()
+            .parentClaimantIsApplicant(YesOrNo.YES)
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YesOrNo.NO).build())
+            .build();
+        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isFalse();
     }
 }
