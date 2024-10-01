@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -73,6 +74,7 @@ public class GeneralApplication implements MappableObject {
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
     private HelpWithFees generalAppHelpWithFees;
+    private final CertOfSC certOfSC;
     //Case name for manage case
     private String caseNameGaInternal;
 
@@ -127,7 +129,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
                        @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
                        @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
-                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees,
+                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees, CertOfSC certOfSC,
                        @JsonProperty("caseNameGaInternal") String caseNameGaInternal) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
@@ -176,6 +178,7 @@ public class GeneralApplication implements MappableObject {
         this.isGaRespondentOneLip = isGaRespondentOneLip;
         this.isGaRespondentTwoLip = isGaRespondentTwoLip;
         this.generalAppHelpWithFees = generalAppHelpWithFees;
+        this.certOfSC = certOfSC;
         this.caseNameGaInternal = caseNameGaInternal;
     }
 
