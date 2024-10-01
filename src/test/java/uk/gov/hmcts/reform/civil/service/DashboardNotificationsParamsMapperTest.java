@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
+import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_BUSINESS_DAY;
 
 @ExtendWith(MockitoExtension.class)
 public class DashboardNotificationsParamsMapperTest {
@@ -52,6 +53,7 @@ public class DashboardNotificationsParamsMapperTest {
     @Test
     void shouldMapAllParametersWhenIsRequested() {
         LocalDateTime deadline = LocalDateTime.of(2024, 3, 21, 16, 0);
+        LocalDate requestMoreInfoDate = LocalDate.of(2024, 9, 04);
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
@@ -69,13 +71,15 @@ public class DashboardNotificationsParamsMapperTest {
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
               .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
-                REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.of(2024, 9, 04)).build()).build();
+                REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(requestMoreInfoDate).build()).build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFee").isEqualTo("£275.00");
+        assertThat(result).extracting("generalAppNotificationDeadlineDate").isEqualTo(deadline);
         assertThat(result).extracting("generalAppNotificationDeadlineDateEn").isEqualTo("21 March 2024");
         assertThat(result).extracting("generalAppNotificationDeadlineDateCy").isEqualTo("21 Mawrth 2024");
+        assertThat(result).extracting("judgeRequestMoreInfoByDate").isEqualTo(requestMoreInfoDate.atTime(END_OF_BUSINESS_DAY));
         assertThat(result).extracting("judgeRequestMoreInfoByDateEn").isEqualTo("4 September 2024");
         assertThat(result).extracting("judgeRequestMoreInfoByDateCy").isEqualTo("4 Medi 2024");
     }
@@ -96,8 +100,10 @@ public class DashboardNotificationsParamsMapperTest {
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
+        assertThat(result).extracting("writtenRepApplicantDeadline").isEqualTo(claimantDate.atTime(END_OF_BUSINESS_DAY));
         assertThat(result).extracting("writtenRepApplicantDeadlineDateEn").isEqualTo("1 March 2024");
         assertThat(result).extracting("writtenRepApplicantDeadlineDateCy").isEqualTo("1 Mawrth 2024");
+        assertThat(result).extracting("writtenRepRespondentDeadline").isEqualTo(defendantDate.atTime(END_OF_BUSINESS_DAY));
         assertThat(result).extracting("writtenRepRespondentDeadlineDateEn").isEqualTo("2 March 2024");
         assertThat(result).extracting("writtenRepRespondentDeadlineDateCy").isEqualTo("2 Mawrth 2024");
     }
