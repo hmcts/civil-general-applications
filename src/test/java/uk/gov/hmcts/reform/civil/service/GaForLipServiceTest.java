@@ -85,6 +85,18 @@ public class GaForLipServiceTest {
     }
 
     @Test
+    void shouldReturnNoticeFalse_nobody_is_welsh() {
+        CaseData civilCaseData = CaseData.builder()
+            .build();
+        CaseData caseData = CaseData.builder()
+            .parentClaimantIsApplicant(YesOrNo.YES)
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YesOrNo.YES).build())
+            .build();
+        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isFalse();
+    }
+
+    @Test
     void shouldReturnWithoutNoticeFalse_resp_is_welsh() {
         CaseData civilCaseData = CaseData.builder()
             .respondent1LiPResponse(RespondentLiPResponse.builder()
