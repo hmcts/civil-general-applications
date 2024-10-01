@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -131,7 +132,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
-            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepresentationSequential(templateData, caseData);
         }
@@ -184,7 +185,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option2(templateData, updateData);
         }
@@ -231,7 +232,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3(templateData, updateData);
         }
@@ -276,7 +277,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3_1V1(templateData, updateData);
         }

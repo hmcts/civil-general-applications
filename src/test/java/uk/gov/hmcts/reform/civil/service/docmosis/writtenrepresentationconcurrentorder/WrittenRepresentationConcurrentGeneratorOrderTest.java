@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -129,7 +130,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
 
             when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
 
-            var templateData = writtenRepresentationConcurrentOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = writtenRepresentationConcurrentOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepresentationConcurrent(templateData, caseData);
         }
@@ -184,7 +185,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
-                .getTemplateData(updateDate, "auth");
+                .getTemplateData(null, updateDate, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepConcurrent_Option2(templateData, updateDate);
         }
@@ -231,7 +232,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
-                .getTemplateData(updateDate, "auth");
+                .getTemplateData(null, updateDate, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepConcurrent_Option3(templateData, updateDate);
         }
@@ -273,7 +274,7 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
             when(listGeneratorService.applicationType(updateDate)).thenReturn("Extend time");
 
             var templateData = writtenRepresentationConcurrentOrderGenerator
-                .getTemplateData(updateDate, "auth");
+                .getTemplateData(null, updateDate, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepConcurrent_1V2(templateData, updateDate);
         }

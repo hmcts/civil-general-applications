@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 
@@ -118,7 +119,7 @@ class HearingOrderGeneratorTest {
                 .isMultiParty(YES)
                 .build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_HearingOrder(templateData, caseData);
         }
@@ -174,7 +175,7 @@ class HearingOrderGeneratorTest {
                                                            .orderWithoutNoticeDate(LocalDate.now()).build()).build();
 
             CaseData updateData = caseDataBuilder.build();
-            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = hearingOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_HearingOrder_Option2(templateData, updateData);
         }
@@ -223,7 +224,7 @@ class HearingOrderGeneratorTest {
 
             CaseData updateData = caseDataBuilder.build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = hearingOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_HearingOrder_Option3(templateData, updateData);
         }
@@ -269,7 +270,7 @@ class HearingOrderGeneratorTest {
 
             CaseData updateData = caseDataBuilder.build();
 
-            var templateData = hearingOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = hearingOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_HearingOrder_Option3_1v1(templateData, updateData);
         }
