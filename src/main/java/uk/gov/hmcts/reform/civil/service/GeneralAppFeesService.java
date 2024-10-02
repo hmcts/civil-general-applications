@@ -51,6 +51,8 @@ public class GeneralAppFeesService {
         = List.of(GeneralApplicationTypes.ADJOURN_HEARING);
     protected static final List<GeneralApplicationTypes> SD_CONSENT_TYPES
         = List.of(GeneralApplicationTypes.SETTLE_BY_CONSENT);
+    protected static final List<GeneralApplicationTypes> CONFIRM_YOU_PAID_CCJ_DEBT
+        = List.of(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID);
 
     public Fee getFeeForGA(CaseData caseData) {
         Fee result = Fee.builder().calculatedAmountInPence(BigDecimal.valueOf(Integer.MAX_VALUE)).build();
@@ -77,6 +79,11 @@ public class GeneralAppFeesService {
                 .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = setAsideFeeForGA;
             }
+        }
+        if (shouldUpdateCoScGATypeSize(typeSize, caseData.getGeneralAppType().getTypes())) {
+            typeSize--;
+            Fee certOfSatisfactionOrCancel = getFeeForGA(feesConfiguration.getCertificateOfSatisfaction(), "miscellaneous", "other");
+            result = getCoScFeeResult(result, certOfSatisfactionOrCancel);
         }
         if (typeSize > 0) {
             Fee defaultFee = getDefaultFee(caseData);
@@ -173,5 +180,16 @@ public class GeneralAppFeesService {
             .code(feeLookupResponseDto.getCode())
             .version(feeLookupResponseDto.getVersion().toString())
             .build();
+    }
+
+    private boolean shouldUpdateCoScGATypeSize(int typeSize, List<GeneralApplicationTypes> types) {
+        return typeSize > 0 && CollectionUtils.containsAny(types, CONFIRM_YOU_PAID_CCJ_DEBT);
+    }
+
+    private Fee getCoScFeeResult(Fee existingResult, Fee certOfSatisfactionOrCancel) {
+        if (certOfSatisfactionOrCancel.getCalculatedAmountInPence().compareTo(existingResult.getCalculatedAmountInPence()) < 0) {
+            return certOfSatisfactionOrCancel;
+        }
+        return existingResult;
     }
 }

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
+import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -339,6 +340,7 @@ public class CaseData implements MappableObject {
     private String generalAppAddlnInfoText;
     private String generalAppWrittenRepText;
     private YesOrNo respondentResponseDeadlineChecked;
+    private final CertOfSC certOfSC;
     //Case name for manage case
     private String caseNameGaInternal;
 

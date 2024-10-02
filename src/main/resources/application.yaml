@@ -80,6 +80,7 @@ genApp:
       consentedOrWithoutNotice: GeneralAppWithoutNotice
       uncloakFee: HACFOOnNotice
       appnToVaryOrSuspend: AppnToVaryOrSuspend
+      certificateOfSatisfaction: CoS
   lrd:
     endpoint: /refdata/location/court-venues
 
