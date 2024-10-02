@@ -80,6 +80,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandlerTest extends
                     .generalAppConsentOrder(YES)
                     .ccdCaseReference(Long.valueOf("56789"))
                     .isGaRespondentOneLip(YES)
+                    .parentClaimantIsApplicant(YES)
                     .build();
             CaseDetails civil = CaseDetails.builder().id(123L).data(Map.of("case_data", caseData)).build();
 
