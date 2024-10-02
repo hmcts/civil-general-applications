@@ -40,7 +40,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) throws Exception {
+    public ExternalTaskData handleTask(ExternalTask externalTask) throws Exception {
         ExternalTaskInput externalTaskInput = mapper.convertValue(externalTask.getAllVariables(),
                 ExternalTaskInput.class);
         String caseId = externalTaskInput.getCaseId();
@@ -66,8 +66,10 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
         } else {
 
             CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, gaCaseData);
-            coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+            var caseData = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+            return ExternalTaskData.builder().caseData(caseData).build();
         }
+        return ExternalTaskData.builder().build();
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData gaCaseData) {
