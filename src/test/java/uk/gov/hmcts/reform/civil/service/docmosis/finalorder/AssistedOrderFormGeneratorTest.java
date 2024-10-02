@@ -2278,7 +2278,7 @@ class AssistedOrderFormGeneratorTest {
                 .judgeTitle("John Doe")
                 .claimant2PartyName(null).build();
 
-            generator.generate(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+            generator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
 
             verify(documentGeneratorService).generateDocmosisDocument(any(AssistedOrderForm.class),
                                                                       eq(POST_JUDGE_ASSISTED_ORDER_FORM_LIP));
@@ -2287,7 +2287,7 @@ class AssistedOrderFormGeneratorTest {
                 new PDF(any(), any(), DocumentType.GENERAL_ORDER));
 
             var templateData = generator
-                .getTemplateData(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
 
             assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
             assertThat(templateData.getAddress()).isEqualTo("london court");
@@ -2305,28 +2305,6 @@ class AssistedOrderFormGeneratorTest {
             assertEquals(templateData.getPartyAddressAddressLine3(), "respondent1address3");
             assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown");
             assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode");
-        }
-
-        private CaseData getCivilCaseData() {
-            CaseData civilCaseData = CaseData.builder()
-                .applicant1(Party.builder()
-                                .primaryAddress(Address.builder()
-                                                    .postCode("postcode")
-                                                    .postTown("posttown")
-                                                    .addressLine1("address1")
-                                                    .addressLine2("address2")
-                                                    .addressLine3("address3").build())
-                                .partyName("applicant1partyname").build())
-                .respondent1(Party.builder()
-                                 .primaryAddress(Address.builder()
-                                                     .postCode("respondent1postcode")
-                                                     .postTown("respondent1posttown")
-                                                     .addressLine1("respondent1address1")
-                                                     .addressLine2("respondent1address2")
-                                                     .addressLine3("respondent1address3").build())
-                                 .partyName("respondent1partyname").build()).build();
-
-            return civilCaseData;
         }
     }
 }

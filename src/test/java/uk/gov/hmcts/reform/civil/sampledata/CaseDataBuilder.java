@@ -16,13 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
-import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.CaseLink;
-import uk.gov.hmcts.reform.civil.model.Fee;
-import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
-import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
-import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.*;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -719,6 +713,28 @@ public class CaseDataBuilder {
                                         .onInitiativeSelectionDate(now()).build())
             .createdDate(SUBMITTED_DATE_TIME)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData getCivilCaseData() {
+        CaseData civilCaseData = CaseData.builder()
+            .applicant1(Party.builder()
+                            .primaryAddress(Address.builder()
+                                                .postCode("postcode")
+                                                .postTown("posttown")
+                                                .addressLine1("address1")
+                                                .addressLine2("address2")
+                                                .addressLine3("address3").build())
+                            .partyName("applicant1partyname").build())
+            .respondent1(Party.builder()
+                             .primaryAddress(Address.builder()
+                                                 .postCode("respondent1postcode")
+                                                 .postTown("respondent1posttown")
+                                                 .addressLine1("respondent1address1")
+                                                 .addressLine2("respondent1address2")
+                                                 .addressLine3("respondent1address3").build())
+                             .partyName("respondent1partyname").build()).build();
+
+        return civilCaseData;
     }
 
     public CaseData.CaseDataBuilder generalOrderApplication() {

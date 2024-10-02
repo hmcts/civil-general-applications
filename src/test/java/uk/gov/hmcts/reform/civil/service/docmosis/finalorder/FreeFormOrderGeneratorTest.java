@@ -11,10 +11,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
-import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
-import uk.gov.hmcts.reform.civil.model.Party;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.FreeFormOrder;
@@ -99,7 +97,7 @@ class FreeFormOrderGeneratorTest {
                                 .epimmsId("2")
                                 .externalShortName("Manchester")
                                 .build());
-            FreeFormOrder templateDate = generator.getTemplateData(getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+            FreeFormOrder templateDate = generator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
             assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
         }
 
@@ -122,7 +120,7 @@ class FreeFormOrderGeneratorTest {
                 .freeFormOrderedText("OrderedText")
                 .orderOnCourtsList(OrderOnCourts.NOT_APPLICABLE)
                 .build();
-            CaseDocument caseDocuments = generator.generate(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+            CaseDocument caseDocuments = generator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
 
             assertThat(caseDocuments).isNotNull();
 
@@ -148,28 +146,6 @@ class FreeFormOrderGeneratorTest {
                 () -> assertEquals(freeFormOrder.getPartyAddressAddressLine3(), "address3"),
                 () -> assertEquals(freeFormOrder.getPartyAddressPostTown(), "posttown"),
                 () -> assertEquals(freeFormOrder.getPartyAddressPostCode(), "postcode"));
-        }
-
-        private CaseData getCivilCaseData() {
-            CaseData civilCaseData = CaseData.builder()
-                .applicant1(Party.builder()
-                                .primaryAddress(Address.builder()
-                                                    .postCode("postcode")
-                                                    .postTown("posttown")
-                                                    .addressLine1("address1")
-                                                    .addressLine2("address2")
-                                                    .addressLine3("address3").build())
-                                .partyName("applicant1partyname").build())
-                .respondent1(Party.builder()
-                                 .primaryAddress(Address.builder()
-                                                     .postCode("respondent1postcode")
-                                                     .postTown("respondent1posttown")
-                                                     .addressLine1("respondent1address1")
-                                                     .addressLine2("respondent1address2")
-                                                     .addressLine3("respondent1address3").build())
-                                 .partyName("respondent1partyname").build()).build();
-
-            return civilCaseData;
         }
     }
 

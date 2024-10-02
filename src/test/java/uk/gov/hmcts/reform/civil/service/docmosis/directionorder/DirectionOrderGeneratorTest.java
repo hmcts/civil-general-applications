@@ -16,10 +16,8 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
-import uk.gov.hmcts.reform.civil.model.Party;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -367,7 +365,7 @@ class DirectionOrderGeneratorTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
-            directionOrderGenerator.generate(getCivilCaseData(), caseData, BEARER_TOKEN,
+            directionOrderGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN,
                                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
 
             verify(documentManagementService).uploadDocument(
@@ -397,7 +395,7 @@ class DirectionOrderGeneratorTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
             var templateData = directionOrderGenerator
-                .getTemplateData(getCivilCaseData(), caseData, "auth",
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth",
                                  FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
 
             assertThatFieldsAreCorrect_DirectionOrder_LipRespondent(templateData, caseData);
@@ -442,7 +440,7 @@ class DirectionOrderGeneratorTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
             var templateData = directionOrderGenerator
-                .getTemplateData(getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
 
             assertThatFieldsAreCorrect_DirectionOrder_1v1(templateData, caseData);
         }
@@ -465,28 +463,6 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
                 () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
                 () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
-        }
-
-        private CaseData getCivilCaseData() {
-            CaseData civilCaseData = CaseData.builder()
-                .applicant1(Party.builder()
-                                .primaryAddress(Address.builder()
-                                                    .postCode("postcode")
-                                                    .postTown("posttown")
-                                                    .addressLine1("address1")
-                                                    .addressLine2("address2")
-                                                    .addressLine3("address3").build())
-                                .partyName("applicant1partyname").build())
-                .respondent1(Party.builder()
-                                 .primaryAddress(Address.builder()
-                                                     .postCode("respondent1postcode")
-                                                     .postTown("respondent1posttown")
-                                                     .addressLine1("respondent1address1")
-                                                     .addressLine2("respondent1address2")
-                                                     .addressLine3("respondent1address3").build())
-                                 .partyName("respondent1partyname").build()).build();
-
-            return civilCaseData;
         }
     }
 }
