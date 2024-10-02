@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class RespondentResponseDeadlineCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final DashboardApiClient dashboardApiClient;
     protected final DashboardNotificationsParamsMapper mapper;
+    private final DocUploadDashboardNotificationService dashboardNotificationService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -58,6 +60,9 @@ public class RespondentResponseDeadlineCallbackHandler extends CallbackHandler {
                 ScenarioRequestParams.builder().params(paramsMap).build()
 
         );
+
+        dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+        dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
