@@ -67,7 +67,9 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                                                           Element<GASolicitorDetailsGAspec> respondentSolicitor) {
         if (gaForLipService.isLipResp(caseData)) {
             String caseTitle = DocUploadNotificationService.getAllPartyNames(caseData);
-            String isLipResName = caseData.getDefendant1PartyName();
+            String isLipResName =
+                caseData.getParentClaimantIsApplicant().equals(NO) ? caseData.getClaimant1PartyName() :
+                    caseData.getDefendant1PartyName();
             return Map.of(
                 CASE_TITLE, Objects.requireNonNull(caseTitle),
                 GA_LIP_RESP_NAME, Objects.requireNonNull(isLipResName),
