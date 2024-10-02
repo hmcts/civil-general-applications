@@ -14,8 +14,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.Party;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -44,6 +46,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DISMISSAL_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
@@ -315,6 +318,106 @@ class DismissalOrderGeneratorTest {
 
             assertEquals("", templateData.getReasonForDecision());
             assertEquals(YesOrNo.NO, templateData.getReasonAvailable());
+        }
+    }
+
+    @Nested
+    class GetTemplateDateLip {
+
+        @Test
+        void shouldGenerateDismissalOrderDocument() {
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_DISMISSAL_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .dismissalOrderApplication()
+                .parentClaimantIsApplicant(YES)
+                .build();
+
+            dismissalOrderGenerator.generate(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.DISMISSAL_ORDER)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_DISMISSAL_ORDER_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetDissmisalOrderData_1v1() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(NO)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+
+            var templateData = dismissalOrderGenerator.getTemplateData(getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThatFieldsAreCorrect_DismissalOrder_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DismissalOrder_1v1(JudgeDecisionPdfDocument templateData,
+                                                                   CaseData caseData) {
+            Assertions.assertAll(
+                "Dismissal Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
+                    .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
+                    + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals(templateData.getDismissalOrder(),
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
+
+                () -> assertEquals(templateData.getPartyName(), "applicant1partyname"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "address1"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "address2"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
+                () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
+                () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
+
+        }
+
+        private CaseData getCivilCaseData() {
+            CaseData civilCaseData = CaseData.builder()
+                .applicant1(Party.builder()
+                                .primaryAddress(Address.builder()
+                                                    .postCode("postcode")
+                                                    .postTown("posttown")
+                                                    .addressLine1("address1")
+                                                    .addressLine2("address2")
+                                                    .addressLine3("address3").build())
+                                .partyName("applicant1partyname").build())
+                .respondent1(Party.builder()
+                                 .primaryAddress(Address.builder()
+                                                     .postCode("respondent1postcode")
+                                                     .postTown("respondent1posttown")
+                                                     .addressLine1("respondent1address1")
+                                                     .addressLine2("respondent1address2")
+                                                     .addressLine3("respondent1address3").build())
+                                 .partyName("respondent1partyname").build()).build();
+
+            return civilCaseData;
         }
     }
 }

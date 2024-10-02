@@ -379,6 +379,51 @@ class DirectionOrderGeneratorTest {
         }
 
         @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData_1v1_LipRespondent() {
+
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(YES)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+
+            var templateData = directionOrderGenerator
+                .getTemplateData(getCivilCaseData(), caseData, "auth",
+                                 FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThatFieldsAreCorrect_DirectionOrder_LipRespondent(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DirectionOrder_LipRespondent(JudgeDecisionPdfDocument templateData,
+                                                                   CaseData caseData) {
+            Assertions.assertAll(
+                "Direction Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getPartyName(), "respondent1partyname"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "respondent1address1"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "respondent1address2"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "respondent1address3"),
+                () -> assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown"),
+                () -> assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode"));
+        }
+
+        @Test
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_1v1_Lip() {
 
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
