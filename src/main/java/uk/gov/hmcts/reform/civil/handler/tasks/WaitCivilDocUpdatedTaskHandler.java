@@ -3,9 +3,16 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.client.task.ExternalTask;
+import org.camunda.bpm.engine.delegate.BpmnError;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -18,19 +25,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.client.task.ExternalTask;
-import org.camunda.bpm.engine.delegate.BpmnError;
-import org.springframework.stereotype.Component;
-
 import static com.google.common.collect.Lists.newArrayList;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WaitCivilDocUpdatedTaskHandler implements BaseExternalTaskHandler {
+public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
 
     protected static int maxWait = 10;
     protected static int waitGap = 3;
