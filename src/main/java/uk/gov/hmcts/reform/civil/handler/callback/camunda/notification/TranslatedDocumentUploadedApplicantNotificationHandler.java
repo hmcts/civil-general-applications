@@ -36,11 +36,10 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
     private final GaForLipService gaForLipService;
     private final CoreCaseDataService coreCaseDataService;
     private final SolicitorEmailValidation solicitorEmailValidation;
-    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.NOTIFY_APPLICANT_TRANSLATED_DOCUMENT_UPLOADED_GA);
+    private final OrganisationService organisationService;
 
+    private static final List<CaseEvent> EVENTS = List.of(CaseEvent.NOTIFY_APPLICANT_TRANSLATED_DOCUMENT_UPLOADED_GA);
     private static final String REFERENCE_TEMPLATE = "translated-document-uploaded-applicant-notification-%s";
-    //public static final String TASK_ID = "NotifyTranslatedDocumentUploadedToApplicantGA";
-    final OrganisationService organisationService;
 
     @Override
     protected Map<String, Callback> callbacks() {
