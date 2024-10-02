@@ -19,8 +19,10 @@ import uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.LengthOfHearing;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.PermissionToAppealTypes;
+import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.Party;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -64,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -72,6 +75,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP;
 
 @SpringBootTest(classes = {
     AssistedOrderFormGenerator.class
@@ -2245,5 +2249,84 @@ class AssistedOrderFormGeneratorTest {
                                                  .build())
             .build();
 
+    }
+
+    @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void test_getTemplate() {
+            assertThat(generator.getTemplate(FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT)).isEqualTo(DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP);
+        }
+
+        @Test
+        void shouldGenerateAssistedOrderDocument() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder()
+                                .epimmsId("2")
+                                .externalShortName("Reading")
+                                .build());
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_ASSISTED_ORDER_FORM_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_ASSISTED_ORDER_FORM_LIP.getDocumentTitle(), bytes));
+
+            CaseData caseData = getSampleGeneralApplicationCaseData(NO).toBuilder()
+                .parentClaimantIsApplicant(YesOrNo.YES)
+                .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                            .address("london court")
+                                            .baseLocation("1")
+                                            .postcode("BA 117").build())
+                .judgeTitle("John Doe")
+                .claimant2PartyName(null).build();
+
+            generator.generate(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            verify(documentGeneratorService).generateDocmosisDocument(any(AssistedOrderForm.class),
+                                                                      eq(POST_JUDGE_ASSISTED_ORDER_FORM_LIP));
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.GENERAL_ORDER));
+
+            var templateData = generator
+                .getTemplateData(getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+            assertThat(templateData.getAddress()).isEqualTo("london court");
+            assertThat(templateData.getSiteName()).isEqualTo("testing");
+            assertThat(templateData.getPostcode()).isEqualTo("BA 117");
+            assertThat(templateData.getCourtLocation()).isEqualTo("Reading");
+            assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
+            assertThat(templateData.getClaimant2Name()).isNull();
+            assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
+            assertThat(templateData.getDefendant2Name()).isNull();
+            assertThat(templateData.getJudgeNameTitle()).isEqualTo("John Doe");
+            assertEquals(templateData.getPartyName(), "respondent1partyname");
+            assertEquals(templateData.getPartyAddressAddressLine1(), "respondent1address1");
+            assertEquals(templateData.getPartyAddressAddressLine2(), "respondent1address2");
+            assertEquals(templateData.getPartyAddressAddressLine3(), "respondent1address3");
+            assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown");
+            assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode");
+        }
+
+        private CaseData getCivilCaseData() {
+            CaseData civilCaseData = CaseData.builder()
+                .applicant1(Party.builder()
+                                .primaryAddress(Address.builder()
+                                                    .postCode("postcode")
+                                                    .postTown("posttown")
+                                                    .addressLine1("address1")
+                                                    .addressLine2("address2")
+                                                    .addressLine3("address3").build())
+                                .partyName("applicant1partyname").build())
+                .respondent1(Party.builder()
+                                 .primaryAddress(Address.builder()
+                                                     .postCode("respondent1postcode")
+                                                     .postTown("respondent1posttown")
+                                                     .addressLine1("respondent1address1")
+                                                     .addressLine2("respondent1address2")
+                                                     .addressLine3("respondent1address3").build())
+                                 .partyName("respondent1partyname").build()).build();
+
+            return civilCaseData;
+        }
     }
 }
