@@ -388,7 +388,6 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
                 () -> assertEquals(templateData.getDismissalOrder(),
                                    caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
-
                 () -> assertEquals(templateData.getPartyName(), "applicant1partyname"),
                 () -> assertEquals(templateData.getPartyAddressAddressLine1(), "address1"),
                 () -> assertEquals(templateData.getPartyAddressAddressLine2(), "address2"),
