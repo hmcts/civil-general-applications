@@ -45,6 +45,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
@@ -105,6 +106,81 @@ class HearingOrderGeneratorTest {
         String expectedMessage = "Court Name is not found in location data";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Nested
+    class GetTemplateDataLip {
+        @Test
+        void shouldGenerateHearingOrderDocument() {
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_HEARING_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_HEARING_ORDER_LIP.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO).build();
+
+            hearingOrderGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                           caseData,
+                                           BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.HEARING_ORDER)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_HEARING_ORDER_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .parentClaimantIsApplicant(NO)
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                                                     caseData,
+                                                                     "auth",
+                                                                     FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThatFieldsAreCorrect_HearingOrder(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_HearingOrder(JudgeDecisionPdfDocument templateData, CaseData caseData) {
+            Assertions.assertAll(
+                "Hearing Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeHearingLocation(), "sitename - location name - D12 8997"),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(YES, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getHearingPrefType(), caseData.getJudicialListForHearing()
+                    .getHearingPreferencesPreferredType().getDisplayedValue()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeListForHearing(), caseData
+                    .getOrderCourtOwnInitiativeListForHearing().getOrderCourtOwnInitiative()
+                    + " ".concat(caseData.getOrderCourtOwnInitiativeListForHearing()
+                                     .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getEstimatedHearingLength(),
+                                   caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialGeneralHearingOrderRecital()),
+                () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections()),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals(templateData.getPartyName(), "applicant1partyname"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "address1"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "address2"),
+                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
+                () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
+                () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
+        }
     }
 
     @Nested
