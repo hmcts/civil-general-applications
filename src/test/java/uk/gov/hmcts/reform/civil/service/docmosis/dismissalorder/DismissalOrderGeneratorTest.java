@@ -392,7 +392,6 @@ class DismissalOrderGeneratorTest {
                 () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
                 () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
                 () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
-
         }
     }
 }
