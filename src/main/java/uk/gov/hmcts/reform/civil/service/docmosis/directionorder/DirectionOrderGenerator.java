@@ -107,7 +107,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private DocmosisTemplates getDocmosisTemplate(FlowFlag userType) {
+    public DocmosisTemplates getDocmosisTemplate(FlowFlag userType) {
 
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
             return POST_JUDGE_DIRECTION_ORDER_LIP;

@@ -84,6 +84,7 @@ import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag.LIP_APPLICANT;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT;
 
 @Data
 @Builder(toBuilder = true)
@@ -387,7 +388,7 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public String getPartyName(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
 
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? civilCaseData.getApplicant1().getPartyName()
                 : civilCaseData.getRespondent1().getPartyName();
@@ -401,7 +402,7 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public String partyAddressAddressLine1(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
 
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine1())
                 .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
@@ -418,7 +419,7 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public String partyAddressAddressLine2(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine2())
                 .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
@@ -435,7 +436,7 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public String partyAddressAddressLine3(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine3())
                 .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
@@ -452,7 +453,7 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public String partyAddressPostCode(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostCode())
                 .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
@@ -469,7 +470,7 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public String partyAddressPostTown(boolean parentClaimantIsApplicant, FlowFlag userType, CaseData civilCaseData) {
-        if (userType.equals(LIP_APPLICANT)) {
+        if (userType.equals(POST_JUDGE_ORDER_LIP_APPLICANT)) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostTown())
                 .orElse(org.apache.commons.lang3.StringUtils.EMPTY)
