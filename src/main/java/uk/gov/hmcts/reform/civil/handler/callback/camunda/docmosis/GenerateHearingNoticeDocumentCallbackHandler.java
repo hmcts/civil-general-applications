@@ -51,8 +51,6 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     CaseDocument postJudgeOrderToLipApplicant = null;
     CaseDocument postJudgeOrderToLipRespondent = null;
-    private static final String LIP_APPLICANT = "LipApplicant";
-    private static final String LIP_RESPONDENT = "LipRespondent";
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -136,7 +134,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         if (Objects.nonNull(postJudgeOrderToLipApplicant)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                postJudgeOrderToLipApplicant, caseData, civilCaseData, LIP_APPLICANT);
+                postJudgeOrderToLipApplicant, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
         }
 
         /*
@@ -145,11 +143,11 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         if (Objects.nonNull(postJudgeOrderToLipRespondent)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                postJudgeOrderToLipRespondent, caseData, civilCaseData, LIP_RESPONDENT);
+                postJudgeOrderToLipRespondent, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
         }
     }
 
-    private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, String lipUserType) {
+    private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {
         sendFinalOrderPrintService
             .sendJudgeFinalOrderToPrintForLIP(
                 authorisation,

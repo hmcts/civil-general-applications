@@ -19,4 +19,6 @@ public class Address {
     private String addressLine3;
     private String postTown;
     private String postCode;
+    private String country;
+    private String county;
 }

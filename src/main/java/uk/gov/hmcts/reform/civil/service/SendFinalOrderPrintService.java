@@ -23,10 +23,8 @@ public class SendFinalOrderPrintService {
     private final DocumentDownloadService documentDownloadService;
 
     private static final String FINAL_ORDER_PACK_LETTER_TYPE = "final-order-document-pack";
-    private static final String LIP_APPLICANT = "LipApplicant";
-    private static final String LIP_RESPONDENT = "LipRespondent";
 
-    public void sendJudgeFinalOrderToPrintForLIP(String authorisation, Document postJudgeOrderDocument, CaseData caseData, CaseData civilCaseData, String lipUserType) {
+    public void sendJudgeFinalOrderToPrintForLIP(String authorisation, Document postJudgeOrderDocument, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {
 
         List<String> recipients = new ArrayList<>();
         boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
@@ -43,14 +41,14 @@ public class SendFinalOrderPrintService {
             throw new DocumentDownloadException(postJudgeOrderDocument.getDocumentFileName(), e);
         }
 
-        if (lipUserType.equals(LIP_APPLICANT) && Objects.nonNull(caseData.getClaimant1PartyName())) {
-            recipients.add(caseData.getPartyName(parentClaimantIsApplicant, FlowFlag.LIP_APPLICANT, civilCaseData));
+        if (lipUserType.equals(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT) && Objects.nonNull(caseData.getClaimant1PartyName())) {
+            recipients.add(caseData.getPartyName(parentClaimantIsApplicant, lipUserType, civilCaseData));
 
         }
 
-        if (lipUserType.equals(LIP_RESPONDENT)
+        if (lipUserType.equals(FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT)
             && Objects.nonNull(caseData.getDefendant1PartyName())) {
-            recipients.add(caseData.getPartyName(parentClaimantIsApplicant, FlowFlag.LIP_RESPONDENT, civilCaseData));
+            recipients.add(caseData.getPartyName(parentClaimantIsApplicant, lipUserType, civilCaseData));
         }
 
         bulkPrintService.printLetter(letterContent, caseData.getCcdCaseReference().toString(),

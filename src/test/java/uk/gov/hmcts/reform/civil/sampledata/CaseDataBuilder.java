@@ -164,6 +164,9 @@ public class CaseDataBuilder {
     protected GAApplicationType generalAppType;
     protected GAApproveConsentOrder  approveConsentOrder;
 
+    protected Party respondent1;
+    protected Party applicant1;
+
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
         return this;
@@ -368,10 +371,22 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder respondent1(Party party) {
+        this.respondent1 = party;
+        return this;
+    }
+
+    public CaseDataBuilder applicant1(Party party) {
+        this.applicant1 = party;
+        return this;
+    }
+
     public CaseData build() {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .applicant1(applicant1)
+            .respondent1(respondent1)
             .applicantPartyName(applicantPartyName)
             .claimant1PartyName(claimant1PartyName)
             .caseNameGaInternal("applicant v respondent")
