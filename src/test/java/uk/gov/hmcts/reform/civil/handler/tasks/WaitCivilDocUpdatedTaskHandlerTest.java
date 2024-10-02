@@ -6,7 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.WAIT_GA_DRAFT;
 
@@ -107,25 +109,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     }
 
     @Test
-    void should_handle_task_pass() {
-        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
-                .caseEvent(WAIT_GA_DRAFT).build();
-        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
-        CaseDetails caseDetails = CaseDetailsBuilder.builder().id(1L).data(gaCaseData).build();
-        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
-
-        when(coreCaseDataService.startGaUpdate("1L", WAIT_GA_DRAFT))
-            .thenReturn(startEventResponse);
-        when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails())).thenReturn(gaCaseData);
-        CaseDetails civil = CaseDetails.builder().id(123L).build();
-        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
-        when(caseDetailsConverter.toCaseData(civil)).thenReturn(civilCaseDataNow);
-
-        waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
-
-    }
-
-    @Test
     void should_handle_task_fail() {
         ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId("1")
                 .caseEvent(WAIT_GA_DRAFT).build();
@@ -144,6 +127,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         waitCivilDocUpdatedTaskHandler.execute(externalTask, externalTaskService);
         WaitCivilDocUpdatedTaskHandler.maxWait = 10;
         WaitCivilDocUpdatedTaskHandler.waitGap = 6;
+        verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
     }
 
     @Test
@@ -236,6 +220,36 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, WAIT_GA_DRAFT);
         verify(coreCaseDataService).submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class));
+    }
+
+    @Test
+    void shouldUpdateGaDraftList_whenHandlerIsExecuted_pass() {
+        String uid1 = "f000aa01-0451-4000-b000-000000000000";
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder().caseId(CASE_ID)
+            .caseEvent(WAIT_GA_DRAFT).build();
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
+
+        CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeDraftAppCaseData().toBuilder()
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .build();
+
+        CaseData updatedCaseData =  CaseDataBuilder.builder().atStateClaimDraft().withNoticeDraftAppCaseData().toBuilder()
+            .gaDraftDocument(singletonList(
+                Element.<CaseDocument>builder().id(UUID.fromString(uid1))
+                    .value(pdfDocument).build())).build();
+        CaseDetails caseDetails = CaseDetailsBuilder.builder().data(updatedCaseData).build();
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+
+        when(coreCaseDataService.startGaUpdate(CASE_ID, WAIT_GA_DRAFT))
+            .thenReturn(startEventResponse);
+        when(caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails())).thenReturn(caseData);
+
+        waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
+
+        verify(coreCaseDataService).startGaUpdate(CASE_ID, WAIT_GA_DRAFT);
+        verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
+        verifyNoMoreInteractions(coreCaseDataService);
     }
 
     public final CaseDocument pdfDocument = CaseDocument.builder()
