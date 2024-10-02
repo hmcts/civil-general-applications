@@ -62,8 +62,7 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
         caseDataBuilder.businessProcess(BusinessProcess
                                             .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
 
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)
-            && caseData.getGeneralAppPBADetails().getFee().getCode().equals("FEE0459")) {
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             caseData.setCoSCApplicationStatus(YesOrNo.YES);
         }
 
