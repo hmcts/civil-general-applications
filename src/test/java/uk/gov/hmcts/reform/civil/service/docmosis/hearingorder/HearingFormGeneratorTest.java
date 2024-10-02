@@ -39,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -396,7 +397,5 @@ class HearingFormGeneratorTest {
             assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown");
             assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode");
         }
-
-
     }
 }
