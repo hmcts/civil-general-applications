@@ -54,22 +54,26 @@ public class HwfNotificationService implements NotificationData {
         if (Objects.isNull(event)) {
             event = getEvent(caseData);
         }
-        this.event = event;
+
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
                 civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ? getTemplateBilingual(event) : getTemplate(event),
-                addProperties(caseData),
+                addAllProperties(caseData, event),
                 caseData.getGeneralAppParentCaseLink().getCaseReference()
         );
     }
 
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
-        Map<String, String> commonProperties = getCommonProperties(caseData);
+        return getCommonProperties(caseData);
+    }
+
+    private Map<String, String> addAllProperties(CaseData caseData, CaseEvent event) {
+        Map<String, String> commonProperties = addProperties(caseData);
         Map<String, String> furtherProperties = getFurtherProperties(caseData, event);
         return Collections.unmodifiableMap(
-                Stream.concat(commonProperties.entrySet().stream(), furtherProperties.entrySet().stream())
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+            Stream.concat(commonProperties.entrySet().stream(), furtherProperties.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
