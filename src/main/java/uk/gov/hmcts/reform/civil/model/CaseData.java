@@ -341,6 +341,7 @@ public class CaseData implements MappableObject {
     private YesOrNo respondentResponseDeadlineChecked;
     //Case name for manage case
     private String caseNameGaInternal;
+    private boolean coSCApplicationStatus;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {

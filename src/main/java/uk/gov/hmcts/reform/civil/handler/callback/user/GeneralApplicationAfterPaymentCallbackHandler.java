@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -59,6 +60,11 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
 
         caseDataBuilder.businessProcess(BusinessProcess
                                             .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
+
+        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)
+            && caseData.getGeneralAppPBADetails().getFee().getCode().equals("FEE0459")) {
+            caseData.setCoSCApplicationStatus(true);
+        }
 
         return getCallbackResponse(caseDataBuilder);
     }
