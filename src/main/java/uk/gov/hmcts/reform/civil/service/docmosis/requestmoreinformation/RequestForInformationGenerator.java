@@ -136,9 +136,11 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 ? DocumentType.POST_JUDGE_ORDER_SEND_APP_TO_OTHER_PARTY
                 : DocumentType.POST_JUDGE_ORDER_REQUEST_FOR_INFORMATION_LIP;
         }
+
         if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
             return DocumentType.SEND_APP_TO_OTHER_PARTY;
         }
+
         return DocumentType.REQUEST_FOR_INFORMATION;
     }
 
