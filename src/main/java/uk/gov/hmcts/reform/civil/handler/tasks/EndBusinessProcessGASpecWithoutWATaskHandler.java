@@ -17,12 +17,12 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class EndGaUploadedTranslatedDocProcessTaskHandler extends BaseExternalTaskHandler {
+public class EndBusinessProcessGASpecWithoutWATaskHandler extends BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
@@ -37,7 +37,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandler extends BaseExternalTa
         String caseId = externalTaskInput.getCaseId();
         log.info("Calling end business process event for caseId {}", caseId);
         StartEventResponse startEventResponse = coreCaseDataService
-            .startGaUpdate(caseId, END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC);
+            .startGaUpdate(caseId, END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         log.info("Resetting end business process id for caseId {}", caseId);

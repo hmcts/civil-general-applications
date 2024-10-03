@@ -29,15 +29,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK;
 
 @SpringBootTest(classes = {
-    EndGaUploadedTranslatedDocProcessTaskHandler.class,
+    EndBusinessProcessGASpecWithoutWATaskHandler.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
 })
 @ExtendWith(SpringExtension.class)
-public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
+public class EndBusinessProcessGASpecWithoutWATaskHandlerTest {
 
     private static final String CASE_ID = "1234";
     public static final String PROCESS_INSTANCE_ID = "processInstanceId";
@@ -52,7 +52,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
-    private EndGaUploadedTranslatedDocProcessTaskHandler handler;
+    private EndBusinessProcessGASpecWithoutWATaskHandler handler;
 
     @BeforeEach
     void init() {
@@ -64,7 +64,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
         when(mockExternalTask.getAllVariables())
             .thenReturn(Map.of(
                 "caseId", CASE_ID,
-                "caseEvent", END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC
+                "caseEvent", END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK
             ));
     }
 
@@ -79,7 +79,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
 
         when(coreCaseDataService.startGaUpdate(
             CASE_ID,
-            END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC
+            END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK
         )).thenReturn(startEventResponse);
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
@@ -87,7 +87,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
 
         handler.execute(mockExternalTask, externalTaskService);
 
-        verify(coreCaseDataService).startGaUpdate(CASE_ID, END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC);
+        verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
     }
@@ -98,7 +98,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
             .thenReturn(Map.of(
                 "generalApplicationCaseId", "",
                 "caseId", CASE_ID,
-                "caseEvent", END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC
+                "caseEvent", END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK
             ));
         CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
@@ -109,7 +109,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
 
         when(coreCaseDataService.startGaUpdate(
             CASE_ID,
-            END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC
+            END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK
         )).thenReturn(startEventResponse);
         when(coreCaseDataService.submitGaUpdate(eq(CASE_ID), any(CaseDataContent.class))).thenReturn(caseData);
 
@@ -117,7 +117,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
 
         handler.execute(mockExternalTask, externalTaskService);
 
-        verify(coreCaseDataService).startGaUpdate(CASE_ID, END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC);
+        verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
         verify(externalTaskService).complete(mockExternalTask);
     }
@@ -125,7 +125,7 @@ public class EndGaUploadedTranslatedDocProcessTaskHandlerTest {
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {
         return StartEventResponse.builder()
             .token("1234")
-            .eventId(END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC.name())
+            .eventId(END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK.name())
             .caseDetails(caseDetails)
             .build();
     }

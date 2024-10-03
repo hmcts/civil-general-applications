@@ -4,16 +4,16 @@ import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.civil.handler.tasks.EndGaUploadedTranslatedDocProcessTaskHandler;
+import uk.gov.hmcts.reform.civil.handler.tasks.EndBusinessProcessGASpecWithoutWATaskHandler;
 
 @Component
-public class EndUploadedTranslatedDocBusinessProcessExternalTaskListener {
+public class EndBusinessProcessGASpecWithoutWATaskExternalTaskListener {
 
-    private static final String TOPIC = "END_UPLOADED_TRANSLATED_DOC_BUSINESS_PROCESS_GASPEC";
+    private static final String TOPIC = "END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK";
 
     @Autowired
-    private EndUploadedTranslatedDocBusinessProcessExternalTaskListener(
-        EndGaUploadedTranslatedDocProcessTaskHandler handler,
+    private EndBusinessProcessGASpecWithoutWATaskExternalTaskListener(
+        EndBusinessProcessGASpecWithoutWATaskHandler handler,
         ExternalTaskClient client) {
         TopicSubscriptionBuilder subscriptionBuilder = client.subscribe(TOPIC);
         subscriptionBuilder.handler(handler).open();
