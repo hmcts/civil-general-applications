@@ -238,6 +238,10 @@ fees:
   api:
     url: http://localhost:8765
 
+print:
+  service:
+    enabled: false
+
 genApp:
   lrd:
     url: http://localhost:8765

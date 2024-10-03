@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -42,6 +43,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.time.LocalDate;
@@ -51,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -127,24 +130,52 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @BeforeEach
     void setup() {
+        ReflectionTestUtils.setField(handler, "printServiceEnabled", "true");
         when(generalOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(generalOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+
         when(directionOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
+        when(directionOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
+
         when(dismissalOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.DISMISSAL_ORDER_DOCUMENT);
+        when(dismissalOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.DISMISSAL_ORDER_DOCUMENT);
+
         when(hearingOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.HEARING_ORDER_DOCUMENT);
+        when(hearingOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.HEARING_ORDER_DOCUMENT);
+
         when(writtenRepresentationSequentailOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
+        when(writtenRepresentationSequentailOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_SEQUENTIAL_DOCUMENT);
+
         when(writtenRepresentationConcurrentOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
+        when(writtenRepresentationConcurrentOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.WRITTEN_REPRESENTATION_CONCURRENT_DOCUMENT);
+
         when(requestForInformationGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+        when(requestForInformationGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
+
         when(freeFormOrderGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(freeFormOrderGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+
         when(assistedOrderFormGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+        when(assistedOrderFormGenerator.generate(any(CaseData.class), any(CaseData.class), anyString(), any(FlowFlag.class)))
+            .thenReturn(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+
         when(consentOrderGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.CONSENT_ORDER_DOCUMENT);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
@@ -172,6 +203,27 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldPrintGenerateGeneralOrderDocumentLip() {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(generalOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+        }
+
+        @Test
         void shouldGenerateDirectionOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
                 .build();
@@ -186,6 +238,28 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getDirectionOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldPrintGenerateDirectionOrderDocumentForLip() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(directionOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
         }
 
         @Test
@@ -229,6 +303,27 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldPrintGenerateDismissalOrderDocument() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dismissalOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+
+        }
+
+        @Test
         void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
                 .judicialDecision(GAJudicialDecision.builder()
@@ -261,6 +356,54 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getHearingOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldPrintGenerateHearingOrderDocumentLip() {
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(hearingOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+
+        }
+
+        @Test
+        void shouldPrintGenerateWrittenRepresentationSequentialDocumentLip() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .writtenRepresentationSequentialApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationSequentailOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+
         }
 
         @Test
@@ -305,6 +448,29 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldPrintGenerateWrittenRepresentationConccurentDocumentLip() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .writtenRepresentationConcurrentApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            verify(writtenRepresentationConcurrentOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+        }
+
+        @Test
         void shouldGenerateWrittenRepresentationConccurentDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().writtenRepresentationConcurrentApplication()
                 .build();
@@ -346,6 +512,32 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldPrintGenerateRequestForInformationDocumentLip() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .requestForInformationApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            verify(requestForInformationGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+        }
+
+        @Test
         void shouldGenerateRequestForInformationDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
                 .build();
@@ -360,6 +552,34 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getRequestForInformationDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.REQUEST_FOR_INFORMATION_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldPrintGenerateSendAppToOtherPartyLip() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            verify(requestForInformationGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+
         }
 
         @Test

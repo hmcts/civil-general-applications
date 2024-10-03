@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.docmosis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -82,6 +83,9 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+
+    @Value("${print.service.enabled}")
+    public String printServiceEnabled;
 
     @Override
     public String camundaActivityId() {
@@ -505,7 +509,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         /*
         * Send Judge order document to Lip Applicant
         * */
-        if (Objects.nonNull(postJudgeOrderToLipApplicant)) {
+        if (printServiceEnabled.equals("true") && Objects.nonNull(postJudgeOrderToLipApplicant)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
                 postJudgeOrderToLipApplicant, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
@@ -514,7 +518,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         /*
          * Send Judge order document to Lip Respondent
          * */
-        if (Objects.nonNull(postJudgeOrderToLipRespondent)) {
+        if (printServiceEnabled.equals("true") && Objects.nonNull(postJudgeOrderToLipRespondent)) {
             sendJudgeFinalOrderPrintService(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
                 postJudgeOrderToLipRespondent, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
