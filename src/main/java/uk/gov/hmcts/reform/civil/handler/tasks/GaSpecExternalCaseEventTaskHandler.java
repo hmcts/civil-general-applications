@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
@@ -20,17 +21,15 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandler  {
+public class GaSpecExternalCaseEventTaskHandler extends BaseExternalTaskHandler  {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
 
-    private CaseData data;
-
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
 
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
@@ -41,11 +40,13 @@ public class GaSpecExternalCaseEventTaskHandler implements BaseExternalTaskHandl
             .getBusinessProcess().toBuilder()
             .activityId(externalTask.getActivityId()).build();
         CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, businessProcess);
-        data = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+        var caseData = coreCaseDataService.submitGaUpdate(caseId, caseDataContent);
+        return ExternalTaskData.builder().caseData(caseData).build();
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        var data = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
