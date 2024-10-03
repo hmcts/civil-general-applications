@@ -295,9 +295,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         @Test
         void shouldAddGaToJudgeCollectionPaymentThroughHelpWithFeesFullRemission() {
             CaseData updatedCaseDate = CaseData.builder()
-                .isGaApplicantLip(NO)
-                .isGaRespondentTwoLip(NO)
-                .isGaRespondentOneLip(NO)
                 .parentClaimantIsApplicant(YES)
                 .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YES).build())
                 .feePaymentOutcomeDetails(FeePaymentOutcomeDetails.builder()
@@ -314,15 +311,12 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                           .build())
                 .build();
 
-            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
-                .build();
             GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
                 .caseState("Awaiting Application Payment")
                 .caseLink(CaseLink.builder()
                               .caseReference("1234")
                               .build())
                 .build();
-            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
 
             CaseData parentCaseData = CaseData.builder()
                 .claimantGaAppDetails(wrapElements(claimantCollection))
@@ -351,9 +345,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
         @Test
         void shouldAddGaToJudgeCollectionPaymentThroughHelpWithFeesPartRemission() {
             CaseData updatedCaseDate = CaseData.builder()
-                .isGaApplicantLip(NO)
-                .isGaRespondentTwoLip(NO)
-                .isGaRespondentOneLip(NO)
                 .parentClaimantIsApplicant(YES)
                 .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YES).build())
                 .feePaymentOutcomeDetails(FeePaymentOutcomeDetails.builder()
@@ -371,15 +362,12 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                           .build())
                 .build();
 
-            GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
-                .build();
             GeneralApplicationsDetails claimantCollection = GeneralApplicationsDetails.builder()
                 .caseState("Awaiting Application Payment")
                 .caseLink(CaseLink.builder()
                               .caseReference("1234")
                               .build())
                 .build();
-            GADetailsRespondentSol respondentOneCollection = GADetailsRespondentSol.builder().build();
 
             CaseData parentCaseData = CaseData.builder()
                 .claimantGaAppDetails(wrapElements(claimantCollection))
@@ -531,7 +519,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .caseData(caseData)
                 .build();
         }
-
 
         public StartEventResponse getStartEventResponse() {
             GeneralApplicationsDetails judgeCollection = GeneralApplicationsDetails.builder()
