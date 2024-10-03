@@ -191,12 +191,12 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
                 () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
                 () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
-                () -> assertEquals(templateData.getPartyName(), "applicant1partyname"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "address1"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "address2"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
-                () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
-                () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
         }
     }
 

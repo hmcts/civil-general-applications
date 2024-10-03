@@ -190,12 +190,12 @@ class WrittenRepresentationConcurrentGeneratorOrderTest {
                 () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
                 () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
                 () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
-                () -> assertEquals(templateData.getPartyName(), "respondent1partyname"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "respondent1address1"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "respondent1address2"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "respondent1address3"),
-                () -> assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown"),
-                () -> assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode"));
+                () -> assertEquals("respondent1partyname", templateData.getPartyName()),
+                () -> assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("respondent1posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("respondent1postcode", templateData.getPartyAddressPostCode()));
         }
     }
 

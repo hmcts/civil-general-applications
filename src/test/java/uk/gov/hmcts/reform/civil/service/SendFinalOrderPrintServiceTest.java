@@ -23,7 +23,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class SendFinalOrderPrintServiceTest {
+class SendFinalOrderPrintServiceTest {
 
     @Mock
     private DocumentDownloadService documentDownloadService;
@@ -40,7 +40,6 @@ public class SendFinalOrderPrintServiceTest {
     private static final String FINAL_ORDER_PACK_LETTER_TYPE = "final-order-document-pack";
     private static final String TEST = "test";
     private static final String UPLOAD_TIMESTAMP = "14 Apr 2024 00:00:00";
-    private static final Document DOCUMENT_LINK = new Document("document/url", TEST, TEST, TEST, TEST, UPLOAD_TIMESTAMP);
     private static final byte[] LETTER_CONTENT = new byte[]{37, 80, 68, 70, 45, 49, 46, 53, 10, 37, -61, -92};
     private static final String BEARER_TOKEN = "BEARER_TOKEN";
 
@@ -56,7 +55,7 @@ public class SendFinalOrderPrintServiceTest {
     }
 
     private CaseData buildCivilCaseData() {
-        CaseData caseData = CaseData.builder()
+        return CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
             .legacyCaseReference("00MC2")
             .applicant1(Party.builder()
@@ -76,8 +75,6 @@ public class SendFinalOrderPrintServiceTest {
                                                  .addressLine3("respondent1address3").build())
                              .partyName("respondent1partyname").build())
             .build();
-
-        return caseData;
     }
 
     @Test

@@ -72,7 +72,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         buildDocument(callbackParams, caseDataBuilder, caseData);
-        postHearingFormWithCoverLetterLip(callbackParams, caseDataBuilder, caseData);
+        postHearingFormWithCoverLetterLip(callbackParams, caseData);
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
@@ -94,7 +94,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         caseDataBuilder.hearingNoticeDocument(documents);
     }
 
-    private void postHearingFormWithCoverLetterLip(CallbackParams callbackParams, CaseData.CaseDataBuilder caseDataBuilder, CaseData caseData) {
+    private void postHearingFormWithCoverLetterLip(CallbackParams callbackParams, CaseData caseData) {
         CaseData civilCaseData = CaseData.builder().build();
         if (gaForLipService.isGaForLip(caseData)) {
             civilCaseData = caseDetailsConverter

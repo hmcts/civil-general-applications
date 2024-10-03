@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.civil.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,6 @@ import java.util.Map;
 @Service
 public class BulkPrintService {
 
-    private static final Logger log = LoggerFactory.getLogger(BulkPrintService.class);
     public static final String XEROX_TYPE_PARAMETER = "CMC001";
     protected static final String ADDITIONAL_DATA_LETTER_TYPE_KEY = "letterType";
     protected static final String ADDITIONAL_DATA_CASE_IDENTIFIER_KEY = "caseIdentifier";

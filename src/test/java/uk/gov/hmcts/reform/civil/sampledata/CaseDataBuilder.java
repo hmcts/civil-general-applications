@@ -739,7 +739,8 @@ public class CaseDataBuilder {
     }
 
     public CaseData getCivilCaseData() {
-        CaseData civilCaseData = CaseData.builder()
+
+        return CaseData.builder()
             .applicant1(Party.builder()
                             .primaryAddress(Address.builder()
                                                 .postCode("postcode")
@@ -756,8 +757,6 @@ public class CaseDataBuilder {
                                                  .addressLine2("respondent1address2")
                                                  .addressLine3("respondent1address3").build())
                              .partyName("respondent1partyname").build()).build();
-
-        return civilCaseData;
     }
 
     public CaseData.CaseDataBuilder generalOrderApplication() {

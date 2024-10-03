@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.civil.service.BulkPrintService.XEROX_TYPE_PARA
 import static uk.gov.hmcts.reform.civil.service.BulkPrintService.RECIPIENTS;
 
 @ExtendWith(SpringExtension.class)
-public class BulkPrintServiceTest {
+class BulkPrintServiceTest {
 
     @Mock
     private SendLetterApi sendLetterApi;

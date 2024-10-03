@@ -413,12 +413,12 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertNull(templateData.getDefendant2Name()),
                 () -> assertEquals(NO, templateData.getIsMultiParty()),
-                () -> assertEquals(templateData.getPartyName(), "respondent1partyname"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "respondent1address1"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "respondent1address2"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "respondent1address3"),
-                () -> assertEquals(templateData.getPartyAddressPostTown(), "respondent1posttown"),
-                () -> assertEquals(templateData.getPartyAddressPostCode(), "respondent1postcode"));
+                () -> assertEquals("respondent1partyname", templateData.getPartyName()),
+                () -> assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("respondent1posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("respondent1postcode", templateData.getPartyAddressPostCode()));
         }
 
         @Test
@@ -457,12 +457,12 @@ class DirectionOrderGeneratorTest {
                 () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertNull(templateData.getDefendant2Name()),
                 () -> assertEquals(NO, templateData.getIsMultiParty()),
-                () -> assertEquals(templateData.getPartyName(), "applicant1partyname"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine1(), "address1"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine2(), "address2"),
-                () -> assertEquals(templateData.getPartyAddressAddressLine3(), "address3"),
-                () -> assertEquals(templateData.getPartyAddressPostTown(), "posttown"),
-                () -> assertEquals(templateData.getPartyAddressPostCode(), "postcode"));
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
         }
     }
 }
