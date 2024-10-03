@@ -303,6 +303,10 @@ management:
   endpoints:
     enabled-by-default: false
 
+print:
+  service:
+    enabled: true
+
 fees:
   api:
     url: http://fake-fees-register-api
