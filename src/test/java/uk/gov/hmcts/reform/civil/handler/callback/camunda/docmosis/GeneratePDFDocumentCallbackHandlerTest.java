@@ -65,8 +65,8 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     GeneratePDFDocumentCallbackHandler.class,
     JacksonAutoConfiguration.class,
     CaseDetailsConverter.class,
-    AssignCategoryId.class
-})
+    AssignCategoryId.class},
+    properties = {"print.service.enabled=true"})
 class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
