@@ -38,20 +38,16 @@ class SendFinalOrderPrintServiceTest {
     private SendFinalOrderPrintService sendFinalOrderPrintService;
 
     private static final String FINAL_ORDER_PACK_LETTER_TYPE = "final-order-document-pack";
-    private static final String TEST = "test";
-    private static final String UPLOAD_TIMESTAMP = "14 Apr 2024 00:00:00";
     private static final byte[] LETTER_CONTENT = new byte[]{37, 80, 68, 70, 45, 49, 46, 53, 10, 37, -61, -92};
     private static final String BEARER_TOKEN = "BEARER_TOKEN";
 
     private CaseData buildCaseData() {
-        CaseData caseData = CaseData.builder()
+        return CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
             .claimant1PartyName("claimant1")
             .defendant1PartyName("defendant1")
             .ccdCaseReference(12345L)
             .build();
-
-        return caseData;
     }
 
     private CaseData buildCivilCaseData() {

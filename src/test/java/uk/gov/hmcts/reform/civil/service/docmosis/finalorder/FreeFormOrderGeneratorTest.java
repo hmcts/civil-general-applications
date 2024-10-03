@@ -140,12 +140,12 @@ class FreeFormOrderGeneratorTest {
                 () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
                 () -> assertNull(freeFormOrder.getDefendant2Name()),
                 () -> assertEquals(NO, freeFormOrder.getIsMultiParty()),
-                () -> assertEquals(freeFormOrder.getPartyName(), "applicant1partyname"),
-                () -> assertEquals(freeFormOrder.getPartyAddressAddressLine1(), "address1"),
-                () -> assertEquals(freeFormOrder.getPartyAddressAddressLine2(), "address2"),
-                () -> assertEquals(freeFormOrder.getPartyAddressAddressLine3(), "address3"),
-                () -> assertEquals(freeFormOrder.getPartyAddressPostTown(), "posttown"),
-                () -> assertEquals(freeFormOrder.getPartyAddressPostCode(), "postcode"));
+                () -> assertEquals("applicant1partyname", freeFormOrder.getPartyName()),
+                () -> assertEquals("address1", freeFormOrder.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", freeFormOrder.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", freeFormOrder.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", freeFormOrder.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", freeFormOrder.getPartyAddressPostCode()));
         }
     }
 
