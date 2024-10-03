@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -29,7 +30,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STAY_TH
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.stayOrder.event.emitter.enabled:true}")
-public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
+public class CheckStayOrderDeadlineEndTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -39,11 +40,12 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         List<CaseData> cases = getOrderMadeCasesThatAreEndingToday();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+        return ExternalTaskData.builder().build();
     }
 
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {
@@ -84,12 +86,12 @@ public class CheckStayOrderDeadlineEndTaskHandler implements BaseExternalTaskHan
         return caseData;
     }
 
-    private  Predicate<CaseData> isJudgeOrderStayDeadlineExpired = caseData ->
+    private final  Predicate<CaseData> isJudgeOrderStayDeadlineExpired = caseData ->
         caseData.getJudicialDecisionMakeOrder() != null
             && caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate() != null
             && (!now().isBefore(caseData.getJudicialDecisionMakeOrder().getJudgeApproveEditOptionDate()));
 
-    private Predicate<CaseData> isConsentOrderStayDeadlineExpired = caseData ->
+    private final Predicate<CaseData> isConsentOrderStayDeadlineExpired = caseData ->
         caseData.getApproveConsentOrder() != null
             && (nonNull(caseData.getApproveConsentOrder().getConsentOrderDateToEnd()))
             && (!now().isBefore(caseData.getApproveConsentOrder().getConsentOrderDateToEnd()));

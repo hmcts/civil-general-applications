@@ -8,36 +8,28 @@ import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 
 import java.util.Arrays;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.calculateExponentialRetryTimeout;
 
-/**
- * Interface for standard implementation of task handler that is invoked for each fetched and locked task.
- */
-public interface BaseExternalTaskHandler extends ExternalTaskHandler {
+public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
-    String FLOW_STATE = "flowState";
-    String FLOW_FLAGS = "flowFlags";
+    protected static String FLOW_STATE = "flowState";
+    protected static String FLOW_FLAGS = "flowFlags";
 
-    Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
+    protected static Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
 
-    /**
-     * Executed for each fetched and locked task.
-     *
-     * @param externalTask        the context is represented of.
-     * @param externalTaskService to interact with fetched and locked tasks.
-     */
     @Override
-    default void execute(ExternalTask externalTask, ExternalTaskService externalTaskService) {
+    public void execute(ExternalTask externalTask, ExternalTaskService externalTaskService) {
         String topicName = externalTask.getTopicName();
 
         try {
             log.info("External task '{}' started", topicName);
-            handleTask(externalTask);
-            completeTask(externalTask, externalTaskService);
+            var externalTaskData = handleTask(externalTask);
+            completeTask(externalTask, externalTaskService, externalTaskData);
         } catch (BpmnError e) {
             externalTaskService.handleBpmnError(externalTask, e.getErrorCode());
             log.error("Bpmn error for external task '{}'", topicName, e);
@@ -47,11 +39,13 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
         }
     }
 
-    private void completeTask(ExternalTask externalTask, ExternalTaskService externalTaskService) {
+    private void completeTask(ExternalTask externalTask,
+                              ExternalTaskService externalTaskService,
+                              ExternalTaskData data) {
         String topicName = externalTask.getTopicName();
 
         try {
-            ofNullable(getVariableMap()).ifPresentOrElse(
+            ofNullable(getVariableMap(data)).ifPresentOrElse(
                 variableMap -> externalTaskService.complete(externalTask, variableMap),
                 () -> externalTaskService.complete(externalTask)
             );
@@ -61,14 +55,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
         }
     }
 
-    /**
-     * Called when an exception arises from the {@link BaseExternalTaskHandler handleTask(externalTask)} method.
-     *
-     * @param externalTask        the external task to be handled.
-     * @param externalTaskService to interact with fetched and locked tasks.
-     * @param e                   the exception thrown by business logic.
-     */
-    default void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
+    void handleFailure(ExternalTask externalTask, ExternalTaskService externalTaskService, Exception e) {
         int maxRetries = getMaxAttempts();
         int remainingRetries = externalTask.getRetries() == null ? maxRetries : externalTask.getRetries();
 
@@ -81,20 +68,15 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
         );
     }
 
-    default String getStackTrace(Throwable throwable) {
+    String getStackTrace(Throwable throwable) {
         if (throwable instanceof FeignException) {
             return ((FeignException) throwable).contentUTF8();
         }
 
         return Arrays.toString(throwable.getStackTrace());
     }
-    /**
-     * Defines the number of attempts for a given external task.
-     *
-     * @return the number of attempts for an external task.
-     */
 
-    default int getMaxAttempts() {
+    int getMaxAttempts() {
         return 3;
     }
 
@@ -104,7 +86,7 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      *
      * @return the variables to add to the external task.
      */
-    default VariableMap getVariableMap() {
+    VariableMap getVariableMap(ExternalTaskData externalTaskData) {
         return null;
     }
 
@@ -113,5 +95,5 @@ public interface BaseExternalTaskHandler extends ExternalTaskHandler {
      *
      * @param externalTask the external task to be handled.
      */
-    void handleTask(ExternalTask externalTask) throws Exception;
+    abstract ExternalTaskData handleTask(ExternalTask externalTask) throws Exception;
 }
