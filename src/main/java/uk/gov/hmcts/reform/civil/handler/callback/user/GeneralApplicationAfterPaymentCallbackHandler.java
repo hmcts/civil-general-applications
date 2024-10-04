@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -26,6 +27,7 @@ import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
     private static final List<CaseEvent> EVENTS = singletonList(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT);
     private final ObjectMapper objectMapper;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -59,11 +62,15 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
             return getCallbackResponse(caseDataBuilder);
         }
 
-        caseDataBuilder.businessProcess(BusinessProcess
-                                            .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
-
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
-            caseData.setCoSCApplicationStatus(YesOrNo.YES);
+        if (featureToggleService.isCoSCEnabledEnabled()){
+            if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
+                caseData.setCoSCApplicationStatus(YesOrNo.YES);
+            }
+            caseDataBuilder.businessProcess(BusinessProcess
+                                                .ready(INITIATE_COSC_APPLICATION_AFTER_PAYMENT));
+        } else {
+            caseDataBuilder.businessProcess(BusinessProcess
+                                                .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
         }
 
         return getCallbackResponse(caseDataBuilder);
