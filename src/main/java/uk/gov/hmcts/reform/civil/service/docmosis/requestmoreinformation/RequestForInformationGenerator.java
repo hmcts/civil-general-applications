@@ -133,8 +133,8 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
             return gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY
-                ? DocumentType.POST_JUDGE_ORDER_SEND_APP_TO_OTHER_PARTY
-                : DocumentType.POST_JUDGE_ORDER_REQUEST_FOR_INFORMATION_LIP;
+                ? DocumentType.SEND_APP_TO_OTHER_PARTY
+                : DocumentType.REQUEST_FOR_INFORMATION;
         }
 
         if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
