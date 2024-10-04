@@ -63,9 +63,6 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
         }
 
         if (featureToggleService.isCoSCEnabledEnabled()){
-            if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
-                caseData.setCoSCApplicationStatus(YesOrNo.YES);
-            }
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_COSC_APPLICATION_AFTER_PAYMENT));
         } else {
