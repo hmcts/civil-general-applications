@@ -129,7 +129,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("isGaApplicantLip") YesOrNo isGaApplicantLip,
                        @JsonProperty("isGaRespondentOneLip") YesOrNo isGaRespondentOneLip,
                        @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
-                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees, CertOfSC certOfSC,
+                       @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees,
+                       @JsonProperty("certOfSC") CertOfSC certOfSC,
                        @JsonProperty("caseNameGaInternal") String caseNameGaInternal) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
