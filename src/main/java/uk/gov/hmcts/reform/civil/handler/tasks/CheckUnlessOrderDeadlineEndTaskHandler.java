@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
@@ -26,7 +27,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.UNLESS_
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.unlessOrder.event.emitter.enabled:true}")
-public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskHandler {
+public class CheckUnlessOrderDeadlineEndTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseSearchService;
 
@@ -36,11 +37,12 @@ public class CheckUnlessOrderDeadlineEndTaskHandler implements BaseExternalTaskH
     private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         List<CaseData> cases = getUnlessOrderCasesThatAreEndingToday();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(this::fireEventForStateChange);
+        return ExternalTaskData.builder().build();
     }
 
     private List<CaseData> getUnlessOrderCasesThatAreEndingToday() {
