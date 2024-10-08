@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -317,8 +316,6 @@ public class CaseData implements MappableObject {
     private final String applicationTypes;
     private final String parentCaseReference;
     private final String judgeTitle;
-    private RespondentLiPResponse respondent1LiPResponse;
-    private String claimantBilingualLanguagePreference;
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
     // GA for LIP
@@ -382,24 +379,22 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean isApplicantBilingual(YesOrNo parentClaimant) {
         if (YES.equals(parentClaimant)) {
-            return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
         } else {
-            return Objects.nonNull(respondent1LiPResponse)
-                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
         }
     }
 
     @JsonIgnore
     public boolean isRespondentBilingual(YesOrNo parentClaimant) {
         if (YES.equals(parentClaimant)) {
-            return Objects.nonNull(respondent1LiPResponse)
-                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
         } else {
-            return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
         }
     }
 

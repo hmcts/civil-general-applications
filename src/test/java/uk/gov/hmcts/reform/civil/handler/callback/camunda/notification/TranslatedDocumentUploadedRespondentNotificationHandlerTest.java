@@ -9,11 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
@@ -120,8 +118,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandlerTest extends
                     .ccdCaseReference(Long.valueOf("56789"))
                     .isGaRespondentOneLip(YES)
                     .parentClaimantIsApplicant(YES)
-                    .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                                .respondent1ResponseLanguage(Language.WELSH.name()).build())
+                    .respondentBilingualLanguagePreference(YES)
                     .build();
             CaseDetails civil = CaseDetails.builder().id(123L).data(Map.of("case_data", caseData)).build();
 
@@ -162,8 +159,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandlerTest extends
                     .ccdCaseReference(Long.valueOf("56789"))
                     .isGaRespondentOneLip(NO)
                     .parentClaimantIsApplicant(YES)
-                    .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                                .respondent1ResponseLanguage(Language.WELSH.name()).build())
+                    .respondentBilingualLanguagePreference(YES)
                     .build();
             CaseDetails civil = CaseDetails.builder().id(123L).data(Map.of("case_data", caseData)).build();
 

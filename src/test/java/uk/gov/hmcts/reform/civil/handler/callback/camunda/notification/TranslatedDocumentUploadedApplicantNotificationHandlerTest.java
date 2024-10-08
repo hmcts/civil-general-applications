@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
@@ -118,9 +117,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandlerTest extends 
                     .ccdCaseReference(Long.valueOf("56789"))
                     .isGaApplicantLip(YES)
                     .parentClaimantIsApplicant(YES)
-                    .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                                .respondent1ResponseLanguage(Language.WELSH.name()).build())
-                    .claimantBilingualLanguagePreference(Language.WELSH.name())
+                    .applicantBilingualLanguagePreference(YES)
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().email("applicant@gmail.com").build())
                     .build();
             CaseDetails civil = CaseDetails.builder().id(123L).data(Map.of("case_data", caseData)).build();
@@ -162,8 +159,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandlerTest extends 
                     .ccdCaseReference(Long.valueOf("56789"))
                     .isGaApplicantLip(NO)
                     .parentClaimantIsApplicant(YES)
-                    .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                                .respondent1ResponseLanguage(Language.WELSH.name()).build())
+                    .respondentBilingualLanguagePreference(YES)
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().email("applicant@gmail.com").build())
                     .build();
             CaseDetails civil = CaseDetails.builder().id(123L).data(Map.of("case_data", caseData)).build();
