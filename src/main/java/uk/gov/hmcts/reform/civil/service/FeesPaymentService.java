@@ -30,7 +30,7 @@ public class FeesPaymentService {
     private final UpdatePaymentStatusService updatePaymentStatusService;
     @Value("${cui-front-end.url}") String cuiFrontEndUrl;
 
-    public CardPaymentStatusResponse createGovPaymentRequest(String caseReference, String authorization) {
+    public CardPaymentStatusResponse createGovPaymentRequest(String caseReference, String authorization, String language) {
 
         log.info("Creating gov Payment request url for caseId {}", caseReference);
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(caseReference));
@@ -48,7 +48,7 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language("En")
+            .language(language)
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService

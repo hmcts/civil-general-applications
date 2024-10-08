@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
@@ -34,10 +35,11 @@ public class FeesPaymentController {
         @ApiResponse(responseCode = "400", description = "Bad Request")})
     public ResponseEntity<CardPaymentStatusResponse> createGovPaymentRequest(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @RequestBody String language,
         @PathVariable("caseReference") String caseReference) {
 
         return new ResponseEntity<>(
-            feesPaymentService.createGovPaymentRequest(caseReference, authorization),
+            feesPaymentService.createGovPaymentRequest(caseReference, authorization, language),
             HttpStatus.OK
         );
     }
