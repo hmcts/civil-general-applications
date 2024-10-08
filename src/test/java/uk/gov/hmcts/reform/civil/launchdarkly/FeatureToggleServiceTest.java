@@ -94,6 +94,15 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(toggleStat);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldCallBoolVariation_whenIsCoscEnabledInvoked(Boolean toggleStat) {
+        var gaForLipsFeatureKey = "isCoSCEnabled";
+        givenToggle(gaForLipsFeatureKey, toggleStat);
+
+        assertThat(featureToggleService.isCoSCEnabled()).isEqualTo(toggleStat);
+    }
+
     @Test
     void shouldCallBoolVariation_whenIsRpaContinuousFeedEnabledInvoked() {
         var multipartyFeatureKey = "rpaContinuousFeed";

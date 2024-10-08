@@ -56,8 +56,8 @@ public class FeatureToggleService {
         return internalClient.boolVariation("dashboard-service", createLDUser().build(), false);
     }
 
-    public boolean isCoSCEnabledEnabled() {
-        return internalClient.boolVariation("isCoSCEnabledEnabled", createLDUser().build(), false);
+    public boolean isCoSCEnabled() {
+        return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
 
     public LDUser.Builder createLDUser() {

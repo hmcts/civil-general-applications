@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -62,7 +60,7 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
             return getCallbackResponse(caseDataBuilder);
         }
 
-        if (featureToggleService.isCoSCEnabledEnabled()){
+        if (featureToggleService.isCoSCEnabled()) {
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_COSC_APPLICATION_AFTER_PAYMENT));
         } else {
