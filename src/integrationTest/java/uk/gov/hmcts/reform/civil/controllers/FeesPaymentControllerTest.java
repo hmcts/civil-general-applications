@@ -71,9 +71,9 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
         CardPaymentServiceRequestResponse response = buildServiceRequestResponse();
 
         when(paymentsClient.createGovPayCardPaymentRequest(
-            "2023-1701090705688",
-            BEARER_TOKEN,
-            CARD_PAYMENT_SERVICE_REQUEST
+            any(),
+            any(),
+            any()
         )).thenReturn(response);
 
         doPost(BEARER_TOKEN, "", FEES_PAYMENT_REQUEST_URL, "2801090368574910")
