@@ -76,7 +76,6 @@ public class RespondentResponseDeadlineCallbackHandlerTest {
             assertThat(response.getData()).extracting("respondentResponseDeadlineChecked")
                 .isEqualTo("Yes");
             verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
-            verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
         }
     }
 }

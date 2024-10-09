@@ -61,7 +61,6 @@ public class RespondentResponseDeadlineCallbackHandler extends CallbackHandler {
 
         );
 
-        //dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
         dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
 
         return AboutToStartOrSubmitCallbackResponse.builder()
