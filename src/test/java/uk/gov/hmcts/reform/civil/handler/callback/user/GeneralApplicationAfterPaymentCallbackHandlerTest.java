@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -65,9 +66,9 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
     @Test
     void shouldTriggerCoscBusinessProcess() {
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        caseData = addGeneralAppType(caseData, GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID);
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(false);
-        when(featureToggleService.isCoSCEnabled()).thenReturn(true);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_COSC_APPLICATION_AFTER_PAYMENT.name());
@@ -160,4 +161,12 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
             .generalAppPBADetails(pbaDetails)
             .build();
     }
+
+    private CaseData addGeneralAppType(CaseData caseData, GeneralApplicationTypes generalApplicationTypes) {
+        return caseData.toBuilder().generalAppType(
+                GAApplicationType.builder().types(List.of(generalApplicationTypes))
+                    .build())
+            .build();
+    }
 }
+
