@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -30,7 +31,7 @@ public class FeesPaymentService {
     private final UpdatePaymentStatusService updatePaymentStatusService;
     @Value("${cui-front-end.url}") String cuiFrontEndUrl;
 
-    public CardPaymentStatusResponse createGovPaymentRequest(String caseReference, String authorization, String language) {
+    public CardPaymentStatusResponse createGovPaymentRequest(String caseReference, String authorization) {
 
         log.info("Creating gov Payment request url for caseId {}", caseReference);
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(caseReference));
@@ -48,7 +49,7 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language(language)
+            .language(caseData.getApplicantBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
