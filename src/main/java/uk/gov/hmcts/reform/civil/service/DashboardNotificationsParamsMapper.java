@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_BUSINESS_DAY;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -24,11 +29,13 @@ public class DashboardNotificationsParamsMapper {
         params.put("ccdCaseReference", caseData.getCcdCaseReference());
 
         getGeneralAppNotificationDeadlineDate(caseData).ifPresent(date -> {
+            params.put("generalAppNotificationDeadlineDate", date.atTime(END_OF_BUSINESS_DAY));
             params.put("generalAppNotificationDeadlineDateEn", DateUtils.formatDate(date));
             params.put("generalAppNotificationDeadlineDateCy", DateUtils.formatDateInWelsh(date));
         });
 
         getJudgeRequestMoreInfoByDate(caseData).ifPresent(date -> {
+            params.put("judgeRequestMoreInfoByDate", date.atTime(END_OF_BUSINESS_DAY));
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(date));
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
@@ -48,15 +55,59 @@ public class DashboardNotificationsParamsMapper {
                        "£" + MonetaryConversions.penniesToPounds(caseData.getGeneralAppPBADetails().getFee().getCalculatedAmountInPence()));
         }
 
+        if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
+            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
+            params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
+        } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
+            && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
+            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
+                                                                                        .getRemissionAmount()));
+            params.put("outstandingFeeInPounds", "£" + caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds());
+
+        }
+
+        if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
+            params.put("judgeRequestMoreInfoByDate",
+                       caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate().atTime(
+                           END_OF_BUSINESS_DAY));
+            params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
+            params.put("judgeRequestMoreInfoByDateCy",
+                       DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
+        }
+
         if (caseData.getHwfFeeType() != null) {
-            if (FeeType.APPLICATION == caseData.getHwfFeeType()) {
-                params.put("applicationFeeTypeEn", "application");
-                params.put("applicationFeeTypeCy", "cais");
-            } else if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
+            if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
                 params.put("applicationFeeTypeEn", "additional application");
                 params.put("applicationFeeTypeCy", "cais ychwanegol");
+            } else if (FeeType.APPLICATION == caseData.getHwfFeeType()
+                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
+                params.put("applicationFeeTypeEn", "application");
+                params.put("applicationFeeTypeCy", "cais");
             }
         }
+        if (Objects.nonNull(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations())) {
+            LocalDate applicantDeadlineDate;
+            LocalDate respondentDeadlineDate;
+            if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenOption() == SEQUENTIAL_REPRESENTATIONS) {
+                applicantDeadlineDate = caseData.getParentClaimantIsApplicant() == YesOrNo.YES
+                    ? caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getSequentialApplicantMustRespondWithin()
+                    : caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenSequentailRepresentationsBy();
+                respondentDeadlineDate = caseData.getParentClaimantIsApplicant() == YesOrNo.YES
+                    ? caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenSequentailRepresentationsBy()
+                    : caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getSequentialApplicantMustRespondWithin();
+            } else {
+                applicantDeadlineDate = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenConcurrentRepresentationsBy();
+                respondentDeadlineDate = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenConcurrentRepresentationsBy();
+            }
+            params.put("writtenRepApplicantDeadline", applicantDeadlineDate.atTime(END_OF_BUSINESS_DAY));
+            params.put("writtenRepApplicantDeadlineDateEn", DateUtils.formatDate(applicantDeadlineDate));
+            params.put("writtenRepApplicantDeadlineDateCy", DateUtils.formatDateInWelsh(applicantDeadlineDate));
+            params.put("writtenRepRespondentDeadline", respondentDeadlineDate.atTime(END_OF_BUSINESS_DAY));
+            params.put("writtenRepRespondentDeadlineDateEn", DateUtils.formatDate(respondentDeadlineDate));
+            params.put("writtenRepRespondentDeadlineDateCy", DateUtils.formatDateInWelsh(respondentDeadlineDate));
+        }
+        //ToDo: refactor below string to allow for notifications that do not require additional params
+        params.put("testRef", "string");
 
         return params;
     }

@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
@@ -80,6 +81,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @Data
@@ -396,4 +398,26 @@ public class CaseData implements MappableObject {
             .filter(urgency -> urgency == YES)
             .isPresent();
     }
+
+    @JsonIgnore
+    public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
+            && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())
+            && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber());
+    }
+
+    @JsonIgnore
+    public boolean judgeHasMadeAnOrder() {
+        return (Objects.nonNull(this.getJudicialDecision()))
+            && (this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.MAKE_AN_ORDER)
+            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)
+            || this.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING));
+    }
+
+    @JsonIgnore
+    public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
+    }
+
 }
