@@ -39,6 +39,13 @@ public class FeesPaymentService {
         String parentCaseRef = caseData.getParentCaseReference();
         GAPbaDetails generalAppPbaDetails = caseData.getGeneralAppPBADetails();
 
+        String language;
+        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
+            language = caseData.getApplicantBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En";
+        } else {
+            language = caseData.getRespondentBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En";
+        }
+
         requireNonNull(generalAppPbaDetails, "Fee Payment details cannot be null");
         requireNonNull(generalAppPbaDetails.getServiceReqReference(), "Fee Payment service request cannot be null");
 
@@ -49,7 +56,7 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language(caseData.getApplicantBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En")
+            .language(language)
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
