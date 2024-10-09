@@ -46,6 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_FLAGS;
+import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_STATE;
 
 @SpringBootTest(classes = {
     ApplicationProcessCaseEventTaskHandler.class,
@@ -98,7 +99,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference(PARENT_CASE_ID).build())
                 .build();
             VariableMap variables = Variables.createVariables();
-            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_STATE, "MAIN.DRAFT");
             variables.putValue(FLOW_FLAGS, Map.of());
             variables.putValue("generalAppParentCaseLink", PARENT_CASE_ID);
 

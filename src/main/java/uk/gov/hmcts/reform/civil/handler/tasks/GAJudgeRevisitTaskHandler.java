@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -31,7 +32,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 @RequiredArgsConstructor
 @Component
 @ConditionalOnExpression("${judge.revisit.check.event.emitter.enabled:true}")
-public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
+public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
     private final CaseStateSearchService caseStateSearchService;
 
@@ -44,8 +45,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
     private final FeatureToggleService featureToggleService;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
-
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         List<CaseDetails> writtenRepresentationCases = caseStateSearchService
             .getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         List<CaseDetails> claimantNotificationCases = filterForClaimantWrittenRepExpired(writtenRepresentationCases);
@@ -63,7 +63,7 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         }
 
         // Change state for all cases where both deadlines have passed
-        claimantNotificationCases.stream().filter(caseDetails -> defendantNotificationCases.contains(caseDetails))
+        claimantNotificationCases.stream().filter(defendantNotificationCases::contains)
             .forEach(this::fireEventForStateChange);
 
         List<CaseDetails> directionOrderCases = getDirectionOrderCaseReadyToJudgeRevisit();
@@ -75,6 +75,8 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
         log.info("Job '{}' found {} request for information case(s)",
                  externalTask.getTopicName(), requestForInformationCases.size());
         requestForInformationCases.forEach(this::fireEventForStateChange);
+
+        return ExternalTaskData.builder().build();
     }
 
     protected void fireEventForStateChange(CaseDetails caseDetails) {
@@ -127,14 +129,14 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 try {
                     return (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                         .getWrittenOption().equals(CONCURRENT_REPRESENTATIONS))
-                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                        && (!LocalDate.now().isBefore(caseDetailsConverter.toCaseData(a)
                                                           .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                          .getWrittenConcurrentRepresentationsBy()) >= 0)
+                                                          .getWrittenConcurrentRepresentationsBy()))
                         || caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
                         .getWrittenOption().equals(SEQUENTIAL_REPRESENTATIONS)
-                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                        && (!LocalDate.now().isBefore(caseDetailsConverter.toCaseData(a)
                                                           .getJudicialDecisionMakeAnOrderForWrittenRepresentations()
-                                                          .getSequentialApplicantMustRespondWithin()) >= 0);
+                                                          .getSequentialApplicantMustRespondWithin()));
                 } catch (Exception e) {
                     log.error("Error GAJudgeRevisitTaskHandler::getWrittenRepCaseReadyToJudgeRevisit : " + e);
                 }
@@ -172,9 +174,9 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                 try {
                     return (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeOrder().getMakeAnOrder()
                         .equals(GIVE_DIRECTIONS_WITHOUT_HEARING))
-                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                        && (!LocalDate.now().isBefore(caseDetailsConverter.toCaseData(a)
                                                           .getJudicialDecisionMakeOrder()
-                                                          .getDirectionsResponseByDate()) >= 0);
+                                                          .getDirectionsResponseByDate()));
                 } catch (Exception e) {
                     log.error("Error GAJudgeRevisitTaskHandler::getDirectionOrderCaseReadyToJudgeRevisit : " + e);
                 }
@@ -192,9 +194,9 @@ public class GAJudgeRevisitTaskHandler implements BaseExternalTaskHandler {
                     return caseDetailsConverter.toCaseData(a)
                         .getJudicialDecisionRequestMoreInfo()
                         .getJudgeRequestMoreInfoByDate() != null
-                        && (LocalDate.now().compareTo(caseDetailsConverter.toCaseData(a)
+                        && (!LocalDate.now().isBefore(caseDetailsConverter.toCaseData(a)
                                                           .getJudicialDecisionRequestMoreInfo()
-                                                          .getJudgeRequestMoreInfoByDate()) >= 0);
+                                                          .getJudgeRequestMoreInfoByDate()));
                 } catch (Exception e) {
                     log.error("GAJudgeRevisitTaskHandler failed: " + e);
                 }
