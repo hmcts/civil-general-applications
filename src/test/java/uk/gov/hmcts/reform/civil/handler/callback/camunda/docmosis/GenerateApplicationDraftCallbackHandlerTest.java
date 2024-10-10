@@ -23,6 +23,8 @@ import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
+import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -34,6 +36,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
@@ -41,6 +44,7 @@ import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,6 +87,8 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     private FeatureToggleService featureToggleService;
     @MockBean
     private GeneralAppFeesService generalAppFeesService;
+    @MockBean
+    private GaForLipService gaForLipService;
 
     private final LocalDate submittedOn = now();
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
@@ -114,7 +120,8 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithoutNotice() {
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithoutNotice_LR() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
         caseData = caseData.toBuilder()
             .generalAppPBADetails(GAPbaDetails.builder()
@@ -137,9 +144,10 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldNotGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndNotUrgent() {
+    void shouldNotGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndNotUrgent_LR() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, YES, NO);
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
@@ -147,8 +155,9 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndUrgent() {
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndUrgent_LR() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, YES, YES);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         caseData = caseData.toBuilder()
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
@@ -171,7 +180,8 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithoutNoticeAndNonUrgent() {
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithoutNoticeAndNonUrgent_LR() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, NO);
         caseData = caseData.toBuilder()
             .generalAppPBADetails(GAPbaDetails.builder()
@@ -195,8 +205,9 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldGenerateDraftDocument_FreeFeeCode_ConsentApp() {
+    void shouldGenerateDraftDocument_FreeFeeCode_ConsentApp_LR() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         caseData = caseData.toBuilder()
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
@@ -220,7 +231,8 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldNotGenerateDraftDocument_Unpaid_ConsentApp() {
+    void shouldNotGenerateDraftDocument_Unpaid_ConsentApp_LR() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, NO);
         when(generalAppFeesService.isFreeApplication(any(CaseData.class))).thenReturn(false);
         when(time.now()).thenReturn(submittedOn.atStartOfDay());
@@ -230,8 +242,9 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldNotGenerateDraftDocument_whenFeeUnpaid_WithNoticeAndUrgent() {
+    void shouldNotGenerateDraftDocument_whenFeeUnpaid_WithNoticeAndUrgent_LR() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, YES, YES);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
         caseData = caseData.toBuilder()
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .fee(Fee.builder().code("NotFree").build()).build()).build();
@@ -243,10 +256,117 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         verifyNoInteractions(generalApplicationDraftGenerator);
     }
 
+    @Test
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndUrgent_Lip() {
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        caseData = caseData.toBuilder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(updatedData.getGaDraftDocument().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+    }
+
+    @Test
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndWithNoticeAndUrgentbefore_Lip() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(YES, YES, YES);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        caseData = caseData.toBuilder()
+            .gaDraftDocument(null)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(updatedData.getGaDraftDocument().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+    }
+
+    @Test
+    void shouldGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndFreeApp_Lip() {
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, NO, NO);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(generalAppFeesService.isFreeApplication(any())).thenReturn(true);
+        caseData = caseData.toBuilder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("Free").build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+        assertThat(updatedData.getGaDraftDocument().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+    }
+
+    @Test
+    void shouldNotGenerateApplicationDraftDocument_whenAboutToSubmitEventIsCalledAndFreeApp_Lip() {
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, NO, NO);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+        caseData = caseData.toBuilder()
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder().code("Free").build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        verifyNoInteractions(generalApplicationDraftGenerator);
+    }
+
     private CaseData getSampleGeneralApplicationCaseData(YesOrNo isConsented, YesOrNo isTobeNotified, YesOrNo isUrgent) {
         return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                 getGeneralApplication(isConsented, isTobeNotified, isUrgent))
             .toBuilder()
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .ccdCaseReference(CHILD_CCD_REF)
+            .submittedOn(APPLICATION_SUBMITTED_DATE).build();
+    }
+
+    private CaseData getSampleGeneralApplicationCaseDataLip(YesOrNo isConsented, YesOrNo isTobeNotified, YesOrNo isUrgent) {
+        List<Element<CaseDocument>> gaDraft = new ArrayList<>();
+        gaDraft.addAll(wrapElements(PDFBuilder.APPLICATION_DRAFT_DOCUMENT));
+        return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                getGeneralApplication(isConsented, isTobeNotified, isUrgent))
+            .toBuilder()
+            .gaDraftDocument(gaDraft)
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF)

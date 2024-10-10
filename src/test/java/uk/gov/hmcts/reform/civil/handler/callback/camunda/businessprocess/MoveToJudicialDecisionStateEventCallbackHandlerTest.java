@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
@@ -86,6 +87,8 @@ class MoveToJudicialDecisionStateEventCallbackHandlerTest extends BaseCallbackHa
     @MockBean
     private FeatureToggleService featureToggleService;
 
+    @MockBean
+    private GaForLipService gaForLipService;
     @Autowired
     private MoveToJudicialDecisionStateEventCallbackHandler handler;
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
@@ -101,7 +104,7 @@ class MoveToJudicialDecisionStateEventCallbackHandlerTest extends BaseCallbackHa
         void shouldRespondWithStateChanged() {
             CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
+            when(gaForLipService.isGaForLip(any())).thenReturn(false);
             when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
                 .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
 
@@ -119,10 +122,44 @@ class MoveToJudicialDecisionStateEventCallbackHandlerTest extends BaseCallbackHa
         @Test
         void shouldRespondWithStateChangedWithNoDocumentGeneration() {
             CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
+            when(gaForLipService.isGaForLip(any())).thenReturn(false);
             CaseData updatedCaseData = caseData.toBuilder().judicialDecision(GAJudicialDecision.builder()
                                                                                  .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
                                                                                  .build()).build();
             CallbackParams params = callbackParamsOf(updatedCaseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response.getErrors()).isNull();
+            verifyNoInteractions(generalApplicationDraftGenerator);
+            assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString());
+        }
+
+        @Test
+        void shouldRespondWithStateChangedWithNoDocumentGenerationWhenLipCaseWithJudicial() {
+            CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            CaseData updatedCaseData = caseData.toBuilder().judicialDecision(GAJudicialDecision.builder()
+                                                                                 .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                                                                 .build()).build();
+            CallbackParams params = callbackParamsOf(updatedCaseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = objectMapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(response.getErrors()).isNull();
+            verifyNoInteractions(generalApplicationDraftGenerator);
+            assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.toString());
+        }
+
+        @Test
+        void shouldRespondWithStateChangedWithNoDocumentGenerationWhenLipCase() {
+            CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
