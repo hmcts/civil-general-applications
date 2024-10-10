@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPONDENT_RESPONSE_DEADLINE_CHECK;
@@ -28,6 +30,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -44,6 +47,9 @@ public class RespondentResponseDeadlineCallbackHandlerTest {
     private DashboardNotificationsParamsMapper mapper;
     @MockBean
     private DashboardApiClient dashboardApiClient;
+
+    @MockBean
+    private DocUploadDashboardNotificationService dashboardNotificationService;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -67,9 +73,9 @@ public class RespondentResponseDeadlineCallbackHandlerTest {
             ).build();
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
             assertThat(response.getData()).extracting("respondentResponseDeadlineChecked")
                 .isEqualTo("Yes");
+            verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
         }
     }
 }

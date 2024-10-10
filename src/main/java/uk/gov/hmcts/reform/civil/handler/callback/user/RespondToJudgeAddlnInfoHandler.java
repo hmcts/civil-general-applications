@@ -83,6 +83,8 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+            docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+            docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
         }
 
         CaseData updatedCaseData = caseDataBuilder.build();
