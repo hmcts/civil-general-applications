@@ -17,10 +17,12 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -341,6 +343,9 @@ public class CaseData implements MappableObject {
     private YesOrNo respondentResponseDeadlineChecked;
     //Case name for manage case
     private String caseNameGaInternal;
+    private RespondentLiPResponse respondent1LiPResponse;
+    private String claimantBilingualLanguagePreference;
+    private YesOrNo bilingualHint;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -350,6 +355,30 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean isHWFTypeAdditional() {
         return getHwfFeeType() == FeeType.ADDITIONAL;
+    }
+
+    @JsonIgnore
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(claimantBilingualLanguagePreference)
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+        } else {
+            return Objects.nonNull(respondent1LiPResponse)
+                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+        }
+    }
+
+    @JsonIgnore
+    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(respondent1LiPResponse)
+                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
+                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
+        } else {
+            return Objects.nonNull(claimantBilingualLanguagePreference)
+                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
+        }
     }
 
     @JsonIgnore
