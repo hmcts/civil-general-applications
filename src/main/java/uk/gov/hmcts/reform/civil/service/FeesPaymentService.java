@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -38,14 +37,6 @@ public class FeesPaymentService {
         CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
         String parentCaseRef = caseData.getParentCaseReference();
         GAPbaDetails generalAppPbaDetails = caseData.getGeneralAppPBADetails();
-
-        String language;
-        language = caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ?  "cy" : "En";
-        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
-            language = caseData.isApplicantBilingual(YesOrNo.YES) ? "cy" : "En";
-        } else {
-            language = caseData.isRespondentBilingual(YesOrNo.NO) ? "cy" : "En";
-        }
 
         requireNonNull(generalAppPbaDetails, "Fee Payment details cannot be null");
         requireNonNull(generalAppPbaDetails.getServiceReqReference(), "Fee Payment service request cannot be null");
