@@ -342,6 +342,11 @@ public class CaseData implements MappableObject {
     //Case name for manage case
     private String caseNameGaInternal;
 
+    private String claimantBilingualLanguagePreference;
+    private RespondentLiPResponse respondent1LiPResponse;
+    private YesOrNo applicantBilingualLanguagePreference;
+    private YesOrNo respondentBilingualLanguagePreference;
+
     @JsonIgnore
     public boolean isHWFTypeApplication() {
         return getHwfFeeType() == FeeType.APPLICATION;
@@ -369,6 +374,17 @@ public class CaseData implements MappableObject {
             .map(GAUrgencyRequirement::getGeneralAppUrgency)
             .filter(urgency -> urgency == YES)
             .isPresent();
+    }
+
+    @JsonIgnore
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
+        } else {
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
+        }
     }
 
     @JsonIgnore
