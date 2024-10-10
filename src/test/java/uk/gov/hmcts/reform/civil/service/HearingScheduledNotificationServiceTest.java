@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
@@ -65,8 +66,12 @@ public class HearingScheduledNotificationServiceTest {
             .thenReturn("general-apps-notice-of-hearing-template-id");
         when(notificationsProperties.getLipGeneralAppApplicantEmailTemplate())
             .thenReturn("ga-notice-of-hearing-applicant-template-id");
+        when(notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh())
+            .thenReturn("ga-notice-of-hearing-applicant-welsh-template-id");
         when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
             .thenReturn("ga-notice-of-hearing-respondent-template-id");
+        when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
+            .thenReturn("ga-notice-of-hearing-respondent-welsh-template-id");
     }
 
     private Map<String, String> getNotificationDataMap() {
@@ -151,6 +156,7 @@ public class HearingScheduledNotificationServiceTest {
         when(solicitorEmailValidation
                  .validateSolicitorEmail(any(), any()))
             .thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
         hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
         verify(notificationService, times(1)).sendMail(
@@ -174,11 +180,38 @@ public class HearingScheduledNotificationServiceTest {
         when(solicitorEmailValidation
                  .validateSolicitorEmail(any(), any()))
             .thenReturn(caseData);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
         hearingScheduledNotificationService.sendNotificationForClaimant(caseData);
         verify(notificationService, times(1)).sendMail(
             DUMMY_EMAIL,
             "ga-notice-of-hearing-applicant-template-id",
+            getNotificationDataMapLip(YES, NO),
+            "general-apps-notice-of-hearing-" + CASE_REFERENCE
+        );
+    }
+
+    @Test
+    void notificationWelshShouldSendToLipApplicantWhenInvoked() {
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(false);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
+            .isGaApplicantLip(YesOrNo.YES)
+            .isGaRespondentOneLip(YesOrNo.NO)
+            .parentClaimantIsApplicant(YES)
+            .defendant2PartyName(null)
+            .build();
+        when(solicitorEmailValidation
+                 .validateSolicitorEmail(any(), any()))
+            .thenReturn(caseData);
+        CaseData claimantClaimIssueFlag = CaseData.builder().claimantBilingualLanguagePreference(Language.WELSH.toString()).build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
+
+        hearingScheduledNotificationService.sendNotificationForClaimant(caseData);
+        verify(notificationService, times(1)).sendMail(
+            DUMMY_EMAIL,
+            "ga-notice-of-hearing-applicant-welsh-template-id",
             getNotificationDataMapLip(YES, NO),
             "general-apps-notice-of-hearing-" + CASE_REFERENCE
         );

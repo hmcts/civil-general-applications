@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -94,6 +96,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
                     .thenReturn("general-application-respondent-template-lip-id");
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
+                .thenReturn("general-application-respondent-welsh-template-lip-id");
         }
 
         @Test
@@ -175,9 +179,34 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(solicitorEmailValidation
                     .validateSolicitorEmail(any(), any()))
                     .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             gaNotificationService.sendNotification(caseData);
             verify(notificationService, times(2)).sendMail(
                     any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
+            );
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
+            assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
+        }
+
+        @Test
+        void notificationRespondentInWelshShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .isGaRespondentOneLip(YES)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                                              PaymentStatus.SUCCESS).build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            CaseData claimRespondentResponseLan = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
+                Language.BOTH.toString()).build()).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), eq("general-application-respondent-welsh-template-lip-id"), argumentCaptor.capture(), any()
             );
             assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
             assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");

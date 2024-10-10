@@ -21,7 +21,13 @@ public class NotificationsProperties {
     private String lipGeneralAppRespondentEmailTemplate;
 
     @NotEmpty
+    private String lipGeneralAppRespondentEmailTemplateInWelsh;
+
+    @NotEmpty
     private String lipGeneralAppApplicantEmailTemplate;
+
+    @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplateInWelsh;
 
     @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
