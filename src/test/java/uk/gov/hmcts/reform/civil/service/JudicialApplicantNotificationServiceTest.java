@@ -104,6 +104,7 @@ class JudicialApplicantNotificationServiceTest {
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
     private static final String SAMPLE_LIP_TEMPLATE = "general-application-apps-judicial-notification-template-lip-id";
     private static final String LIP_APPLN_TEMPLATE = "ga-judicial-notification-applicant-template-lip-id";
+    private static final String LIP_APPLN_WELSH_TEMPLATE = "ga-judicial-notification-applicant-welsh-template-lip-id";
     private static final String JUDGES_DECISION = "MAKE_DECISION";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
@@ -155,6 +156,8 @@ class JudicialApplicantNotificationServiceTest {
                 .thenReturn(SAMPLE_LIP_TEMPLATE);
         when(notificationsProperties.getLipGeneralAppApplicantEmailTemplate())
             .thenReturn(LIP_APPLN_TEMPLATE);
+        when(notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh())
+            .thenReturn(LIP_APPLN_WELSH_TEMPLATE);
     }
 
     @Nested
@@ -166,7 +169,7 @@ class JudicialApplicantNotificationServiceTest {
         void sendNotificationApplicantConcurrentWrittenRep() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(YES, NO));
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             judicialNotificationService.sendNotification(caseDataForConcurrentWrittenOption(YES, NO), APPLICANT);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
@@ -180,11 +183,28 @@ class JudicialApplicantNotificationServiceTest {
         void sendNotificationApplicantSequentialWrittenRep() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForSequentialWrittenOption(YES, NO));
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption(YES, NO), APPLICANT);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-judicial-notification-applicant-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void sendNotificationInWelshApplicantSequentialWrittenRep() {
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForSequentialWrittenOption(YES, NO));
+            CaseData claimRespondentResponseLan = CaseData.builder().claimantBilingualLanguagePreference("WELSH").build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
+
+            judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption(YES, NO), APPLICANT);
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                LIP_APPLN_WELSH_TEMPLATE,
                 notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
@@ -231,6 +251,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
@@ -307,6 +328,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
@@ -329,6 +351,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
@@ -345,6 +368,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataListForHearing());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseDataListForHearing(), APPLICANT);
             verify(notificationService).sendMail(
@@ -546,6 +570,7 @@ class JudicialApplicantNotificationServiceTest {
                 .claimant1PartyName("CL")
                 .defendant1PartyName("DEF")
                 .generalAppRespondentSolicitors(respondentSolicitors())
+                .parentClaimantIsApplicant(YES)
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -1959,6 +1984,7 @@ class JudicialApplicantNotificationServiceTest {
                     SEND_APP_TO_OTHER_PARTY);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                     .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 

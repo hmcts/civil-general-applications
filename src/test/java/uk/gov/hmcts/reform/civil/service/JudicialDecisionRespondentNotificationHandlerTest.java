@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -100,6 +102,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     private static final String ID = "1";
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
     private static final String SAMPLE_LIP_TEMPLATE = "general-application-apps-judicial-notification-template-lip-id";
+    private static final String LIP_RES_WELSH_TEMPLATE = "ga-judicial-notification-respondent-welsh-template-lip-id";
     private static final String JUDGES_DECISION = "MAKE_DECISION";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
@@ -153,6 +156,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
             .thenReturn(SAMPLE_LIP_TEMPLATE);
+        when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
+            .thenReturn(LIP_RES_WELSH_TEMPLATE);
     }
 
     @Nested
@@ -165,6 +170,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
                                 .toBuilder().businessProcess(businessProcess).build());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
                 .toBuilder().businessProcess(businessProcess).build();
@@ -181,6 +187,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
                                 .toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
                 .toBuilder().businessProcess(businessProcess).build();
@@ -193,10 +200,30 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         @Test
+        void sendNotificationInWelshToRespondentConcurrentWrittenRep_AddlnPayment() {
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
+                                .toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build());
+
+            CaseData claimRespondentResponseLan = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
+                Language.BOTH.toString()).build()).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
+            judicialRespondentNotificationService.sendNotification(caseDataForConcurrentWrittenOption(NO, YES), RESPONDENT)
+                .toBuilder().businessProcess(businessProcess).build();
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                LIP_RES_WELSH_TEMPLATE,
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void sendNotificationRespondentSequentialWrittenRep() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForSequentialWrittenOption(NO, YES).toBuilder().businessProcess(businessProcess)
                                 .build());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(caseDataForSequentialWrittenOption(NO, YES)
                                                              .toBuilder().businessProcess(businessProcess).build(),
@@ -215,7 +242,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, NO, YES)
                                 .toBuilder().businessProcess(businessProcess).build());
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             judicialRespondentNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  NO, YES)
                                                              .toBuilder()
                                                              .businessProcess(businessProcess).build(), RESPONDENT);
@@ -235,7 +262,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                 = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
                                                                                                 NO, YES, NO, YES)
                 .toBuilder().businessProcess(businessProcess).build();
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -253,6 +280,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, NO).toBuilder().businessProcess(businessProcess).build());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(
                 caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
@@ -279,6 +307,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(caseData, RESPONDENT);
 
@@ -295,6 +324,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataListForHearing());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialRespondentNotificationService.sendNotification(caseDataListForHearing(), RESPONDENT);
             verify(notificationService).sendMail(
@@ -474,6 +504,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                     .claimant1PartyName("CL")
                     .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                     .defendant1PartyName("DEF")
+                    .parentClaimantIsApplicant(YES)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .judicialDecision(GAJudicialDecision.builder()
                                           .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())

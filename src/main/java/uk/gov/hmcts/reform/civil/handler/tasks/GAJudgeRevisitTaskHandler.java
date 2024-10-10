@@ -7,9 +7,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
@@ -36,6 +39,8 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
     private final CoreCaseDataService coreCaseDataService;
 
     private final CaseDetailsConverter caseDetailsConverter;
+    private final GaForLipService gaForLipService;
+    private final DocUploadDashboardNotificationService dashboardNotificationService;
 
     private final FeatureToggleService featureToggleService;
 
@@ -79,8 +84,16 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
         log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
                      + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
                      + "for caseId: {}", caseId);
+        CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
         try {
             coreCaseDataService.triggerEvent(caseId, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
+            // Generate Dashboard Notification for Lip Party
+            if (gaForLipService.isGaForLip(caseData)) {
+                String userToken = coreCaseDataService.getSystemUpdateUserToken();
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", userToken);
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", userToken);
+
+            }
         } catch (Exception exception) {
             log.error("Error in GAJudgeRevisitTaskHandler::fireEventForStateChange: " + exception);
         }

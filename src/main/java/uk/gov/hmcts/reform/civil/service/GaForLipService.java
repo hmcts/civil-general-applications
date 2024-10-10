@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.Objects;
 
@@ -35,5 +36,24 @@ public class GaForLipService {
         return featureToggleService.isGaForLipsEnabled()
                 && Objects.nonNull(caseData.getIsGaRespondentOneLip())
                 && caseData.getIsGaRespondentOneLip().equals(YES);
+    }
+
+    public boolean anyWelsh(CaseData civilCaseData, CaseData caseData) {
+        if (featureToggleService.isGaForLipsEnabled()) {
+            return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+                || civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+        }
+        return false;
+    }
+
+    public boolean anyWelshNotice(CaseData civilCaseData, CaseData caseData) {
+        if (featureToggleService.isGaForLipsEnabled()) {
+            if (!JudicialDecisionNotificationUtil.isWithNotice(caseData)) {
+                return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
+            }
+            return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+                || civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+        }
+        return false;
     }
 }

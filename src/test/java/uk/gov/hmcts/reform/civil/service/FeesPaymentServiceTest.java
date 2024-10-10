@@ -146,7 +146,10 @@ class FeesPaymentServiceTest {
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         assertThatThrownBy(
-            () -> feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN)
+            () -> feesPaymentService.createGovPaymentRequest(
+                "2801090368574910",
+                BEARER_TOKEN
+            )
         ).isInstanceOf(NullPointerException.class)
             .hasMessage("Fee Payment service request cannot be null");
 
@@ -165,7 +168,10 @@ class FeesPaymentServiceTest {
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
 
         assertThatThrownBy(
-            () -> feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN)
+            () -> feesPaymentService.createGovPaymentRequest(
+                "2801090368574910",
+                BEARER_TOKEN
+            )
         ).isInstanceOf(NullPointerException.class)
             .hasMessage("Fee Payment service request cannot be null");
 
@@ -182,7 +188,10 @@ class FeesPaymentServiceTest {
 
         assertThrows(
             PaymentsApiException.class,
-            () -> feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN)
+            () -> feesPaymentService.createGovPaymentRequest(
+                "2801090368574910",
+                BEARER_TOKEN
+            )
         );
 
         verify(paymentsClient, times(3)).createGovPayCardPaymentRequest(
@@ -202,7 +211,10 @@ class FeesPaymentServiceTest {
 
         assertThrows(
             PaymentsApiException.class,
-            () -> feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN)
+            () -> feesPaymentService.createGovPaymentRequest(
+                "2801090368574910",
+                BEARER_TOKEN
+            )
         );
 
         verify(paymentsClient).createGovPayCardPaymentRequest(
@@ -225,7 +237,10 @@ class FeesPaymentServiceTest {
             .thenReturn(response);
 
         CardPaymentStatusResponse govPaymentRequest =
-            feesPaymentService.createGovPaymentRequest("2801090368574910", BEARER_TOKEN);
+            feesPaymentService.createGovPaymentRequest(
+                "2801090368574910",
+                BEARER_TOKEN
+            );
 
         assertThat(govPaymentRequest).isEqualTo(CardPaymentStatusResponse.from(response));
 
