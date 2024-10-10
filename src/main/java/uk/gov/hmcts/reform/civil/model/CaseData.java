@@ -315,7 +315,6 @@ public class CaseData implements MappableObject {
     private final String applicationTypes;
     private final String parentCaseReference;
     private final String judgeTitle;
-
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
     // GA for LIP
@@ -341,6 +340,11 @@ public class CaseData implements MappableObject {
     private YesOrNo respondentResponseDeadlineChecked;
     //Case name for manage case
     private String caseNameGaInternal;
+
+    private String claimantBilingualLanguagePreference;
+    private RespondentLiPResponse respondent1LiPResponse;
+    private YesOrNo applicantBilingualLanguagePreference;
+    private YesOrNo respondentBilingualLanguagePreference;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -372,6 +376,28 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
+        } else {
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
+        }
+    }
+
+    @JsonIgnore
+    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
+        } else {
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
+        }
+    }
+
+    @JsonIgnore
     public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
         return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
             && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())
@@ -391,5 +417,4 @@ public class CaseData implements MappableObject {
         return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
     }
-
 }
