@@ -119,4 +119,11 @@ public class AssistedOrderForm implements MappableObject {
     private final LocalDate withoutNoticeDate;
     //Reasons
     private final String reasonsText;
+
+    private final String partyName;
+    private final String partyAddressAddressLine1;
+    private final String partyAddressAddressLine2;
+    private final String partyAddressAddressLine3;
+    private final String partyAddressPostTown;
+    private final String partyAddressPostCode;
 }
