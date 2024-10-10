@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -56,8 +55,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
     private ObjectMapper objectMapper;
     @MockBean
     private GaForLipService gaForLipService;
-    @MockBean
-    private FeatureToggleService featureToggleService;
 
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
