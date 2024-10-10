@@ -377,6 +377,28 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
+    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
+        } else {
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
+        }
+    }
+
+    @JsonIgnore
+    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
+        if (YES.equals(parentClaimant)) {
+            return Objects.nonNull(respondentBilingualLanguagePreference)
+                && respondentBilingualLanguagePreference.equals(YES);
+        } else {
+            return Objects.nonNull(applicantBilingualLanguagePreference)
+                && applicantBilingualLanguagePreference.equals(YES);
+        }
+    }
+
+    @JsonIgnore
     public boolean claimIssueFeePaymentDoneWithHWF(CaseData caseData) {
         return Objects.nonNull(caseData.getGeneralAppHelpWithFees())
             && YES.equals(caseData.getGeneralAppHelpWithFees().getHelpWithFee())

@@ -41,9 +41,9 @@ public class FeesPaymentService {
 
         String language;
         if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
-            language = caseData.getApplicantBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En";
+            language = caseData.isApplicantBilingual(YesOrNo.YES) ? "cy" : "En";
         } else {
-            language = caseData.getRespondentBilingualLanguagePreference() == YesOrNo.YES ? "cy" : "En";
+            language = caseData.isRespondentBilingual(YesOrNo.NO) ? "cy" : "En";
         }
 
         requireNonNull(generalAppPbaDetails, "Fee Payment details cannot be null");
