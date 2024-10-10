@@ -40,6 +40,7 @@ public class FeesPaymentService {
         GAPbaDetails generalAppPbaDetails = caseData.getGeneralAppPBADetails();
 
         String language;
+        language = caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ?  "cy" : "En";
         if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES) {
             language = caseData.isApplicantBilingual(YesOrNo.YES) ? "cy" : "En";
         } else {
@@ -56,7 +57,7 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language(language)
+            .language(caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ?  "cy" : "En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
