@@ -346,6 +346,11 @@ public class CaseData implements MappableObject {
     private RespondentLiPResponse respondent1LiPResponse;
     private String claimantBilingualLanguagePreference;
 
+    private String claimantBilingualLanguagePreference;
+    private RespondentLiPResponse respondent1LiPResponse;
+    private YesOrNo applicantBilingualLanguagePreference;
+    private YesOrNo respondentBilingualLanguagePreference;
+
     @JsonIgnore
     public boolean isHWFTypeApplication() {
         return getHwfFeeType() == FeeType.APPLICATION;
