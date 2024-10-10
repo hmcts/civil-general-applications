@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.service.DeadlinesCalculator.END_OF_BUSINESS_DAY;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,11 +29,13 @@ public class DashboardNotificationsParamsMapper {
         params.put("ccdCaseReference", caseData.getCcdCaseReference());
 
         getGeneralAppNotificationDeadlineDate(caseData).ifPresent(date -> {
+            params.put("generalAppNotificationDeadlineDate", date.atTime(END_OF_BUSINESS_DAY));
             params.put("generalAppNotificationDeadlineDateEn", DateUtils.formatDate(date));
             params.put("generalAppNotificationDeadlineDateCy", DateUtils.formatDateInWelsh(date));
         });
 
         getJudgeRequestMoreInfoByDate(caseData).ifPresent(date -> {
+            params.put("judgeRequestMoreInfoByDate", date.atTime(END_OF_BUSINESS_DAY));
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(date));
             params.put("judgeRequestMoreInfoByDateCy", DateUtils.formatDateInWelsh(date));
         });
@@ -64,6 +67,9 @@ public class DashboardNotificationsParamsMapper {
         }
 
         if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
+            params.put("judgeRequestMoreInfoByDate",
+                       caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate().atTime(
+                           END_OF_BUSINESS_DAY));
             params.put("judgeRequestMoreInfoByDateEn", DateUtils.formatDate(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
             params.put("judgeRequestMoreInfoByDateCy",
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
@@ -93,8 +99,10 @@ public class DashboardNotificationsParamsMapper {
                 applicantDeadlineDate = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenConcurrentRepresentationsBy();
                 respondentDeadlineDate = caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenConcurrentRepresentationsBy();
             }
+            params.put("writtenRepApplicantDeadline", applicantDeadlineDate.atTime(END_OF_BUSINESS_DAY));
             params.put("writtenRepApplicantDeadlineDateEn", DateUtils.formatDate(applicantDeadlineDate));
             params.put("writtenRepApplicantDeadlineDateCy", DateUtils.formatDateInWelsh(applicantDeadlineDate));
+            params.put("writtenRepRespondentDeadline", respondentDeadlineDate.atTime(END_OF_BUSINESS_DAY));
             params.put("writtenRepRespondentDeadlineDateEn", DateUtils.formatDate(respondentDeadlineDate));
             params.put("writtenRepRespondentDeadlineDateCy", DateUtils.formatDateInWelsh(respondentDeadlineDate));
         }
