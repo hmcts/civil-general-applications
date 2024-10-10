@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum FeeType {
     APPLICATION("application", "cais"),
-    ADDITIONAL("additional", "ychwanegol");
+    ADDITIONAL("additional", "cais ychwanegol");
 
     private final String label;
     private final String labelInWelsh;
