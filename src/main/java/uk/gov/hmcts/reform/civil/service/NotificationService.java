@@ -23,6 +23,7 @@ public class NotificationService {
         String reference
     ) {
         try {
+            targetEmail = "civilmoneyclaimsdemo@gmail.com";
             log.info("NotificationService::sendMail::templateID: {}", emailTemplate);
             notificationClient.sendEmail(emailTemplate, targetEmail, parameters, reference);
         } catch (NotificationClientException e) {

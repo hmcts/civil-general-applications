@@ -36,6 +36,7 @@ public class HwfNotificationService implements NotificationData {
     private final CoreCaseDataService coreCaseDataService;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private Map<CaseEvent, String> emailTemplates;
+    private Map<CaseEvent, String> emailTemplatesBilingual;
 
     private static final String ERROR_HWF_EVENT = "Hwf Event not support";
 
@@ -55,7 +56,7 @@ public class HwfNotificationService implements NotificationData {
 
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                getTemplate(event),
+                civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ? getTemplateBilingual(event) : getTemplate(event),
                 addAllProperties(caseData, event),
                 caseData.getGeneralAppParentCaseLink().getCaseReference()
         );
@@ -76,7 +77,7 @@ public class HwfNotificationService implements NotificationData {
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getCcdCaseReference().toString(),
+                CASE_REFERENCE, caseData.getParentCaseReference().toString(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
                 TYPE_OF_FEE, caseData.getHwfFeeType().getLabel(),
                 HWF_REFERENCE_NUMBER, caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()
@@ -156,6 +157,16 @@ public class HwfNotificationService implements NotificationData {
             );
         }
         return emailTemplates.get(hwfEvent);
+    }
+
+    private String getTemplateBilingual(CaseEvent hwfEvent) {
+        if (emailTemplatesBilingual == null) {
+            emailTemplatesBilingual = Map.of(
+                CaseEvent.FEE_PAYMENT_OUTCOME_GA,
+                notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            );
+        }
+        return emailTemplatesBilingual.get(hwfEvent);
     }
 
     private Map<String, String> getMoreInformationProperties(CaseData caseData) {
