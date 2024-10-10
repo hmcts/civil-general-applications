@@ -78,7 +78,7 @@ public class HwfNotificationService implements NotificationData {
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getCcdCaseReference().toString(),
+                CASE_REFERENCE, caseData.getParentCaseReference().toString(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
                 TYPE_OF_FEE, caseData.getHwfFeeType().getLabel(),
                 TYPE_OF_FEE_WELSH, caseData.getHwfFeeType().getLabelInWelsh(),

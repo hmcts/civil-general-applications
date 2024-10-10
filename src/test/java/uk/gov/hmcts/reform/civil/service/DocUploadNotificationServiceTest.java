@@ -13,10 +13,13 @@ import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -56,6 +59,12 @@ public class DocUploadNotificationServiceTest {
     @MockBean
     private GaForLipService gaForLipService;
 
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
+
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
@@ -69,8 +78,12 @@ public class DocUploadNotificationServiceTest {
                     .thenReturn("general-apps-notice-of-document-template-id");
             when(notificationsProperties.getLipGeneralAppApplicantEmailTemplate())
                 .thenReturn("ga-notice-of-document-lip-appln-template-id");
+            when(notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh())
+                .thenReturn("ga-notice-of-document-lip-appln-welsh-template-id");
             when(notificationsProperties.getLipGeneralAppRespondentEmailTemplate())
                 .thenReturn("ga-notice-of-document-lip-respondent-template-id");
+            when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
+                .thenReturn("ga-notice-of-document-lip-respondent-welsh-template-id");
         }
 
         @Test
@@ -104,10 +117,28 @@ public class DocUploadNotificationServiceTest {
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData = getCaseData(true, YES, NO);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-notice-of-document-lip-appln-template-id",
+                getNotificationDataMapForLip(YES, NO),
+                "general-apps-notice-of-document-upload-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void lipApplicantNotificationShouldSendWhenInvoked_whenMainClaimIssuedInWelsh() {
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            CaseData caseData = getCaseData(true, YES, NO);
+            CaseData claimantClaimIssueFlag = CaseData.builder().claimantBilingualLanguagePreference("WELSH").build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
+            docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-notice-of-document-lip-appln-welsh-template-id",
                 getNotificationDataMapForLip(YES, NO),
                 "general-apps-notice-of-document-upload-" + CASE_REFERENCE
             );
@@ -127,10 +158,37 @@ public class DocUploadNotificationServiceTest {
 
             CaseData caseData = getCaseData(true, NO, YES).toBuilder()
                 .generalAppRespondentSolicitors(respondentSols).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-notice-of-document-lip-respondent-template-id",
+                getNotificationDataMapForLip(NO, YES),
+                "general-apps-notice-of-document-upload-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void lipRespondentNotificationShouldSend_whenRespondentResponseInWelsh() {
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(false);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).surname(Optional.of("surname")).forename("forename").organisationIdentifier("2").build();
+            respondentSols.add(element(respondent1));
+
+            CaseData caseData = getCaseData(true, NO, YES).toBuilder()
+                .generalAppRespondentSolicitors(respondentSols).build();
+            CaseData claimantClaimIssueFlag = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
+                Language.BOTH.toString()).build()).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
+            docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-notice-of-document-lip-respondent-welsh-template-id",
                 getNotificationDataMapForLip(NO, YES),
                 "general-apps-notice-of-document-upload-" + CASE_REFERENCE
             );
@@ -176,6 +234,7 @@ public class DocUploadNotificationServiceTest {
                         .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                 .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                         .generalAppRespondentSolicitors(respondentSols)
+                        .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
                         .applicantPartyName("App")
                         .claimant1PartyName("CL")
                         .defendant1PartyName("DEF")
