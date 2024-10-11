@@ -108,6 +108,7 @@ public class CasesController {
                 List.of("data.applicationTypes",
                         "data.generalAppInformOtherParty.isWithNotice",
                         "data.generalAppRespondentAgreement.hasAgreed",
+                        "data.generalAppType.types",
                         "data.parentClaimantIsApplicant",
                         "data.applicationIsUncloakedOnce",
                         "data.judicialDecisionRequestMoreInfo",
