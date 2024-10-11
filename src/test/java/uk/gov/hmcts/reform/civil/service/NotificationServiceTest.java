@@ -27,7 +27,7 @@ class NotificationServiceTest {
 
     @Nested class Notification {
 
-        private static final String DUMMY_EMAIL = "example@co.com";
+        private static final String DUMMY_EMAIL = "civilmoneyclaimsdemo@gmail.com";
         private static final String TEMPLATE_ID = "fake-id";
         private static final String REFERENCE = "reference";
         private static final String NULL_EMAIL = "";
