@@ -58,8 +58,8 @@ public class ApplicationCompleteTaskListForClaimantUpdateHandler extends Dashboa
         CaseData caseData = callbackParams.getCaseData();
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.parseLong(caseData.getParentCaseReference()));
         CaseData parentCaseData = caseDetailsConverter.toCaseData(caseDetails);
-        boolean allApplicationsOrderMade = Objects.nonNull(parentCaseData.getClaimantGaAppDetails()) ?
-            parentCaseData.getClaimantGaAppDetails().stream()
+        boolean allApplicationsOrderMade = Objects.nonNull(parentCaseData.getClaimantGaAppDetails())
+            ? parentCaseData.getClaimantGaAppDetails().stream()
             .map(Element::getValue)
             .allMatch(gaDetails -> gaDetails.getCaseState().equals(ORDER_MADE.getDisplayedValue())) : false;
 
