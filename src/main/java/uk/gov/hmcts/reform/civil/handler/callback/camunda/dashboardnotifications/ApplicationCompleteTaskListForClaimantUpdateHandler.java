@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 
 import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_COMPLETE_CLAIMANT;
@@ -57,9 +58,10 @@ public class ApplicationCompleteTaskListForClaimantUpdateHandler extends Dashboa
         CaseData caseData = callbackParams.getCaseData();
         CaseDetails caseDetails = coreCaseDataService.getCase(Long.parseLong(caseData.getParentCaseReference()));
         CaseData parentCaseData = caseDetailsConverter.toCaseData(caseDetails);
-        boolean allApplicationsOrderMade = parentCaseData.getClaimantGaAppDetails().stream()
+        boolean allApplicationsOrderMade = Objects.nonNull(parentCaseData.getClaimantGaAppDetails()) ?
+            parentCaseData.getClaimantGaAppDetails().stream()
             .map(Element::getValue)
-            .allMatch(gaDetails -> gaDetails.getCaseState().equals(ORDER_MADE.getDisplayedValue()));
+            .allMatch(gaDetails -> gaDetails.getCaseState().equals(ORDER_MADE.getDisplayedValue())) : false;
 
         return caseData.getIsGaApplicantLip() == YesOrNo.YES && allApplicationsOrderMade;
     }
