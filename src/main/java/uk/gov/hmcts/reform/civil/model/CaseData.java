@@ -345,6 +345,7 @@ public class CaseData implements MappableObject {
     private String caseNameGaInternal;
     private String claimantBilingualLanguagePreference;
     private RespondentLiPResponse respondent1LiPResponse;
+    private YesOrNo bilingualHint;
     private YesOrNo applicantBilingualLanguagePreference;
     private YesOrNo respondentBilingualLanguagePreference;
 
@@ -356,30 +357,6 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean isHWFTypeAdditional() {
         return getHwfFeeType() == FeeType.ADDITIONAL;
-    }
-
-    @JsonIgnore
-    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
-        if (YES.equals(parentClaimant)) {
-            return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
-        } else {
-            return Objects.nonNull(respondent1LiPResponse)
-                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
-        }
-    }
-
-    @JsonIgnore
-    public boolean isRespondentBilingual(YesOrNo parentClaimant) {
-        if (YES.equals(parentClaimant)) {
-            return Objects.nonNull(respondent1LiPResponse)
-                && Objects.nonNull(respondent1LiPResponse.getRespondent1ResponseLanguage())
-                && !respondent1LiPResponse.getRespondent1ResponseLanguage().equals(Language.ENGLISH.name());
-        } else {
-            return Objects.nonNull(claimantBilingualLanguagePreference)
-                && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
-        }
     }
 
     @JsonIgnore
@@ -399,17 +376,6 @@ public class CaseData implements MappableObject {
             .map(GAUrgencyRequirement::getGeneralAppUrgency)
             .filter(urgency -> urgency == YES)
             .isPresent();
-    }
-
-    @JsonIgnore
-    public boolean isApplicantBilingual(YesOrNo parentClaimant) {
-        if (YES.equals(parentClaimant)) {
-            return Objects.nonNull(applicantBilingualLanguagePreference)
-                && applicantBilingualLanguagePreference.equals(YES);
-        } else {
-            return Objects.nonNull(respondentBilingualLanguagePreference)
-                && respondentBilingualLanguagePreference.equals(YES);
-        }
     }
 
     @JsonIgnore
@@ -456,4 +422,5 @@ public class CaseData implements MappableObject {
                 && !claimantBilingualLanguagePreference.equals(Language.ENGLISH.name());
         }
     }
+
 }

@@ -145,7 +145,8 @@ public class HwfNotificationServiceTest {
             .build();
 
     private static final CaseData CIVIL_WELSH_CLA = CaseData.builder().claimantBilingualLanguagePreference("WELSH").build();
-    private static final CaseData CIVIL_WELSH_DEF = CaseData.builder().respondent1LiPResponse(
+    private static final CaseData CIVIL_WELSH_DEF = CaseData.builder()
+        .respondent1LiPResponse(
         RespondentLiPResponse.builder().respondent1ResponseLanguage("BOTH").build()
     ).build();
 
@@ -166,8 +167,7 @@ public class HwfNotificationServiceTest {
                 EMAIL_TEMPLATE_HWF_PAYMENT_OUTCOME);
         when(notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()).thenReturn(
             EMAIL_TEMPLATE_HWF_PAYMENT_OUTCOME_WLESH);
-
-	when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeededWelsh()).thenReturn(
+        when(notificationsProperties.getNotifyApplicantForHwFMoreInformationNeededWelsh()).thenReturn(
             EMAIL_TEMPLATE_MORE_INFO_HWF_BILINGUAL);
         when(notificationsProperties.getNotifyApplicantForHwfUpdateRefNumberBilingual()).thenReturn(
             EMAIL_TEMPLATE_UPDATE_REF_NUMBER_BILINGUAL);
@@ -211,6 +211,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(MORE_INFORMATION_HWF_GA).build();
         CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .helpWithFeesMoreInformationGa(HelpWithFeesMoreInformation.builder()
                                                .hwFMoreInfoDocumentDate(NOW)
                                                .hwFMoreInfoRequiredDocuments(
@@ -263,6 +264,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(MORE_INFORMATION_HWF_GA).build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
             .helpWithFeesMoreInformationAdditional(HelpWithFeesMoreInformation.builder()
                                                        .hwFMoreInfoDocumentDate(NOW)
@@ -373,6 +375,7 @@ public class HwfNotificationServiceTest {
             .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
             .build();
         CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
             .gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -415,7 +418,8 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(UPDATE_HELP_WITH_FEE_NUMBER_GA)
             .build();
-        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails).build();
+        CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE).additionalHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
         // When
@@ -458,7 +462,8 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(INVALID_HWF_REFERENCE_GA)
             .build();
-        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE).gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
@@ -505,6 +510,7 @@ public class HwfNotificationServiceTest {
             .build();
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO).additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -575,7 +581,8 @@ public class HwfNotificationServiceTest {
             .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
 
-        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE).gaHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
@@ -626,6 +633,7 @@ public class HwfNotificationServiceTest {
             .build();
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
             .additionalHwfDetails(hwfeeDetails).build();
 
@@ -674,7 +682,8 @@ public class HwfNotificationServiceTest {
             .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
             .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
-        CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails).build();
+        CaseData caseData = GA_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE).gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_CLA);
         // When
@@ -721,6 +730,7 @@ public class HwfNotificationServiceTest {
             .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
+            .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
             .additionalHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -822,6 +832,7 @@ public class HwfNotificationServiceTest {
             .build();
 
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails)
+            .parentClaimantIsApplicant(YesOrNo.YES)
             .parentCaseReference(GA_REFERENCE).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);

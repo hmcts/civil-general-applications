@@ -78,7 +78,7 @@ public class HwfNotificationService implements NotificationData {
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getParentCaseReference().toString(),
+                CASE_REFERENCE, caseData.getParentCaseReference(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
                 TYPE_OF_FEE, caseData.getHwfFeeType().getLabel(),
                 TYPE_OF_FEE_WELSH, caseData.getHwfFeeType().getLabelInWelsh(),
@@ -184,7 +184,7 @@ public class HwfNotificationService implements NotificationData {
                 CaseEvent.PARTIAL_REMISSION_HWF_GA,
                 notificationsProperties.getNotifyApplicantForHwfPartialRemissionBilingual(),
                 CaseEvent.FEE_PAYMENT_OUTCOME_GA,
-                notificationsProperties.getNotifyApplicantForHwfPaymentOutcome()
+                notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             );
         }
         return emailTemplatesBilingual.get(hwfEvent);
