@@ -30,4 +30,11 @@ public class FreeFormOrder implements MappableObject {
     private final String defendant2Name;
     private final String claimant1Name;
     private final String claimant2Name;
+
+    private final String partyName;
+    private final String partyAddressAddressLine1;
+    private final String partyAddressAddressLine2;
+    private final String partyAddressAddressLine3;
+    private final String partyAddressPostTown;
+    private final String partyAddressPostCode;
 }
