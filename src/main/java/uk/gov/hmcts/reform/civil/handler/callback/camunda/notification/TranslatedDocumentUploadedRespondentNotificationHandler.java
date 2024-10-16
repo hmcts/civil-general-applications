@@ -100,8 +100,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                                                                                   respondentSolicitor.getValue()
                                                                                       .getEmail(),
                                                                                   addTemplate(
-                                                                                      caseData,
-                                                                                      civilCaseData
+                                                                                      caseData
                                                                                   ),
                                                                                   addPropertiesForRespondent(
                                                                                       caseData,
@@ -118,9 +117,9 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
         return AboutToStartOrSubmitCallbackResponse.builder().build();
     }
 
-    private String addTemplate(CaseData caseData, CaseData civilCaseData) {
+    private String addTemplate(CaseData caseData) {
         if (gaForLipService.isLipResp(caseData)) {
-            if (civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())) {
+            if (caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())) {
                 return notificationsProperties.getNotifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual();
             }
             return notificationsProperties.getLipGeneralAppRespondentEmailTemplate();

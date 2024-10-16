@@ -79,16 +79,16 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
         caseData = solicitorEmailValidation.validateSolicitorEmail(civilCaseData, caseData);
         notificationService.sendMail(
             caseData.getGeneralAppApplnSolicitor().getEmail(),
-            addTemplate(caseData, civilCaseData),
+            addTemplate(caseData),
             addProperties(caseData),
             String.format(REFERENCE_TEMPLATE, caseData.getCcdCaseReference())
         );
         return AboutToStartOrSubmitCallbackResponse.builder().build();
     }
 
-    private String addTemplate(CaseData caseData, CaseData civilCaseData) {
+    private String addTemplate(CaseData caseData) {
         if (gaForLipService.isLipApp(caseData)) {
-            if (civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())) {
+            if (caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())) {
                 return notificationsProperties.getNotifyApplicantLiPTranslatedDocumentUploadedWhenParentCaseInBilingual();
             }
             return notificationsProperties.getLipGeneralAppApplicantEmailTemplate();
