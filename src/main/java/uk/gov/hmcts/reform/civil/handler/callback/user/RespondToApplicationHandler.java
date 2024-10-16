@@ -336,7 +336,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         GAHearingDetails gaHearingDetailsResp;
         String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
         if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
-            && (caseData.getHearingDetailsResp().getHearingPreferredLocation() != null)) {
+            && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation())
+            && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue())) {
             String applicationLocationLabel = caseData.getHearingDetailsResp()
                 .getHearingPreferredLocation().getValue()
                 .getLabel();
