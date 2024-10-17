@@ -24,12 +24,15 @@ public interface NotificationData {
     String APPLICANT_NAME = "applicantName";
     String HWF_REFERENCE_NUMBER = "hwFReferenceNumber";
     String TYPE_OF_FEE = "typeOfFee";
+    String TYPE_OF_FEE_WELSH = "typeOfFeeWelsh";
     String HWF_MORE_INFO_DATE = "date";
     String HWF_MORE_INFO_DOCUMENTS = "documents";
+    String HWF_MORE_INFO_DOCUMENTS_WELSH  = "documentsWelsh";
     String PART_AMOUNT = "partAmount";
     String REMAINING_AMOUNT = "remainingAmount";
     String FEE_AMOUNT = "amount";
     String NO_REMISSION_REASONS = "reasons";
+    String NO_REMISSION_REASONS_WELSH = "reasonsWelsh";
 
     Map<String, String> addProperties(CaseData caseData);
 
