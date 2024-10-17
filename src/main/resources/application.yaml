@@ -50,7 +50,7 @@ spring:
 
 location:
   api:
-    baseUrl: ${GENAPP_LRD_URL:http://localhost:6669}
+    baseUrl: ${GENAPP_LRD_URL:http://localhost:8765}
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.civil.controllers
@@ -139,7 +139,9 @@ notifications:
   generalApplicationRespondentEmailTemplate: "487ecc1a-5ec6-4d04-ba13-d92e27ef805f"
   urgentGeneralAppRespondentEmailTemplate: "3ae23a46-a83b-4768-a066-198e80958cea"
   lipGeneralAppRespondentEmailTemplate: "39d8c00f-2597-4e39-80a9-0f53c05715be"
+  lipGeneralAppRespondentEmailTemplateInWelsh: "acc28d80-8e15-4b8f-a439-e990bbddeea4"
   lipGeneralAppApplicantEmailTemplate: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
+  lipGeneralAppApplicantEmailTemplateInWelsh: "954f1d99-eb42-4151-b799-157c969f043f"
   withNoticeUpdateRespondentEmailTemplate: "65da2ccc-61c6-4a8a-8f82-7a3b3029e73f"
   writtenRepConcurrentRepresentationApplicantEmailTemplate : "f55694b9-04e6-4a17-bec0-09255e5f096e"
   writtenRepConcurrentRepresentationRespondentEmailTemplate : "df663c94-5e87-457a-9e85-723245da70f1"
@@ -166,6 +168,11 @@ notifications:
   notifyApplicantForHwfPartialRemission: "2c5c5cae-f1b1-41b5-afe5-0ce2e68f8d3c"
   notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
   notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
+  notifyApplicantForHwfInvalidRefNumberBilingual: "8950e206-6d15-4575-9d99-734908389fa7"
+  notifyApplicantForHwFMoreInformationNeededWelsh: "65b3524b-b58c-4cdb-b8b5-5fc2cec505a5"
+  notifyApplicantForHwfNoRemissionWelsh: "f9d2f0db-2ae4-4691-8076-bfbb82548846"
+  notifyApplicantForHwfUpdateRefNumberBilingual: "a7c206b5-8a27-4419-83ff-61351cbc69fb"
+  notifyApplicantForHwfPartialRemissionBilingual: "5bbd4518-5501-4737-8a1e-a6adacd5e679"
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find

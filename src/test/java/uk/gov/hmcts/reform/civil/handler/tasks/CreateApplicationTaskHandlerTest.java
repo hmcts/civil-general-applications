@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
@@ -574,6 +575,38 @@ public class CreateApplicationTaskHandlerTest {
                                      .build())
                 .build();
         }
+
+        @Test
+        void shouldSetApplicantBilingualFlagClaimantIsApplicant() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
+            generalApplication.setParentClaimantIsApplicant(YES);
+            buildData(generalApplication, NO, NO, false, true, false);
+        }
+
+        @Test
+        void shouldSetApplicantBilingualFlagDefendantIsApplicant() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
+            generalApplication.setParentClaimantIsApplicant(NO);
+            buildData(generalApplication, NO, NO, false, true, false);
+        }
+
+        @Test
+        void shouldSetRespondentBilingualFlagClaimantIsApplicant() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
+            generalApplication.setParentClaimantIsApplicant(YES);
+            buildData(generalApplication, NO, NO, false, false, true);
+        }
+
+        @Test
+        void shouldSetRespondentBilingualFlagDefendantIsApplicant() {
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
+            generalApplication.setParentClaimantIsApplicant(NO);
+            buildData(generalApplication, NO, NO, false, false, true);
+        }
     }
 
     @Nested
@@ -805,6 +838,13 @@ public class CreateApplicationTaskHandlerTest {
     public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
                               YesOrNo respondent2SameLegalRepresentative,
                               boolean addEvidenceDoc) {
+        return buildData(generalApplication, addApplicant2, respondent2SameLegalRepresentative,
+                         addEvidenceDoc, false, false);
+    }
+
+    public CaseData buildData(GeneralApplication generalApplication, YesOrNo addApplicant2,
+                              YesOrNo respondent2SameLegalRepresentative,
+                              boolean addEvidenceDoc, boolean claimantBilingual, boolean defendantBilingual) {
         generalApplications = getGeneralApplications(generalApplication);
         generalApplicationsDetailsList = Lists.newArrayList();
         gaDetailsMasterCollection = Lists.newArrayList();
@@ -842,6 +882,12 @@ public class CreateApplicationTaskHandlerTest {
             .processInstanceId(PROCESS_INSTANCE_ID).build()).build();
         caseData = caseData.toBuilder()
                 .generalAppEvidenceDocument(generalAppEvidenceDocument).build();
+        caseData = caseData.toBuilder()
+            .claimantBilingualLanguagePreference(claimantBilingual ? "BOTH" : null)
+            .respondent1LiPResponse(defendantBilingual
+            ? RespondentLiPResponse.builder().respondent1ResponseLanguage("BOTH").build()
+            : null)
+            .build();
         VariableMap variables = Variables.createVariables();
         variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
         variables.putValue(FLOW_FLAGS, Map.of());
@@ -875,6 +921,21 @@ public class CreateApplicationTaskHandlerTest {
             "isDocumentVisible", generalApplication.getIsDocumentVisible());
         map.put("parentCaseReference", CASE_ID);
         map.put("applicationTypes", GA_CASE_TYPES);
+        if (generalApplication.getParentClaimantIsApplicant() == YES) {
+            if (claimantBilingual) {
+                map.put("applicantBilingualLanguagePreference", YES);
+            }
+            if (defendantBilingual) {
+                map.put("respondentBilingualLanguagePreference", YES);
+            }
+        } else {
+            if (claimantBilingual) {
+                map.put("respondentBilingualLanguagePreference", YES);
+            }
+            if (defendantBilingual) {
+                map.put("applicantBilingualLanguagePreference", YES);
+            }
+        }
 
         when(coreCaseDataService.createGeneralAppCase(anyMap())).thenReturn(caseData);
 
