@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +30,7 @@ public class HearingScheduledNotificationService implements NotificationData {
     private final NotificationsProperties notificationProperties;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final CoreCaseDataService coreCaseDataService;
-    private final Map<String, String> customProps;
+    private final Map<String, String> customProps = new HashMap<>();
     private final GaForLipService gaForLipService;
     private static final String REFERENCE_TEMPLATE_HEARING = "general-apps-notice-of-hearing-%s";
     private static final String RESPONDENT = "respondent";
@@ -99,10 +100,16 @@ public class HearingScheduledNotificationService implements NotificationData {
 
         sendNotification(caseData,  caseData.getGeneralAppApplnSolicitor().getEmail(),
                          gaForLipService.isLipApp(caseData)
-                             ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                             ? getLiPApplicantTemplates(civilCaseData, caseData)
                              : notificationProperties.getHearingNoticeTemplate(), APPLICANT);
 
         return caseData;
+    }
+
+    private String getLiPApplicantTemplates(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
 
     public CaseData sendNotificationForDefendant(CaseData caseData) throws NotificationException {
@@ -119,9 +126,15 @@ public class HearingScheduledNotificationService implements NotificationData {
         respondentSolicitor.forEach((respondent) -> sendNotification(
             updatedCaseData,
             respondent.getValue().getEmail(), gaForLipService.isLipResp(updatedCaseData)
-                ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                ? getLiPRespondentTemplate(civilCaseData, updatedCaseData)
                 : notificationProperties.getHearingNoticeTemplate(), RESPONDENT));
 
         return caseData;
+    }
+
+    private String getLiPRespondentTemplate(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 }

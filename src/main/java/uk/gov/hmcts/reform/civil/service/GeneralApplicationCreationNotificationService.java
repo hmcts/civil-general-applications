@@ -37,6 +37,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     private final GaForLipService gaForLipService;
 
     private final SolicitorEmailValidation solicitorEmailValidation;
+    private final NotificationsProperties notificationsProperties;
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
 
@@ -60,7 +61,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                 .forEach((RS) ->
                              sendNotificationToGeneralAppRespondent(updatedCaseData,
                                                                     RS.getValue().getEmail(),
-                                     getTemplate(updatedCaseData, false)
+                                     getTemplate(updatedCaseData, false, civilCaseData)
                              ));
         }
 
@@ -81,7 +82,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                              sendNotificationToGeneralAppRespondent(
                                  updatedCaseData,
                                  RS.getValue().getEmail(),
-                                 getTemplate(updatedCaseData, true)));
+                                 getTemplate(updatedCaseData, true, civilCaseData)));
         }
 
         return caseData;
@@ -94,15 +95,20 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             && caseData.getGeneralAppPBADetails().getPaymentDetails().getStatus().equals(PaymentStatus.SUCCESS)));
     }
 
-    private String getTemplate(CaseData caseData, boolean urgent) {
+    private String getTemplate(CaseData caseData, boolean urgent, CaseData civilCaseData) {
         if (gaForLipService.isLipResp(caseData)) {
-            return notificationProperties
-                    .getLipGeneralAppRespondentEmailTemplate();
+            return getLiPTemplate(civilCaseData, caseData);
         } else {
             return urgent ? notificationProperties
                     .getUrgentGeneralAppRespondentEmailTemplate() : notificationProperties
                     .getGeneralApplicationRespondentEmailTemplate();
         }
+    }
+
+    private String getLiPTemplate(CaseData civilCaseData, CaseData caseData) {
+        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
@@ -136,6 +142,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
             GA_LIP_RESP_NAME, lipRespName,
+
             CASE_TITLE, Objects.requireNonNull(caseTitle)
         );
     }
