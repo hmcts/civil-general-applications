@@ -170,7 +170,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
-        caseDataBuilder.bilingualHint(gaForLipService.anyWelshNotice( caseData) ? YES : NO);
+        caseDataBuilder.bilingualHint(gaForLipService.anyWelshNotice(caseData) ? YES : NO);
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
