@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -834,6 +835,7 @@ public class ParentCaseUpdateHelper {
             .caseManagementCategory(GACaseManagementCategory.builder().build())
             .locationName(EMPTY)
             .generalAppHearingDate(GAHearingDateGAspec.builder().build())
+            .certOfSC(CertOfSC.builder().build())
             .applicantPartyName(EMPTY).build();
 
         return applicationBuilder.build();

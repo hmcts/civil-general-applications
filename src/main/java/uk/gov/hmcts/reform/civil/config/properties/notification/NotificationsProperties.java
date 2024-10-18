@@ -21,7 +21,13 @@ public class NotificationsProperties {
     private String lipGeneralAppRespondentEmailTemplate;
 
     @NotEmpty
+    private String lipGeneralAppRespondentEmailTemplateInWelsh;
+
+    @NotEmpty
     private String lipGeneralAppApplicantEmailTemplate;
+
+    @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplateInWelsh;
 
     @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
@@ -105,5 +111,16 @@ public class NotificationsProperties {
     @NotEmpty
     private String notifyLRTranslatedDocumentUploaded;
 
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeededWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfNoRemissionWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemissionBilingual;
 
 }
