@@ -132,7 +132,8 @@ public class DocUploadNotificationServiceTest {
 
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
-            CaseData caseData = getCaseData(true, YES, NO);
+            CaseData caseData =
+                getCaseData(true, YES, NO).toBuilder().applicantBilingualLanguagePreference(YES).build();
             CaseData claimantClaimIssueFlag = CaseData.builder().applicantBilingualLanguagePreference(YES)
                 .claimantBilingualLanguagePreference("WELSH").build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
@@ -182,7 +183,7 @@ public class DocUploadNotificationServiceTest {
             respondentSols.add(element(respondent1));
 
             CaseData caseData = getCaseData(true, NO, YES).toBuilder()
-                .generalAppRespondentSolicitors(respondentSols).build();
+                .generalAppRespondentSolicitors(respondentSols).respondentBilingualLanguagePreference(YES).build();
             CaseData claimantClaimIssueFlag = CaseData.builder().respondentBilingualLanguagePreference(YES)
                 .respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
