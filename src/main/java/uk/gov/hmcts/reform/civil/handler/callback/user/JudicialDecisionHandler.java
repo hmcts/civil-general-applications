@@ -712,10 +712,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 case LIST_FOR_A_HEARING:
                 case FREE_FORM_ORDER:
                 case MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS:
-                    return gaForLipService.anyWelshNotice(civilCaseData, caseData) ? YES : NO;
+                    return gaForLipService.anyWelshNotice(caseData) ? YES : NO;
                 case MAKE_AN_ORDER:
                 case REQUEST_MORE_INFO:
-                    return gaForLipService.anyWelsh(civilCaseData, caseData) ? YES : NO;
+                    return gaForLipService.anyWelsh(caseData) ? YES : NO;
                 default:
                     return NO;
             }
