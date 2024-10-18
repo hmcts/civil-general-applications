@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -51,13 +53,23 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
     private GeneralApplicationAfterPaymentCallbackHandler handler;
     @Autowired
     private ObjectMapper objectMapper;
-
     @MockBean
     private GaForLipService gaForLipService;
 
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
     private static final Long PARENT_CCD_REF = 1645779506193000L;
+
+    @Test
+    void shouldTriggerCoscBusinessProcess() {
+        CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
+        caseData = addGeneralAppType(caseData, GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID);
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(false);
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_COSC_APPLICATION_AFTER_PAYMENT.name());
+    }
 
     @Test
     void shouldTriggerTheEventAndAboutToSubmit() {
@@ -146,4 +158,12 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
             .generalAppPBADetails(pbaDetails)
             .build();
     }
+
+    private CaseData addGeneralAppType(CaseData caseData, GeneralApplicationTypes generalApplicationTypes) {
+        return caseData.toBuilder().generalAppType(
+                GAApplicationType.builder().types(List.of(generalApplicationTypes))
+                    .build())
+            .build();
+    }
 }
+

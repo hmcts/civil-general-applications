@@ -7,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -25,9 +24,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.STRING_CONSTANT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
@@ -72,7 +74,7 @@ public class DocUploadDashboardNotificationServiceTest {
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .applicationIsUncloakedOnce(YES)
                 .parentClaimantIsApplicant(YES)
                 .uploadDocument(uploadDocumentByApplicant)
@@ -124,7 +126,7 @@ public class DocUploadDashboardNotificationServiceTest {
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .applicationIsUncloakedOnce(YES)
                 .parentClaimantIsApplicant(YES)
                 .uploadDocument(uploadDocumentByApplicant)
@@ -169,7 +171,7 @@ public class DocUploadDashboardNotificationServiceTest {
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .applicationIsUncloakedOnce(YES)
                 .parentClaimantIsApplicant(YES)
                 .uploadDocument(uploadDocumentByApplicant)
@@ -221,7 +223,7 @@ public class DocUploadDashboardNotificationServiceTest {
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .parentClaimantIsApplicant(YES)
                 .uploadDocument(uploadDocumentByApplicant)
@@ -251,6 +253,211 @@ public class DocUploadDashboardNotificationServiceTest {
         }
 
         @Test
+        void shouldCreateResponseDashboardNotificationWhenConsentOrderForRespondent() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType("Witness")
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl(
+                                                                                  "http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(NO)
+                .generalAppConsentOrder(YES)
+                .parentClaimantIsApplicant(YES)
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .generalAppConsentOrder(YES)
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("123456789").forename("GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                .generalAppRespondentSolicitors(gaRespSolicitors)
+
+                .build();
+
+            docUploadDashboardNotificationService.createResponseDashboardNotification(
+                caseData,
+                "RESPONDENT",
+                "BEARER_TOKEN"
+            );
+
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldCreateResponseDashboardNotificationWhenConsentOrderForApplicant() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType("Witness")
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl(
+                                                                                  "http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(NO)
+                .generalAppConsentOrder(YES)
+                .parentClaimantIsApplicant(YES)
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .generalAppConsentOrder(YES)
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("123456789").forename("GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                .generalAppRespondentSolicitors(gaRespSolicitors)
+
+                .build();
+
+            docUploadDashboardNotificationService.createResponseDashboardNotification(
+                caseData,
+                "APPLICANT",
+                "BEARER_TOKEN"
+            );
+
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldNotCreateResponseDashboardNotificationWhenConsentOrderForApplicant() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType("Witness")
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl(
+                                                                                  "http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(NO)
+                .generalAppConsentOrder(NO)
+                .parentClaimantIsApplicant(YES)
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("123456789").forename("GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                .generalAppRespondentSolicitors(gaRespSolicitors)
+
+                .build();
+
+            docUploadDashboardNotificationService.createResponseDashboardNotification(
+                caseData,
+                "APPLICANT ONE",
+                "BEARER_TOKEN"
+            );
+
+            verifyNoInteractions(dashboardApiClient);
+        }
+
+        @Test
+        void shouldNotCreateResponseDashboardNotificationWhenConsentOrderForRespondent() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType("Witness")
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl(
+                                                                                  "http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
+            gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
+                                             .id(STRING_CONSTANT)
+                                             .email(DUMMY_EMAIL)
+                                             .organisationIdentifier("2").build()));
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(NO)
+                .generalAppConsentOrder(NO)
+                .parentClaimantIsApplicant(YES)
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("123456789").forename("GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+                .generalAppRespondentSolicitors(gaRespSolicitors)
+
+                .build();
+
+            docUploadDashboardNotificationService.createResponseDashboardNotification(
+                caseData,
+                "RESPONDENT",
+                "BEARER_TOKEN"
+            );
+
+            verifyNoInteractions(dashboardApiClient);
+        }
+
+        @Test
         void shouldNotCreateDashboardNotificationWhenRoleIsNotApplicantOrRespondent() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
@@ -266,7 +473,7 @@ public class DocUploadDashboardNotificationServiceTest {
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .parentClaimantIsApplicant(YES)
                 .uploadDocument(uploadDocumentByApplicant)

@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -205,10 +206,13 @@ public class RespondWrittenRepresentationHandlerTest extends BaseCallbackHandler
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
         CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
-        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
 
         handler.handle(params);
         verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
+
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
