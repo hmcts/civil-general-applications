@@ -110,8 +110,7 @@ public class NotificationsProperties {
     private String notifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual;
     @NotEmpty
     private String notifyLRTranslatedDocumentUploaded;
-
-
+    
     @NotEmpty
     private String notifyApplicantForHwfInvalidRefNumberBilingual;
     @NotEmpty
