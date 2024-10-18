@@ -203,7 +203,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         void sendNotificationInWelshToRespondentConcurrentWrittenRep_AddlnPayment() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
-                                .toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build());
+                                .toBuilder().respondentBilingualLanguagePreference(YES)
+                                .ccdState(APPLICATION_ADD_PAYMENT).build());
 
             CaseData claimRespondentResponseLan = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
