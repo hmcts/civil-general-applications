@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -201,7 +201,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
-            CaseData claimRespondentResponseLan = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
+            CaseData claimRespondentResponseLan = CaseData.builder().respondentBilingualLanguagePreference(YES)
+                .respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
             gaNotificationService.sendNotification(caseData);

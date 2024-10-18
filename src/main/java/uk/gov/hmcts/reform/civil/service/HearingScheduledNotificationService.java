@@ -100,14 +100,14 @@ public class HearingScheduledNotificationService implements NotificationData {
 
         sendNotification(caseData,  caseData.getGeneralAppApplnSolicitor().getEmail(),
                          gaForLipService.isLipApp(caseData)
-                             ? getLiPApplicantTemplates(civilCaseData, caseData)
+                             ? getLiPApplicantTemplates(caseData)
                              : notificationProperties.getHearingNoticeTemplate(), APPLICANT);
 
         return caseData;
     }
 
-    private String getLiPApplicantTemplates(CaseData civilCaseData, CaseData caseData) {
-        return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+    private String getLiPApplicantTemplates(CaseData caseData) {
+        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
             ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }

@@ -35,7 +35,7 @@ public class DocUploadNotificationService implements NotificationData {
         if (null != email) {
             notificationService.sendMail(
                     email,
-                    gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(civilCaseData, caseData)
+                    gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                         : notificationProperties.getEvidenceUploadTemplate(),
                     addProperties(caseData),
                     String.format(
@@ -56,7 +56,7 @@ public class DocUploadNotificationService implements NotificationData {
                     notificationService.sendMail(
                             respondentSolicitor.getValue().getEmail(),
                             gaForLipService.isLipResp(caseData)
-                                ? getLiPRespondentTemplate(civilCaseData, caseData)
+                                ? getLiPRespondentTemplate(caseData)
                                 : notificationProperties.getEvidenceUploadTemplate(),
                             addProperties(caseData),
                             String.format(
@@ -67,14 +67,14 @@ public class DocUploadNotificationService implements NotificationData {
                 });
     }
 
-    private String getLiPRespondentTemplate(CaseData civilCaseData, CaseData caseData) {
-        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+    private String getLiPRespondentTemplate(CaseData caseData) {
+        return caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
             ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
-    private String getLiPApplicantTemplate(CaseData civilCaseData, CaseData caseData) {
-        return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+    private String getLiPApplicantTemplate(CaseData caseData) {
+        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
             ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }

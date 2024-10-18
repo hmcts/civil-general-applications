@@ -184,8 +184,10 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForSequentialWrittenOption(YES, NO));
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            CaseData caseData = caseDataForSequentialWrittenOption(YES, NO);
 
-            judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption(YES, NO), APPLICANT);
+            judicialNotificationService.sendNotification(caseData.toBuilder().applicantBilingualLanguagePreference(YES)
+                                                             .build(), APPLICANT);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "ga-judicial-notification-applicant-template-lip-id",
@@ -197,11 +199,15 @@ class JudicialApplicantNotificationServiceTest {
         @Test
         void sendNotificationInWelshApplicantSequentialWrittenRep() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
-                .thenReturn(caseDataForSequentialWrittenOption(YES, NO));
-            CaseData claimRespondentResponseLan = CaseData.builder().claimantBilingualLanguagePreference("WELSH").build();
+                .thenReturn(caseDataForSequentialWrittenOption(YES, NO).toBuilder()
+                                .applicantBilingualLanguagePreference(YES).build());
+            CaseData claimRespondentResponseLan = CaseData.builder().claimantBilingualLanguagePreference("WELSH")
+                .applicantBilingualLanguagePreference(YES).build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
-
-            judicialNotificationService.sendNotification(caseDataForSequentialWrittenOption(YES, NO), APPLICANT);
+            CaseData caseData = caseDataForSequentialWrittenOption(YES, NO);
+            CaseData updatedCasedata = caseData.toBuilder().applicantBilingualLanguagePreference(YES)
+                .build();
+            judicialNotificationService.sendNotification(updatedCasedata, APPLICANT);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 LIP_APPLN_WELSH_TEMPLATE,
