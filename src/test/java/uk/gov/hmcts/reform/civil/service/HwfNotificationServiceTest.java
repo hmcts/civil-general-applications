@@ -27,8 +27,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.No
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.REMAINING_AMOUNT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.TYPE_OF_FEE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.TYPE_OF_FEE_WELSH;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
-import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
+import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
@@ -292,7 +291,7 @@ public class HwfNotificationServiceTest {
 
     private Map<String, String> getNotificationDataMapMoreInfoGa() {
         return Map.of(
-                HWF_MORE_INFO_DATE, formatLocalDate(NOW, DATE),
+                HWF_MORE_INFO_DATE, formatDateInWelsh(NOW),
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
@@ -305,7 +304,7 @@ public class HwfNotificationServiceTest {
 
     private Map<String, String> getNotificationDataMapMoreInfoAdditional() {
         return Map.of(
-                HWF_MORE_INFO_DATE, formatLocalDate(NOW, DATE),
+                HWF_MORE_INFO_DATE, formatDateInWelsh(NOW),
                 CLAIMANT_NAME, APPLICANT,
                 CASE_REFERENCE, GA_REFERENCE,
                 TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
