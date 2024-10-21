@@ -45,6 +45,7 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2Solic
 public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
+    private static final String BOTH = "BOTH";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
@@ -73,7 +74,10 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
-                generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication);
+                boolean claimantBilingual = BOTH.equals(caseData.getClaimantBilingualLanguagePreference());
+                boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
+                    && BOTH.equals(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
+                generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
 
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
@@ -235,7 +239,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         }
     }
 
-    private CaseData createGeneralApplicationCase(String caseId, GeneralApplication generalApplication) {
+    private CaseData createGeneralApplicationCase(String caseId, GeneralApplication generalApplication,
+                                                  boolean claimantBilingual, boolean defendantBilingual) {
         Map<String, Object> map = generalApplication.toMap(mapper);
         map.put("isDocumentVisible", checkVisibility(generalApplication));
         map.put("generalAppNotificationDeadlineDate", generalApplication.getGeneralAppDateDeadline());
@@ -249,6 +254,20 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             map.put("gaAddlDocStaff", addlDoc);
             map.put("gaAddlDocClaimant", addlDoc);
             map.put("generalAppEvidenceDocument", null);
+        }
+        if (claimantBilingual) {
+            if (generalApplication.getParentClaimantIsApplicant() == YES) {
+                map.put("applicantBilingualLanguagePreference", YES);
+            } else {
+                map.put("respondentBilingualLanguagePreference", YES);
+            }
+        }
+        if (defendantBilingual) {
+            if (generalApplication.getParentClaimantIsApplicant() == YES) {
+                map.put("respondentBilingualLanguagePreference", YES);
+            } else {
+                map.put("applicantBilingualLanguagePreference", YES);
+            }
         }
         return coreCaseDataService.createGeneralAppCase(map);
     }

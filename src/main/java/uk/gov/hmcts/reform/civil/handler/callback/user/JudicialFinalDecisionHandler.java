@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -29,7 +31,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHe
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.DetailTextWithDate;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -94,6 +98,10 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private final AssistedOrderFormGenerator assistedOrderFormGenerator;
     private final DeadlinesCalculator deadlinesCalculator;
     private final IdamClient idamClient;
+    private final GaForLipService gaForLipService;
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -161,6 +169,12 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                 .caseNameHmctsInternal(getAllPartyNames(caseData));
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+        if (featureToggleService.isGaForLipsEnabled()) {
+            caseDataBuilder.bilingualHint(gaForLipService.anyWelshNotice(civilCaseData, caseData) ? YES : NO);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .build();
@@ -294,6 +308,9 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
     private CallbackResponse setFinalDecisionBusinessProcess(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        if (featureToggleService.isGaForLipsEnabled()) {
+            caseDataBuilder.bilingualHint(null);
+        }
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))

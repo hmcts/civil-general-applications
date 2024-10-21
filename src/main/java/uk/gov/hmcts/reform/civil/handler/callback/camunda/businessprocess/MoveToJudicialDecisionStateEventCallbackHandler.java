@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
@@ -40,6 +41,7 @@ public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHan
     private final GeneralApplicationDraftGenerator gaDraftGenerator;
     private final AssignCategoryId assignCategoryId;
     private final ObjectMapper objectMapper;
+    private final GaForLipService gaForLipService;
 
     private static final List<CaseEvent> EVENTS = singletonList(CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
 
@@ -62,7 +64,7 @@ public class MoveToJudicialDecisionStateEventCallbackHandler extends CallbackHan
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         log.info("Changing state to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION for caseId: {}", caseId);
         CaseDocument gaDraftDocument;
-        if (isNull(caseData.getJudicialDecision())) {
+        if (isNull(caseData.getJudicialDecision()) && !gaForLipService.isGaForLip(caseData)) {
             gaDraftDocument = gaDraftGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
