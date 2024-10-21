@@ -12,18 +12,19 @@ import uk.gov.hmcts.reform.civil.callback.CallbackType;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.UploadTranslatedDocumentService;
 
 public class UploadTranslatedDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
     private ObjectMapper objectMapper;
-
+    private UploadTranslatedDocumentService uploadTranslatedDocumentService;
     private UploadTranslatedDocumentCallbackHandler handler;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
-        handler = new UploadTranslatedDocumentCallbackHandler(objectMapper);
+        handler = new UploadTranslatedDocumentCallbackHandler(objectMapper, uploadTranslatedDocumentService);
     }
 
     @Nested

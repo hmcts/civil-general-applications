@@ -19,12 +19,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.service.UploadTranslatedDocumentService;
 
 @Service
 @RequiredArgsConstructor
 public class UploadTranslatedDocumentCallbackHandler extends CallbackHandler {
 
     private final ObjectMapper objectMapper;
+    private final UploadTranslatedDocumentService uploadTranslatedDocumentService;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(UPLOAD_TRANSLATED_DOCUMENT);
 
@@ -37,7 +39,8 @@ public class UploadTranslatedDocumentCallbackHandler extends CallbackHandler {
 
     protected CallbackResponse submitUploadTranslatedDocuments(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        //CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        CaseData.CaseDataBuilder caseDataBuilder = uploadTranslatedDocumentService.processTranslatedDocument(caseData);
         CaseData updatedCaseData =
             caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_TRANSLATED_DOCUMENT_GA_LIP)).build();
 

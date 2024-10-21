@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
+import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -116,6 +117,7 @@ public class CaseData implements MappableObject {
     private final GARespondentRepresentative generalAppRespondent1Representative;
     private final String generalAppRespondReason;
     private final String generalAppRespondConsentReason;
+    private List<Element<TranslatedDocument>> translatedDocuments;
     private final List<Element<Document>> generalAppRespondDocument;
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
