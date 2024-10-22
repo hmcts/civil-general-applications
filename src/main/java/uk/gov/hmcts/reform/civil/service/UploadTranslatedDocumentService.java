@@ -67,13 +67,15 @@ public class UploadTranslatedDocumentService {
 
         for (Element<TranslatedDocument> translatedDocumentElement : translatedDocuments) {
             TranslatedDocument translatedDocument = translatedDocumentElement.getValue();
+            DocumentType documentType =
+                translatedDocument.getCorrespondingDocumentType(translatedDocument.getDocumentType());
             CaseDocument caseDocument = CaseDocument.toCaseDocument(
                 translatedDocument.getFile(),
-                translatedDocument.getCorrespondingDocumentType(translatedDocument.getDocumentType())
+                documentType
             );
 
             // Add the document to the correct category based on its type
-            DocumentType documentType = caseDocument.getDocumentType();
+            // DocumentType documentType = caseDocument.getDocumentType();
             categorizedDocuments.computeIfAbsent(documentType, k -> new ArrayList<>())
                 .add(Element.<CaseDocument>builder().value(caseDocument).build());
         }
@@ -95,6 +97,10 @@ public class UploadTranslatedDocumentService {
                 return ofNullable(caseData.getHearingOrderDocument()).orElse(new ArrayList<>());
             case DISMISSAL_ORDER:
                 return ofNullable(caseData.getDismissalOrderDocument()).orElse(new ArrayList<>());
+            case WRITTEN_REPRESENTATION_CONCURRENT:
+                return ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(new ArrayList<>());
+            case WRITTEN_REPRESENTATION_SEQUENTIAL:
+                return ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(new ArrayList<>());
             default:
                 return new ArrayList<>();
         }
@@ -120,12 +126,20 @@ public class UploadTranslatedDocumentService {
             case HEARING_ORDER:
                 caseDataBuilder.hearingOrderDocument(documents);
                 break;
+            case WRITTEN_REPRESENTATION_CONCURRENT:
+                caseDataBuilder.writtenRepConcurrentDocument(documents);
+                break;
+            case WRITTEN_REPRESENTATION_SEQUENTIAL:
+                caseDataBuilder.writtenRepSequentialDocument(documents);
+                break;
             case REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED:
             case JUDGES_DIRECTIONS_APPLICANT_TRANSLATED:
+            case WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED:
                 DocUploadUtils.addToAddl(caseData, caseDataBuilder, documents, DocUploadUtils.APPLICANT, false);
                 break;
             case REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED:
             case JUDGES_DIRECTIONS_RESPONDENT_TRANSLATED:
+            case WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED:
                 DocUploadUtils.addToAddl(caseData, caseDataBuilder, documents, DocUploadUtils.RESPONDENT_ONE, false);
                 break;
 //                caseDataBuilder.orderDocuments(documents);

@@ -19,6 +19,10 @@ import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_FOR
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL;
 
 @Data
 @AllArgsConstructor
@@ -52,6 +56,14 @@ public class TranslatedDocument {
                 return SEND_APP_TO_OTHER_PARTY;
             case DISMISSAL_ORDER:
                 return DISMISSAL_ORDER;
+            case WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL:
+                return WRITTEN_REPRESENTATION_SEQUENTIAL;
+            case WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT:
+                return WRITTEN_REPRESENTATION_CONCURRENT;
+            case WRITTEN_REPRESENTATIONS_APPLICANT:
+                return WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED;
+            case WRITTEN_REPRESENTATIONS_RESPONDENT:
+                return WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED;
             default:
                 throw new DocumentUploadException("No document file type found for Translated document");
         }
