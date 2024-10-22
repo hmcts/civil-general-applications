@@ -61,11 +61,11 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
             return Map.of(
                 CASE_TITLE, Objects.requireNonNull(caseTitle),
                 GA_LIP_APPLICANT_NAME, Objects.requireNonNull(isLipAppName),
-                CASE_REFERENCE, caseData.getCcdCaseReference().toString()
+                CASE_REFERENCE, caseData.getParentCaseReference()
             );
         }
         return Map.of(
-            CASE_REFERENCE, caseData.getCcdCaseReference().toString(),
+            CASE_REFERENCE, caseData.getParentCaseReference(),
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(caseData)
         );
     }

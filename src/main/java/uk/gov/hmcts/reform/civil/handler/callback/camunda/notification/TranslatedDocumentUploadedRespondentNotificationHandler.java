@@ -74,11 +74,11 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
             return Map.of(
                 CASE_TITLE, Objects.requireNonNull(caseTitle),
                 GA_LIP_RESP_NAME, Objects.requireNonNull(isLipResName),
-                CASE_REFERENCE, caseData.getCcdCaseReference().toString()
+                CASE_REFERENCE, caseData.getParentCaseReference()
             );
         }
         return Map.of(
-            CASE_REFERENCE, caseData.getCcdCaseReference().toString(),
+            CASE_REFERENCE, caseData.getParentCaseReference(),
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(respondentSolicitor)
         );
     }
