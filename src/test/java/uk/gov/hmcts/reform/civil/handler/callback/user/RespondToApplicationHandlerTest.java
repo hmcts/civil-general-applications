@@ -48,6 +48,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
@@ -67,9 +68,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION_URGENT_LIP;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
@@ -103,6 +107,8 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private DocUploadDashboardNotificationService dashboardNotificationService;
     @MockBean
     IdamClient idamClient;
     @MockBean
@@ -169,10 +175,24 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
-    void buildResponseConfirmationReturnsCorrectMessage() {
+    void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLip() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
         CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
                                                  CallbackType.SUBMITTED);
         var response = (SubmittedCallbackResponse) handler.handle(params);
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
+        verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
+        assertThat(response).isNotNull();
+        assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_MESSAGE);
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessage() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
+        CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verifyNoInteractions(dashboardNotificationService);
         assertThat(response).isNotNull();
         assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_MESSAGE);
     }
