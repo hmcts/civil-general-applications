@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadExcept
 
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DIRECTION_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_APPLICATION_DRAFT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.JUDGES_DIRECTIONS_APPLICANT_TRANSLATED;
@@ -19,6 +20,8 @@ import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_FOR
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.UPLOADED_DOCUMENT_APPLICANT;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.UPLOADED_DOCUMENT_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_CONCURRENT;
@@ -43,6 +46,7 @@ public class TranslatedDocument {
             case REQUEST_MORE_INFORMATION_RESPONDENT:
                 return REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED;
             case GENERAL_ORDER:
+            case APPROVE_OR_EDIT_ORDER:
                 return GENERAL_ORDER;
             case JUDGES_DIRECTIONS_ORDER:
                 return DIRECTION_ORDER;
@@ -64,6 +68,13 @@ public class TranslatedDocument {
                 return WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED;
             case WRITTEN_REPRESENTATIONS_RESPONDENT:
                 return WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED;
+            case UPLOADED_DOCUMENTS_APPLICANT:
+                return UPLOADED_DOCUMENT_APPLICANT;
+            case UPLOADED_DOCUMENTS_RESPONDENT:
+                return UPLOADED_DOCUMENT_RESPONDENT;
+            case APPLICATION_SUMMARY_DOCUMENT:
+            case APPLICATION_SUMMARY_DOCUMENT_RESPONDED:
+                return GENERAL_APPLICATION_DRAFT;
             default:
                 throw new DocumentUploadException("No document file type found for Translated document");
         }

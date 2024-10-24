@@ -8,9 +8,9 @@ import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadException;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,31 +27,23 @@ public class UploadTranslatedDocumentService {
     private final FeatureToggleService featureToggleService;
     private final AssignCategoryId assignCategoryId;
 
-
     public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData) {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         if (Objects.nonNull(translatedDocuments)) {
-            // Process all translated documents for multiple types
             Map<DocumentType, List<Element<CaseDocument>>>
                 categorizedDocuments = processTranslatedDocuments(translatedDocuments);
 
-            // Update case data with categorized documents
             categorizedDocuments.forEach((documentType, caseDocuments) -> {
                 if (!caseDocuments.isEmpty()) {
-                    // Retrieve and update the appropriate document list based on the document type
                     List<Element<CaseDocument>> existingDocuments = getExistingDocumentsByType(caseData, documentType);
                     existingDocuments.addAll(caseDocuments);
-
-                    // Assign category IDs to the documents
                     assignCategoryId.assignCategoryIdToCollection(
                         existingDocuments,
                         document -> document.getValue().getDocumentLink(),
                         AssignCategoryId.APPLICATIONS
                     );
-
-                    // Update the case data builder with the new documents based on type
                     updateCaseDataBuilderByType(caseData, caseDataBuilder, documentType, existingDocuments);
                 }
             });
@@ -60,7 +52,6 @@ public class UploadTranslatedDocumentService {
         return caseDataBuilder;
     }
 
-    // Helper method to process translated documents and categorize them by document type
     private Map<DocumentType, List<Element<CaseDocument>>> processTranslatedDocuments(
         List<Element<TranslatedDocument>> translatedDocuments) {
         Map<DocumentType, List<Element<CaseDocument>>> categorizedDocuments = new HashMap<>();
@@ -74,8 +65,6 @@ public class UploadTranslatedDocumentService {
                 documentType
             );
 
-            // Add the document to the correct category based on its type
-            // DocumentType documentType = caseDocument.getDocumentType();
             categorizedDocuments.computeIfAbsent(documentType, k -> new ArrayList<>())
                 .add(Element.<CaseDocument>builder().value(caseDocument).build());
         }
@@ -83,7 +72,6 @@ public class UploadTranslatedDocumentService {
         return categorizedDocuments;
     }
 
-    // Helper method to retrieve existing documents by type from case data
     private List<Element<CaseDocument>> getExistingDocumentsByType(CaseData caseData, DocumentType documentType) {
         switch (documentType) {
             case REQUEST_FOR_INFORMATION:
@@ -101,12 +89,13 @@ public class UploadTranslatedDocumentService {
                 return ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(new ArrayList<>());
             case WRITTEN_REPRESENTATION_SEQUENTIAL:
                 return ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(new ArrayList<>());
+            case GENERAL_APPLICATION_DRAFT:
+                return ofNullable(caseData.getGaDraftDocument()).orElse(new ArrayList<>());
             default:
                 return new ArrayList<>();
         }
     }
 
-    // Helper method to update the case data builder based on document type
     private void updateCaseDataBuilderByType(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
                                              DocumentType documentType,
                                              List<Element<CaseDocument>> documents) {
@@ -116,6 +105,7 @@ public class UploadTranslatedDocumentService {
                 break;
             case DISMISSAL_ORDER:
                 caseDataBuilder.dismissalOrderDocument(documents);
+                break;
             case REQUEST_FOR_INFORMATION:
             case SEND_APP_TO_OTHER_PARTY:
                 caseDataBuilder.requestForInformationDocument(documents);
@@ -132,64 +122,23 @@ public class UploadTranslatedDocumentService {
             case WRITTEN_REPRESENTATION_SEQUENTIAL:
                 caseDataBuilder.writtenRepSequentialDocument(documents);
                 break;
+            case GENERAL_APPLICATION_DRAFT:
+                caseDataBuilder.gaDraftDocument(documents);
+                break;
             case REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED:
             case JUDGES_DIRECTIONS_APPLICANT_TRANSLATED:
             case WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED:
+            case UPLOADED_DOCUMENT_APPLICANT:
                 DocUploadUtils.addToAddl(caseData, caseDataBuilder, documents, DocUploadUtils.APPLICANT, false);
                 break;
             case REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED:
             case JUDGES_DIRECTIONS_RESPONDENT_TRANSLATED:
             case WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED:
+            case UPLOADED_DOCUMENT_RESPONDENT:
                 DocUploadUtils.addToAddl(caseData, caseDataBuilder, documents, DocUploadUtils.RESPONDENT_ONE, false);
                 break;
-//                caseDataBuilder.orderDocuments(documents);
-//                break;
-            // Add more cases for other document types
+            default:
+                throw new DocumentUploadException("No document file type found for Translated document");
         }
     }
 }
-
-//    public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData) {
-//        List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
-//        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-//        if (Objects.nonNull(translatedDocuments)) {
-//            for (Element<TranslatedDocument> translateDocument : translatedDocuments) {
-//                CaseDocument caseDocument = CaseDocument.toCaseDocument(
-//                    translateDocument.getValue().getFile(),
-//                    translateDocument.getValue()
-//                        .getCorrespondingDocumentType(translateDocument.getValue().getDocumentType())
-//                );
-//                if (caseDocument.getDocumentType() == DocumentType.REQUEST_FOR_INFORMATION) {
-//
-//                    requestForInformationOrderTranslatedDocs.add(Element.builder().value(caseDocument).build());
-//                }
-//
-//            }
-//        }
-//
-//        if (requestForInformationOrderTranslatedDocs != null) {
-//            List<Element<CaseDocument>> newRequestForInfoDocumentList =
-//                ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
-//            newRequestForInfoDocumentList.addAll(requestForInformationOrderTranslatedDocs);
-//            assignCategoryId.assignCategoryIdToCollection(
-//                newRequestForInfoDocumentList,
-//                document -> document.getValue().getDocumentLink(),
-//                AssignCategoryId.APPLICATIONS
-//            );
-//
-//            caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
-//
-//        }
-//        return caseDataBuilder;
-//    }
-//}
-//newRequestForInfoDocumentList.addAll(wrapElements(caseDocument));
-//
-//                    assignCategoryId.assignCategoryIdToCollection(
-//                        newRequestForInfoDocumentList,
-//                        document -> document.getValue().getDocumentLink(),
-//                        AssignCategoryId.APPLICATIONS
-//                    );
-//
-//                    caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
-

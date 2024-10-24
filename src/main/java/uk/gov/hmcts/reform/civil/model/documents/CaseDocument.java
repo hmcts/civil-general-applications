@@ -31,8 +31,6 @@ public class CaseDocument {
 
     public static String getDocumentName(DocumentType documentType, String documentFileName) {
         switch (documentType) {
-//            case INITIATE_GENERAL_APPLICATION:
-//                return "Supporting evidence";
             case REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED:
             case REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED:
                 return "Additional information";
@@ -42,8 +40,10 @@ public class CaseDocument {
             case WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED:
             case WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED:
                 return "Written representation";
-//            case RESPOND_TO_APPLICATION:
-//                return "Respond evidence";
+            case UPLOADED_DOCUMENT_APPLICANT:
+                return "uploaded documents -applicant";
+            case UPLOADED_DOCUMENT_RESPONDENT:
+                return "uploaded documents - respondent";
             default:
                 return documentFileName;
         }
@@ -57,6 +57,8 @@ public class CaseDocument {
             case JUDGES_DIRECTIONS_APPLICANT_TRANSLATED:
             case WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED:
             case WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED:
+            case UPLOADED_DOCUMENT_RESPONDENT:
+            case UPLOADED_DOCUMENT_APPLICANT:
                 return null;
             default:
                 return documentType;
