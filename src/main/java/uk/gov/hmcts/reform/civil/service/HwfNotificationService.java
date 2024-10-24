@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
+import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
@@ -196,12 +197,13 @@ public class HwfNotificationService implements NotificationData {
                         ? caseData.getHelpWithFeesMoreInformationGa()
                         : caseData.getHelpWithFeesMoreInformationAdditional();
         return Map.of(
-                HWF_MORE_INFO_DATE, formatLocalDate(moreInformation.getHwFMoreInfoDocumentDate(), DATE),
-                HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentList(
-                        moreInformation.getHwFMoreInfoRequiredDocuments()
-                ),
-                HWF_MORE_INFO_DOCUMENTS_WELSH, getMoreInformationDocumentListWelsh(
-                        moreInformation.getHwFMoreInfoRequiredDocuments())
+            HWF_MORE_INFO_DATE, formatLocalDate(moreInformation.getHwFMoreInfoDocumentDate(), DATE),
+            HWF_MORE_INFO_DATE_IN_WELSH, formatDateInWelsh(moreInformation.getHwFMoreInfoDocumentDate()),
+            HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentList(
+                moreInformation.getHwFMoreInfoRequiredDocuments()
+            ),
+            HWF_MORE_INFO_DOCUMENTS_WELSH, getMoreInformationDocumentListWelsh(
+                moreInformation.getHwFMoreInfoRequiredDocuments())
         );
     }
 

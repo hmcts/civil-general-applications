@@ -26,6 +26,7 @@ public interface NotificationData {
     String TYPE_OF_FEE = "typeOfFee";
     String TYPE_OF_FEE_WELSH = "typeOfFeeWelsh";
     String HWF_MORE_INFO_DATE = "date";
+    String HWF_MORE_INFO_DATE_IN_WELSH = "dateInWelsh";
     String HWF_MORE_INFO_DOCUMENTS = "documents";
     String HWF_MORE_INFO_DOCUMENTS_WELSH  = "documentsWelsh";
     String PART_AMOUNT = "partAmount";
