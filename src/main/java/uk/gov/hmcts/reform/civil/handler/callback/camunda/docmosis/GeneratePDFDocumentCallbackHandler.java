@@ -151,12 +151,11 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                  * Generate Judge Request for Information order document with LIP Applicant Post Address
                  * */
                 if (gaForLipService.isLipApp(caseData)) {
-                    postJudgeOrderToLipApplicant = freeFormOrderGenerator.generate(
+
+                    postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
                         civilCaseData,
                         caseData,
-                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                        FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
-                    );
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
                 }
 
                 /*
@@ -164,12 +163,11 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                  * if GA is with notice
                  * */
                 if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
-                    postJudgeOrderToLipRespondent = freeFormOrderGenerator.generate(
+
+                    postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
                         civilCaseData,
                         caseData,
-                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                        FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
-                    );
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
                 }
 
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
@@ -486,13 +484,36 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         } else if (Objects.nonNull(caseData.getJudicialDecision())) {
             if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
 
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * if GA is with notice
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+
+                    postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Applicant Post Address
+                 * */
+                if (gaForLipService.isLipApp(caseData)) {
+
+                    postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
+                List<Element<CaseDocument>> documentList =
+                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
+
                 decision = freeFormOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-
-                List<Element<CaseDocument>> documentList =
-                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
                 documentList.addAll(wrapElements(decision));
                 assignCategoryId.assignCategoryIdToCollection(
@@ -526,6 +547,33 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private CaseDocument generateFreeFormSendLetterDocForApplicant(CaseData civilCaseData, CaseData caseData, String auth) {
+
+        /*
+         * Generate Judge Request for Information order document with LIP Applicant Post Address
+         * */
+        return freeFormOrderGenerator.generate(
+            civilCaseData,
+            caseData,
+            auth,
+            FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+        );
+    }
+
+    private CaseDocument generateFreeFormSendLetterDocForRespondent(CaseData civilCaseData, CaseData caseData, String auth) {
+
+        /*
+         * Generate Judge Request for Information order document with LIP Respondent Post Address
+         * if GA is with notice
+         * */
+        return freeFormOrderGenerator.generate(
+            civilCaseData,
+            caseData,
+            auth,
+            FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+        );
     }
 
     private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {

@@ -342,6 +342,31 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldPrintGenerateFreeFormOrderDocument() {
+            CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
+                .judicialDecision(GAJudicialDecision.builder()
+                                      .decision(GAJudgeDecisionOption.FREE_FORM_ORDER).build())
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(freeFormOrderGenerator, times(2))
+                .generate(any(CaseData.class), any(CaseData.class), eq("BEARER_TOKEN"), any(FlowFlag.class));
+            verify(sendFinalOrderPrintService, times(2))
+                .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
+                                                  any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+        }
+
+        @Test
         void shouldGenerateHearingOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
                 .build();
