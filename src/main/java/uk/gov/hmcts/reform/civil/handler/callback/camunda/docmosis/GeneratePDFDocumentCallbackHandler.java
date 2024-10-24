@@ -174,7 +174,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
 
-                // to do
                 decision = assistedOrderFormGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
