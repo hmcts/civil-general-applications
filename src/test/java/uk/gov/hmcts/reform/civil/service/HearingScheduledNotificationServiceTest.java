@@ -200,6 +200,7 @@ public class HearingScheduledNotificationServiceTest {
             .isGaApplicantLip(YesOrNo.YES)
             .isGaRespondentOneLip(YesOrNo.NO)
             .parentClaimantIsApplicant(YES)
+            .applicantBilingualLanguagePreference(YES)
             .defendant2PartyName(null)
             .build();
         when(solicitorEmailValidation

@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
@@ -203,7 +203,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         void sendNotificationInWelshToRespondentConcurrentWrittenRep_AddlnPayment() {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(NO, YES)
-                                .toBuilder().ccdState(APPLICATION_ADD_PAYMENT).build());
+                                .toBuilder().respondentBilingualLanguagePreference(YES)
+                                .ccdState(APPLICATION_ADD_PAYMENT).build());
 
             CaseData claimRespondentResponseLan = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
