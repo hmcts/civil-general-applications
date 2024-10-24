@@ -172,7 +172,7 @@ notifications:
   notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
   notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
   notifyApplicantForHwfInvalidRefNumberBilingual: "8950e206-6d15-4575-9d99-734908389fa7"
-  notifyApplicantForHwFMoreInformationNeededWelsh: "65b3524b-b58c-4cdb-b8b5-5fc2cec505a5"
+  notifyApplicantForHwFMoreInformationNeededWelsh: "70267e5b-9f11-4549-bc59-56bf7fbdeca7"
   notifyApplicantForHwfNoRemissionWelsh: "f9d2f0db-2ae4-4691-8076-bfbb82548846"
   notifyApplicantForHwfUpdateRefNumberBilingual: "a7c206b5-8a27-4419-83ff-61351cbc69fb"
   notifyApplicantForHwfPartialRemissionBilingual: "5bbd4518-5501-4737-8a1e-a6adacd5e679"
