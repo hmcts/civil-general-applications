@@ -38,21 +38,21 @@ public class GaForLipService {
                 && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 
-    public boolean anyWelsh(CaseData civilCaseData, CaseData caseData) {
+    public boolean anyWelsh(CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
-            return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
-                || civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+            return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+                || caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
         }
         return false;
     }
 
-    public boolean anyWelshNotice(CaseData civilCaseData, CaseData caseData) {
+    public boolean anyWelshNotice(CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
             if (!JudicialDecisionNotificationUtil.isWithNotice(caseData)) {
-                return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
+                return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
             }
-            return civilCaseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
-                || civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+            return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+                || caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
         }
         return false;
     }

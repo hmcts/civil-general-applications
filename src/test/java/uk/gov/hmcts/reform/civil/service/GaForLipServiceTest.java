@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,9 +35,12 @@ public class GaForLipServiceTest {
     @Test
     void shouldReturnAnyTrue_app_is_welsh() {
         CaseData civilCaseData = CaseData.builder()
-            .claimantBilingualLanguagePreference(Language.WELSH.name()).build();
-        CaseData caseData = CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).build();
-        assertThat(gaForLipService.anyWelsh(civilCaseData, caseData)).isTrue();
+            .claimantBilingualLanguagePreference(Language.WELSH.name())
+            .applicantBilingualLanguagePreference(YesOrNo.YES).build();
+        CaseData caseData =
+            CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).applicantBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+        assertThat(gaForLipService.anyWelsh(caseData)).isTrue();
     }
 
     @Test
@@ -45,9 +48,11 @@ public class GaForLipServiceTest {
         CaseData civilCaseData = CaseData.builder()
             .respondent1LiPResponse(RespondentLiPResponse.builder()
                                         .respondent1ResponseLanguage(Language.WELSH.name()).build())
-            .build();
-        CaseData caseData = CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).build();
-        assertThat(gaForLipService.anyWelsh(civilCaseData, caseData)).isTrue();
+            .respondentBilingualLanguagePreference(YesOrNo.YES).build();
+        CaseData caseData =
+            CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).respondentBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+        assertThat(gaForLipService.anyWelsh(caseData)).isTrue();
     }
 
     @Test
@@ -55,7 +60,7 @@ public class GaForLipServiceTest {
         CaseData civilCaseData = CaseData.builder()
             .build();
         CaseData caseData = CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).build();
-        assertThat(gaForLipService.anyWelsh(civilCaseData, caseData)).isFalse();
+        assertThat(gaForLipService.anyWelsh(caseData)).isFalse();
     }
 
     @Test
@@ -63,11 +68,12 @@ public class GaForLipServiceTest {
         CaseData civilCaseData = CaseData.builder()
             .claimantBilingualLanguagePreference(Language.WELSH.name()).build();
         CaseData caseData = CaseData.builder()
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
             .parentClaimantIsApplicant(YesOrNo.YES)
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YesOrNo.YES).build())
             .build();
-        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isTrue();
+        assertThat(gaForLipService.anyWelshNotice(caseData)).isTrue();
     }
 
     @Test
@@ -78,10 +84,11 @@ public class GaForLipServiceTest {
             .build();
         CaseData caseData = CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
+            .respondentBilingualLanguagePreference(YesOrNo.YES)
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YesOrNo.YES).build())
             .build();
-        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isTrue();
+        assertThat(gaForLipService.anyWelshNotice(caseData)).isTrue();
     }
 
     @Test
@@ -93,7 +100,7 @@ public class GaForLipServiceTest {
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YesOrNo.YES).build())
             .build();
-        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isFalse();
+        assertThat(gaForLipService.anyWelshNotice(caseData)).isFalse();
     }
 
     @Test
@@ -107,6 +114,6 @@ public class GaForLipServiceTest {
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YesOrNo.NO).build())
             .build();
-        assertThat(gaForLipService.anyWelshNotice(civilCaseData, caseData)).isFalse();
+        assertThat(gaForLipService.anyWelshNotice(caseData)).isFalse();
     }
 }
