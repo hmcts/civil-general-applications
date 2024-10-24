@@ -39,7 +39,6 @@ public class UploadTranslatedDocumentCallbackHandler extends CallbackHandler {
 
     protected CallbackResponse submitUploadTranslatedDocuments(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        //CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseData.CaseDataBuilder caseDataBuilder = uploadTranslatedDocumentService.processTranslatedDocument(caseData);
         CaseData updatedCaseData =
             caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_TRANSLATED_DOCUMENT_GA_LIP)).build();
