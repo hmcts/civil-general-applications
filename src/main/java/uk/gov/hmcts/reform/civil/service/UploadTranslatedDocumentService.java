@@ -49,7 +49,7 @@ public class UploadTranslatedDocumentService {
                 }
             });
         }
-        caseDataBuilder.translatedDocuments(Collections.emptyList());
+        caseDataBuilder.translatedDocuments(null);
         return caseDataBuilder;
     }
 
