@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.documentmanagement;
 
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 
 public interface DocumentManagementService {
@@ -8,5 +9,7 @@ public interface DocumentManagementService {
     CaseDocument uploadDocument(String authorisation, PDF pdf);
 
     byte[] downloadDocument(String authorisation, String documentPath);
+
+    DownloadedDocumentResponse downloadDocumentWithMetaData(String authorisation, String documentPath);
 
 }

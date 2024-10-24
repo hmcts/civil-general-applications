@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_APPLICATION_LIP;
 
 @Service
 @RequiredArgsConstructor
@@ -47,22 +49,32 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        HearingForm templateData = getTemplateData(caseData, authorisation);
-        DocmosisTemplates template = getTemplate();
+        HearingForm templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        HearingForm templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        return generateDocmosisDocument(templateData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(HearingForm templateData, String authorisation, FlowFlag userType) {
+        DocmosisTemplates template = getTemplate(userType);
         DocmosisDocument document =
-                documentGeneratorService.generateDocmosisDocument(templateData, template);
+            documentGeneratorService.generateDocmosisDocument(templateData, template);
         return documentManagementService.uploadDocument(
-                authorisation,
-                new PDF(
-                        getFileName(template),
-                        document.getBytes(),
-                        DocumentType.HEARING_NOTICE
-                )
+            authorisation,
+            new PDF(
+                getFileName(template),
+                document.getBytes(),
+                DocumentType.HEARING_NOTICE
+            )
         );
     }
 
     @Override
-    public HearingForm getTemplateData(CaseData caseData, String authorisation) {
+    public HearingForm getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         CaseDetails parentCase = coreCaseDataService
                 .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference()));
@@ -73,7 +85,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
         boolean defendant2exists = canViewResp(parentCaseData, caseData, "2")
                 && nonNull(caseData.getDefendant2PartyName());
 
-        return HearingForm.builder()
+        HearingForm.HearingFormBuilder hearingFormBuilder = HearingForm.builder()
             .court(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
             .judgeHearingLocation(caseData.getGaHearingNoticeDetail().getHearingLocation().getValue().getLabel())
             .caseNumber(getCaseNumberFormatted(caseData))
@@ -97,8 +109,22 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
             .claimant2(nonNull(caseData.getClaimant2PartyName()) ? caseData.getClaimant2PartyName() : null)
             .defendant2(nonNull(caseData.getDefendant2PartyName()) ? caseData.getDefendant2PartyName() : null)
             .claimant2Reference(getReference(parentCase, "applicantSolicitor1Reference"))
-            .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"))
-            .build();
+            .defendant2Reference(getReference(parentCase, "respondentSolicitor2Reference"));
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            hearingFormBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
+
+        return hearingFormBuilder.build();
     }
 
     protected String getCaseNumberFormatted(CaseData caseData) {
@@ -169,7 +195,11 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
                         .equals(parseLong(civilGaData.getValue().getCaseLink().getCaseReference())));
     }
 
-    protected DocmosisTemplates getTemplate() {
+    protected DocmosisTemplates getTemplate(FlowFlag userType) {
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return POST_JUDGE_HEARING_APPLICATION_LIP;
+        }
         return HEARING_APPLICATION;
     }
 }
