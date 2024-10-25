@@ -18,6 +18,7 @@ public interface NotificationData {
     String GA_LIP_APPLICANT_NAME = "applicantName";
     String GA_LIP_RESP_NAME = "respondentName";
     String CASE_TITLE = "ClaimantvDefendant";
+    String CLAIM_LEGAL_ORG_NAME_SPEC = "legalOrgName";
 
     //hwf
     String CLAIMANT_NAME = "claimantName";
