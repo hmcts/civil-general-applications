@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
-import uk.gov.hmcts.reform.civil.model.citizenui.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
@@ -132,8 +132,10 @@ public class DocUploadNotificationServiceTest {
 
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
-            CaseData caseData = getCaseData(true, YES, NO);
-            CaseData claimantClaimIssueFlag = CaseData.builder().claimantBilingualLanguagePreference("WELSH").build();
+            CaseData caseData =
+                getCaseData(true, YES, NO).toBuilder().applicantBilingualLanguagePreference(YES).build();
+            CaseData claimantClaimIssueFlag = CaseData.builder().applicantBilingualLanguagePreference(YES)
+                .claimantBilingualLanguagePreference("WELSH").build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
             docUploadNotificationService.notifyApplicantEvidenceUpload(caseData);
             verify(notificationService, times(1)).sendMail(
@@ -181,8 +183,9 @@ public class DocUploadNotificationServiceTest {
             respondentSols.add(element(respondent1));
 
             CaseData caseData = getCaseData(true, NO, YES).toBuilder()
-                .generalAppRespondentSolicitors(respondentSols).build();
-            CaseData claimantClaimIssueFlag = CaseData.builder().respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
+                .generalAppRespondentSolicitors(respondentSols).respondentBilingualLanguagePreference(YES).build();
+            CaseData claimantClaimIssueFlag = CaseData.builder().respondentBilingualLanguagePreference(YES)
+                .respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimantClaimIssueFlag);
             docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
