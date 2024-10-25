@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -85,7 +86,7 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
     }
 
     @Test
-    void shouldGenerateHearingNoticeDocumentWithCoverLetter() {
+    void shouldGenerateHearingNoticeDocumentWithCoverLetterTwice() {
         CaseDocument caseDocument = CaseDocument.builder()
             .documentLink(Document.builder().documentUrl("doc").build()).build();
 
@@ -108,5 +109,30 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
         verify(hearingFormGenerator, times(1)).generate(any(), any());
         verify(hearingFormGenerator, times(2)).generate(any(), any(), any(), any());
         verify(sendFinalOrderPrintService, times(2)).sendJudgeFinalOrderToPrintForLIP(any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldGenerateHearingNoticeDocumentWithCoverLetterOnce() {
+        CaseDocument caseDocument = CaseDocument.builder()
+            .documentLink(Document.builder().documentUrl("doc").build()).build();
+
+        when(hearingFormGenerator.generate(any(), any())).thenReturn(caseDocument);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(true);
+        when(hearingFormGenerator.generate(any(), any(), any(), any())).thenReturn(caseDocument);
+
+        when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+        CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1234").build())
+            .build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getHearingNoticeDocument().size()).isEqualTo(1);
+        verify(hearingFormGenerator, times(1)).generate(any(), any(), any(), any());
+        verify(sendFinalOrderPrintService, times(1)).sendJudgeFinalOrderToPrintForLIP(any(), any(), any(), any(), any());
     }
 }
