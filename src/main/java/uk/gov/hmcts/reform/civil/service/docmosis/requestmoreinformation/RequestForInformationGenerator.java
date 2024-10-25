@@ -18,16 +18,20 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
 
 @Service
 @RequiredArgsConstructor
@@ -39,10 +43,21 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     private final GaForLipService gaForLipService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
+        JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData);
-        DocumentType documentType = getDocumentType(caseData);
+        return generateDocmosisDocument(templateData, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+        JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+
+        return generateDocmosisDocument(templateData, caseData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(JudgeDecisionPdfDocument templateData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(caseData, userType);
+        DocumentType documentType = getDocumentType(caseData, userType);
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -62,7 +77,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -82,13 +97,30 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate())
                 .additionalApplicationFee(getAdditionalApplicationFee(caseData))
                 .applicationCreatedDate(caseData.getCreatedDate().toLocalDate());
-            ;
 
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            judgeDecisionPdfDocumentBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private DocmosisTemplates getDocmosisTemplate(CaseData caseData) {
+    private DocmosisTemplates getDocmosisTemplate(CaseData caseData, FlowFlag userType) {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = getGAJudgeRequestMoreInfoOption(caseData);
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY
+                ? POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP
+                : POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
+        }
 
         if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
             return REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
@@ -96,11 +128,19 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
         return REQUEST_FOR_INFORMATION;
     }
 
-    private DocumentType getDocumentType(CaseData caseData) {
+    private DocumentType getDocumentType(CaseData caseData, FlowFlag userType) {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = getGAJudgeRequestMoreInfoOption(caseData);
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY
+                ? DocumentType.SEND_APP_TO_OTHER_PARTY
+                : DocumentType.REQUEST_FOR_INFORMATION;
+        }
+
         if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
             return DocumentType.SEND_APP_TO_OTHER_PARTY;
         }
+
         return DocumentType.REQUEST_FOR_INFORMATION;
     }
 
