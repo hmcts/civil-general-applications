@@ -40,7 +40,13 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT("Scenario.AAA6.GeneralApps.AdditionalApplicationFeeRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_MORE_INFORMATION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.MoreInfoRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FeePaid.Applicant"),
-    SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FullRemission.Applicant");
+    SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FullRemission.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_CLAIMANT("Scenario.AAA6.GeneralApplication.ViewApplicationActionNeeded.Claimant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT("Scenario.AAA6.GeneralApplication.ViewApplicationInProgress.Claimant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT("Scenario.AAA6.GeneralApplication.ViewApplicationAvailable.Claimant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationActionNeeded.Defendant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationInProgress.Defendant"),
+    SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationAvailable.Defendant");
 
     private final String scenario;
 
