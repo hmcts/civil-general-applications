@@ -13,30 +13,25 @@ public class SimpleCallbackRequestTest {
 
     @BeforeEach
     public void setUp() {
-        // Initialize ObjectMapper for JSON serialization/deserialization
         objectMapper = new ObjectMapper();
     }
 
     @Test
     public void whenBuildingSimpleCallbackRequest_thenShouldCreateValidInstance() {
-        // Arrange
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder()
             .id(1L)
             .build();
 
-        // Act
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(caseDetails)
             .build();
 
-        // Assert
         assertThat(request).isNotNull();
         assertThat(request.getCaseDetails()).isEqualTo(caseDetails);
     }
 
     @Test
     public void whenSerializingSimpleCallbackRequest_thenShouldReturnCorrectJson() throws JsonProcessingException {
-        // Arrange
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder()
             .id(1L)
             .build();
@@ -45,23 +40,18 @@ public class SimpleCallbackRequestTest {
             .caseDetails(caseDetails)
             .build();
 
-        // Act
         String json = objectMapper.writeValueAsString(request);
 
-        // Assert
         assertThat(json).contains("\"case_details\"");
         assertThat(json).contains("\"id\":1");
     }
 
     @Test
     public void whenDeserializingJson_thenShouldReturnCorrectSimpleCallbackRequest() throws JsonProcessingException {
-        // Arrange
         String json = "{\"case_details\":{\"id\":1}}";
 
-        // Act
         SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
 
-        // Assert
         assertThat(request).isNotNull();
         assertThat(request.getCaseDetails()).isNotNull();
         assertThat(request.getCaseDetails().getId()).isEqualTo(1L);
@@ -69,7 +59,6 @@ public class SimpleCallbackRequestTest {
 
     @Test
     public void whenEqualsAndHashCodeAreCalled_thenShouldBehaveCorrectly() {
-        // Arrange
         SimpleCaseDetails caseDetails1 = SimpleCaseDetails.builder().id(1L).build();
         SimpleCaseDetails caseDetails2 = SimpleCaseDetails.builder().id(1L).build();
 
@@ -80,54 +69,43 @@ public class SimpleCallbackRequestTest {
             .caseDetails(caseDetails2)
             .build();
 
-        // Act & Assert
-        assertThat(request1).isEqualTo(request2); // They should be equal
-        assertThat(request1.hashCode()).isEqualTo(request2.hashCode()); // Hash codes should be equal
+        assertThat(request1).isEqualTo(request2);
+        assertThat(request1.hashCode()).isEqualTo(request2.hashCode());
 
-        // Change case details
         request2.setCaseDetails(SimpleCaseDetails.builder().id(2L).build());
 
-        // Assert that they are now different
         assertThat(request1).isNotEqualTo(request2);
     }
 
     @Test
     public void whenCaseDetailsIsNull_thenShouldHandleGracefully() {
-        // Act
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(null)
             .build();
 
-        // Assert
         assertThat(request).isNotNull();
         assertThat(request.getCaseDetails()).isNull();
     }
 
     @Test
     public void whenDeserializingEmptyJson_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
-        // Arrange
         String json = "{}";
 
-        // Act
         SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
 
-        // Assert
         assertThat(request).isNotNull();
         assertThat(request.getCaseDetails()).isNull();
     }
 
     @Test
     public void whenUsingToString_thenShouldReturnNonEmptyString() {
-        // Arrange
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder().id(1L).build();
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(caseDetails)
             .build();
 
-        // Act
         String toStringOutput = request.toString();
 
-        // Assert
         assertThat(toStringOutput).isNotNull();
         assertThat(toStringOutput).contains("SimpleCallbackRequest");
         assertThat(toStringOutput).contains("caseDetails=SimpleCaseDetails(id=1)");
