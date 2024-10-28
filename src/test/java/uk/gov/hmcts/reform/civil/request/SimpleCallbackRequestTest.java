@@ -78,7 +78,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenCaseDetailsIsNull_thenShouldHandleGracefully() {
+    public void whenCaseDetailsIsNull_thenShouldHandleCorrectly() {
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(null)
             .build();

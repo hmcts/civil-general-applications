@@ -65,7 +65,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenComparingDifferentObjects_thenEqualsShouldReturnFalse() {
+    public void whenComparingDifferentObjects_thenNotEqualsShouldReturnTrue() {
         SimpleCaseDetails first = SimpleCaseDetails.builder().id(123L).build();
         SimpleCaseDetails second = SimpleCaseDetails.builder().id(456L).build();
 
