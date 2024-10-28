@@ -90,5 +90,61 @@ public class SimpleCallbackRequestTest {
         // Assert that they are now different
         assertThat(request1).isNotEqualTo(request2);
     }
+
+    @Test
+    public void whenCaseDetailsIsNull_thenShouldHandleGracefully() {
+        // Act
+        SimpleCallbackRequest request = SimpleCallbackRequest.builder()
+            .caseDetails(null)
+            .build();
+
+        // Assert
+        assertThat(request).isNotNull();
+        assertThat(request.getCaseDetails()).isNull();
+    }
+
+    @Test
+    public void whenSerializingNullCaseDetails_thenShouldExcludeFieldFromJson() throws JsonProcessingException {
+        // Arrange
+        SimpleCallbackRequest request = SimpleCallbackRequest.builder()
+            .caseDetails(null)
+            .build();
+
+        // Act
+        String json = objectMapper.writeValueAsString(request);
+
+        // Assert
+        assertThat(json).doesNotContain("\"case_details\"");
+    }
+
+    @Test
+    public void whenDeserializingEmptyJson_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
+        // Arrange
+        String json = "{}";
+
+        // Act
+        SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
+
+        // Assert
+        assertThat(request).isNotNull();
+        assertThat(request.getCaseDetails()).isNull();
+    }
+
+    @Test
+    public void whenUsingToString_thenShouldReturnNonEmptyString() {
+        // Arrange
+        SimpleCaseDetails caseDetails = SimpleCaseDetails.builder().id(1L).build();
+        SimpleCallbackRequest request = SimpleCallbackRequest.builder()
+            .caseDetails(caseDetails)
+            .build();
+
+        // Act
+        String toStringOutput = request.toString();
+
+        // Assert
+        assertThat(toStringOutput).isNotNull();
+        assertThat(toStringOutput).contains("SimpleCallbackRequest");
+        assertThat(toStringOutput).contains("caseDetails=SimpleCaseDetails(id=1)");
+    }
 }
 
