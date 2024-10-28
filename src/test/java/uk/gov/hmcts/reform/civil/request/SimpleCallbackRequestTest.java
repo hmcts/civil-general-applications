@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleCallbackRequestTest {
+class SimpleCallbackRequestTest {
 
     private ObjectMapper objectMapper;
 
@@ -17,7 +17,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenBuildingSimpleCallbackRequest_thenShouldCreateValidInstance() {
+    void whenBuildingSimpleCallbackRequest_thenShouldCreateValidInstance() {
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder()
             .id(1L)
             .build();
@@ -31,7 +31,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenSerializingSimpleCallbackRequest_thenShouldReturnCorrectJson() throws JsonProcessingException {
+    void whenSerializingSimpleCallbackRequest_thenShouldReturnCorrectJson() throws JsonProcessingException {
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder()
             .id(1L)
             .build();
@@ -47,7 +47,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenDeserializingJson_thenShouldReturnCorrectSimpleCallbackRequest() throws JsonProcessingException {
+    void whenDeserializingJson_thenShouldReturnCorrectSimpleCallbackRequest() throws JsonProcessingException {
         String json = "{\"case_details\":{\"id\":1}}";
 
         SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
@@ -58,7 +58,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenEqualsAndHashCodeAreCalled_thenShouldBehaveCorrectly() {
+    void whenEqualsAndHashCodeAreCalled_thenShouldBehaveCorrectly() {
         SimpleCaseDetails caseDetails1 = SimpleCaseDetails.builder().id(1L).build();
         SimpleCaseDetails caseDetails2 = SimpleCaseDetails.builder().id(1L).build();
 
@@ -78,7 +78,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenCaseDetailsIsNull_thenShouldHandleCorrectly() {
+    void whenCaseDetailsIsNull_thenShouldHandleCorrectly() {
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(null)
             .build();
@@ -88,7 +88,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenDeserializingEmptyJson_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
+    void whenDeserializingEmptyJson_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
         String json = "{}";
 
         SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
@@ -98,7 +98,7 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenUsingToString_thenShouldReturnNonEmptyString() {
+    void whenUsingToString_thenShouldReturnNonEmptyString() {
         SimpleCaseDetails caseDetails = SimpleCaseDetails.builder().id(1L).build();
         SimpleCallbackRequest request = SimpleCallbackRequest.builder()
             .caseDetails(caseDetails)

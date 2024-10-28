@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SimpleCaseDetailsTest {
+class SimpleCaseDetailsTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void whenCreatingSimpleCaseDetails_thenShouldHaveCorrectId() {
+    void whenCreatingSimpleCaseDetails_thenShouldHaveCorrectId() {
         Long expectedId = 123L;
 
         SimpleCaseDetails simpleCaseDetails = SimpleCaseDetails.builder()
@@ -21,7 +21,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenUsingToBuilder_thenShouldModifyId() {
+    void whenUsingToBuilder_thenShouldModifyId() {
         SimpleCaseDetails original = SimpleCaseDetails.builder()
             .id(123L)
             .build();
@@ -35,7 +35,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenSerializingToJson_thenShouldMatchExpectedJson() throws Exception {
+    void whenSerializingToJson_thenShouldMatchExpectedJson() throws Exception {
         SimpleCaseDetails simpleCaseDetails = SimpleCaseDetails.builder()
             .id(123L)
             .build();
@@ -47,7 +47,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenDeserializingFromJson_thenShouldCreateCorrectObject() throws Exception {
+    void whenDeserializingFromJson_thenShouldCreateCorrectObject() throws Exception {
         String json = "{\"id\":123}";
 
         SimpleCaseDetails result = objectMapper.readValue(json, SimpleCaseDetails.class);
@@ -56,7 +56,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenComparingEqualObjects_thenEqualsShouldReturnTrue() {
+    void whenComparingEqualObjects_thenEqualsShouldReturnTrue() {
         SimpleCaseDetails first = SimpleCaseDetails.builder().id(123L).build();
         SimpleCaseDetails second = SimpleCaseDetails.builder().id(123L).build();
 
@@ -65,7 +65,7 @@ public class SimpleCaseDetailsTest {
     }
 
     @Test
-    public void whenComparingDifferentObjects_thenNotEqualsShouldReturnTrue() {
+    void whenComparingDifferentObjects_thenNotEqualsShouldReturnTrue() {
         SimpleCaseDetails first = SimpleCaseDetails.builder().id(123L).build();
         SimpleCaseDetails second = SimpleCaseDetails.builder().id(456L).build();
 
