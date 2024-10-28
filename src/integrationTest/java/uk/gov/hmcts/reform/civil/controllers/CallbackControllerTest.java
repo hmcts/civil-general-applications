@@ -12,6 +12,7 @@ public class CallbackControllerTest extends BaseIntegrationTest {
 
     private static final String CALLBACK_URL = "/cases/callbacks/{callback-type}";
 
+    // failing
     @Test
     @SneakyThrows
     public void shouldReturnNotFoundWhenCallbackHandlerIsNotImplemented() {
