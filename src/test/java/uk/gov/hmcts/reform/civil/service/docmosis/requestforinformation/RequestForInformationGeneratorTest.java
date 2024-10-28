@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import static java.time.LocalDate.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,9 +35,12 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
 
 @ExtendWith(MockitoExtension.class)
 class RequestForInformationGeneratorTest {
@@ -118,6 +122,143 @@ class RequestForInformationGeneratorTest {
     }
 
     @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void shouldGenerateRequestForInformationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build();
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            requestForInformationGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                                    caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.REQUEST_FOR_INFORMATION)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP));
+        }
+
+        @Test
+        void shouldGenerateSendAppToOtherPartyDocumentForLipClaimant() {
+            when(documentGeneratorService
+                     .generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP
+                                                     .getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .build();
+
+            requestForInformationGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                                    caseData, BEARER_TOKEN,
+                                                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.SEND_APP_TO_OTHER_PARTY)
+            );
+            verify(documentGeneratorService)
+                .generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                          eq(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .parentClaimantIsApplicant(YES)
+                .requestForInformationApplication().build().toBuilder()
+                .build();
+
+            var templateData = requestForInformationGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                                                              caseData,
+                                                                              "auth",
+                                                                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_RequestForInformation(JudgeDecisionPdfDocument templateData,
+                                                                      CaseData caseData) {
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_party() {
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .parentClaimantIsApplicant(YES)
+                .requestForInformationApplication().build().toBuilder()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .build();
+
+            var templateData =
+                requestForInformationGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                                               caseData,
+                                                               "auth",
+                                                               FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275"),
+                () -> assertEquals("respondent1partyname", templateData.getPartyName()),
+                () -> assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("respondent1posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("respondent1postcode", templateData.getPartyAddressPostCode()));
+        }
+
+    }
+
+    @Nested
     class GetTemplateData {
 
         @Test
@@ -127,7 +268,7 @@ class RequestForInformationGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
-            var templateData = requestForInformationGenerator.getTemplateData(caseData, "auth");
+            var templateData = requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
         }
@@ -164,7 +305,7 @@ class RequestForInformationGeneratorTest {
                 .build();
 
             var templateData =
-                requestForInformationGenerator.getTemplateData(caseData, "auth");
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation_1v1(templateData, caseData);
         }
@@ -201,7 +342,7 @@ class RequestForInformationGeneratorTest {
                 .build();
 
             var templateData =
-                requestForInformationGenerator.getTemplateData(caseData, "auth");
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             Assertions.assertAll(
                 "Request For Information Document data should be as expected",

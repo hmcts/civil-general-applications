@@ -14,15 +14,18 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.FREE_FORM_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_FREE_FORM_ORDER_LIP;
 
 @Service
 @RequiredArgsConstructor
@@ -36,24 +39,35 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        FreeFormOrder templateData = getTemplateData(caseData, authorisation);
-        DocmosisTemplates template = getTemplate();
+        FreeFormOrder templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        return  generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        FreeFormOrder templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        return  generateDocmosisDocument(templateData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(FreeFormOrder templateData, String authorisation, FlowFlag userType) {
+
+        DocmosisTemplates template = getTemplate(userType);
         DocmosisDocument document =
-                documentGeneratorService.generateDocmosisDocument(templateData, template);
+            documentGeneratorService.generateDocmosisDocument(templateData, template);
         return documentManagementService.uploadDocument(
-                authorisation,
-                new PDF(
-                        getFileName(template),
-                        document.getBytes(),
-                        DocumentType.GENERAL_ORDER
-                )
+            authorisation,
+            new PDF(
+                getFileName(template),
+                document.getBytes(),
+                DocumentType.GENERAL_ORDER
+            )
         );
     }
 
     @Override
-    public FreeFormOrder getTemplateData(CaseData caseData, String authorisation) {
+    public FreeFormOrder getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
-        return FreeFormOrder.builder()
+        FreeFormOrder.FreeFormOrderBuilder freeFormOrderBuilder = FreeFormOrder.builder()
             .judgeNameTitle(caseData.getJudgeTitle())
             .caseNumber(caseData.getCcdCaseReference().toString())
             .caseName(caseData.getCaseNameHmctsInternal())
@@ -69,8 +83,22 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
             .claimant1Name(caseData.getClaimant1PartyName())
             .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
             .defendant1Name(caseData.getDefendant1PartyName())
-            .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-            .build();
+            .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null);
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            freeFormOrderBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
+
+        return freeFormOrderBuilder.build();
     }
 
     protected String getFreeFormOrderValue(CaseData caseData) {
@@ -104,7 +132,12 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
         return DateFormatHelper.formatLocalDate(date, " d MMMM yyyy");
     }
 
-    protected DocmosisTemplates getTemplate() {
+    protected DocmosisTemplates getTemplate(FlowFlag userType) {
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return POST_JUDGE_FREE_FORM_ORDER_LIP;
+        }
+
         return FREE_FORM_ORDER;
     }
 }
