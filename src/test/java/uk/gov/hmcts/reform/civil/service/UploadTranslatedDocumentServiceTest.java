@@ -40,6 +40,7 @@ public class UploadTranslatedDocumentServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+    String translator = "translator";
 
     @Test
     void shouldProcessTranslatedDocumentsAndUpdateCaseData() {
@@ -54,9 +55,8 @@ public class UploadTranslatedDocumentServiceTest {
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
             .build();
-
         // When
-        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData).build();
+        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData, translator).build();
 
         // Then
         assertThat(result.getGeneralOrderDocument()).isNotNull();
@@ -75,7 +75,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
 
         // When
-        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData).build();
+        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData, translator).build();
 
         // Then
         assertThat(result).isEqualTo(caseData);
@@ -136,7 +136,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
 
         // When
-        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData).build();
+        CaseData result = uploadTranslatedDocumentService.processTranslatedDocument(caseData, translator).build();
 
         // Then
         assertThat(result.getGeneralOrderDocument()).isNotNull();
@@ -146,6 +146,7 @@ public class UploadTranslatedDocumentServiceTest {
         assertThat(result.getWrittenRepConcurrentDocument()).isNotNull();
         assertThat(result.getDismissalOrderDocument()).isNotNull();
         assertThat(result.getGaDraftDocument()).isNotNull();
+        assertThat(result.getGeneralOrderDocument().get(0).getValue().getCreatedBy()).isEqualTo(translator);
         verify(assignCategoryId, times(8)).assignCategoryIdToCollection(anyList(), any(), any());
     }
 }
