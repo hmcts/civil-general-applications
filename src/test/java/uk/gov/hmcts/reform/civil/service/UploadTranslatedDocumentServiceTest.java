@@ -40,6 +40,7 @@ public class UploadTranslatedDocumentServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
+
     String translator = "translator";
 
     @Test
