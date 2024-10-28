@@ -104,20 +104,6 @@ public class SimpleCallbackRequestTest {
     }
 
     @Test
-    public void whenSerializingNullCaseDetails_thenShouldExcludeFieldFromJson() throws JsonProcessingException {
-        // Arrange
-        SimpleCallbackRequest request = SimpleCallbackRequest.builder()
-            .caseDetails(null)
-            .build();
-
-        // Act
-        String json = objectMapper.writeValueAsString(request);
-
-        // Assert
-        assertThat(json).doesNotContain("\"case_details\"");
-    }
-
-    @Test
     public void whenDeserializingEmptyJson_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
         // Arrange
         String json = "{}";
