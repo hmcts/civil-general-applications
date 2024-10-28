@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
