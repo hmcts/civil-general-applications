@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,7 +35,7 @@ public class GeneralAppLocationRefDataService {
 
                 );
             return onlyEnglandAndWalesLocations(responseEntity)
-                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).collect(Collectors.toList());
+                .stream().sorted(Comparator.comparing(LocationRefData::getSiteName)).toList();
         } catch (Exception e) {
             log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
         }
@@ -73,12 +72,10 @@ public class GeneralAppLocationRefDataService {
 
     public List<LocationRefData> getCourtLocationsByEpimmsId(String authToken, String epimmsId) {
         try {
-            List<LocationRefData> responseEntity =
-                locationReferenceDataApiClient.getCourtVenueByEpimmsId(
+            return locationReferenceDataApiClient.getCourtVenueByEpimmsId(
                     authTokenGenerator.generate(),
-                    authToken, epimmsId
+                    authToken, epimmsId, "10"
                 );
-            return responseEntity;
         } catch (Exception e) {
             log.error(DATA_LOOKUP_FAILED + e.getMessage(), e);
         }
