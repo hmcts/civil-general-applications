@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -43,8 +42,6 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT;
@@ -56,7 +53,6 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.RESPONDENT_ACTION_NEEDED_GA_STATES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.APPLICANT_IN_PROGRESS_GA_STATES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.RESPONDENT_IN_PROGRESS_GA_STATES;
-
 
 @Slf4j
 @Service
@@ -181,12 +177,14 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         if (someGaActionNeededDefendant) {
             defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT.getScenario();
         }
-        boolean someGaInProgressClaimant = Optional.ofNullable(parentCaseData.getClaimantGaAppDetails()).orElse(Collections.emptyList()).stream()
+        boolean someGaInProgressClaimant = claimantScenario == null
+            && Optional.ofNullable(parentCaseData.getClaimantGaAppDetails()).orElse(Collections.emptyList()).stream()
             .map(Element::getValue)
             .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
                 ? APPLICANT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState())
                 : RESPONDENT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState()));
-        boolean someGaInProgressDefendant = Optional.ofNullable(parentCaseData.getRespondentSolGaAppDetails()).orElse(Collections.emptyList()).stream()
+        boolean someGaInProgressDefendant = defendantScenario == null
+            && Optional.ofNullable(parentCaseData.getRespondentSolGaAppDetails()).orElse(Collections.emptyList()).stream()
             .map(Element::getValue)
             .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
                 ? RESPONDENT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState())
