@@ -96,7 +96,7 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldCallBoolVariation_whenCOSCISInvoked(Boolean toggleStat) {
+    void shouldCallBoolVariation_whenCoscIsInvoked(Boolean toggleStat) {
         var isCoscEnabed = "isCoSCEnabled";
         givenToggle(isCoscEnabed, toggleStat);
 
