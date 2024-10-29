@@ -42,7 +42,9 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT("Scenario.AAA6.GeneralApplication.ViewApplicationAvailable.Claimant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationActionNeeded.Defendant"),
     SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationInProgress.Defendant"),
-    SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationAvailable.Defendant");
+    SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT("Scenario.AAA6.GeneralApplication.ViewApplicationAvailable.Defendant"),
+    SCENARIO_AAA6_GENERAL_APPS_TRANSLATED_DOCUMENT_UPLOADED_APPLICANT("Scenario.AAA6.GeneralApps.TranslatedDocumentUploaded.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_TRANSLATED_DOCUMENT_UPLOADED_RESPONDENT("Scenario.AAA6.GeneralApps.TranslatedDocumentUploaded.Respondent");
 
     private final String scenario;
 
