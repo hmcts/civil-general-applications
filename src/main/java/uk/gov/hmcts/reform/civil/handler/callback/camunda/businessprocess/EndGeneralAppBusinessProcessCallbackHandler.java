@@ -104,8 +104,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             }
         } else if (featureToggleService.isCoSCEnabled() && data.getGeneralAppType().getTypes().contains(
             GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
-                newState = APPLICATION_DISMISSED;
-
+            newState = APPLICATION_DISMISSED;
         } else {
             newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
                 data,
