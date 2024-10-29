@@ -40,7 +40,9 @@ public enum DashboardScenarios {
     SCENARIO_AAA6_GENERAL_APPLICATION_ADDITIONAL_PAYMENT_APPLICANT("Scenario.AAA6.GeneralApps.AdditionalApplicationFeeRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_MORE_INFORMATION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.MoreInfoRequired.Applicant"),
     SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FeePaid.Applicant"),
-    SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FullRemission.Applicant");
+    SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT("Scenario.AAA6.GeneralApps.HwF.FullRemission.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_TRANSLATED_DOCUMENT_UPLOADED_APPLICANT("Scenario.AAA6.GeneralApps.TranslatedDocumentUploaded.Applicant"),
+    SCENARIO_AAA6_GENERAL_APPS_TRANSLATED_DOCUMENT_UPLOADED_RESPONDENT("Scenario.AAA6.GeneralApps.TranslatedDocumentUploaded.Respondent");
 
     private final String scenario;
 
