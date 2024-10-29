@@ -58,6 +58,9 @@ springdoc:
 oidc:
   issuer: ${OIDC_ISSUER:http://fr-am:8080/openam/oauth2/hmcts}
 
+send-letter:
+  url: ${SEND_LETTER_URL:http://localhost:8765}
+  
 fees:
   api:
     service: civil money claims
@@ -177,10 +180,17 @@ notifications:
   notifyApplicantForHwfUpdateRefNumberBilingual: "a7c206b5-8a27-4419-83ff-61351cbc69fb"
   notifyApplicantForHwfPartialRemissionBilingual: "5bbd4518-5501-4737-8a1e-a6adacd5e679"
 
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:false}
+
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
   key: ${OS_POSTCODE_LOOKUP_API_KEY:}
   offline-mode: false
+
+print:
+  service:
+    enabled: true
 
 stitching:
   api:
@@ -243,6 +253,10 @@ fees:
   api:
     url: http://localhost:8765
 
+print:
+  service:
+    enabled: false
+
 genApp:
   lrd:
     url: http://localhost:8765
@@ -304,6 +318,10 @@ management:
   endpoints:
     enabled-by-default: false
 
+print:
+  service:
+    enabled: true
+
 fees:
   api:
     url: http://fake-fees-register-api
@@ -364,7 +382,7 @@ rd_professional:
     url: http://localhost:6665
 
 sendgrid:
-  api-key: fake-key
+  api-key: ${SENDGRID_API_KEY:fake-key}
 ---
 
 spring:

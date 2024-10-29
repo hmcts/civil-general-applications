@@ -339,6 +339,7 @@ class GeneralAppLocationRefDataServiceTest {
         when(locationReferenceDataApiClient.getCourtVenueByEpimmsId(
             anyString(),
             anyString(),
+            anyString(),
             anyString()
         ))
             .thenReturn(getAllLocationsRefDataResponseByEpimms());
