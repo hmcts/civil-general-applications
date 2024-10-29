@@ -70,7 +70,8 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         * Add GA into collections
         * */
         if (gaForLipService.isGaForLip(data)
-            && (isLipPaymentViaServiceRequest(data) || isFreeFeeCode(data))) {
+            && (isLipPaymentViaServiceRequest(data) || isLipPaymentViaHelpWithFees(data)
+            || isFreeFeeCode(data))) {
 
             parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(data);
         }
@@ -137,5 +138,15 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && (Objects.isNull(data.getGeneralAppHelpWithFees())
             || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
+    }
+
+    private boolean isLipPaymentViaHelpWithFees(CaseData data) {
+        return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
+            && !Objects.isNull(data.getGeneralAppHelpWithFees())
+            && data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.YES
+            && !Objects.isNull(data.getFeePaymentOutcomeDetails())
+            && (data.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == YesOrNo.YES
+                || (!Objects.isNull(data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa())
+            && data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa().contains("Yes")));
     }
 }

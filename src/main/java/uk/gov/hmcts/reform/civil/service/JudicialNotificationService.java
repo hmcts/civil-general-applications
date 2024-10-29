@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class JudicialNotificationService implements NotificationData {
 
     private final NotificationsProperties notificationProperties;
     private final NotificationService notificationService;
-    private final Map<String, String> customProps;
+    private final Map<String, String> customProps = new HashMap<>();
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
 
     private final DeadlinesCalculator deadlinesCalculator;
@@ -181,7 +182,7 @@ public class JudicialNotificationService implements NotificationData {
             sendEmailToRespondent(
                     caseData,
                     useGaForLipRespondentTemplate(caseData)
-                        ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                        ? getLiPRespondentTemplate(caseData)
                         : notificationProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate()
             );
         }
@@ -190,12 +191,24 @@ public class JudicialNotificationService implements NotificationData {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                gaForLipService.isLipApp(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate()
             );
         }
 
         customProps.remove(GA_JUDICIAL_CONCURRENT_DATE_TEXT);
+    }
+
+    private String getLiPApplicantTemplate(CaseData caseData) {
+        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
+    }
+
+    private String getLiPRespondentTemplate(CaseData caseData) {
+        return caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
     private void sequentialWrittenRepNotification(CaseData caseData, String solicitorType) {
@@ -220,7 +233,7 @@ public class JudicialNotificationService implements NotificationData {
             sendEmailToRespondent(
                     caseData,
                     useGaForLipRespondentTemplate(caseData)
-                        ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                        ? getLiPRespondentTemplate(caseData)
                         : notificationProperties.getWrittenRepSequentialRepresentationRespondentEmailTemplate()
             );
         }
@@ -229,7 +242,7 @@ public class JudicialNotificationService implements NotificationData {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                gaForLipService.isLipApp(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getWrittenRepSequentialRepresentationApplicantEmailTemplate()
             );
         }
@@ -256,7 +269,7 @@ public class JudicialNotificationService implements NotificationData {
             if (areRespondentSolicitorsPresent(caseData)) {
                 String template = notificationProperties.getGeneralApplicationRespondentEmailTemplate();
                 if (useGaForLipRespondentTemplate(caseData)) {
-                    template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+                    template = getLiPRespondentTemplate(caseData);
                 }
                 sendEmailToRespondent(
                     caseData,
@@ -276,8 +289,7 @@ public class JudicialNotificationService implements NotificationData {
 
                 String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
                 if (useGaForLipApplicantTemplate(caseData)) {
-                    template = notificationProperties
-                            .getLipGeneralAppApplicantEmailTemplate();
+                    template = getLiPApplicantTemplate(caseData);
                 }
                 sendNotificationForJudicialDecision(
                     caseData,
@@ -300,7 +312,7 @@ public class JudicialNotificationService implements NotificationData {
             sendEmailToRespondent(
                     caseData,
                     useGaForLipRespondentTemplate(caseData)
-                        ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                        ? getLiPRespondentTemplate(caseData)
                         : notificationProperties.getJudgeRequestForInformationRespondentEmailTemplate()
             );
         }
@@ -310,7 +322,7 @@ public class JudicialNotificationService implements NotificationData {
                     caseData,
                     caseData.getGeneralAppApplnSolicitor().getEmail(),
                     useGaForLipApplicantTemplate(caseData)
-                        ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                        ? getLiPApplicantTemplate(caseData)
                         : notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
             );
         }
@@ -325,7 +337,7 @@ public class JudicialNotificationService implements NotificationData {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                useGaForLipApplicantTemplate(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                useGaForLipApplicantTemplate(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getJudgeRequestForInformationApplicantEmailTemplate()
             );
 
@@ -354,7 +366,7 @@ public class JudicialNotificationService implements NotificationData {
                 } else if (useGaForLipRespondentTemplate(caseData)) {
                     sendEmailToRespondent(
                         caseData,
-                        notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                        getLiPRespondentTemplate(caseData)
                     );
                 } else {
                     sendEmailToRespondent(
@@ -412,7 +424,7 @@ public class JudicialNotificationService implements NotificationData {
                 sendEmailToRespondent(
                     caseData,
                     gaForLipService.isLipResp(caseData)
-                        ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                        ? getLiPRespondentTemplate(caseData)
                         : notificationProperties.getJudgeListsForHearingRespondentEmailTemplate()
                 );
             }
@@ -422,7 +434,7 @@ public class JudicialNotificationService implements NotificationData {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                gaForLipService.isLipApp(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getJudgeListsForHearingApplicantEmailTemplate()
             );
         }
@@ -434,7 +446,7 @@ public class JudicialNotificationService implements NotificationData {
             && isSendEmailToDefendant(caseData)) {
             String template  = notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate();
             if (useGaForLipRespondentTemplate(caseData)) {
-                template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+                template = getLiPRespondentTemplate(caseData);
             }
             sendEmailToRespondent(
                     caseData,
@@ -459,7 +471,7 @@ public class JudicialNotificationService implements NotificationData {
             && isSendEmailToDefendant(caseData)) {
             String template = notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate();
             if (useGaForLipRespondentTemplate(caseData)) {
-                template = notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+                template = getLiPRespondentTemplate(caseData);
             }
             sendEmailToRespondent(
                     caseData,
@@ -473,7 +485,7 @@ public class JudicialNotificationService implements NotificationData {
             sendNotificationForJudicialDecision(
                 caseData,
                 appSolicitorEmail,
-                useGaForLipApplicantTemplate(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                useGaForLipApplicantTemplate(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getJudgeForDirectionOrderApplicantEmailTemplate()
             );
         }

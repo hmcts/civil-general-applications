@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
+import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
@@ -36,6 +37,8 @@ public class HwfNotificationService implements NotificationData {
     private final CoreCaseDataService coreCaseDataService;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private Map<CaseEvent, String> emailTemplates;
+    private Map<CaseEvent, String> emailTemplatesBilingual;
+    private CaseEvent event;
 
     private static final String ERROR_HWF_EVENT = "Hwf Event not support";
 
@@ -55,7 +58,8 @@ public class HwfNotificationService implements NotificationData {
 
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                getTemplate(event),
+                caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ? getTemplateBilingual(event) :
+                    getTemplate(event),
                 addAllProperties(caseData, event),
                 caseData.getGeneralAppParentCaseLink().getCaseReference()
         );
@@ -76,9 +80,10 @@ public class HwfNotificationService implements NotificationData {
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
         return Map.of(
-                CASE_REFERENCE, caseData.getCcdCaseReference().toString(),
+                CASE_REFERENCE, caseData.getParentCaseReference(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
                 TYPE_OF_FEE, caseData.getHwfFeeType().getLabel(),
+                TYPE_OF_FEE_WELSH, caseData.getHwfFeeType().getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()
         );
     }
@@ -124,8 +129,17 @@ public class HwfNotificationService implements NotificationData {
         }
         return Map.of(
             FEE_AMOUNT, outstanding.toString(),
+            NO_REMISSION_REASONS_WELSH, getHwFNoRemissionReasonWelsh(caseData),
             NO_REMISSION_REASONS, remission
         );
+    }
+
+    private String getHwFNoRemissionReasonWelsh(CaseData caseData) {
+        if (caseData.isHWFTypeApplication()) {
+            return caseData.getGaHwfDetails().getNoRemissionDetailsSummary().getLabelWelsh();
+        } else {
+            return caseData.getAdditionalHwfDetails().getNoRemissionDetailsSummary().getLabelWelsh();
+        }
     }
 
     private CaseEvent getEvent(CaseData caseData) {
@@ -158,16 +172,39 @@ public class HwfNotificationService implements NotificationData {
         return emailTemplates.get(hwfEvent);
     }
 
+    private String getTemplateBilingual(CaseEvent hwfEvent) {
+        if (emailTemplatesBilingual == null) {
+            emailTemplatesBilingual = Map.of(
+                CaseEvent.INVALID_HWF_REFERENCE_GA,
+                notificationsProperties.getNotifyApplicantForHwfInvalidRefNumberBilingual(),
+                CaseEvent.MORE_INFORMATION_HWF_GA,
+                notificationsProperties.getNotifyApplicantForHwFMoreInformationNeededWelsh(),
+                CaseEvent.NO_REMISSION_HWF_GA,
+                notificationsProperties.getNotifyApplicantForHwfNoRemissionWelsh(),
+                CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                notificationsProperties.getNotifyApplicantForHwfUpdateRefNumberBilingual(),
+                CaseEvent.PARTIAL_REMISSION_HWF_GA,
+                notificationsProperties.getNotifyApplicantForHwfPartialRemissionBilingual(),
+                CaseEvent.FEE_PAYMENT_OUTCOME_GA,
+                notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            );
+        }
+        return emailTemplatesBilingual.get(hwfEvent);
+    }
+
     private Map<String, String> getMoreInformationProperties(CaseData caseData) {
         HelpWithFeesMoreInformation moreInformation =
                 null != caseData.getHelpWithFeesMoreInformationGa()
                         ? caseData.getHelpWithFeesMoreInformationGa()
                         : caseData.getHelpWithFeesMoreInformationAdditional();
         return Map.of(
-                HWF_MORE_INFO_DATE, formatLocalDate(moreInformation.getHwFMoreInfoDocumentDate(), DATE),
-                HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentList(
-                        moreInformation.getHwFMoreInfoRequiredDocuments()
-                )
+            HWF_MORE_INFO_DATE, formatLocalDate(moreInformation.getHwFMoreInfoDocumentDate(), DATE),
+            HWF_MORE_INFO_DATE_IN_WELSH, formatDateInWelsh(moreInformation.getHwFMoreInfoDocumentDate()),
+            HWF_MORE_INFO_DOCUMENTS, getMoreInformationDocumentList(
+                moreInformation.getHwFMoreInfoRequiredDocuments()
+            ),
+            HWF_MORE_INFO_DOCUMENTS_WELSH, getMoreInformationDocumentListWelsh(
+                moreInformation.getHwFMoreInfoRequiredDocuments())
         );
     }
 
@@ -178,6 +215,20 @@ public class HwfNotificationService implements NotificationData {
             if (!doc.getDescription().isEmpty()) {
                 documentList.append(" - ");
                 documentList.append(doc.getDescription());
+            }
+            documentList.append("\n");
+            documentList.append("\n");
+        }
+        return documentList.toString();
+    }
+
+    private String getMoreInformationDocumentListWelsh(List<HwFMoreInfoRequiredDocuments> list) {
+        StringBuilder documentList = new StringBuilder();
+        for (HwFMoreInfoRequiredDocuments doc : list) {
+            documentList.append(doc.getNameBilingual());
+            if (!doc.getDescriptionBilingual().isEmpty()) {
+                documentList.append(" - ");
+                documentList.append(doc.getDescriptionBilingual());
             }
             documentList.append("\n");
             documentList.append("\n");

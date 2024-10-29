@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -36,6 +38,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeG
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -239,6 +242,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final DeadlinesCalculator deadlinesCalculator;
     private final IdamClient idamClient;
     private final GaForLipService gaForLipService;
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -692,10 +698,33 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .sequentialApplicantMustRespondWithin(deadlinesCalculator
                                                                   .getJudicialOrderDeadlineDate(LocalDateTime.now(),
                                                                                                 21)).build());
+        if (featureToggleService.isGaForLipsEnabled()) {
+            caseDataBuilder.bilingualHint(setBilingualHint(caseData));
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
                 .build();
+    }
+
+    private YesOrNo setBilingualHint(CaseData caseData) {
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+        if (Objects.nonNull(caseData.getJudicialDecision())) {
+            switch (caseData.getJudicialDecision().getDecision()) {
+                case LIST_FOR_A_HEARING:
+                case FREE_FORM_ORDER:
+                case MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS:
+                    return gaForLipService.anyWelshNotice(caseData) ? YES : NO;
+                case MAKE_AN_ORDER:
+                case REQUEST_MORE_INFO:
+                    return gaForLipService.anyWelsh(caseData) ? YES : NO;
+                default:
+                    return NO;
+            }
+        }
+        return NO;
     }
 
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
@@ -868,7 +897,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .judgeHearingSupportReqText1(null)
                                                    .build());
         }
-
+        if (featureToggleService.isGaForLipsEnabled()) {
+            dataBuilder.bilingualHint(null);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();
