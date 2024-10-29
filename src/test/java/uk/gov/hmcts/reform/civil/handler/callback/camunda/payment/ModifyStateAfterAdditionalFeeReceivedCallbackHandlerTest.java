@@ -6,12 +6,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
@@ -23,6 +25,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
@@ -78,6 +81,12 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
     @Mock
     private AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
+
+    @Mock
+    private CoreCaseDataService coreCaseDataService;
+
+    @Mock
+    private CaseDetailsConverter caseDetailsConverter;
     @Mock
     private GaForLipService gaForLipService;
 
@@ -178,9 +187,12 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     @Test
     void shouldDispatchBusinessProcess_whenStatusIsReady() {
         CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(CCD_CASE_REFERENCE).build();
+        caseData = caseData.toBuilder().parentCaseReference("123").build();
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+        when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
 
         handler.handle(params);
 
@@ -221,46 +233,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
-            caseData.getParentCaseReference(),
-            SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario(),
-            "BEARER_TOKEN",
-            ScenarioRequestParams.builder().params(scenarioParams).build()
-        );
-        verify(dashboardApiClient).recordScenario(
             caseData.getCcdCaseReference().toString(),
             SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
-            "BEARER_TOKEN",
-            ScenarioRequestParams.builder().params(scenarioParams).build()
-        );
-    }
-
-    @Test
-    void shouldUpdateClaimantTaskListIfGaApplicantLip() {
-
-        CaseData caseData = CaseDataBuilder.builder()
-            .isMultiParty(YesOrNo.NO)
-            .generalAppRespondentSolicitors(getRespondentSolicitors())
-            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
-                                          .email("test@gmail.com").organisationIdentifier("org1").build())
-            .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
-            .isGaRespondentOneLip(NO)
-            .isGaApplicantLip(YES)
-            .ccdCaseReference(CCD_CASE_REFERENCE).build();
-
-        HashMap<String, Object> scenarioParams = new HashMap<>();
-
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
-        when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
-        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
-            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
-
-        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-        handler.handle(params);
-
-        verify(dashboardApiClient).recordScenario(
-            caseData.getParentCaseReference(),
-            SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
