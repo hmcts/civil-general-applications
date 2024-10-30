@@ -8,7 +8,6 @@ import org.springframework.boot.actuate.autoconfigure.metrics.task.TaskExecutorM
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.hmcts.reform.civil.config.AsyncHandlerConfiguration;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ActiveProfiles("integration-test")
