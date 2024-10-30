@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import uk.gov.hmcts.reform.civil.request.RequestData;
 
-import java.util.Arrays;
-
 @Slf4j
 @ControllerAdvice
 @RequiredArgsConstructor
