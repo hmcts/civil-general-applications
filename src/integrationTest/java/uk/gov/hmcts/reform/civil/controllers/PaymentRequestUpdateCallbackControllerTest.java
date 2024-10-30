@@ -40,6 +40,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
             .andExpect(status().isMethodNotAllowed());
     }
 
+    // failing
     @Test
     public void whenServiceRequestUpdateRequest() {
         doThrow(new RuntimeException("Payment failure")).when(requestUpdateCallbackService).processCallback(buildServiceDto());
@@ -63,6 +64,7 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
                 .content(toJson(buildServiceDto()))).andExpect(status().isBadRequest());
     }
 
+    // failing
     @Test
     public void whenPaymentCallbackIsReceivedWithServiceAuthorisationButreturnsfalseReturn400() throws Exception {
         when(authorisationService.isServiceAuthorized(any())).thenReturn(false);
