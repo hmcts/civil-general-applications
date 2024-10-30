@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 
@@ -43,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DISMISSAL_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
@@ -121,7 +123,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder(templateData, caseData);
         }
@@ -161,7 +163,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_1v1(templateData, caseData);
         }
@@ -215,7 +217,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_Option2(templateData, updateData);
         }
@@ -265,7 +267,7 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DismissalOrder_Option3(templateData, caseData);
         }
@@ -310,10 +312,86 @@ class DismissalOrderGeneratorTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = dismissalOrderGenerator.getTemplateData(updateData, "auth");
+            var templateData = dismissalOrderGenerator.getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertEquals("", templateData.getReasonForDecision());
             assertEquals(YesOrNo.NO, templateData.getReasonAvailable());
+        }
+    }
+
+    @Nested
+    class GetTemplateDateLip {
+
+        @Test
+        void shouldGenerateDismissalOrderDocument() {
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_DISMISSAL_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(DISMISSAL_ORDER.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .dismissalOrderApplication()
+                .parentClaimantIsApplicant(YES)
+                .build();
+
+            dismissalOrderGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.DISMISSAL_ORDER)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_DISMISSAL_ORDER_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetDissmisalOrderData_1v1() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(NO)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+
+            var templateData = dismissalOrderGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThatFieldsAreCorrect_DismissalOrder_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DismissalOrder_1v1(JudgeDecisionPdfDocument templateData,
+                                                                   CaseData caseData) {
+            Assertions.assertAll(
+                "Dismissal Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiative(), caseData
+                    .getJudicialDecisionMakeOrder().getOrderCourtOwnInitiative()
+                    + " ".concat(LocalDate.now().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals(templateData.getDismissalOrder(),
+                                   caseData.getJudicialDecisionMakeOrder().getDismissalOrderText()),
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
         }
     }
 }

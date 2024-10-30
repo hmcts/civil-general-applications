@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.ccd.document.am.model.DocumentUploadRequest;
 import uk.gov.hmcts.reform.ccd.document.am.model.UploadResponse;
 import uk.gov.hmcts.reform.civil.config.DocumentManagementConfiguration;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.document.DocumentDownloadClientApi;
@@ -36,7 +37,7 @@ import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 @RequiredArgsConstructor
 public class SecuredDocumentManagementService implements DocumentManagementService {
 
-    protected static final int DOC_UUID_LENGTH = 36;
+    public static final int DOC_UUID_LENGTH = 36;
     public static final String CREATED_BY = "Civil";
     protected static final String FILES_NAME = "files";
 
@@ -113,6 +114,39 @@ public class SecuredDocumentManagementService implements DocumentManagementServi
                 .map(ByteArrayResource.class::cast)
                 .map(ByteArrayResource::getByteArray)
                 .orElseThrow(RuntimeException::new);
+        } catch (Exception ex) {
+            log.error("Failed downloading document {}", documentPath, ex);
+            throw new DocumentDownloadException(documentPath, ex);
+        }
+    }
+
+    @Retryable(value = DocumentDownloadException.class, backoff = @Backoff(delay = 200))
+    @Override
+    public DownloadedDocumentResponse downloadDocumentWithMetaData(String authorisation, String documentPath) {
+        log.info("Downloading document {}", documentPath);
+        try {
+            UserInfo userInfo = userService.getUserInfo(authorisation);
+            String userRoles = String.join(",", this.documentManagementConfiguration.getUserRoles());
+            Document documentMetadata = getDocumentMetaData(authorisation, documentPath);
+
+            ResponseEntity<Resource> responseEntity = caseDocumentClientApi.getDocumentBinary(
+                authorisation,
+                authTokenGenerator.generate(),
+                UUID.fromString(documentPath.substring(documentPath.lastIndexOf("/") + 1))
+            );
+
+            if (responseEntity == null) {
+                responseEntity = documentDownloadClientApi.downloadBinary(
+                    authorisation,
+                    authTokenGenerator.generate(),
+                    userRoles,
+                    userInfo.getUid(),
+                    URI.create(documentMetadata.links.binary.href).getPath().replaceFirst("/", "")
+                );
+            }
+
+            return new DownloadedDocumentResponse(responseEntity.getBody(), documentMetadata.originalDocumentName,
+                                                  documentMetadata.mimeType);
         } catch (Exception ex) {
             log.error("Failed downloading document {}", documentPath, ex);
             throw new DocumentDownloadException(documentPath, ex);
