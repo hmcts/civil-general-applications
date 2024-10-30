@@ -33,7 +33,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
