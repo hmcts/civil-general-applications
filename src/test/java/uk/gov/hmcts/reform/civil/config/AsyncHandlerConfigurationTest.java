@@ -40,4 +40,24 @@ class AsyncHandlerConfigurationTest {
                 .isEqualTo(MAX_POOL_SIZE);
         });
     }
+
+    @Test
+    void shouldVerifyAsyncHandlerProperties_WhenLoaded() {
+        context.run(it -> {
+            var properties = it.getBean(AsyncHandlerProperties.class);
+            assertThat(properties.getCorePoolSize()).isEqualTo(CORE_POOL_SIZE);
+            assertThat(properties.getMaxPoolSize()).isEqualTo(MAX_POOL_SIZE);
+            assertThat(properties.getQueueCapacity()).isEqualTo(QUEUE_SIZE);
+        });
+    }
+
+    @Test
+    void shouldCreateAsyncHandlerExecutorBean_WhenPropertiesAreConfigured() {
+        context.run(it -> {
+            var asyncHandlerExecutor = it.getBean("asyncHandlerExecutor", Executor.class);
+            assertThat(asyncHandlerExecutor).isNotNull();
+            assertThat(it).hasBean("asyncHandlerExecutor");
+        });
+    }
+
 }
