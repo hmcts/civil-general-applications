@@ -71,4 +71,41 @@ class SimpleCaseDetailsTest {
 
         assertThat(first).isNotEqualTo(second);
     }
+
+    @Test
+    void whenSettingIdAsNull_thenObjectShouldHandleNull() {
+        SimpleCaseDetails simpleCaseDetails = SimpleCaseDetails.builder()
+            .id(null)
+            .build();
+
+        assertThat(simpleCaseDetails.getId()).isNull();
+    }
+
+    @Test
+    void whenUsingToString_thenShouldIncludeId() {
+        SimpleCaseDetails simpleCaseDetails = SimpleCaseDetails.builder()
+            .id(123L)
+            .build();
+
+        assertThat(simpleCaseDetails.toString()).contains("id=123");
+    }
+
+    @Test
+    void whenUsingBuilderWithNoValues_thenObjectShouldBeCreatedWithDefaults() {
+        SimpleCaseDetails simpleCaseDetails = SimpleCaseDetails.builder().build();
+
+        assertThat(simpleCaseDetails).isNotNull();
+        assertThat(simpleCaseDetails.getId()).isNull();
+    }
+
+    @Test
+    void whenCopyingWithToBuilderWithoutChanges_thenShouldReturnIdenticalObject() {
+        SimpleCaseDetails original = SimpleCaseDetails.builder().id(123L).build();
+
+        SimpleCaseDetails copy = original.toBuilder().build();
+
+        assertThat(copy).isEqualTo(original);
+        assertThat(copy.getId()).isEqualTo(original.getId());
+    }
+
 }
