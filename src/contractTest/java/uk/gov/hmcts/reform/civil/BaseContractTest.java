@@ -4,8 +4,11 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.metrics.task.TaskExecutorMetricsAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import uk.gov.hmcts.reform.civil.config.AsyncHandlerConfiguration;
 
 @ExtendWith(PactConsumerTestExt.class)
 @ActiveProfiles("integration-test")
@@ -19,4 +22,7 @@ public class BaseContractTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @MockBean
+    public TaskExecutorMetricsAutoConfiguration taskExecutorMetricsAutoConfiguration;
 }
