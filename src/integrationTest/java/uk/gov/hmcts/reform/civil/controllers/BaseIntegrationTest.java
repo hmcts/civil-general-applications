@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.metrics.task.TaskExecutorMetricsAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import uk.gov.hmcts.reform.civil.Application;
 import uk.gov.hmcts.reform.civil.TestIdamConfiguration;
+import uk.gov.hmcts.reform.civil.config.AsyncHandlerConfiguration;
 import uk.gov.hmcts.reform.civil.service.AuthorisationService;
 import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -31,6 +33,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +43,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("integration-test")
-@SpringBootTest(classes = {Application.class, TestIdamConfiguration.class})
+@SpringBootTest(classes = {Application.class, TestIdamConfiguration.class, AsyncHandlerConfiguration.class})
 @AutoConfigureMockMvc
 public abstract class BaseIntegrationTest {
 
@@ -80,6 +83,9 @@ public abstract class BaseIntegrationTest {
     protected JwtDecoder jwtDecoder;
     @MockBean
     public AuthorisationService authorisationService;
+
+    @MockBean
+    public TaskExecutorMetricsAutoConfiguration taskExecutorMetricsAutoConfiguration;
 
     @MockBean
     private ServiceAuthorisationApi serviceAuthorisationApi;
