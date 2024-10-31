@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.controllers;
 
-import jakarta.servlet.ServletException;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,9 +14,7 @@ import uk.gov.hmcts.reform.payments.client.models.PaymentDto;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,12 +38,17 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void whenServiceRequestUpdateRequest() {
-        doThrow(new RuntimeException("Payment failure")).when(requestUpdateCallbackService).processCallback(buildServiceDto());
-        Exception e = assertThrows(ServletException.class,
-            () -> doPut(buildServiceDto(), PAYMENT_CALLBACK_URL, "")
-        );
-        assertThat(e.getMessage()).contains("PaymentException");
+    public void whenServiceRequestUpdateRequest() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
+                    .header("ServiceAuthorization", "some-valid-token")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(buildServiceDto())))
+            .andExpect(status().isInternalServerError())
+            .andExpect(result -> {
+                String responseBody = result.getResponse().getContentAsString();
+                assertThat(responseBody).contains("Payment failure");
+            });
     }
 
     @Test
@@ -64,16 +66,18 @@ class PaymentRequestUpdateCallbackControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void whenPaymentCallbackIsReceivedWithServiceAuthorisationButreturnsfalseReturn400() throws Exception {
+    public void whenPaymentCallbackIsReceivedWithServiceAuthorisationButReturnsFalseReturn500() throws Exception {
         when(authorisationService.isServiceAuthorized(any())).thenReturn(false);
-        Exception e = assertThrows(
-            ServletException.class,
-            () -> mockMvc.perform(
-                                       MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
-                                           .header("ServiceAuthorization", s2sToken)
-                                           .contentType(MediaType.APPLICATION_JSON)
-                                           .content(toJson(buildServiceDto()))).andExpect(status().isBadRequest()));
-
+        mockMvc.perform(
+                MockMvcRequestBuilders.put(PAYMENT_CALLBACK_URL, "")
+                    .header("ServiceAuthorization", s2sToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(buildServiceDto())))
+            .andExpect(status().isInternalServerError())
+            .andExpect(result -> {
+                String responseBody = result.getResponse().getContentAsString();
+                assertThat(responseBody).contains("Invalid Client");
+            });
     }
 
     private ServiceRequestUpdateDto buildServiceDto() {
