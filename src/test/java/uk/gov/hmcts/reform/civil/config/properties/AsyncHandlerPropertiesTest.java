@@ -71,4 +71,43 @@ class AsyncHandlerPropertiesTest {
         assertThat(properties1).isNotEqualTo(properties3);
         assertThat(properties1.hashCode()).isNotEqualTo(properties3.hashCode());
     }
+
+    @Test
+    void shouldNotBeEqualWhenPropertiesDiffer() {
+        AsyncHandlerProperties properties1 = new AsyncHandlerProperties();
+        properties1.setCorePoolSize(2);
+        properties1.setMaxPoolSize(5);
+        properties1.setQueueCapacity(20);
+
+        AsyncHandlerProperties properties2 = new AsyncHandlerProperties();
+        properties2.setCorePoolSize(3);
+        properties2.setMaxPoolSize(5);
+        properties2.setQueueCapacity(20);
+
+        assertThat(properties1).isNotEqualTo(properties2);
+    }
+
+    @Test
+    void shouldHaveDistinctHashCodesForDifferentProperties() {
+        AsyncHandlerProperties properties1 = new AsyncHandlerProperties();
+        properties1.setCorePoolSize(4);
+        properties1.setMaxPoolSize(8);
+        properties1.setQueueCapacity(16);
+
+        AsyncHandlerProperties properties2 = new AsyncHandlerProperties();
+        properties2.setCorePoolSize(5);
+        properties2.setMaxPoolSize(10);
+        properties2.setQueueCapacity(20);
+
+        assertThat(properties1.hashCode()).isNotEqualTo(properties2.hashCode());
+    }
+
+    @Test
+    void defaultValuesShouldBeZero() {
+        AsyncHandlerProperties properties = new AsyncHandlerProperties();
+
+        assertThat(properties.getCorePoolSize()).isZero();
+        assertThat(properties.getMaxPoolSize()).isZero();
+        assertThat(properties.getQueueCapacity()).isZero();
+    }
 }

@@ -110,4 +110,47 @@ class SimpleCallbackRequestTest {
         assertThat(toStringOutput).contains("SimpleCallbackRequest");
         assertThat(toStringOutput).contains("caseDetails=SimpleCaseDetails(id=1)");
     }
+
+    @Test
+    void whenDeserializingWithUnknownProperty_thenShouldIgnoreUnknownProperty() throws JsonProcessingException {
+        String json = "{\"case_details\":{\"id\":1}, \"unknown_field\":\"some_value\"}";
+
+        SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getCaseDetails()).isNotNull();
+        assertThat(request.getCaseDetails().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void whenDeserializingWithoutCaseDetails_thenShouldReturnRequestWithNullCaseDetails() throws JsonProcessingException {
+        String json = "{}";
+
+        SimpleCallbackRequest request = objectMapper.readValue(json, SimpleCallbackRequest.class);
+
+        assertThat(request).isNotNull();
+        assertThat(request.getCaseDetails()).isNull();
+    }
+
+    @Test
+    void shouldHaveCorrectEqualsAndHashCodeWithNullCaseDetails() {
+        SimpleCallbackRequest request1 = SimpleCallbackRequest.builder().caseDetails(null).build();
+        SimpleCallbackRequest request2 = SimpleCallbackRequest.builder().caseDetails(null).build();
+
+        assertThat(request1).isEqualTo(request2);
+        assertThat(request1.hashCode()).isEqualTo(request2.hashCode());
+    }
+
+    @Test
+    void shouldNotBeEqualIfCaseDetailsDiffer() {
+        SimpleCallbackRequest request1 = SimpleCallbackRequest.builder()
+            .caseDetails(SimpleCaseDetails.builder().id(1L).build())
+            .build();
+        SimpleCallbackRequest request2 = SimpleCallbackRequest.builder()
+            .caseDetails(SimpleCaseDetails.builder().id(2L).build())
+            .build();
+
+        assertThat(request1).isNotEqualTo(request2);
+        assertThat(request1.hashCode()).isNotEqualTo(request2.hashCode());
+    }
 }
