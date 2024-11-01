@@ -16,12 +16,14 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
 import uk.gov.hmcts.reform.civil.enums.hearing.HearingApplicationDetails;
+import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
+import uk.gov.hmcts.reform.civil.model.Party;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
@@ -165,6 +167,9 @@ public class CaseDataBuilder {
     protected GAJudicialMakeAnOrder judicialMakeAnOrder;
     protected GAApplicationType generalAppType;
     protected GAApproveConsentOrder  approveConsentOrder;
+
+    protected Party respondent1;
+    protected Party applicant1;
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -370,10 +375,22 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder respondent1(Party party) {
+        this.respondent1 = party;
+        return this;
+    }
+
+    public CaseDataBuilder applicant1(Party party) {
+        this.applicant1 = party;
+        return this;
+    }
+
     public CaseData build() {
         return CaseData.builder()
             .businessProcess(businessProcess)
             .ccdState(ccdState)
+            .applicant1(applicant1)
+            .respondent1(respondent1)
             .applicantPartyName(applicantPartyName)
             .claimant1PartyName(claimant1PartyName)
             .caseNameGaInternal("applicant v respondent")
@@ -776,6 +793,27 @@ public class CaseDataBuilder {
                                         .onInitiativeSelectionDate(now()).build())
             .createdDate(SUBMITTED_DATE_TIME)
             .submittedOn(APPLICATION_SUBMITTED_DATE);
+    }
+
+    public CaseData getCivilCaseData() {
+
+        return CaseData.builder()
+            .applicant1(Party.builder()
+                            .primaryAddress(Address.builder()
+                                                .postCode("postcode")
+                                                .postTown("posttown")
+                                                .addressLine1("address1")
+                                                .addressLine2("address2")
+                                                .addressLine3("address3").build())
+                            .partyName("applicant1partyname").build())
+            .respondent1(Party.builder()
+                             .primaryAddress(Address.builder()
+                                                 .postCode("respondent1postcode")
+                                                 .postTown("respondent1posttown")
+                                                 .addressLine1("respondent1address1")
+                                                 .addressLine2("respondent1address2")
+                                                 .addressLine3("respondent1address3").build())
+                             .partyName("respondent1partyname").build()).build();
     }
 
     public CaseData.CaseDataBuilder generalOrderApplication() {

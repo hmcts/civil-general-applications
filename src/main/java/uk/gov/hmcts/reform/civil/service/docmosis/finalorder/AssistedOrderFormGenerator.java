@@ -23,11 +23,13 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 import static java.lang.String.format;
@@ -39,6 +41,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderConsideredToggle.CONS
 import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.CLAIMANT_AND_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.OTHER_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP;
 
 @Service
 @RequiredArgsConstructor
@@ -52,64 +55,74 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        AssistedOrderForm templateData = getTemplateData(caseData, authorisation);
-        DocmosisTemplates template = getTemplate();
+        AssistedOrderForm templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        AssistedOrderForm templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        return generateDocmosisDocument(templateData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(AssistedOrderForm templateData, String authorisation, FlowFlag userType) {
+        DocmosisTemplates template = getTemplate(userType);
         DocmosisDocument document = documentGeneratorService.generateDocmosisDocument(templateData, template);
 
         return documentManagementService.uploadDocument(
-                authorisation,
-                new PDF(
-                        getFileName(template),
-                        document.getBytes(),
-                        DocumentType.GENERAL_ORDER
-                )
+            authorisation,
+            new PDF(
+                getFileName(template),
+                document.getBytes(),
+                DocumentType.GENERAL_ORDER
+            )
         );
     }
 
     @Override
-    public AssistedOrderForm getTemplateData(CaseData caseData, String authorisation) {
+    public AssistedOrderForm getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
-        return AssistedOrderForm.builder()
-                .caseNumber(caseData.getCcdCaseReference().toString())
-                .claimant1Name(caseData.getClaimant1PartyName())
-                .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
-                .isMultiParty(caseData.getIsMultiParty())
-                .defendant1Name(caseData.getDefendant1PartyName())
-                .defendant2Name(caseData
-                                    .getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
-                .courtLocation(docmosisService
-                                   .getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
-                .siteName(caseData.getCaseManagementLocation().getSiteName())
-                .address(caseData.getCaseManagementLocation().getAddress())
-                .postcode(caseData.getCaseManagementLocation().getPostcode())
-                .receivedDate(LocalDate.now())
-                .judgeNameTitle(caseData.getJudgeTitle())
-                .isOrderMade(caseData.getAssistedOrderMadeSelection())
-                .isSingleDate(checkIsSingleDate(caseData))
-                .orderMadeSingleDate(getOrderMadeSingleDate(caseData))
-                .isDateRange(checkIsDateRange(caseData))
-                .orderMadeDateRangeFrom(getOrderMadeDateRangeFrom(caseData))
-                .orderMadeDateRangeTo(getOrderMadeDateRangeTo(caseData))
-                .isBeSpokeRange(checkIsBeSpokeRange(caseData))
-                .orderMadeBeSpokeText(getOrderMadeBeSpokeText(caseData))
-                .judgeHeardFromShowHide(checkJudgeHeardFromToggle(caseData))
-                .judgeHeardSelection(getJudgeHeardFromRepresentation(caseData))
-                .claimantRepresentation(getClaimantRepresentation(caseData))
-                .defendantRepresentation(getDefendantRepresentation(caseData))
-                .defendantTwoRepresentation(getDefendantTwoRepresentation(caseData))
-                .isDefendantTwoExists(checkIsMultiparty(caseData))
-                .heardClaimantNotAttend(getHeardClaimantNotAttend(caseData))
-                .heardDefendantNotAttend(getHeardDefendantNotAttend(caseData))
-                .heardDefendantTwoNotAttend(getHeardDefendantTwoNotAttend(caseData))
-                .isOtherRepresentation(checkIsOtherRepresentation(caseData))
-                .otherRepresentationText(getOtherRepresentationText(caseData))
-                .isJudgeConsidered(checkIsJudgeConsidered(caseData))
-                .orderedText(caseData.getAssistedOrderOrderedThatText())
-                .showRecitals(checkRecitalsToggle(caseData))
-                .recitalRecordedText(getRecitalRecordedText(caseData))
-                .showFurtherHearing(checkFurtherHearingToggle(caseData))
-                .checkListToDate(checkListToDate(caseData))
-                .furtherHearingListFromDate(getFurtherHearingListFromDate(caseData))
+        AssistedOrderForm.AssistedOrderFormBuilder assistedOrderFormBuilder = AssistedOrderForm.builder()
+            .caseNumber(caseData.getCcdCaseReference().toString())
+            .claimant1Name(caseData.getClaimant1PartyName())
+            .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
+            .isMultiParty(caseData.getIsMultiParty())
+            .defendant1Name(caseData.getDefendant1PartyName())
+            .defendant2Name(caseData
+                                .getIsMultiParty().equals(YesOrNo.YES) ? caseData.getDefendant2PartyName() : null)
+            .courtLocation(docmosisService
+                               .getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
+            .siteName(caseData.getCaseManagementLocation().getSiteName())
+            .address(caseData.getCaseManagementLocation().getAddress())
+            .postcode(caseData.getCaseManagementLocation().getPostcode())
+            .receivedDate(LocalDate.now())
+            .judgeNameTitle(caseData.getJudgeTitle())
+            .isOrderMade(caseData.getAssistedOrderMadeSelection())
+            .isSingleDate(checkIsSingleDate(caseData))
+            .orderMadeSingleDate(getOrderMadeSingleDate(caseData))
+            .isDateRange(checkIsDateRange(caseData))
+            .orderMadeDateRangeFrom(getOrderMadeDateRangeFrom(caseData))
+            .orderMadeDateRangeTo(getOrderMadeDateRangeTo(caseData))
+            .isBeSpokeRange(checkIsBeSpokeRange(caseData))
+            .orderMadeBeSpokeText(getOrderMadeBeSpokeText(caseData))
+            .judgeHeardFromShowHide(checkJudgeHeardFromToggle(caseData))
+            .judgeHeardSelection(getJudgeHeardFromRepresentation(caseData))
+            .claimantRepresentation(getClaimantRepresentation(caseData))
+            .defendantRepresentation(getDefendantRepresentation(caseData))
+            .defendantTwoRepresentation(getDefendantTwoRepresentation(caseData))
+            .isDefendantTwoExists(checkIsMultiparty(caseData))
+            .heardClaimantNotAttend(getHeardClaimantNotAttend(caseData))
+            .heardDefendantNotAttend(getHeardDefendantNotAttend(caseData))
+            .heardDefendantTwoNotAttend(getHeardDefendantTwoNotAttend(caseData))
+            .isOtherRepresentation(checkIsOtherRepresentation(caseData))
+            .otherRepresentationText(getOtherRepresentationText(caseData))
+            .isJudgeConsidered(checkIsJudgeConsidered(caseData))
+            .orderedText(caseData.getAssistedOrderOrderedThatText())
+            .showRecitals(checkRecitalsToggle(caseData))
+            .recitalRecordedText(getRecitalRecordedText(caseData))
+            .showFurtherHearing(checkFurtherHearingToggle(caseData))
+            .checkListToDate(checkListToDate(caseData))
+            .furtherHearingListFromDate(getFurtherHearingListFromDate(caseData))
             .furtherHearingListToDate(getFurtherHearingListToDate(caseData))
             .furtherHearingMethod(getFurtherHearingMethod(caseData))
             .furtherHearingDuration(getFurtherHearingDuration(caseData))
@@ -136,8 +149,22 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
             .orderMadeOnText(getOrderMadeOnText(caseData))
             .initiativeDate(getOrderMadeCourtInitiativeDate(caseData))
             .withoutNoticeDate(getOrderMadeCourtWithOutNoticeDate(caseData))
-            .reasonsText(getReasonText(caseData))
+            .reasonsText(getReasonText(caseData));
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            assistedOrderFormBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
                 .build();
+
+        }
+        return assistedOrderFormBuilder.build();
     }
 
     protected String getCostsReservedText(CaseData caseData) {
@@ -559,7 +586,10 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
         return String.join("-", parts);
     }
 
-    protected DocmosisTemplates getTemplate() {
+    protected DocmosisTemplates getTemplate(FlowFlag userType) {
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return POST_JUDGE_ASSISTED_ORDER_FORM_LIP;
+        }
         return ASSISTED_ORDER_FORM;
     }
 }
