@@ -35,6 +35,7 @@ public class CallbackControllerTest extends BaseIntegrationTest {
             .caseDetails(CaseDetailsBuilder.builder().atStateAwaitingRespondentAcknowledgement().build())
             .build();
     }
+
     @Test
     @SneakyThrows
     public void shouldReturnNotFoundWhenCallbackHandlerIsNotImplemented() {
