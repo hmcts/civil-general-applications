@@ -249,7 +249,6 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         List<Element<CaseDocument>> addlDoc =
                 DocUploadUtils.prepareDocuments(generalApplication.getGeneralAppEvidenceDocument(),
                         DocUploadUtils.APPLICANT, CaseEvent.INITIATE_GENERAL_APPLICATION);
-
         if (Objects.nonNull(addlDoc)) {
             map.put("gaAddlDoc", addlDoc);
             map.put("gaAddlDocStaff", addlDoc);

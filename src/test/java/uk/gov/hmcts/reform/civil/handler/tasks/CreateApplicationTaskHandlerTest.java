@@ -607,6 +607,7 @@ public class CreateApplicationTaskHandlerTest {
             generalApplication.setParentClaimantIsApplicant(NO);
             buildData(generalApplication, NO, NO, false, false, true);
         }
+    }
 
     @Nested
     class CreateGeneralApplicationCCDEvent {
