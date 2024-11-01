@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
@@ -606,6 +607,18 @@ public class CreateApplicationTaskHandlerTest {
                 getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
             generalApplication.setParentClaimantIsApplicant(NO);
             buildData(generalApplication, NO, NO, false, false, true);
+        }
+
+        @Test
+        void shouldAddCoScProofOfDebtPaymentDocumentsForDefendant() {
+            when(featureToggleService.isCoSCEnabled())
+                .thenReturn(true);
+            GeneralApplication generalApplication =
+                getGeneralApplication("applicant", NO, NO, NO, NO, NO, null)
+                    .toBuilder().isGaApplicantLip(YES).build();
+            generalApplication = generalApplication.toBuilder().certOfSC(CertOfSC.builder().build().toBuilder().build()).build();
+
+            buildData(generalApplication, NO, NO, false);
         }
     }
 
