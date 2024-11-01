@@ -611,11 +611,21 @@ public class CreateApplicationTaskHandlerTest {
 
         @Test
         void shouldAddCoScProofOfDebtPaymentDocumentsForDefendant() {
+            Element<Document> doc = Element.<Document>builder()
+                .id(DOC_ID)
+                .value(Document.builder().documentUrl("string").build()).build();
+            List<Element<Document>> docs = List.of(doc);
+
             when(featureToggleService.isCoSCEnabled())
                 .thenReturn(true);
+
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", NO, NO, NO, NO, NO, null)
-                    .toBuilder().isGaApplicantLip(YES).build();
+                    .toBuilder()
+                    .certOfSC(CertOfSC.builder()
+                                  .proofOfDebtDoc(docs)
+                                  .build())
+                    .isGaApplicantLip(YES).build();
             generalApplication = generalApplication.toBuilder().certOfSC(CertOfSC.builder().build().toBuilder().build()).build();
 
             buildData(generalApplication, NO, NO, false);
