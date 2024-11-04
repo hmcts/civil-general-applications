@@ -192,7 +192,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
         void notificationRespondentInWelshShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
             CaseData caseData = getCaseData(true).toBuilder()
                 .isGaRespondentOneLip(YES)
-                .applicantBilingualLanguagePreference(YES)
+                .respondentBilingualLanguagePreference(YES)
                 .generalAppPBADetails(GAPbaDetails.builder()
                                           .fee(Fee.builder().code("PAID").build())
                                           .paymentDetails(PaymentDetails.builder().status(
@@ -202,7 +202,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
-            CaseData claimRespondentResponseLan = CaseData.builder().applicantBilingualLanguagePreference(YES)
+            CaseData claimRespondentResponseLan = CaseData.builder().respondentBilingualLanguagePreference(YES)
                 .respondent1LiPResponse(RespondentLiPResponse.builder().respondent1ResponseLanguage(
                 Language.BOTH.toString()).build()).build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
