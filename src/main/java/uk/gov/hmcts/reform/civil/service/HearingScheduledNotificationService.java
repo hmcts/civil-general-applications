@@ -133,7 +133,7 @@ public class HearingScheduledNotificationService implements NotificationData {
     }
 
     private String getLiPRespondentTemplate(CaseData civilCaseData, CaseData caseData) {
-        return civilCaseData.isRespondentBilingual()
+        return caseData.isRespondentBilingual()
             ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
