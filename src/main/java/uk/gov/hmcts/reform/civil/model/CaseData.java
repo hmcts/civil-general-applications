@@ -81,8 +81,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -532,16 +530,8 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
         return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
-            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO
+            || caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == NO;
     }
 
-    @JsonIgnore
-    public boolean claimIssueFullRemissionNotGrantedHWF_2(CaseData caseData) {
-        return (Objects.nonNull(caseData.getGaHwfDetails()) && List.of(PARTIAL_REMISSION_HWF_GA, NO_REMISSION_HWF_GA)
-            .contains(caseData.getGaHwfDetails().getHwfCaseEvent()))
-            || (Objects.nonNull(caseData.getAdditionalHwfDetails()) && List.of(PARTIAL_REMISSION_HWF_GA, NO_REMISSION_HWF_GA)
-            .contains(caseData.getAdditionalHwfDetails().getHwfCaseEvent()))
-            || Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
-            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
-    }
 }
