@@ -384,13 +384,13 @@ public class CaseData implements MappableObject {
 
     @JsonIgnore
     public boolean isApplicantBilingual() {
-            return Objects.nonNull(applicantBilingualLanguagePreference)
+        return Objects.nonNull(applicantBilingualLanguagePreference)
                 && applicantBilingualLanguagePreference.equals(YES);
     }
 
     @JsonIgnore
     public boolean isRespondentBilingual() {
-            return Objects.nonNull(respondentBilingualLanguagePreference)
+        return Objects.nonNull(respondentBilingualLanguagePreference)
                 && respondentBilingualLanguagePreference.equals(YES);
     }
 
