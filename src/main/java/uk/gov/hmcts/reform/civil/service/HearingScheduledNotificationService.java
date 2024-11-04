@@ -107,7 +107,7 @@ public class HearingScheduledNotificationService implements NotificationData {
     }
 
     private String getLiPApplicantTemplates(CaseData caseData) {
-        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isApplicantBilingual()
             ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
