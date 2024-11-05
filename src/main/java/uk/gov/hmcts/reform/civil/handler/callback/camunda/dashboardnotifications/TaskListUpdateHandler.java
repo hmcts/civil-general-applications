@@ -36,12 +36,14 @@ public abstract class TaskListUpdateHandler extends DashboardCallbackHandler {
         APPLICATION_PAYMENT_FAILED,
         APPLICATION_ADD_PAYMENT,
         AWAITING_APPLICATION_PAYMENT,
+        AWAITING_DIRECTIONS_ORDER_DOCS,
         AWAITING_WRITTEN_REPRESENTATIONS,
         AWAITING_ADDITIONAL_INFORMATION,
         RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION
     ).stream().map(CaseState::getDisplayedValue).toList();
 
     public static final List<String> RESPONDENT_ACTION_NEEDED_GA_STATES = List.of(
+        AWAITING_DIRECTIONS_ORDER_DOCS,
         AWAITING_RESPONDENT_RESPONSE,
         ADDITIONAL_RESPONSE_TIME_PROVIDED,
         AWAITING_WRITTEN_REPRESENTATIONS,
@@ -54,7 +56,6 @@ public abstract class TaskListUpdateHandler extends DashboardCallbackHandler {
         ADDITIONAL_RESPONSE_TIME_PROVIDED,
         PENDING_APPLICATION_ISSUED,
         HEARING_SCHEDULED,
-        AWAITING_DIRECTIONS_ORDER_DOCS,
         APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
         LISTING_FOR_A_HEARING,
         AWAITING_RESPONDENT_RESPONSE
@@ -63,7 +64,6 @@ public abstract class TaskListUpdateHandler extends DashboardCallbackHandler {
     public static final List<String> RESPONDENT_IN_PROGRESS_GA_STATES = List.of(
         APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
         ADDITIONAL_RESPONSE_TIME_EXPIRED,
-        AWAITING_DIRECTIONS_ORDER_DOCS,
         LISTING_FOR_A_HEARING,
         HEARING_SCHEDULED
     ).stream().map(CaseState::getDisplayedValue).toList();
