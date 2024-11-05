@@ -58,6 +58,9 @@ springdoc:
 oidc:
   issuer: ${OIDC_ISSUER:http://fr-am:8080/openam/oauth2/hmcts}
 
+send-letter:
+  url: ${SEND_LETTER_URL:http://localhost:8765}
+  
 fees:
   api:
     service: civil money claims
@@ -168,16 +171,26 @@ notifications:
   notifyApplicantForHwfPartialRemission: "2c5c5cae-f1b1-41b5-afe5-0ce2e68f8d3c"
   notifyApplicantForNoRemission: "3008a18a-07ec-445b-a226-62ffa19132ce"
   notifyApplicantForHwfPaymentOutcome: "64c4047f-3256-45ff-9b4e-9a11bccf14fe"
+  notifyApplicantLiPTranslatedDocumentUploadedWhenParentCaseInBilingual: "954f1d99-eb42-4151-b799-157c969f043f"
+  notifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual: "acc28d80-8e15-4b8f-a439-e990bbddeea4"
+  notifyLRTranslatedDocumentUploaded: "c3bde074-9da5-469a-9aa4-7a80d9cfae1b"
   notifyApplicantForHwfInvalidRefNumberBilingual: "8950e206-6d15-4575-9d99-734908389fa7"
-  notifyApplicantForHwFMoreInformationNeededWelsh: "65b3524b-b58c-4cdb-b8b5-5fc2cec505a5"
+  notifyApplicantForHwFMoreInformationNeededWelsh: "70267e5b-9f11-4549-bc59-56bf7fbdeca7"
   notifyApplicantForHwfNoRemissionWelsh: "f9d2f0db-2ae4-4691-8076-bfbb82548846"
   notifyApplicantForHwfUpdateRefNumberBilingual: "a7c206b5-8a27-4419-83ff-61351cbc69fb"
   notifyApplicantForHwfPartialRemissionBilingual: "5bbd4518-5501-4737-8a1e-a6adacd5e679"
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:false}
 
 os-postcode-lookup:
   url: https://api.os.uk/search/names/v1/find
   key: ${OS_POSTCODE_LOOKUP_API_KEY:}
   offline-mode: false
+
+print:
+  service:
+    enabled: true
 
 stitching:
   api:
@@ -240,6 +253,10 @@ fees:
   api:
     url: http://localhost:8765
 
+print:
+  service:
+    enabled: false
+
 genApp:
   lrd:
     url: http://localhost:8765
@@ -301,6 +318,10 @@ management:
   endpoints:
     enabled-by-default: false
 
+print:
+  service:
+    enabled: true
+
 fees:
   api:
     url: http://fake-fees-register-api
@@ -361,7 +382,7 @@ rd_professional:
     url: http://localhost:6665
 
 sendgrid:
-  api-key: fake-key
+  api-key: ${SENDGRID_API_KEY:fake-key}
 ---
 
 spring:

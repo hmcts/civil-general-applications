@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -243,6 +244,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final GaForLipService gaForLipService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -696,7 +698,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .sequentialApplicantMustRespondWithin(deadlinesCalculator
                                                                   .getJudicialOrderDeadlineDate(LocalDateTime.now(),
                                                                                                 21)).build());
-        caseDataBuilder.bilingualHint(setBilingualHint(caseData));
+        if (featureToggleService.isGaForLipsEnabled()) {
+            caseDataBuilder.bilingualHint(setBilingualHint(caseData));
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
@@ -712,10 +716,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
                 case LIST_FOR_A_HEARING:
                 case FREE_FORM_ORDER:
                 case MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS:
-                    return gaForLipService.anyWelshNotice(civilCaseData, caseData) ? YES : NO;
+                    return gaForLipService.anyWelshNotice(caseData) ? YES : NO;
                 case MAKE_AN_ORDER:
                 case REQUEST_MORE_INFO:
-                    return gaForLipService.anyWelsh(civilCaseData, caseData) ? YES : NO;
+                    return gaForLipService.anyWelsh(caseData) ? YES : NO;
                 default:
                     return NO;
             }
@@ -893,7 +897,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .judgeHearingSupportReqText1(null)
                                                    .build());
         }
-        dataBuilder.bilingualHint(null);
+        if (featureToggleService.isGaForLipsEnabled()) {
+            dataBuilder.bilingualHint(null);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();

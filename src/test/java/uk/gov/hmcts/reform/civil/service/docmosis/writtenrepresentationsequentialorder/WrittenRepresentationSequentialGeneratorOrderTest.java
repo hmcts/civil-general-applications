@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_WRITTEN_REPRESENTATION_SEQUENTIAL_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_SEQUENTIAL;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
@@ -119,6 +121,86 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
     }
 
     @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void shouldGenerateWrittenRepresentationSequentialDocument() {
+            CaseData caseData = CaseDataBuilder.builder().writtenRepresentationSequentialApplication().build();
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class),
+                                                                   eq(POST_JUDGE_WRITTEN_REPRESENTATION_SEQUENTIAL_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_WRITTEN_REPRESENTATION_SEQUENTIAL_LIP.getDocumentTitle(), bytes));
+
+            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            writtenRepresentationSequentailOrderGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                                                   caseData,
+                                                                   BEARER_TOKEN,
+                                                                   FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_WRITTEN_REPRESENTATION_SEQUENTIAL_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetWrittenRepresentationSequentialData() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .parentClaimantIsApplicant(YES)
+                .writtenRepresentationSequentialApplication().build()
+                .toBuilder().build();
+
+            when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+
+            var templateData = writtenRepresentationSequentailOrderGenerator
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                 caseData,
+                                 "auth", FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            assertThatFieldsAreCorrect_WrittenRepresentationSequential(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_WrittenRepresentationSequential(JudgeDecisionPdfDocument templateData,
+                                                                                CaseData caseData) {
+            Assertions.assertAll(
+                "Written Representation Sequential Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getLocationName(), caseData.getLocationName()),
+                () -> assertEquals(templateData.getCourtName(), "Reading"),
+                () -> assertEquals(templateData.getJudicialByCourtsInitiativeForWrittenRep(), caseData
+                    .getOrderCourtOwnInitiativeForWrittenRep().getOrderCourtOwnInitiative() + " ".concat(
+                    caseData.getOrderCourtOwnInitiativeForWrittenRep()
+                        .getOrderCourtOwnInitiativeDate().format(DATE_FORMATTER))),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudgeRecitalText()),
+                () -> assertEquals(templateData.getWrittenOrder(), caseData.getDirectionInRelationToHearingText()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), "John Doe"),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
+        }
+    }
+
+    @Nested
     class GetTemplateData {
 
         @Test
@@ -131,7 +213,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
-            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = writtenRepresentationSequentailOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepresentationSequential(templateData, caseData);
         }
@@ -184,7 +266,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
             when(listGeneratorService.applicationType(updateData)).thenReturn("Extend time");
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option2(templateData, updateData);
         }
@@ -231,7 +313,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3(templateData, updateData);
         }
@@ -276,7 +358,7 @@ class WrittenRepresentationSequentialGeneratorOrderTest {
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
 
             var templateData = writtenRepresentationSequentailOrderGenerator
-                .getTemplateData(updateData, "auth");
+                .getTemplateData(null, updateData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_WrittenRepSequential_Option3_1V1(templateData, updateData);
         }
