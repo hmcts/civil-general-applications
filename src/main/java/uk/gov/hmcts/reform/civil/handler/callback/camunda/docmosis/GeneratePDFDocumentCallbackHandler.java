@@ -528,18 +528,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
         }
 
-//        if (gaForLipService.isLipApp(caseData) && Objects.nonNull(decision)) {
-//            sendFinalOrderPrintService
-//                .sendJudgeFinalOrderToPrintForLIP(
-//                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
-//                    decision, caseData, LIP_APPLICANT);
-//        }
-//
-//        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData) && Objects.nonNull(decision)) {
-//            sendFinalOrderPrintService
-//                .sendJudgeFinalOrderToPrintForLIP(
-//                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
-//                    decision, caseData, LIP_RESPONDENT);
         /*
         * Send Judge order document to Lip Applicant
         * */
