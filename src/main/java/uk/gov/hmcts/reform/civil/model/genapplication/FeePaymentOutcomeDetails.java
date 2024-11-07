@@ -18,7 +18,7 @@ public class FeePaymentOutcomeDetails {
     private YesOrNo hwfNumberAvailable;
     private String  hwfNumberForFeePaymentOutcome;
     private YesOrNo hwfFullRemissionGrantedForGa;
-    private YesOrNo hwfFullRemissionGrantedForAdditional;
+    private YesOrNo hwfFullRemissionGrantedForAdditionalFee;
     private List<String> hwfOutstandingFeePaymentDoneForGa;
     private List<String> hwfOutstandingFeePaymentDoneForAdditional;
 }

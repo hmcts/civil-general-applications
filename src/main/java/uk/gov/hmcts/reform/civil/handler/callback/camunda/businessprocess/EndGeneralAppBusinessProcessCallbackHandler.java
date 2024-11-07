@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
@@ -22,6 +24,7 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_DISMISSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
@@ -45,6 +48,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private final CaseDetailsConverter caseDetailsConverter;
     private final GaForLipService gaForLipService;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
+    private final FeatureToggleService featureToggleService;
     private static final String FREE_KEYWORD = "FREE";
 
     @Override
@@ -101,6 +105,9 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             } else {
                 newState = ORDER_MADE;
             }
+        } else if (featureToggleService.isCoSCEnabled() && data.getGeneralAppType().getTypes().contains(
+            GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
+            newState = APPLICATION_DISMISSED;
         } else {
             newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
                 data,

@@ -17,14 +17,18 @@ import java.util.List;
 import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_GA_BUSINESS_PROCESS;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_HEARING_SCHEDULED_BUSINESS_PROCESS;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class StartGeneralApplicationBusinessProcessCallbackHandler extends CallbackHandler {
 
-    private static final List<CaseEvent> EVENTS = List.of(START_GA_BUSINESS_PROCESS);
+    private static final List<CaseEvent> EVENTS = List.of(START_GA_BUSINESS_PROCESS,
+                                                          START_HEARING_SCHEDULED_BUSINESS_PROCESS,
+                                                          START_BUSINESS_PROCESS_GASPEC);
     public static final String BUSINESS_PROCESS = "businessProcess";
 
     @Override
