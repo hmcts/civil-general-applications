@@ -66,7 +66,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             && Objects.nonNull(caseData.getGaHwfDetails().getOutstandingFeeInPounds())
             && !Objects.equals(caseData.getGaHwfDetails().getOutstandingFeeInPounds(), BigDecimal.ZERO))
             || (caseData.isHWFTypeAdditional()
-            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditional() == YesOrNo.YES
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == YesOrNo.YES
             && Objects.nonNull(caseData.getAdditionalHwfDetails())
             && Objects.nonNull(caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds())
             && !Objects.equals(caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds(), BigDecimal.ZERO))) {
