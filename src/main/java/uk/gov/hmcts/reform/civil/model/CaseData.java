@@ -123,6 +123,7 @@ public class CaseData implements MappableObject {
     private final String generalAppRespondReason;
     private final String generalAppRespondConsentReason;
     private List<Element<TranslatedDocument>> translatedDocuments;
+    private List<Element<TranslatedDocument>> translatedDocumentsBulkPrint;
     private final List<Element<Document>> generalAppRespondDocument;
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;

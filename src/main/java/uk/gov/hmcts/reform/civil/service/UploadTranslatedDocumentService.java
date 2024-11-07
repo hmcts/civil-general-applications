@@ -48,6 +48,8 @@ public class UploadTranslatedDocumentService {
                 }
             });
         }
+        // Copy to different field so XUI data can be cleared
+        caseDataBuilder.translatedDocumentsBulkPrint(caseData.getTranslatedDocuments());
         caseDataBuilder.translatedDocuments(null);
         return caseDataBuilder;
     }
