@@ -36,6 +36,8 @@ public class GeneralApplicationTaskHandler extends BaseExternalTaskHandler {
         String generalApplicationCaseId = variables.getGeneralApplicationCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
                                                                                 variables.getCaseEvent());
+        log.info("Started GA update event for case ID: {} with event: {}", externalTask.getId(), variables.getCaseEvent());
+
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()

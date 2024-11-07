@@ -105,6 +105,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                                               .getGeneralAppHelpWithFees()
                                                               .getHelpWithFeesReferenceNumber()).build())
                     .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
+                log.info("Start business process INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
             } else if (processedCaseData.isHWFTypeAdditional()) {
                 caseData = processedCaseData.toBuilder()
                     .additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder()
@@ -114,6 +115,8 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                                                       .getHelpWithFeesReferenceNumber()).build())
                     .businessProcess(BusinessProcess.ready(UPDATE_GA_ADD_HWF))
                     .build();
+                log.info("Start business process UPDATE_GA_ADD_HWF for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
+
             } else {
                 errors.add(CASE_STATE_INVALID);
             }

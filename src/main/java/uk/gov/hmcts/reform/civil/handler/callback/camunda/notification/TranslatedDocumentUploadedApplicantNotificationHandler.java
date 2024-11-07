@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.notification;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -25,6 +26,7 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TranslatedDocumentUploadedApplicantNotificationHandler extends CallbackHandler
@@ -72,6 +74,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
 
     private CallbackResponse notifyApplicant(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        log.info("Translated document uploaded for applicant for case: {}", caseData.getCcdCaseReference());
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));

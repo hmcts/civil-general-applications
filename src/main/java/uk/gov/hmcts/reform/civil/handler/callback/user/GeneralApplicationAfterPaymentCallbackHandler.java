@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandler {
@@ -56,15 +58,19 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
 
         // No need to initiate business process if payment status is failed
         if (gaForLipService.isLipApp(caseData) && paymentStatus == PaymentStatus.FAILED) {
+            log.info("Payment status is failed for caseId: {}", caseData.getCcdCaseReference());
             return getCallbackResponse(caseDataBuilder);
         }
 
         if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_COSC_APPLICATION_AFTER_PAYMENT));
+            log.info("Business process INITIATE_COSC_APPLICATION_AFTER_PAYMENT has initiated for caseId: {}", caseData.getCcdCaseReference());
         } else {
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
+            log.info("Business process INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT has initiated for caseId: {}", caseData.getCcdCaseReference());
+
         }
 
         return getCallbackResponse(caseDataBuilder);

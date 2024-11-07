@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
@@ -14,6 +15,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
+@Slf4j
 @Service
 public class ApplicationSubmittedDashboardNotificationHandler extends DashboardCallbackHandler {
 
@@ -33,6 +35,7 @@ public class ApplicationSubmittedDashboardNotificationHandler extends DashboardC
     @Override
     public String getScenario(CaseData caseData) {
         if (caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
+            log.info("Claim issue fee payment done with HWF for caseId: {}", caseData.getCcdCaseReference());
             return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
                 ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
                 : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();

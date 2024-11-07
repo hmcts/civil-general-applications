@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -16,6 +17,7 @@ import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocUploadNotificationService implements NotificationData {
@@ -29,6 +31,7 @@ public class DocUploadNotificationService implements NotificationData {
     private final CaseDetailsConverter caseDetailsConverter;
 
     public void notifyApplicantEvidenceUpload(CaseData caseData) throws NotificationException {
+        log.info("Starting applicant evidence upload notification for Case ID: {}", caseData.getCcdCaseReference());
         String email = caseData.getGeneralAppApplnSolicitor().getEmail();
         CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
                                                                      .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -43,10 +46,13 @@ public class DocUploadNotificationService implements NotificationData {
                             caseData.getCcdCaseReference()
                     )
             );
+            log.info("Applicant evidence upload notification sent to: {} for Case ID: {}", email, caseData.getCcdCaseReference());
         }
     }
 
     public void notifyRespondentEvidenceUpload(CaseData caseData) throws NotificationException {
+
+        log.info("Starting respondent evidence upload notification for Case ID: {}", caseData.getCcdCaseReference());
 
         CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));

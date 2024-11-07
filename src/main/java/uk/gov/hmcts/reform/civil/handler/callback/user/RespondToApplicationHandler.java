@@ -129,8 +129,12 @@ public class RespondToApplicationHandler extends CallbackHandler {
         if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)) {
             caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
+            log.info("General app vary judgement type for caseId: {}", caseData.getCcdCaseReference());
+
         } else {
             caseDataBuilder.generalAppVaryJudgementType(NO);
+            log.info("General app does not vary judgement type for caseId: {}", caseData.getCcdCaseReference());
+
         }
 
         caseDataBuilder

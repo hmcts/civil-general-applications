@@ -30,9 +30,11 @@ public class EventEmitterAspect {
     @Around("execution(* *(*)) && @annotation(EventEmitter) && args(callbackParams))")
     public Object emitBusinessProcessEvent(ProceedingJoinPoint joinPoint, CallbackParams callbackParams)
         throws Throwable {
+        log.info("Entering emitBusinessProcessEvent for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         if (callbackParams.getType() == SUBMITTED) {
             CaseData caseData = callbackParams.getCaseData();
             var caseId = caseData.getCcdCaseReference();
+            log.info("Callback type is SUBMITTED for caseId: {}", caseId);
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
 
             if (generalApplications != null) {
@@ -46,6 +48,7 @@ public class EventEmitterAspect {
                 }
             } else {
                 if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == READY) {
+                    log.info("Emitting business process GA event for caseId: {}", caseId);
                     eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
                 }
             }

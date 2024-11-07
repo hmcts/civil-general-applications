@@ -56,8 +56,10 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
     public ExternalTaskData handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String caseId = variables.getCaseId();
+        log.info("Starting CreateApplicationTaskHandler for case ID: {}", caseId);
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
+        log.debug("Started event update for case ID: {}, event token: {}", caseId, startEventResponse.getToken());
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         var generalApplications = caseData.getGeneralApplications();
         CaseData generalAppCaseData = null;
@@ -71,6 +73,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
+                log.debug("Eligible general application found for processing in case ID: {}", caseId);
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
@@ -78,6 +81,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BOTH.equals(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
+                log.debug("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
+
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
 
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
@@ -317,9 +322,12 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
+        log.debug("State flow evaluation completed with state: {} and flags: {}",
+                  stateFlow.getState().getName(), stateFlow.getFlags());
         var generalAppCaseData = externalTaskData.getGeneralApplicationCaseData();
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());
+            log.info("Added general application case ID to variables: {}", generalAppCaseData.getCcdCaseReference());
         }
         return variables;
     }

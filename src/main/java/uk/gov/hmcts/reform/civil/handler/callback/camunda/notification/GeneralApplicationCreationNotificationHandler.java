@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -20,6 +21,7 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationCreationNotificationHandler extends CallbackHandler {
@@ -48,6 +50,7 @@ public class GeneralApplicationCreationNotificationHandler extends CallbackHandl
     private CallbackResponse notifyGeneralApplicationCreationRespondent(CallbackParams callbackParams) {
 
         CaseData caseData = callbackParams.getCaseData();
+        log.info("Notify general application creation respondent for case: {}", caseData.getCcdCaseReference());
         if (generalAppFeesService.isFreeApplication(caseData)
                 || !caseData.getCcdState().equals(CaseState.PENDING_APPLICATION_ISSUED)) {
             caseData = gaCreationNotificationService.sendNotification(caseData);

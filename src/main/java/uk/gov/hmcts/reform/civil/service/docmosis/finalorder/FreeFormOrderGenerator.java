@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOT
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_FREE_FORM_ORDER_LIP;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrder> {
@@ -40,12 +42,14 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         FreeFormOrder templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        log.info("Generate free form order with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return  generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         FreeFormOrder templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate free form order for caseId: {}", caseData.getCcdCaseReference());
         return  generateDocmosisDocument(templateData, authorisation, userType);
     }
 

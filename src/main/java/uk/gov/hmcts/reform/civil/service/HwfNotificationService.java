@@ -4,6 +4,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HwfNotificationService implements NotificationData {
@@ -55,6 +57,7 @@ public class HwfNotificationService implements NotificationData {
         if (Objects.isNull(event)) {
             event = getEvent(caseData);
         }
+        log.info("Sending help with fees notification for Case ID: {}", caseData.getCcdCaseReference());
 
         notificationService.sendMail(
                 caseData.getGeneralAppApplnSolicitor().getEmail(),

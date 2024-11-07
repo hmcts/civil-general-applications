@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
@@ -22,6 +23,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isUrgentApplnNotificationCriteriaSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationCreationNotificationService  implements NotificationData {
@@ -41,6 +43,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
 
+        log.info("Initiating notification process for Case ID: {}", caseData.getCcdCaseReference());
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -53,6 +56,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
          * Send email to Respondents if application is withNotice and non-urgent
          * */
         if (isNotificationCriteriaSatisfied) {
+
+            log.info("Sending general notification to respondents for Case ID: {}", caseData.getCcdCaseReference());
 
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
@@ -73,6 +78,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
         if (isUrgentApplnNotificationCriteriaSatisfied
             && isFeePaid(updatedCaseData)) {
+            log.info("Sending urgent notification to respondents for Case ID: {}", caseData.getCcdCaseReference());
 
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
@@ -114,13 +120,16 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
         throws NotificationException {
         try {
+            log.info("Sending notification to recipient: {} for Case ID: {} with template: {}", recipient, caseData.getCcdCaseReference(), emailTemplate);
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
+            log.info("Notification sent successfully to recipient: {} for Case ID: {}", recipient, caseData.getCcdCaseReference());
         } catch (NotificationException e) {
+            log.error("Failed to send notification to recipient: {} for Case ID: {}", recipient, caseData.getCcdCaseReference(), e);
             throw new NotificationException(e);
         }
     }

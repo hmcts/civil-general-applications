@@ -34,12 +34,14 @@ public class CallbackHandlerFactory {
     @EventEmitter
     public CallbackResponse dispatch(CallbackParams callbackParams) {
         String eventId = callbackParams.getRequest().getEventId();
+        log.info("Dispatch event {} for case id: {}", eventId, callbackParams.getCaseData().getCcdCaseReference());
         return ofNullable(eventHandlers.get(eventId))
             .map(h -> processEvent(h, callbackParams, eventId))
             .orElseThrow(() -> new CallbackException("Could not handle callback for event " + eventId));
     }
 
     private CallbackResponse processEvent(CallbackHandler handler, CallbackParams callbackParams, String eventId) {
+        log.info("Process event {} for case id: {}", eventId, callbackParams.getCaseData().getCcdCaseReference());
         return Optional.ofNullable(callbackParams.getRequest().getCaseDetailsBefore())
             .map(caseDetailsConverter::toCaseData)
             .map(CaseData::getBusinessProcess)

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
@@ -15,6 +16,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT;
 
+@Slf4j
 @Service
 public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler extends DashboardCallbackHandler {
 
@@ -30,8 +32,10 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
     protected String getScenario(CaseData caseData) {
         if (isWithNoticeOrConsent(caseData)) {
             if (caseData.isUrgent()) {
+                log.info("Case {} with notice or consent and is urgent", caseData.getCcdCaseReference());
                 return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_RESPONDENT.getScenario();
             } else {
+                log.info("Case {} with notice or consent and is not urgent", caseData.getCcdCaseReference());
                 return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT.getScenario();
             }
         }

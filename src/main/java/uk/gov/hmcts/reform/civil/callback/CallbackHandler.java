@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.callback;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
+@Slf4j
 public abstract class CallbackHandler {
 
     private static final String DEFAULT = "default";
@@ -89,6 +91,7 @@ public abstract class CallbackHandler {
      * @return empty callback response
      */
     protected CallbackResponse emptyCallbackResponse(CallbackParams callbackParams) {
+        log.info("Empty callback response for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         return AboutToStartOrSubmitCallbackResponse.builder().build();
     }
 
@@ -100,6 +103,7 @@ public abstract class CallbackHandler {
      * @return empty submitted callback response
      */
     protected CallbackResponse emptySubmittedCallbackResponse(CallbackParams callbackParams) {
+        log.info("Empty submitted callback response for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         return SubmittedCallbackResponse.builder().build();
     }
 }

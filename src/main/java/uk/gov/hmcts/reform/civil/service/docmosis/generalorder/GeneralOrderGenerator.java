@@ -43,12 +43,14 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        log.info("Generate general order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate general order form for caseId: {}", caseData.getCcdCaseReference());
         return  generateDocmosisDocument(templateData, authorisation, userType);
     }
 

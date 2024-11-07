@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -19,6 +20,7 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_CLAIMANT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotifyHearingNoticeClaimantHandler extends CallbackHandler {
@@ -44,6 +46,9 @@ public class NotifyHearingNoticeClaimantHandler extends CallbackHandler {
     private CallbackResponse notifyHearingNoticeToClaimant(CallbackParams callbackParams) {
 
         CaseData caseData = callbackParams.getCaseData();
+
+        log.info("Notify hearing notice to claimant for case: {}", caseData.getCcdCaseReference());
+
         try {
             caseData = hearingScheduledNotificationService.sendNotificationForClaimant(caseData);
         } catch (NotificationException notificationException) {

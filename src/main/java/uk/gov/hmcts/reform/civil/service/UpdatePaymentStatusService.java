@@ -32,12 +32,15 @@ public class UpdatePaymentStatusService {
 
     @Retryable(value = CaseDataUpdateException.class, maxAttempts = 3, backoff = @Backoff(delay = 500))
     public void updatePaymentStatus(String caseReference, CardPaymentStatusResponse cardPaymentStatusResponse) {
+        log.info("Starting updatePaymentStatus for caseReference: {}", caseReference);
+        log.debug("CardPaymentStatusResponse received: {}", cardPaymentStatusResponse);
 
         try {
             CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(caseReference));
             CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
             caseData = updateCaseDataWithStateAndPaymentDetails(cardPaymentStatusResponse, caseData);
 
+            log.info("Creating event for updated payment status on caseReference: {}", caseReference);
             createEvent(caseData, caseReference);
         } catch (Exception ex) {
             throw new CaseDataUpdateException();
@@ -48,6 +51,7 @@ public class UpdatePaymentStatusService {
         CaseEvent caseEvent = caseData.isAdditionalFeeRequested()
             ? CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID
             : CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+        log.info("Starting event creation with caseEvent: {} for caseReference: {}", caseEvent, caseReference);
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
             caseReference,
             caseEvent
@@ -58,6 +62,7 @@ public class UpdatePaymentStatusService {
             caseData
         );
 
+        log.info("Submitting case update with new data for caseReference: {}", caseReference);
         coreCaseDataService.submitUpdate(caseReference, caseDataContent);
     }
 
@@ -76,6 +81,7 @@ public class UpdatePaymentStatusService {
 
     private CaseData updateCaseDataWithStateAndPaymentDetails(CardPaymentStatusResponse cardPaymentStatusResponse,
                                                               CaseData caseData) {
+        log.info("Updating CaseData with new payment status for caseReference: {}", caseData.getCcdCaseReference());
 
         GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
         GAPbaDetails.GAPbaDetailsBuilder pbaDetailsBuilder;
@@ -89,8 +95,10 @@ public class UpdatePaymentStatusService {
             .build();
         if (caseData.isAdditionalFeeRequested()) {
             pbaDetails = pbaDetailsBuilder.additionalPaymentDetails(paymentDetails).build();
+            log.info("Applied additional payment details for caseReference: {}", caseData.getCcdCaseReference());
         } else {
             pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
+            log.info("Applied standard payment details for caseReference: {}", caseData.getCcdCaseReference());
         }
         return caseData.toBuilder()
             .generalAppPBADetails(pbaDetails)

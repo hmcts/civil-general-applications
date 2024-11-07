@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_OR
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler {
@@ -56,6 +58,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     }
 
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
+        log.info("End general application business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
         if (!gaForLipService.isGaForLip(data)
@@ -119,6 +122,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
+        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -135,12 +139,14 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     }
 
     private boolean isLipPaymentViaServiceRequest(CaseData data) {
+        log.info("Is LIP payment via service request for caseId: {}", data);
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && (Objects.isNull(data.getGeneralAppHelpWithFees())
             || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
     }
 
     private boolean isLipPaymentViaHelpWithFees(CaseData data) {
+        log.info("Is LIP payment via help with fees for caseId: {}", data);
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && !Objects.isNull(data.getGeneralAppHelpWithFees())
             && data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.YES
