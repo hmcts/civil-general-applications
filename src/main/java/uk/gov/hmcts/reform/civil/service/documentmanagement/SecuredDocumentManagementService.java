@@ -37,7 +37,7 @@ import static org.springframework.http.MediaType.APPLICATION_PDF_VALUE;
 @RequiredArgsConstructor
 public class SecuredDocumentManagementService implements DocumentManagementService {
 
-    protected static final int DOC_UUID_LENGTH = 36;
+    public static final int DOC_UUID_LENGTH = 36;
     public static final String CREATED_BY = "Civil";
     protected static final String FILES_NAME = "files";
 

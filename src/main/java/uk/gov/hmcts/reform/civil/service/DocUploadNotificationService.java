@@ -2,8 +2,10 @@ package uk.gov.hmcts.reform.civil.service;
 
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -22,14 +24,18 @@ public class DocUploadNotificationService implements NotificationData {
     private final NotificationsProperties notificationProperties;
     private static final String REFERENCE_TEMPLATE_DOC_UPLOAD = "general-apps-notice-of-document-upload-%s";
     private final GaForLipService gaForLipService;
-    private final Map<String, String> customProps;
+    private final Map<String, String> customProps = new HashMap<>();
+    private final CoreCaseDataService coreCaseDataService;
+    private final CaseDetailsConverter caseDetailsConverter;
 
     public void notifyApplicantEvidenceUpload(CaseData caseData) throws NotificationException {
         String email = caseData.getGeneralAppApplnSolicitor().getEmail();
+        CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
+                                                                     .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
         if (null != email) {
             notificationService.sendMail(
                     email,
-                    gaForLipService.isLipApp(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                    gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                         : notificationProperties.getEvidenceUploadTemplate(),
                     addProperties(caseData),
                     String.format(
@@ -41,12 +47,16 @@ public class DocUploadNotificationService implements NotificationData {
     }
 
     public void notifyRespondentEvidenceUpload(CaseData caseData) throws NotificationException {
+
+        CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
         caseData.getGeneralAppRespondentSolicitors().forEach(
                 respondentSolicitor -> {
                     notificationService.sendMail(
                             respondentSolicitor.getValue().getEmail(),
                             gaForLipService.isLipResp(caseData)
-                                ? notificationProperties.getLipGeneralAppRespondentEmailTemplate()
+                                ? getLiPRespondentTemplate(caseData)
                                 : notificationProperties.getEvidenceUploadTemplate(),
                             addProperties(caseData),
                             String.format(
@@ -55,6 +65,18 @@ public class DocUploadNotificationService implements NotificationData {
                             )
                     );
                 });
+    }
+
+    private String getLiPRespondentTemplate(CaseData caseData) {
+        return caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
+    }
+
+    private String getLiPApplicantTemplate(CaseData caseData) {
+        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+            ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
+            : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
 
     @Override

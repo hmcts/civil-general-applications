@@ -41,15 +41,15 @@ public class BulkPrintService {
 
     private LetterWithPdfsRequest generateLetter(Map<String, Object> letterParams, byte[] letterContent) {
         String templateLetter = Base64.getEncoder().encodeToString(letterContent);
-        return new LetterWithPdfsRequest(List.of(templateLetter), "CMC001", letterParams);
+        return new LetterWithPdfsRequest(List.of(templateLetter), XEROX_TYPE_PARAMETER, letterParams);
     }
 
     private Map<String, Object> additionalInformation(String claimId, String claimReference, String letterType, List<String> personList) {
         Map<String, Object> additionalData = new HashMap<>();
-        additionalData.put("letterType", letterType);
-        additionalData.put("caseIdentifier", claimId);
-        additionalData.put("caseReferenceNumber", claimReference);
-        additionalData.put("recipients", personList);
+        additionalData.put(ADDITIONAL_DATA_LETTER_TYPE_KEY, letterType);
+        additionalData.put(ADDITIONAL_DATA_CASE_IDENTIFIER_KEY, claimId);
+        additionalData.put(ADDITIONAL_DATA_CASE_REFERENCE_NUMBER_KEY, claimReference);
+        additionalData.put(RECIPIENTS, personList);
         return additionalData;
     }
 

@@ -40,4 +40,11 @@ public class HearingForm implements MappableObject {
     private final String emailAddress;
     private final String claimantReferenceNumber;
     private final String defendantReferenceNumber;
+
+    private final String partyName;
+    private final String partyAddressAddressLine1;
+    private final String partyAddressAddressLine2;
+    private final String partyAddressAddressLine3;
+    private final String partyAddressPostTown;
+    private final String partyAddressPostCode;
 }

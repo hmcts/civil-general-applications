@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.docmosis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -11,10 +12,12 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 import uk.gov.hmcts.reform.civil.service.docmosis.consentorder.ConsentOrderGenerator;
@@ -27,6 +30,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
 import java.util.Collections;
@@ -79,6 +83,12 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     private final AssignCategoryId assignCategoryId;
     private final GaForLipService gaForLipService;
 
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+
+    @Value("${print.service.enabled}")
+    public String printServiceEnabled;
+
     @Override
     public String camundaActivityId() {
         return TASK_ID;
@@ -105,8 +115,18 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
         CaseData caseData = callbackParams.getCaseData();
 
+        CaseData civilCaseData = CaseData.builder().build();
+        if (gaForLipService.isGaForLip(caseData)) {
+            civilCaseData = caseDetailsConverter
+                .toCaseData(coreCaseDataService
+                                .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+
+        }
+
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         CaseDocument decision = null;
+        CaseDocument postJudgeOrderToLipApplicant = null;
+        CaseDocument postJudgeOrderToLipRespondent = null;
         if (Objects.nonNull(caseData.getApproveConsentOrder())) {
             decision = consentOrderGenerator.generate(
                 caseDataBuilder.build(),
@@ -128,11 +148,61 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Applicant Post Address
+                 * */
+                if (gaForLipService.isLipApp(caseData)) {
+
+                    postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * if GA is with notice
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+
+                    postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
             } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER)) {
+
                 decision = assistedOrderFormGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Applicant Post Address
+                 * */
+                if (gaForLipService.isLipApp(caseData)) {
+                    postJudgeOrderToLipApplicant = assistedOrderFormGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                    );
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * if GA is with notice
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                    postJudgeOrderToLipRespondent = assistedOrderFormGenerator.generate(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                        FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+                }
             }
             List<Element<CaseDocument>> newGeneralOrderDocumentList =
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
@@ -149,6 +219,29 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = generalOrderGenerator.generate(civilCaseData,
+                    caseDataBuilder.build(),
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(), FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                );
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = generalOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                );
+            }
+
             assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.ORDER_DOCUMENTS);
 
@@ -158,6 +251,31 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = directionOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                );
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = directionOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+            }
 
             List<Element<CaseDocument>> newDirectionOrderDocumentList =
                 ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
@@ -175,6 +293,32 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = dismissalOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                );
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = dismissalOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+            }
+
             assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.ORDER_DOCUMENTS);
 
@@ -185,6 +329,31 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = hearingOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = hearingOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+            }
+
             assignCategoryId.assignCategoryIdToCaseDocument(decision,
                                                             AssignCategoryId.APPLICATIONS);
 
@@ -194,6 +363,32 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = writtenRepresentationSequentailOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                );
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = writtenRepresentationSequentailOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+            }
 
             List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
                 ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
@@ -210,6 +405,31 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+
+            /*
+             * Generate Judge Request for Information order document with LIP Applicant Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * if GA is with notice
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = writtenRepresentationConcurrentOrderGenerator
+                    .generate(civilCaseData,
+                              caseDataBuilder.build(),
+                              callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                              FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                    );
+            }
 
             List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
                 ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
@@ -237,17 +457,65 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                                                           AssignCategoryId.APPLICATIONS
             );
 
+            /*
+            * Generate Judge Request for Information order document with LIP Applicant Post Address
+            * */
+
+            if (gaForLipService.isLipApp(caseData)) {
+                postJudgeOrderToLipApplicant = requestForInformationGenerator.generate(
+                    civilCaseData,
+                    caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+                );
+            }
+
+            /*
+             * Generate Judge Request for Information order document with LIP Respondent Post Address
+             * */
+            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
+                    civilCaseData,
+                    caseData,
+                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+                );
+            }
+
             caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         } else if (Objects.nonNull(caseData.getJudicialDecision())) {
             if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Respondent Post Address
+                 * if GA is with notice
+                 * */
+                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+
+                    postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
+                /*
+                 * Generate Judge Request for Information order document with LIP Applicant Post Address
+                 * */
+                if (gaForLipService.isLipApp(caseData)) {
+
+                    postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
+                        civilCaseData,
+                        caseData,
+                        callbackParams.getParams().get(BEARER_TOKEN).toString());
+                }
+
+                List<Element<CaseDocument>> documentList =
+                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
                 decision = freeFormOrderGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-
-                List<Element<CaseDocument>> documentList =
-                    ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
                 documentList.addAll(wrapElements(decision));
                 assignCategoryId.assignCategoryIdToCollection(
@@ -260,23 +528,73 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
         }
 
-        if (gaForLipService.isLipApp(caseData) && Objects.nonNull(decision)) {
-            sendFinalOrderPrintService
-                .sendJudgeFinalOrderToPrintForLIP(
-                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    decision, caseData, LIP_APPLICANT);
+//        if (gaForLipService.isLipApp(caseData) && Objects.nonNull(decision)) {
+//            sendFinalOrderPrintService
+//                .sendJudgeFinalOrderToPrintForLIP(
+//                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+//                    decision, caseData, LIP_APPLICANT);
+//        }
+//
+//        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData) && Objects.nonNull(decision)) {
+//            sendFinalOrderPrintService
+//                .sendJudgeFinalOrderToPrintForLIP(
+//                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
+//                    decision, caseData, LIP_RESPONDENT);
+        /*
+        * Send Judge order document to Lip Applicant
+        * */
+        if (printServiceEnabled.equals("true") && Objects.nonNull(postJudgeOrderToLipApplicant)) {
+            sendJudgeFinalOrderPrintService(
+                callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                postJudgeOrderToLipApplicant, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
         }
 
-        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData) && Objects.nonNull(decision)) {
-            sendFinalOrderPrintService
-                .sendJudgeFinalOrderToPrintForLIP(
-                    callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                    decision, caseData, LIP_RESPONDENT);
+        /*
+         * Send Judge order document to Lip Respondent
+         * */
+        if (printServiceEnabled.equals("true") && Objects.nonNull(postJudgeOrderToLipRespondent)) {
+            sendJudgeFinalOrderPrintService(
+                callbackParams.getParams().get(BEARER_TOKEN).toString(),
+                postJudgeOrderToLipRespondent, caseData, civilCaseData, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private CaseDocument generateFreeFormSendLetterDocForApplicant(CaseData civilCaseData, CaseData caseData, String auth) {
+
+        /*
+         * Generate Judge Request for Information order document with LIP Applicant Post Address
+         * */
+        return freeFormOrderGenerator.generate(
+            civilCaseData,
+            caseData,
+            auth,
+            FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
+        );
+    }
+
+    private CaseDocument generateFreeFormSendLetterDocForRespondent(CaseData civilCaseData, CaseData caseData, String auth) {
+
+        /*
+         * Generate Judge Request for Information order document with LIP Respondent Post Address
+         * if GA is with notice
+         * */
+        return freeFormOrderGenerator.generate(
+            civilCaseData,
+            caseData,
+            auth,
+            FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
+        );
+    }
+
+    private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {
+        sendFinalOrderPrintService
+            .sendJudgeFinalOrderToPrintForLIP(
+                authorisation,
+                decision.getDocumentLink(), caseData, civilCaseData, lipUserType);
     }
 
     private boolean isRequestMoreInfo(final CaseData caseData) {

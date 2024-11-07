@@ -68,7 +68,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .applicantPartyName(caseData.getApplicantPartyName())
                 .isCasePastDueDate(validateCasePastDueDate(caseData))
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+                .isWithNotice(isWithNoticeApplication(caseData))
                 .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
                                              .getReasonsForWithoutNotice() : null)
                 .generalAppUrgency(Objects.nonNull(caseData.getGeneralAppUrgencyRequirement())
@@ -186,6 +186,15 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         }
 
         return gaDraftFormBuilder.build();
+    }
+
+    private YesOrNo isWithNoticeApplication(CaseData caseData) {
+        if (Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(YesOrNo.NO)) {
+            return YesOrNo.YES;
+        }
+
+        return caseData.getGeneralAppInformOtherParty().getIsWithNotice();
     }
 
     private Boolean validateCasePastDueDate(CaseData caseData) {
