@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
@@ -34,6 +35,7 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
     private static final List<CaseEvent> EVENTS = singletonList(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT);
     private final ObjectMapper objectMapper;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -59,7 +61,8 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
             return getCallbackResponse(caseDataBuilder);
         }
 
-        if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
+        if (featureToggleService.isCoSCEnabled() && caseData.getGeneralAppType().getTypes().contains(
+            GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_COSC_APPLICATION_AFTER_PAYMENT));
         } else {

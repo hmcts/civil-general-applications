@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
@@ -20,15 +21,17 @@ abstract class HWFCallbackHandlerBase extends CallbackHandler {
     protected final List<CaseEvent> events;
     protected final PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService;
     protected final HwfNotificationService hwfNotificationService;
+    protected final FeatureToggleService featureToggleService;
 
     public HWFCallbackHandlerBase(ObjectMapper objectMapper,
                                   List<CaseEvent> events,
                                   PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService,
-                                  HwfNotificationService hwfNotificationService) {
+                                  HwfNotificationService hwfNotificationService, FeatureToggleService featureToggleService) {
         this.objectMapper = objectMapper;
         this.events = events;
         this.paymentRequestUpdateCallbackService = paymentRequestUpdateCallbackService;
         this.hwfNotificationService = hwfNotificationService;
+        this.featureToggleService = featureToggleService;
     }
 
     public HWFCallbackHandlerBase(ObjectMapper objectMapper,
@@ -37,6 +40,7 @@ abstract class HWFCallbackHandlerBase extends CallbackHandler {
         this.events = events;
         this.paymentRequestUpdateCallbackService = null;
         this.hwfNotificationService = null;
+        this.featureToggleService = null;
     }
 
     @Override

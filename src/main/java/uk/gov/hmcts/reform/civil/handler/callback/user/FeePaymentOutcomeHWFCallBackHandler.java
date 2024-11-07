@@ -4,6 +4,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
 
@@ -13,6 +14,8 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
@@ -42,8 +45,8 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
 
     public FeePaymentOutcomeHWFCallBackHandler(ObjectMapper objectMapper,
                                                PaymentRequestUpdateCallbackService paymentRequestUpdateCallbackService,
-                                               HwfNotificationService hwfNotificationService) {
-        super(objectMapper, EVENTS, paymentRequestUpdateCallbackService, hwfNotificationService);
+                                               HwfNotificationService hwfNotificationService, FeatureToggleService featureToggleService) {
+        super(objectMapper, EVENTS, paymentRequestUpdateCallbackService, hwfNotificationService, featureToggleService);
     }
 
     @Override
@@ -98,13 +101,20 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             errors.add(PROCESS_FEE_PAYMENT_FAILED);
         } else {
             if (processedCaseData.isHWFTypeApplication()) {
+
+                CaseEvent caseEvent = INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+                assert featureToggleService != null;
+                if (featureToggleService.isCoSCEnabled() && caseData.getGeneralAppType().getTypes().contains(
+                    GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
+                    caseEvent = INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
+                }
                 caseData = processedCaseData.toBuilder()
                     .gaHwfDetails(caseData.getGaHwfDetails().toBuilder()
                                       .fee(caseData.getGeneralAppPBADetails().getFee())
                                       .hwfReferenceNumber(caseData
                                                               .getGeneralAppHelpWithFees()
                                                               .getHelpWithFeesReferenceNumber()).build())
-                    .businessProcess(BusinessProcess.ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT)).build();
+                    .businessProcess(BusinessProcess.ready(caseEvent)).build();
             } else if (processedCaseData.isHWFTypeAdditional()) {
                 caseData = processedCaseData.toBuilder()
                     .additionalHwfDetails(caseData.getAdditionalHwfDetails().toBuilder()
