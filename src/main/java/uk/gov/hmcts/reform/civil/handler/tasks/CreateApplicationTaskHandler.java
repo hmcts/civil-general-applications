@@ -183,12 +183,19 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         List<GeneralApplicationTypes> types = generalApplication.getGeneralAppType().getTypes();
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
-        return GeneralApplicationsDetails.builder()
+        GeneralApplicationsDetails gaDetails = GeneralApplicationsDetails.builder()
             .generalApplicationType(collect)
             .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
             .caseLink(CaseLink.builder().caseReference(String.valueOf(
                 generalAppCaseData.getCcdCaseReference())).build())
-            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
+            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue())
+            .build();
+        if (featureToggleService.isGaForLipsEnabled()) {
+            gaDetails = gaDetails.toBuilder()
+                .parentClaimantIsApplicant(generalApplication.getParentClaimantIsApplicant())
+                .build();
+        }
+        return gaDetails;
     }
 
     private GADetailsRespondentSol buildRespApplication(GeneralApplication generalApplication,
@@ -197,13 +204,19 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         String collect = types.stream().map(GeneralApplicationTypes::getDisplayedValue)
             .collect(Collectors.joining(", "));
 
-        return GADetailsRespondentSol.builder()
+        GADetailsRespondentSol gaRespondentDetails = GADetailsRespondentSol.builder()
             .generalApplicationType(collect)
             .generalAppSubmittedDateGAspec(generalApplication.getGeneralAppSubmittedDateGAspec())
             .caseLink(CaseLink.builder().caseReference(String.valueOf(
                 generalAppCaseData.getCcdCaseReference())).build())
-            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue()).build();
-
+            .caseState(PENDING_APPLICATION_ISSUED.getDisplayedValue())
+            .build();
+        if (featureToggleService.isGaForLipsEnabled()) {
+            gaRespondentDetails = gaRespondentDetails.toBuilder()
+                .parentClaimantIsApplicant(generalApplication.getParentClaimantIsApplicant())
+                .build();
+        }
+        return gaRespondentDetails;
     }
 
     private List<Element<GeneralApplicationsDetails>> addApplication(GeneralApplicationsDetails application,
