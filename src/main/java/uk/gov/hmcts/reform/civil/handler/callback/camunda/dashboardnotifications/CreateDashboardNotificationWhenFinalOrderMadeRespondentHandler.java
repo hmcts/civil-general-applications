@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
@@ -14,7 +13,6 @@ import java.util.List;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT;
 
-@Slf4j
 @Service
 public class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler extends DashboardCallbackHandler {
 
@@ -40,7 +38,6 @@ public class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler exte
     }
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
-        log.info("Is with notice or consent for caseId: {}", caseData.getCcdCaseReference());
         return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
             || caseData.getGeneralAppConsentOrder() == YES;
     }
