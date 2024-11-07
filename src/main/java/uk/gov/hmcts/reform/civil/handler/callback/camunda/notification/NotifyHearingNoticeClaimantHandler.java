@@ -46,9 +46,7 @@ public class NotifyHearingNoticeClaimantHandler extends CallbackHandler {
     private CallbackResponse notifyHearingNoticeToClaimant(CallbackParams callbackParams) {
 
         CaseData caseData = callbackParams.getCaseData();
-
         log.info("Notify hearing notice to claimant for case: {}", caseData.getCcdCaseReference());
-
         try {
             caseData = hearingScheduledNotificationService.sendNotificationForClaimant(caseData);
         } catch (NotificationException notificationException) {

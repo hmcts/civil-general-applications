@@ -901,7 +901,6 @@ public class ParentCaseUpdateHelper {
         List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
             caseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
         log.info("Starting update for RespondentSolGaAppDetails with applicationId: {}", applicationId);
-
         if (!isEmpty(gaDetailsRespondentSol)
             && gaDetailsRespondentSol.stream()
                 .anyMatch(respondentOne -> gaRespSolAppFilterCriteria(respondentOne, applicationId))) {
@@ -912,7 +911,6 @@ public class ParentCaseUpdateHelper {
                     .findAny()
                     .orElseThrow(IllegalArgumentException::new)
                     .getValue().setCaseState(newState);
-
             log.info("Case state updated to {} for RespondentSol with applicationId: {}", newState, applicationId);
 
         }

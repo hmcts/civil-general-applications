@@ -53,7 +53,6 @@ public class DocUploadNotificationService implements NotificationData {
     public void notifyRespondentEvidenceUpload(CaseData caseData) throws NotificationException {
 
         log.info("Starting respondent evidence upload notification for Case ID: {}", caseData.getCcdCaseReference());
-
         CaseData civilCaseData = caseDetailsConverter.toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 

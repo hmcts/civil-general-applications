@@ -312,7 +312,6 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (featureToggleService.isGaForLipsEnabled()) {
             log.info("General app for LiP is enabled for caseId: {}", caseData.getCcdCaseReference());
-
             caseDataBuilder.bilingualHint(null);
         }
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();

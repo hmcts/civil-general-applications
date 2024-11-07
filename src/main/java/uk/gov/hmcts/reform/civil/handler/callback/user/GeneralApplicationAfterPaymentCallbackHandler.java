@@ -73,7 +73,6 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
             caseDataBuilder.businessProcess(BusinessProcess
                                                 .ready(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT));
             log.info("Business process INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT has initiated for caseId: {}", caseData.getCcdCaseReference());
-
         }
 
         return getCallbackResponse(caseDataBuilder);

@@ -1036,7 +1036,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             );
 
             log.info("Written representation sequential order is generated for caseId: {}", caseData.getCcdCaseReference());
-
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
@@ -1051,7 +1050,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             );
 
             log.info("Written representation concurrent order is generated for caseId: {}", caseData.getCcdCaseReference());
-
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         }

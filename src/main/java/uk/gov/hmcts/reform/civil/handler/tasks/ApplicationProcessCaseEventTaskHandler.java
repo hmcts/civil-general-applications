@@ -43,7 +43,6 @@ public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHand
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         var data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
         log.info("Successfully submitted update for caseId: {}", generalApplicationCaseId);
-
         return ExternalTaskData.builder().caseData(data).build();
     }
 

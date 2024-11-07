@@ -89,7 +89,6 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
         CaseData caseData = callbackParams.getCaseData();
 
         log.info("Translated document uploaded for respondent for case: {}", caseData.getCcdCaseReference());
-
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));

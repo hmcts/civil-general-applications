@@ -51,9 +51,11 @@ public class CaseEventTaskHandler extends BaseExternalTaskHandler {
         var data = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
-        variables.putValue(FLOW_STATE, stateFlow.getState().getName());
-        variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
-        log.debug("Evaluated state flow for case, flow state: {}, flags: {}", stateFlow.getState().getName(), stateFlow.getFlags());
+        var stateFlowName = stateFlow.getState().getName();
+        var stateFlags = stateFlow.getFlags();
+        variables.putValue(FLOW_STATE, stateFlowName);
+        variables.putValue(FLOW_FLAGS, stateFlags);
+        log.debug("Evaluated state flow for case, flow state: {}, flags: {}", stateFlowName, stateFlags);
         return variables;
     }
 
@@ -63,7 +65,6 @@ public class CaseEventTaskHandler extends BaseExternalTaskHandler {
         updatedData.put("businessProcess", businessProcess);
 
         log.debug("Preparing case data content for event ID: {}", startEventResponse.getEventId());
-
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder().id(startEventResponse.getEventId())

@@ -133,7 +133,6 @@ public class HearingScheduledNotificationService implements NotificationData {
                 : notificationProperties.getHearingNoticeTemplate(), RESPONDENT));
 
         log.info("Sending hearing scheduled notification for respondent for Case ID: {}", caseData.getCcdCaseReference());
-
         return caseData;
     }
 

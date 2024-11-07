@@ -43,7 +43,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
 
-        log.info("Initiating notification process for Case ID: {}", caseData.getCcdCaseReference());
+        var caseReference = caseData.getCcdCaseReference();
+        log.info("Initiating notification process for Case ID: {}", caseReference);
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -57,8 +58,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
          * */
         if (isNotificationCriteriaSatisfied) {
 
-            log.info("Sending general notification to respondents for Case ID: {}", caseData.getCcdCaseReference());
-
+            log.info("Sending general notification to respondents for Case ID: {}", caseReference);
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
 
@@ -78,7 +78,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
         if (isUrgentApplnNotificationCriteriaSatisfied
             && isFeePaid(updatedCaseData)) {
-            log.info("Sending urgent notification to respondents for Case ID: {}", caseData.getCcdCaseReference());
+            log.info("Sending urgent notification to respondents for Case ID: {}", caseReference);
 
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
@@ -119,17 +119,18 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
         throws NotificationException {
+        var caseReference = caseData.getCcdCaseReference();
         try {
-            log.info("Sending notification to recipient: {} for Case ID: {} with template: {}", recipient, caseData.getCcdCaseReference(), emailTemplate);
+            log.info("Sending notification to recipient: {} for Case ID: {} with template: {}", recipient, caseReference, emailTemplate);
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
-            log.info("Notification sent successfully to recipient: {} for Case ID: {}", recipient, caseData.getCcdCaseReference());
+            log.info("Notification sent successfully to recipient: {} for Case ID: {}", recipient, caseReference);
         } catch (NotificationException e) {
-            log.error("Failed to send notification to recipient: {} for Case ID: {}", recipient, caseData.getCcdCaseReference(), e);
+            log.error("Failed to send notification to recipient: {} for Case ID: {}", recipient, caseReference, e);
             throw new NotificationException(e);
         }
     }

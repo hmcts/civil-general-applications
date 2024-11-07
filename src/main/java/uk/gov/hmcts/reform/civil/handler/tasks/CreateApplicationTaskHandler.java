@@ -82,7 +82,6 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && BOTH.equals(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
                 log.debug("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
-
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
 
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
@@ -333,10 +332,12 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         var data = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
-        variables.putValue(FLOW_STATE, stateFlow.getState().getName());
-        variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
+        var stateFlowName = stateFlow.getState().getName();
+        var stateFlags = stateFlow.getFlags();
+        variables.putValue(FLOW_STATE, stateFlowName);
+        variables.putValue(FLOW_FLAGS, stateFlags);
         log.debug("State flow evaluation completed with state: {} and flags: {}",
-                  stateFlow.getState().getName(), stateFlow.getFlags());
+                  stateFlowName, stateFlags);
         var generalAppCaseData = externalTaskData.getGeneralApplicationCaseData();
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());

@@ -44,7 +44,6 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
 
         log.info("Generate dismissal order for caseId: {}", caseData.getCcdCaseReference());
-
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 
