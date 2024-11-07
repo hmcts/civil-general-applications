@@ -174,8 +174,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         String caseId = caseData.getCcdCaseReference().toString();
 
-        log.info("Assign solicitor case role for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
-
         if (caseData.getCcdState().equals(PENDING_APPLICATION_ISSUED)) {
             GASolicitorDetailsGAspec applicantSolicitor = caseData.getGeneralAppApplnSolicitor();
             if (!gaForLipService.isLipApp(caseData)) {

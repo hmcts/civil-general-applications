@@ -21,7 +21,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_BUSINESS_PROCES
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_GA_BUSINESS_PROCESS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_HEARING_SCHEDULED_BUSINESS_PROCESS;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StartGeneralApplicationBusinessProcessCallbackHandler extends CallbackHandler {
@@ -46,8 +45,6 @@ public class StartGeneralApplicationBusinessProcessCallbackHandler extends Callb
     private CallbackResponse startGeneralApplicationMakeDecisionBusinessProcess(CallbackParams callbackParams) {
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
-
-        log.info("Start {} business process for caseId: {}", businessProcess, callbackParams.getCaseData().getCcdCaseReference());
 
         switch (businessProcess.getStatusOrDefault()) {
             case READY:
