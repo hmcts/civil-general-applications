@@ -30,7 +30,6 @@ public class EventEmitterAspect {
     @Around("execution(* *(*)) && @annotation(EventEmitter) && args(callbackParams))")
     public Object emitBusinessProcessEvent(ProceedingJoinPoint joinPoint, CallbackParams callbackParams)
         throws Throwable {
-        log.info("Entering emitBusinessProcessEvent for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         if (callbackParams.getType() == SUBMITTED) {
             CaseData caseData = callbackParams.getCaseData();
             var caseId = caseData.getCcdCaseReference();
