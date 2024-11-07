@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -29,7 +28,6 @@ import java.util.Objects;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_GENERAL_ORDER_LIP;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -43,7 +41,6 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
-        log.info("Generate general order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
