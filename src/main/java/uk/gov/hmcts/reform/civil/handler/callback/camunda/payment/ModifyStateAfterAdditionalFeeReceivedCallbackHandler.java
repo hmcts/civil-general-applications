@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
@@ -12,17 +13,22 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -32,13 +38,21 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_AD
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_CLAIMANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_URGENT_UNCLOAKED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.APPLICANT_ACTION_NEEDED_GA_STATES;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.RESPONDENT_ACTION_NEEDED_GA_STATES;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.APPLICANT_IN_PROGRESS_GA_STATES;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.TaskListUpdateHandler.RESPONDENT_IN_PROGRESS_GA_STATES;
 
 @Slf4j
 @Service
@@ -52,6 +66,8 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     private final DashboardNotificationsParamsMapper mapper;
     private final FeatureToggleService featureToggleService;
     private final GaForLipService gaForLipService;
+    private final CoreCaseDataService coreCaseDataService;
+    private final CaseDetailsConverter caseDetailsConverter;
     private static final List<CaseEvent> EVENTS = singletonList(MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
 
     @Override
@@ -76,8 +92,6 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         if (caseData.getMakeAppVisibleToRespondents() != null
             || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId.toString());
-            updateDashboardTaskListAndNotification(callbackParams, getDashboardScenario(caseData),
-                                                   caseData.getParentCaseReference());
             updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationRespondentScenario(caseData),
                                                    caseData.getCcdCaseReference().toString());
         }
@@ -138,17 +152,59 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             caseData,
             newCaseState
         );
-
+        updateTaskListClaimantAndDefendant(callbackParams, caseData);
         return SubmittedCallbackResponse.builder().build();
     }
 
-    private String getDashboardScenario(CaseData caseData) {
-        if (caseData.getParentClaimantIsApplicant() == YesOrNo.YES && caseData.getIsGaRespondentOneLip() == YES) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_DEFENDANT.getScenario();
-        } else if (caseData.getIsGaApplicantLip() == YES) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_CREATED_CLAIMANT.getScenario();
+    private void updateTaskListClaimantAndDefendant(CallbackParams callbackParams, CaseData caseData) {
+        CaseDetails caseDetails = coreCaseDataService.getCase(Long.parseLong(caseData.getParentCaseReference()));
+        CaseData parentCaseData = caseDetailsConverter.toCaseData(caseDetails);
+        String claimantScenario = null;
+        String defendantScenario = null;
+        boolean someGaActionNeededClaimant = Optional.ofNullable(parentCaseData.getClaimantGaAppDetails()).orElse(Collections.emptyList()).stream()
+            .map(Element::getValue)
+            .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
+                ? APPLICANT_ACTION_NEEDED_GA_STATES.contains(gaDetails.getCaseState())
+                : RESPONDENT_ACTION_NEEDED_GA_STATES.contains(gaDetails.getCaseState()));
+        boolean someGaActionNeededDefendant = Optional.ofNullable(parentCaseData.getRespondentSolGaAppDetails()).orElse(Collections.emptyList()).stream()
+            .map(Element::getValue)
+            .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
+                ? RESPONDENT_ACTION_NEEDED_GA_STATES.contains(gaDetails.getCaseState())
+                : APPLICANT_ACTION_NEEDED_GA_STATES.contains(gaDetails.getCaseState()));
+        if (someGaActionNeededClaimant) {
+            claimantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_CLAIMANT.getScenario();
         }
-        return null;
+        if (someGaActionNeededDefendant) {
+            defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT.getScenario();
+        }
+        boolean someGaInProgressClaimant = claimantScenario == null
+            && Optional.ofNullable(parentCaseData.getClaimantGaAppDetails()).orElse(Collections.emptyList()).stream()
+            .map(Element::getValue)
+            .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
+                ? APPLICANT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState())
+                : RESPONDENT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState()));
+        boolean someGaInProgressDefendant = defendantScenario == null
+            && Optional.ofNullable(parentCaseData.getRespondentSolGaAppDetails()).orElse(Collections.emptyList()).stream()
+            .map(Element::getValue)
+            .anyMatch(gaDetails -> gaDetails.getParentClaimantIsApplicant() == YesOrNo.YES
+                ? RESPONDENT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState())
+                : APPLICANT_IN_PROGRESS_GA_STATES.contains(gaDetails.getCaseState()));
+        if (someGaInProgressClaimant) {
+            claimantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT.getScenario();
+        }
+        if (someGaInProgressDefendant) {
+            defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT.getScenario();
+        }
+        if (claimantScenario == null && parentCaseData.getClaimantGaAppDetails() != null
+            && parentCaseData.getClaimantGaAppDetails().size() > 0) {
+            claimantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT.getScenario();
+        }
+        if (defendantScenario == null && parentCaseData.getRespondentSolGaAppDetails() != null
+            && parentCaseData.getRespondentSolGaAppDetails().size() > 0) {
+            defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT.getScenario();
+        }
+        updateDashboardTaskListAndNotification(callbackParams, claimantScenario, caseData.getParentCaseReference());
+        updateDashboardTaskListAndNotification(callbackParams, defendantScenario, caseData.getParentCaseReference());
     }
 
     private String getDashboardNotificationRespondentScenario(CaseData caseData) {
