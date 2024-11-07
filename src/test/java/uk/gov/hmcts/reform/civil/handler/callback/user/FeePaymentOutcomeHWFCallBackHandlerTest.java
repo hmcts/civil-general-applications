@@ -100,7 +100,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData caseData = CaseData.builder()
                     .feePaymentOutcomeDetails(FeePaymentOutcomeDetails.builder().hwfNumberAvailable(YesOrNo.YES)
                             .hwfNumberForFeePaymentOutcome("HWF-1C4-E34")
-                            .hwfFullRemissionGrantedForAdditional(YesOrNo.YES).build())
+                            .hwfFullRemissionGrantedForAdditionalFee(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .additionalHwfDetails(HelpWithFeesDetails.builder()
                             .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
