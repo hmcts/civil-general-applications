@@ -9,25 +9,29 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
-
+import org.junit.jupiter.api.BeforeEach;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 
 import java.math.BigDecimal;
-
+import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -55,6 +59,13 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     private PaymentRequestUpdateCallbackService service;
     @MockBean
     private HwfNotificationService hwfNotificationService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
+    @BeforeEach
+    void setup() {
+        when(featureToggleService.isCoSCEnabled()).thenReturn(false);
+    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -89,7 +100,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData caseData = CaseData.builder()
                     .feePaymentOutcomeDetails(FeePaymentOutcomeDetails.builder().hwfNumberAvailable(YesOrNo.YES)
                             .hwfNumberForFeePaymentOutcome("HWF-1C4-E34")
-                            .hwfFullRemissionGrantedForAdditional(YesOrNo.YES).build())
+                            .hwfFullRemissionGrantedForAdditionalFee(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .additionalHwfDetails(HelpWithFeesDetails.builder()
                             .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
@@ -127,6 +138,34 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             verify(service, times(1)).processHwf(any());
             verify(hwfNotificationService, times(1)).sendNotification(any(), eq(FEE_PAYMENT_OUTCOME_GA));
             assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.toString());
+        }
+
+        @Test
+        void shouldTrigger_after_payment_GaFee_shouldTriggerCosc() {
+            CaseData caseData = CaseData.builder()
+                    .generalAppType(GAApplicationType.builder()
+                                        .types(List.of(GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID))
+                                        .build())
+                    .generalAppPBADetails(GAPbaDetails.builder().fee(
+                                    Fee.builder()
+                                            .calculatedAmountInPence(BigDecimal.valueOf(10000)).code("OOOCM002").build())
+                            .build())
+                    .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("ref").build())
+                    .gaHwfDetails(HelpWithFeesDetails.builder().build())
+                    .hwfFeeType(FeeType.APPLICATION)
+                    .build();
+            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
+            when(service.processHwf(any(CaseData.class)))
+                    .thenAnswer((Answer<CaseData>) invocation -> invocation.getArgument(0));
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            verify(service, times(1)).processHwf(any());
+            verify(hwfNotificationService, times(1)).sendNotification(any(), eq(FEE_PAYMENT_OUTCOME_GA));
+            assertThat(updatedData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_COSC_APPLICATION_AFTER_PAYMENT.toString());
         }
 
         @Test
