@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.cmc;
+package uk.gov.hmcts.reform;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
