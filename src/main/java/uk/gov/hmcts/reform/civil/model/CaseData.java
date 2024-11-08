@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.FINISHED;
@@ -325,6 +326,10 @@ public class CaseData implements MappableObject {
     private final String judgeTitle;
     private final List<Element<UploadDocumentByType>> uploadDocument;
 
+    private final YesOrNo applicant1Represented;
+    private final YesOrNo respondent1Represented;
+    private final YesOrNo specRespondent1Represented;
+
     // GA for LIP
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
@@ -532,6 +537,26 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
         return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
-            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO;
+            && (caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO
+            || caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == NO);
+    }
+
+    @JsonIgnore
+    public boolean isApplicantNotRepresented() {
+        return this.applicant1Represented == NO;
+    }
+
+    @JsonIgnore
+    public boolean isRespondent1NotRepresented() {
+        return NO.equals(getRespondent1Represented());
+    }
+
+    public YesOrNo getRespondent1Represented() {
+        return Stream.of(
+                respondent1Represented,
+                specRespondent1Represented
+            )
+            .filter(Objects::nonNull)
+            .findFirst().orElse(null);
     }
 }
