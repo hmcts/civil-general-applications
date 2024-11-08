@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -24,7 +23,6 @@ import static java.util.Optional.ofNullable;
 @Service
 public class UploadTranslatedDocumentService {
 
-    private final FeatureToggleService featureToggleService;
     private final AssignCategoryId assignCategoryId;
 
     public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData) {

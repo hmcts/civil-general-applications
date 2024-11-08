@@ -54,7 +54,7 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
     );
 
     @Value("${print.service.enabled}")
-    public String printServiceEnabled;
+    public boolean printServiceEnabled;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -69,14 +69,14 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
     private CallbackResponse sendTranslatedOrderLetter(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseEvent caseEvent = CaseEvent.valueOf(callbackParams.getRequest().getEventId());
-        if ("true".equals(printServiceEnabled) && shouldPrintTranslatedDocument(caseData, caseEvent)) {
+        if (printServiceEnabled && shouldPrintTranslatedDocument(caseData, caseEvent)) {
             TranslatedDocument translatedDocument = caseData.getTranslatedDocumentsBulkPrint().get(caseData.getTranslatedDocumentsBulkPrint().size() - 1)
                 .getValue();
-            sendFinalOrderPrintService.sendJudgeFinalOrderToPrintForLIP(
+            sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
                 translatedDocument.getFile(),
                 caseData,
-                caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT ? "LIP_APPLICANT" : "LIP_RESPONDENT");
+                caseEvent);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .build();
