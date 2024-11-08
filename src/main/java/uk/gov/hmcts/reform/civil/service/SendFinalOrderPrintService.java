@@ -29,18 +29,18 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_ORDER_COVER_LETTER_LIP;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrderCoverLetter> {
+public class SendFinalOrderPrintService {
 
     private final BulkPrintService bulkPrintService;
     private final DocumentDownloadService documentDownloadService;
-    private final GaForLipService gaForLipService;
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
 
@@ -89,8 +89,11 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
     public void sendJudgeTranslatedOrderToPrintForLIP(String authorisation, Document orderDocument, CaseData caseData, CaseEvent caseEvent) {
 
         List<String> recipients = new ArrayList<>();
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
 
-        DocmosisDocument coverLetter = generate(caseData, caseEvent);
+        DocmosisDocument coverLetter = generate(caseData, civilCaseData, caseEvent);
 
         CaseDocument coverLetterCaseDocument = documentManagementService.uploadDocument(
             authorisation,
@@ -124,24 +127,27 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
             throw new DocumentDownloadException(stitchedDocument.getDocumentLink().getDocumentFileName(), e);
         }
 
-        if (gaForLipService.isLipApp(caseData) && Objects.nonNull(caseData.getClaimant1PartyName())) {
-            recipients.add(caseData.getClaimant1PartyName());
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+            String applicant = caseData.getParentClaimantIsApplicant() == YES
+                ? civilCaseData.getApplicant1().getPartyName()
+                : civilCaseData.getRespondent1().getPartyName();
+            recipients.add(applicant);
         }
 
-        if (gaForLipService.isLipResp(caseData)
-            && isWithNotice(caseData)
-            && Objects.nonNull(caseData.getDefendant1PartyName())) {
-            recipients.add(caseData.getDefendant1PartyName());
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT) {
+            String respondent = caseData.getParentClaimantIsApplicant() == YES
+                ? civilCaseData.getRespondent1().getPartyName()
+                : civilCaseData.getApplicant1().getPartyName();
+            recipients.add(respondent);
         }
 
-        sendBulkPrint(letterContent, caseData, recipients);
-
+        sendBulkPrint(letterContent, caseData, civilCaseData, recipients);
     }
 
-    private void sendBulkPrint(byte[] letterContent, CaseData caseData, List<String> recipients) {
+    private void sendBulkPrint(byte[] letterContent, CaseData caseData, CaseData civilCaseData, List<String> recipients) {
 
-        bulkPrintService.printLetter(letterContent, caseData.getLegacyCaseReference(),
-                                     caseData.getLegacyCaseReference(),
+        bulkPrintService.printLetter(letterContent, caseData.getCcdCaseReference().toString(),
+                                     civilCaseData.getLegacyCaseReference(),
                                      SendFinalOrderPrintService.TRANSLATED_ORDER_PACK_LETTER_TYPE, recipients);
     }
 
@@ -153,7 +159,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
                                                       LocalDate.now().toString()));
         documentMetaDataList.add(new DocumentMetaData(
             orderDocument,
-            "Sealed Judge final order form",
+            "Translated judge order",
             LocalDate.now().toString()
         ));
 
@@ -165,20 +171,15 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
             || YES.equals(caseData.getParentClaimantIsApplicant());
     }
 
-    private DocmosisDocument generate(CaseData caseData, CaseEvent caseEvent) {
+    private DocmosisDocument generate(CaseData caseData, CaseData civilCaseData, CaseEvent caseEvent) {
 
         return documentGeneratorService.generateDocmosisDocument(
-            getTemplateData(caseData, caseEvent),
+            getTemplateData(caseData, civilCaseData, caseEvent),
             POST_ORDER_COVER_LETTER_LIP
         );
     }
 
-    public PostOrderCoverLetter getTemplateData(CaseData caseData, CaseEvent caseEvent) {
-
-        CaseData civilCaseData = caseDetailsConverter
-            .toCaseData(coreCaseDataService
-                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
-
+    public PostOrderCoverLetter getTemplateData(CaseData caseData, CaseData civilCaseData, CaseEvent caseEvent) {
         boolean parentClaimantIsApplicant = identifyParentClaimantIsApplicant(caseData);
 
         return PostOrderCoverLetter.builder()
@@ -194,7 +195,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
 
     private String getPartyName(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
 
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? civilCaseData.getApplicant1().getPartyName()
                 : civilCaseData.getRespondent1().getPartyName();
@@ -207,7 +208,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
 
     private String partyAddressAddressLine1(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
 
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine1())
                 .orElse(StringUtils.EMPTY)
@@ -223,7 +224,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
     }
 
     private String partyAddressAddressLine2(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine2())
                 .orElse(StringUtils.EMPTY)
@@ -239,7 +240,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
     }
 
     private String partyAddressAddressLine3(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getAddressLine3())
                 .orElse(StringUtils.EMPTY)
@@ -255,7 +256,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
     }
 
     private String partyAddressPostCode(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostCode())
                 .orElse(StringUtils.EMPTY)
@@ -271,7 +272,7 @@ public class SendFinalOrderPrintService implements TemplateDataGenerator<PostOrd
     }
 
     private String partyAddressPostTown(boolean parentClaimantIsApplicant, CaseEvent caseEvent, CaseData civilCaseData) {
-        if (caseEvent == CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
+        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             return parentClaimantIsApplicant
                 ? ofNullable(civilCaseData.getApplicant1().getPrimaryAddress().getPostTown())
                 .orElse(StringUtils.EMPTY)
