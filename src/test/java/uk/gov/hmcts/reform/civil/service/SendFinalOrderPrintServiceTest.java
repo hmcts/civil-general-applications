@@ -149,7 +149,7 @@ class SendFinalOrderPrintServiceTest {
     }
 
     @Test
-    void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondent() {
+    void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondentWhenClaimantIsApplicant() {
         // given
         CaseData civilCaseData = buildCivilCaseData();
         given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
@@ -170,18 +170,12 @@ class SendFinalOrderPrintServiceTest {
 
         // then
         Party respondent = Party.builder()
-            .primaryAddress(Address.builder()
-                                .postCode("respondent1postcode")
-                                .postTown("respondent1posttown")
-                                .addressLine1("respondent1address1")
-                                .addressLine2("respondent1address2")
-                                .addressLine3("respondent1address3").build())
             .partyName("respondent1partyname").build();
         verifyPrintTranslatedLetter(civilCaseData, caseData, respondent);
     }
 
     @Test
-    void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicant() {
+    void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicantWhenClaimantIsApplicant() {
         // given
         CaseData civilCaseData = buildCivilCaseData();
         given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
@@ -203,14 +197,63 @@ class SendFinalOrderPrintServiceTest {
 
         // then
         Party applicant = Party.builder()
-            .primaryAddress(Address.builder()
-                                .postCode("applicant1postcode")
-                                .postTown("applicant1posttown")
-                                .addressLine1("applicant1address1")
-                                .addressLine2("applicant1address2")
-                                .addressLine3("applicant1address3").build())
             .partyName("applicant1partyname").build();
         verifyPrintTranslatedLetter(civilCaseData, caseData, applicant);
+    }
+
+    @Test
+    void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondentWhenClaimantIsRespondent() {
+        // given
+        CaseData civilCaseData = buildCivilCaseData();
+        given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
+        given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
+        given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
+            DocmosisDocument.builder().build());
+        given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
+        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+                                                                                                      .documentLink(Document.builder()
+                                                                                                                        .documentUrl("/test").build()).build());
+        given(documentDownloadService.downloadDocument(any(), any()))
+            .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
+        Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+            .documentBinaryUrl("binaryUrl").build();
+        CaseData caseData = buildCaseData();
+        caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
+        // when
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+
+        // then
+        Party applicant = Party.builder()
+            .partyName("applicant1partyname").build();
+        verifyPrintTranslatedLetter(civilCaseData, caseData, applicant);
+    }
+
+    @Test
+    void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicantWhenClaimantIsRespondent() {
+        // given
+        CaseData civilCaseData = buildCivilCaseData();
+        given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
+        given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
+        given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
+            DocmosisDocument.builder().build());
+        given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
+        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+                                                                                                      .documentLink(Document.builder()
+                                                                                                                        .documentUrl("/test").build()).build());
+        given(documentDownloadService.downloadDocument(any(), any()))
+            .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
+        Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+            .documentBinaryUrl("binaryUrl").build();
+        CaseData caseData = buildCaseData();
+        caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
+
+        // when
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+
+        // then
+        Party respondent = Party.builder()
+            .partyName("respondent1partyname").build();
+        verifyPrintTranslatedLetter(civilCaseData, caseData, respondent);
     }
 
     private void verifyPrintLetter(CaseData civilCaseData, CaseData caseData, Party party) {
