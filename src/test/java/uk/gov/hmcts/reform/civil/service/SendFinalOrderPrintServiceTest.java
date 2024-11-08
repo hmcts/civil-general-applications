@@ -151,7 +151,6 @@ class SendFinalOrderPrintServiceTest {
     @Test
     void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondent() {
         // given
-        CaseData caseData = buildCaseData();
         CaseData civilCaseData = buildCivilCaseData();
         given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
         given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
@@ -165,6 +164,7 @@ class SendFinalOrderPrintServiceTest {
             .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
+        CaseData caseData = buildCaseData();
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
@@ -183,7 +183,6 @@ class SendFinalOrderPrintServiceTest {
     @Test
     void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicant() {
         // given
-        CaseData caseData = buildCaseData();
         CaseData civilCaseData = buildCivilCaseData();
         given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
         given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
@@ -197,6 +196,7 @@ class SendFinalOrderPrintServiceTest {
             .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
+        CaseData caseData = buildCaseData();
 
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
