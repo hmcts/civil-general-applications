@@ -27,13 +27,13 @@ public class UploadTranslatedDocumentService {
     private final FeatureToggleService featureToggleService;
     private final AssignCategoryId assignCategoryId;
 
-    public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData) {
+    public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData, String translator) {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         if (Objects.nonNull(translatedDocuments)) {
             Map<DocumentType, List<Element<CaseDocument>>>
-                categorizedDocuments = processTranslatedDocuments(translatedDocuments);
+                categorizedDocuments = processTranslatedDocuments(translatedDocuments, translator);
 
             categorizedDocuments.forEach((documentType, caseDocuments) -> {
                 if (!caseDocuments.isEmpty()) {
@@ -53,7 +53,7 @@ public class UploadTranslatedDocumentService {
     }
 
     private Map<DocumentType, List<Element<CaseDocument>>> processTranslatedDocuments(
-        List<Element<TranslatedDocument>> translatedDocuments) {
+        List<Element<TranslatedDocument>> translatedDocuments, String translator) {
         Map<DocumentType, List<Element<CaseDocument>>> categorizedDocuments = new HashMap<>();
 
         for (Element<TranslatedDocument> translatedDocumentElement : translatedDocuments) {
@@ -62,7 +62,8 @@ public class UploadTranslatedDocumentService {
                 translatedDocument.getCorrespondingDocumentType(translatedDocument.getDocumentType());
             CaseDocument caseDocument = CaseDocument.toCaseDocument(
                 translatedDocument.getFile(),
-                documentType
+                documentType,
+                translator
             );
 
             categorizedDocuments.computeIfAbsent(documentType, k -> new ArrayList<>())
