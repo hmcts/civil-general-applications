@@ -10,12 +10,10 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.Address;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.Party;
-import uk.gov.hmcts.reform.civil.model.bundle.DocumentLink;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.PostOrderCoverLetter;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -53,9 +51,6 @@ class SendFinalOrderPrintServiceTest {
 
     @Mock
     private BulkPrintService bulkPrintService;
-
-    @Mock
-    private FeatureToggleService featureToggleService;
 
     @InjectMocks
     private SendFinalOrderPrintService sendFinalOrderPrintService;
@@ -156,9 +151,24 @@ class SendFinalOrderPrintServiceTest {
     @Test
     void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondent() {
         // given
+        CaseData caseData = buildCaseData();
+        CaseData civilCaseData = buildCivilCaseData();
+        given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
+        given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
+        given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
+            DocmosisDocument.builder().build());
+        given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
+        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+                                                                                                      .documentLink(Document.builder()
+                                                                                                                        .documentUrl("/test").build()).build());
+        given(documentDownloadService.downloadDocument(any(), any()))
+            .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
+        // when
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
+        // then
         Party respondent = Party.builder()
             .primaryAddress(Address.builder()
                                 .postCode("respondent1postcode")
@@ -167,7 +177,12 @@ class SendFinalOrderPrintServiceTest {
                                 .addressLine2("respondent1address2")
                                 .addressLine3("respondent1address3").build())
             .partyName("respondent1partyname").build();
+        verifyPrintTranslatedLetter(civilCaseData, caseData, respondent);
+    }
 
+    @Test
+    void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicant() {
+        // given
         CaseData caseData = buildCaseData();
         CaseData civilCaseData = buildCivilCaseData();
         given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
@@ -180,20 +195,13 @@ class SendFinalOrderPrintServiceTest {
                                                                                                                         .documentUrl("/test").build()).build());
         given(documentDownloadService.downloadDocument(any(), any()))
             .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
-
-        // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
-
-        // then
-        verifyPrintTranslatedLetter(civilCaseData, caseData, respondent);
-    }
-
-    @Test
-    void shouldStitchAndPrintTranslatedLetterSuccessfullyApplicant() {
-        // given
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
 
+        // when
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+
+        // then
         Party applicant = Party.builder()
             .primaryAddress(Address.builder()
                                 .postCode("applicant1postcode")
@@ -202,24 +210,6 @@ class SendFinalOrderPrintServiceTest {
                                 .addressLine2("applicant1address2")
                                 .addressLine3("applicant1address3").build())
             .partyName("applicant1partyname").build();
-
-        CaseData caseData = buildCaseData();
-        CaseData civilCaseData = buildCivilCaseData();
-        given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
-        given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
-        given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
-            DocmosisDocument.builder().build());
-        given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
-        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
-                                                                                                      .documentLink(Document.builder()
-                                                                                                                        .documentUrl("/test").build()).build());
-        given(documentDownloadService.downloadDocument(any(), any()))
-            .willReturn(new DownloadedDocumentResponse(new ByteArrayResource(LETTER_CONTENT), "test", "test"));
-
-        // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
-
-        // then
         verifyPrintTranslatedLetter(civilCaseData, caseData, applicant);
     }
 
