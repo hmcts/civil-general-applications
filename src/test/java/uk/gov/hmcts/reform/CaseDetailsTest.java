@@ -88,4 +88,67 @@ public class CaseDetailsTest {
         assertThat(caseDetails.toString()).contains("id=1");
         assertThat(caseDetails.toString()).contains("jurisdictionId=jurisdictionId");
     }
+
+    @Test
+    void shouldVerifyEqualsWithSameObject() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        assertThat(caseDetails).isEqualTo(caseDetails); // Same instance
+    }
+
+    @Test
+    void shouldVerifyEqualsWithNull() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        assertThat(caseDetails).isNotEqualTo(null); // Null comparison
+    }
+
+    @Test
+    void shouldVerifyEqualsWithDifferentType() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        assertThat(caseDetails).isNotEqualTo("A String"); // Different class comparison
+    }
+
+    @Test
+    void shouldVerifyEqualsWithDifferentFieldValues() {
+        CaseDetails caseDetails1 = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId1")
+            .build();
+
+        CaseDetails caseDetails2 = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId2") // Different jurisdictionId
+            .build();
+
+        assertThat(caseDetails1).isNotEqualTo(caseDetails2);
+    }
+
+    @Test
+    void shouldVerifyHashCodeWithDifferentFieldValues() {
+        Map<String, Object> caseData1 = Map.of("key", "value1");
+        Map<String, Object> caseData2 = Map.of("key", "value2");
+
+        CaseDetails caseDetails1 = CaseDetails.builder()
+            .id(1L)
+            .data(caseData1)
+            .build();
+
+        CaseDetails caseDetails2 = CaseDetails.builder()
+            .id(1L)
+            .data(caseData2) // Different data map
+            .build();
+
+        assertThat(caseDetails1.hashCode()).isNotEqualTo(caseDetails2.hashCode());
+    }
 }
