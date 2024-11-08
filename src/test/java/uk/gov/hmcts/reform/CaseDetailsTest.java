@@ -60,4 +60,32 @@ public class CaseDetailsTest {
         assertThat(updated.getJurisdictionId()).isEqualTo("jurisdictionId");
         assertThat(updated.getId()).isEqualTo(1L);
     }
+
+    @Test
+    void shouldVerifyEqualsAndHashCode() {
+        CaseDetails caseDetails1 = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        CaseDetails caseDetails2 = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        assertThat(caseDetails1).isEqualTo(caseDetails2);
+        assertThat(caseDetails1.hashCode()).isEqualTo(caseDetails2.hashCode());
+    }
+
+    @Test
+    void shouldVerifyToString() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1L)
+            .jurisdictionId("jurisdictionId")
+            .build();
+
+        assertThat(caseDetails.toString()).contains("CaseDetails");
+        assertThat(caseDetails.toString()).contains("id=1");
+        assertThat(caseDetails.toString()).contains("jurisdictionId=jurisdictionId");
+    }
 }
