@@ -78,11 +78,12 @@ java:
           alias: SENDGRID_API_KEY
         - name: launch-darkly-sdk-key
           alias: LAUNCH_DARKLY_SDK_KEY
-        - name: appinsights-instrumentation-key
+        - name: AppInsightsInstrumentationKey
           alias: azure.application-insights.instrumentation-key
         - name: ordnance-survey-api-key
           alias: OS_POSTCODE_LOOKUP_API_KEY
-        - name: appinsights-connection-string
+        - name: genapp-appinsights-connection-string
+          alias: appinsights-connection-string
     civil-gen-apps:
         resourceGroup: civil
         secrets:
