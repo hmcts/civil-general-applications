@@ -21,12 +21,13 @@ public class CaseDocument {
     private final String createdBy;
 
     @JsonIgnore
-    public static CaseDocument toCaseDocument(Document document, DocumentType documentType) {
+    public static CaseDocument toCaseDocument(Document document, DocumentType documentType, String translator) {
         return CaseDocument.builder()
             .documentLink(document)
             .documentName(getDocumentName(documentType, document.documentFileName))
             .documentType(setOnlyCCDDocumentTypes(documentType))
             .createdDatetime(LocalDateTime.now())
+            .createdBy(translator)
             .build();
     }
 

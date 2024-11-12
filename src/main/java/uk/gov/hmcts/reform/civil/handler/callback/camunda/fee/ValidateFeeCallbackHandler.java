@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
     private static final String TASK_ID = "GeneralApplicationValidateFee";
 
     private final GeneralAppFeesService feeService;
+    private final FeatureToggleService featureToggleService;
+    private final GaForLipService gaForLipService;
 
     @Override
     public String camundaActivityId() {
@@ -53,11 +57,12 @@ public class ValidateFeeCallbackHandler extends CallbackHandler {
 
     private CallbackResponse validateFee(CallbackParams callbackParams) {
         var caseData = callbackParams.getCaseData();
+        List<String> errors = new ArrayList<>();
 
-        Fee feeForGA = feeService.getFeeForGA(caseData);
-
-        List<String> errors = compareFees(caseData, feeForGA);
-
+        if (!featureToggleService.isGaForLipsEnabled() && !gaForLipService.isGaForLip(caseData)) {
+            Fee feeForGA = feeService.getFeeForGA(caseData);
+            errors = compareFees(caseData, feeForGA);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
             .errors(errors)
             .build();
