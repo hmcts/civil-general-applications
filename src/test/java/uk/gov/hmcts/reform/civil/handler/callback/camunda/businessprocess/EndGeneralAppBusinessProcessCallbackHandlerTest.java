@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -86,6 +87,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSU
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_CASE_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
@@ -120,6 +122,8 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
     @MockBean
     private GaForLipService gaForLipService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
     @Captor
     private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
@@ -546,6 +550,60 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
     class AboutToSubmitCallback {
         private final ArgumentCaptor<String> parentCaseId = ArgumentCaptor.forClass(String.class);
         private final ArgumentCaptor<CaseDataContent> caseDataContent = ArgumentCaptor.forClass(CaseDataContent.class);
+
+        @Test
+        void shouldChangeStateToApplicationDismissedWhenCOSC() {
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParams(YES, NO).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataForCCJ(YES, NO));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
+
+            handler.handle(getCallbackParams(YES, NO));
+
+            verify(coreCaseDataService, times(1))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                                                                    new TypeReference<>(){});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSol = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
+
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
+            assertThat(gaDetailsMasterCollection.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
+
+            GeneralApplicationsDetails gaDetailsMasterColl = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsMasterCollection.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(gaDetailsMasterColl.getCaseState())
+                .isEqualTo("Application Dismissed");
+
+            GeneralApplicationsDetails generalApp = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) generalApplicationDetails.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(generalApp.getCaseState()).isEqualTo("Application Dismissed");
+
+            GADetailsRespondentSol generalAppResp = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsRespondentSol.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(generalAppResp.getCaseState()).isEqualTo("Application Dismissed");
+
+        }
 
         @Test
         void theEndOfProcessShouldUpdateTheStateOfGAAndAlsoUpdateStateOnParentCaseGADetails_NotToBeNotified() {
@@ -1197,6 +1255,13 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication(isConsented, isTobeNotified))
                     .toBuilder().ccdCaseReference(CHILD_CCD_REF).build();
+        }
+
+        private CaseData getSampleGeneralApplicationCaseDataForCCJ(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            List<GeneralApplicationTypes> types = Arrays.asList(CONFIRM_CCJ_DEBT_PAID);
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                    getGeneralApplication(isConsented, isTobeNotified))
+                .toBuilder().ccdCaseReference(CHILD_CCD_REF).generalAppType(GAApplicationType.builder().types(types).build()).build();
         }
 
         private CaseData getSampleGeneralApplicationCaseDataMulti(YesOrNo isConsented, YesOrNo isTobeNotified,
