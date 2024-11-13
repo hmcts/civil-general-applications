@@ -40,8 +40,8 @@ public class GaForLipService {
 
     public boolean anyWelsh(CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
-            return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
-                || caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+            return caseData.isApplicantBilingual()
+                || caseData.isRespondentBilingual();
         }
         return false;
     }
@@ -49,10 +49,10 @@ public class GaForLipService {
     public boolean anyWelshNotice(CaseData caseData) {
         if (featureToggleService.isGaForLipsEnabled()) {
             if (!JudicialDecisionNotificationUtil.isWithNotice(caseData)) {
-                return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant());
+                return caseData.isApplicantBilingual();
             }
-            return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
-                || caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant());
+            return caseData.isApplicantBilingual()
+                || caseData.isRespondentBilingual();
         }
         return false;
     }

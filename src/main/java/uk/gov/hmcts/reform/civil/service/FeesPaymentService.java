@@ -48,7 +48,7 @@ public class FeesPaymentService {
                         .divide(BigDecimal.valueOf(100), RoundingMode.CEILING)
                         .setScale(2, RoundingMode.CEILING))
             .currency("GBP")
-            .language(caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant()) ?  "cy" : "En")
+            .language(caseData.isApplicantBilingual() ? "cy" : "En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService

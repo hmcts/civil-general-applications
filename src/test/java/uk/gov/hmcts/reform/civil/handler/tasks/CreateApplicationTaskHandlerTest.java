@@ -272,12 +272,15 @@ public class CreateApplicationTaskHandlerTest {
 
         @Test
         void shouldAddApplicantSolListForWithoutNoticeAppln() {
+            when(featureToggleService.isGaForLipsEnabled())
+                .thenReturn(true);
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, NO, NO, NO, null);
             CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails()).isEmpty();
             assertThat(data.getClaimantGaAppDetails()).hasSize(1);
+            assertThat(data.getClaimantGaAppDetails()).allMatch(element -> element.getValue().getParentClaimantIsApplicant() != null);
             assertThat(data.getRespondentSolTwoGaAppDetails()).isEmpty();
             assertThat(data.getGaDetailsMasterCollection()).isEmpty();
         }
@@ -352,11 +355,14 @@ public class CreateApplicationTaskHandlerTest {
 
         @Test
         void shouldAddRespondentOneSolListForWithoutNoticeAppln1v1Scenario() {
+            when(featureToggleService.isGaForLipsEnabled())
+                .thenReturn(true);
             GeneralApplication generalApplication =
                 getGeneralApplication("respondent1", NO, NO, NO, NO, NO, null);
             CaseData data = buildData(generalApplication, NO, NO, false);
 
             assertThat(data.getRespondentSolGaAppDetails()).hasSize(1);
+            assertThat(data.getRespondentSolGaAppDetails()).allMatch(element -> element.getValue().getParentClaimantIsApplicant() != null);
             assertThat(data.getClaimantGaAppDetails()).isEmpty();
             assertThat(data.getRespondentSolTwoGaAppDetails()).isEmpty();
             assertThat(data.getGaDetailsMasterCollection()).isEmpty();

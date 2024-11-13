@@ -106,7 +106,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     }
 
     private String getLiPTemplate(CaseData civilCaseData, CaseData caseData) {
-        return civilCaseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isRespondentBilingual()
             ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }

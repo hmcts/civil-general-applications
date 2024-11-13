@@ -68,13 +68,13 @@ public class DocUploadNotificationService implements NotificationData {
     }
 
     private String getLiPRespondentTemplate(CaseData caseData) {
-        return caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isRespondentBilingual()
             ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
     private String getLiPApplicantTemplate(CaseData caseData) {
-        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isApplicantBilingual()
             ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
