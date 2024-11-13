@@ -333,11 +333,11 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
         var stateFlowName = stateFlow.getState().getName();
-        var stateFlags = stateFlow.getFlags();
+        var stateFlowFlags = stateFlow.getFlags();
         variables.putValue(FLOW_STATE, stateFlowName);
-        variables.putValue(FLOW_FLAGS, stateFlags);
-        log.debug("State flow evaluation completed with state: {} and flags: {}",
-                  stateFlowName, stateFlags);
+        variables.putValue(FLOW_FLAGS, stateFlowFlags);
+        log.debug("State flow evaluation completed with {} state and {} flags",
+                  stateFlowName, stateFlowFlags);
         var generalAppCaseData = externalTaskData.getGeneralApplicationCaseData();
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
             variables.putValue(GENERAL_APPLICATION_CASE_ID, generalAppCaseData.getCcdCaseReference());
