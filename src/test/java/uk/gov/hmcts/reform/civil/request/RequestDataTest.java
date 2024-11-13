@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.HandlerMapping;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
@@ -46,11 +44,8 @@ class RequestDataTest {
     @Mock
     private HttpServletRequest httpServletRequest;
 
-    @MockBean
-    private FilterChain filterChain;
-
     @InjectMocks
-    private CacheAwareRequestData cacheAwareRequestData;
+    private CacheAwareRequestData requestData;
 
     @Nested
     class NotCachedRequestData {
@@ -58,49 +53,49 @@ class RequestDataTest {
         @Test
         void shouldReturnAuthorisationHeaderFromRequest() {
             when(httpServletRequest.getHeader("authorization")).thenReturn(AUTH_TOKEN);
-            assertThat(cacheAwareRequestData.authorisation()).isEqualTo(AUTH_TOKEN);
+            assertThat(requestData.authorisation()).isEqualTo(AUTH_TOKEN);
         }
 
         @Test
         void shouldReturnUserIdFromRequest() {
             when(httpServletRequest.getHeader("user-id")).thenReturn(USER_ID);
-            assertThat(cacheAwareRequestData.userId()).isEqualTo(USER_ID);
+            assertThat(requestData.userId()).isEqualTo(USER_ID);
         }
 
         @Test
         void shouldReturnEmptySetOfUserRolesIfHeaderNotPresent() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn(null);
-            assertThat(cacheAwareRequestData.userRoles()).isEmpty();
+            assertThat(requestData.userRoles()).isEmpty();
         }
 
         @Test
         void shouldReturnEmptySetOfUserRolesIfHeaderIsEmpty() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn("");
-            assertThat(cacheAwareRequestData.userRoles()).isEmpty();
+            assertThat(requestData.userRoles()).isEmpty();
         }
 
         @Test
         void shouldReturnEmptySetOfUserRolesIfHeaderIsBlank() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn(" ");
-            assertThat(cacheAwareRequestData.userRoles()).isEmpty();
+            assertThat(requestData.userRoles()).isEmpty();
         }
 
         @Test
         void shouldReturnUserRolesIfSingleRolePresent() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn("role1");
-            assertThat(cacheAwareRequestData.userRoles()).containsExactly("role1");
+            assertThat(requestData.userRoles()).containsExactly("role1");
         }
 
         @Test
         void shouldReturnAllUserRoles() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn("role1,role2");
-            assertThat(cacheAwareRequestData.userRoles()).containsExactly("role1", "role2");
+            assertThat(requestData.userRoles()).containsExactly("role1", "role2");
         }
 
         @Test
         void shouldReturnNormalisedUserRoles() {
             when(httpServletRequest.getHeader("user-roles")).thenReturn(" role1 , role2");
-            assertThat(cacheAwareRequestData.userRoles()).containsExactly("role1", "role2");
+            assertThat(requestData.userRoles()).containsExactly("role1", "role2");
         }
 
         @Test
@@ -117,7 +112,7 @@ class RequestDataTest {
             when(httpServletRequest.getReader()).thenReturn(reader);
             when(httpServletRequest.getMethod()).thenReturn(HttpMethod.POST.name());
 
-            assertThat(cacheAwareRequestData.caseId()).isEqualTo(CACHED_CASE_ID);
+            assertThat(requestData.caseId()).isEqualTo(CACHED_CASE_ID);
         }
 
         @Test
@@ -135,7 +130,7 @@ class RequestDataTest {
             when(httpServletRequest.getReader()).thenReturn(reader);
             when(httpServletRequest.getMethod()).thenReturn(HttpMethod.POST.name());
 
-            assertThat(cacheAwareRequestData.caseId()).isEqualTo(CACHED_CASE_ID);
+            assertThat(requestData.caseId()).isEqualTo(CACHED_CASE_ID);
         }
 
         @Test
@@ -144,7 +139,7 @@ class RequestDataTest {
             when(httpServletRequest.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE))
                 .thenReturn(Map.of(CCD_CASE_IDENTIFIER_KEY, CACHED_CASE_ID));
 
-            assertThat(cacheAwareRequestData.caseId()).isEqualTo(CACHED_CASE_ID);
+            assertThat(requestData.caseId()).isEqualTo(CACHED_CASE_ID);
         }
     }
 
@@ -166,25 +161,25 @@ class RequestDataTest {
 
         @Test
         void shouldReturnAuthorisationHeaderFromCache() {
-            assertThat(cacheAwareRequestData.authorisation()).isEqualTo(CACHED_AUTH_TOKEN);
+            assertThat(requestData.authorisation()).isEqualTo(CACHED_AUTH_TOKEN);
             verifyNoInteractions(httpServletRequest);
         }
 
         @Test
         void shouldReturnUserIdFromCache() {
-            assertThat(cacheAwareRequestData.userId()).isEqualTo(CACHED_USER_ID);
+            assertThat(requestData.userId()).isEqualTo(CACHED_USER_ID);
             verifyNoInteractions(httpServletRequest);
         }
 
         @Test
         void shouldReturnUserRolesFromCache() {
-            assertThat(cacheAwareRequestData.userRoles()).isEqualTo(CACHED_USER_ROLES);
+            assertThat(requestData.userRoles()).isEqualTo(CACHED_USER_ROLES);
             verifyNoInteractions(httpServletRequest);
         }
 
         @Test
         void shouldReturnCaseIdFromCache() {
-            assertThat(cacheAwareRequestData.caseId()).isEqualTo(CACHED_CASE_ID);
+            assertThat(requestData.caseId()).isEqualTo(CACHED_CASE_ID);
         }
     }
 }
