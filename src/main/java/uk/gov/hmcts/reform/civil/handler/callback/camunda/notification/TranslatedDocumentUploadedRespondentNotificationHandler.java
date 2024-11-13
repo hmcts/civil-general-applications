@@ -122,7 +122,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
 
     private String addTemplate(CaseData caseData) {
         if (gaForLipService.isLipResp(caseData)) {
-            if (caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())) {
+            if (caseData.isRespondentBilingual()) {
                 return notificationsProperties.getNotifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual();
             }
             return notificationsProperties.getLipGeneralAppRespondentEmailTemplate();
