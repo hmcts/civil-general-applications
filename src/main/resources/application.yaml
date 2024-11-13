@@ -60,7 +60,7 @@ oidc:
 
 send-letter:
   url: ${SEND_LETTER_URL:http://localhost:8765}
-  
+
 fees:
   api:
     service: civil money claims
@@ -217,6 +217,12 @@ exit-survey:
 
 cui-front-end:
   url: ${CUI_URL:http://localhost:3001}
+
+async:
+  handler:
+    corePoolSize: ${ASYNC_HANDLER_CORE_POOL_SIZE:7}
+    maxPoolSize: ${ASYNC_HANDLER_MAX_POOL_SIZE:42}
+    queueCapacity: ${ASYNC_HANDLER_QUEUE_CAPACITY:10}
 
 feign:
   client:
