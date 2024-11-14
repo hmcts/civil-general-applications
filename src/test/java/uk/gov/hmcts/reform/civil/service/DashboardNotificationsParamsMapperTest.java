@@ -12,10 +12,10 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
-import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialWrittenRepresentations;
@@ -157,6 +157,7 @@ public class DashboardNotificationsParamsMapperTest {
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .hwfFeeType(FeeType.APPLICATION)
             .build();
 
@@ -175,6 +176,7 @@ public class DashboardNotificationsParamsMapperTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.APPLICATION)
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .gaHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
                               .outstandingFeeInPounds(new BigDecimal(200.00)).build())
             .build();
@@ -191,11 +193,12 @@ public class DashboardNotificationsParamsMapperTest {
     void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndIsPartAdmitted() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
-            .ccdState(AWAITING_APPLICATION_PAYMENT)
+            .ccdState(APPLICATION_ADD_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
+            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .additionalHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
                               .outstandingFeeInPounds(new BigDecimal(200.00)).build())
             .build();
@@ -217,6 +220,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                 .build())
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
             .hwfFeeType(FeeType.APPLICATION)
             .build();
@@ -234,6 +238,7 @@ public class DashboardNotificationsParamsMapperTest {
             .ccdState(APPLICATION_ADD_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
             .build();
@@ -253,6 +258,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                 .build())
+            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .ccdState(APPLICATION_ADD_PAYMENT)
             .hwfFeeType(FeeType.ADDITIONAL)
             .build();
