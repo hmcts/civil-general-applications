@@ -157,7 +157,8 @@ public class SendFinalOrderPrintService {
                                                       "Post order cover letter",
                                                       LocalDate.now().toString()));
         documentMetaDataList.add(new DocumentMetaData(
-            orderDocument,
+            // Test if EM has permission for retrieving this doc
+            coverLetterCaseDocument.getDocumentLink(),
             "Translated judge order",
             LocalDate.now().toString()
         ));
