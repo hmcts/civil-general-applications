@@ -269,7 +269,7 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
-            .respondentBilingualLanguagePreference(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
             .helpWithFeesMoreInformationAdditional(HelpWithFeesMoreInformation.builder()
                                                        .hwFMoreInfoDocumentDate(NOW)
                                                        .hwFMoreInfoRequiredDocuments(
@@ -383,7 +383,7 @@ public class HwfNotificationServiceTest {
         CaseData caseData = GA_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
-            .respondentBilingualLanguagePreference(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
             .gaHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
@@ -520,7 +520,7 @@ public class HwfNotificationServiceTest {
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
-            .parentClaimantIsApplicant(YesOrNo.NO).respondentBilingualLanguagePreference(YesOrNo.YES)
+            .parentClaimantIsApplicant(YesOrNo.NO).applicantBilingualLanguagePreference(YesOrNo.YES)
             .additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -646,7 +646,7 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
-            .respondentBilingualLanguagePreference(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
             .additionalHwfDetails(hwfeeDetails).build();
 
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -745,7 +745,7 @@ public class HwfNotificationServiceTest {
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
             .parentClaimantIsApplicant(YesOrNo.NO)
-            .respondentBilingualLanguagePreference(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
             .additionalHwfDetails(hwfeeDetails).build();
         when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(CIVIL_WELSH_DEF);
