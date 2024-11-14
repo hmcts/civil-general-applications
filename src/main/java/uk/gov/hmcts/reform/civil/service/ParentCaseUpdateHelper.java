@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
@@ -61,6 +62,7 @@ public class ParentCaseUpdateHelper {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
     private final ObjectMapper mapper;
 
     private static final Logger log = LoggerFactory.getLogger(ParentCaseUpdateHelper.class);
@@ -242,6 +244,10 @@ public class ParentCaseUpdateHelper {
     protected String findGaCreator(CaseData civilCaseData, CaseData generalAppCaseData) {
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
             return CLAIMANT_ROLE;
+        }
+        if (featureToggleService.isGaForLipsEnabled()
+            && generalAppCaseData.getIsGaApplicantLip() == YES) {
+            return RESPONDENTSOL_ROLE;
         }
         String creatorId = generalAppCaseData.getGeneralAppApplnSolicitor().getOrganisationIdentifier();
         String respondent1OrganisationId = civilCaseData.getRespondent1OrganisationPolicy().getOrganisation()
