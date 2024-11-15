@@ -110,6 +110,7 @@ public class CasesController {
                         "data.generalAppRespondentAgreement.hasAgreed",
                         "data.parentClaimantIsApplicant",
                         "data.applicationIsUncloakedOnce",
+                        "state",
                         "data.applicationIsCloaked",
                         "data.judicialDecisionRequestMoreInfo",
                         "data.generalAppPBADetails"),
