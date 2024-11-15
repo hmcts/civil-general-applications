@@ -83,7 +83,12 @@ public class TestingSupportController {
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
 
-        int size = caseData.getGeneralApplications().size();
+        int size = (caseData.getGeneralApplications() == null) ? 0 : caseData.getGeneralApplications().size();
+
+        if (size == 0) {
+            log.warn("No general applications found for caseId: {}", caseId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
 
         /**
          * Check the business process status of latest GA case
