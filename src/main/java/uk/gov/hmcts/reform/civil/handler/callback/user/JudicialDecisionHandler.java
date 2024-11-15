@@ -864,8 +864,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
          * */
 
         if (isApplicationUncloaked != null
-                && isApplicationUncloaked.equals(NO)
-                && !gaForLipService.isGaForLip(caseData)) {
+                && isApplicationUncloaked.equals(NO)) {
             dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
