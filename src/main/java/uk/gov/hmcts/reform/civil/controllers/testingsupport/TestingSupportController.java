@@ -87,7 +87,7 @@ public class TestingSupportController {
 
         if (size == 0) {
             log.warn("No general applications found for caseId: {}", caseId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            //return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
         /**
