@@ -200,13 +200,13 @@ public class JudicialNotificationService implements NotificationData {
     }
 
     private String getLiPApplicantTemplate(CaseData caseData) {
-        return caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isApplicantBilingual()
             ? notificationProperties.getLipGeneralAppApplicantEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppApplicantEmailTemplate();
     }
 
     private String getLiPRespondentTemplate(CaseData caseData) {
-        return caseData.isRespondentBilingual(caseData.getParentClaimantIsApplicant())
+        return caseData.isRespondentBilingual()
             ? notificationProperties.getLipGeneralAppRespondentEmailTemplateInWelsh()
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
