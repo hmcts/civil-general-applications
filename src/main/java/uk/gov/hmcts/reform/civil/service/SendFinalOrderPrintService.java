@@ -123,7 +123,6 @@ public class SendFinalOrderPrintService {
         List<DocumentMetaData> documentMetaDataList
             = stitchCoverLetterAndOrderDocument(coverLetterCaseDocument, orderDocument);
 
-
         CaseDocument stitchedDocument = civilDocumentStitchingService.bundle(
             documentMetaDataList,
             authorisation,
