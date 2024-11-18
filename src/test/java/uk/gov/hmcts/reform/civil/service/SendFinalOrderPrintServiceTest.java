@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -31,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_ORDER_COVER_LETTER_LIP;
 
 @ExtendWith(MockitoExtension.class)
@@ -149,6 +151,25 @@ class SendFinalOrderPrintServiceTest {
     }
 
     @Test
+    void shouldNotStitchAndPrintTranslatedLetterWhenStitchingNotEnabled() {
+        // given
+        CaseData civilCaseData = buildCivilCaseData();
+        given(coreCaseDataService.getCase(any())).willReturn(CaseDetails.builder().build());
+        given(caseDetailsConverter.toCaseData(any())).willReturn(civilCaseData);
+        given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
+            DocmosisDocument.builder().build());
+        given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
+        Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
+            .documentBinaryUrl("binaryUrl").build();
+        CaseData caseData = buildCaseData();
+        // when
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+
+        // then
+        verifyNoInteractions(bulkPrintService);
+    }
+
+    @Test
     void shouldStitchAndPrintTranslatedLetterSuccessfullyRespondentWhenClaimantIsApplicant() {
         // given
         CaseData civilCaseData = buildCivilCaseData();
@@ -165,6 +186,7 @@ class SendFinalOrderPrintServiceTest {
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
+        ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
@@ -191,6 +213,7 @@ class SendFinalOrderPrintServiceTest {
         Document document = Document.builder().documentUrl("url").documentFileName("filename").documentHash("hash")
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
+        ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
@@ -219,6 +242,7 @@ class SendFinalOrderPrintServiceTest {
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
         caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
+        ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
@@ -246,6 +270,7 @@ class SendFinalOrderPrintServiceTest {
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
         caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
+        ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
         sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);

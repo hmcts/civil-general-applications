@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -50,7 +51,8 @@ public class SendFinalOrderPrintService {
 
     private static final String FINAL_ORDER_PACK_LETTER_TYPE = "final-order-document-pack";
     private static final String TRANSLATED_ORDER_PACK_LETTER_TYPE = "translated-order-document-pack";
-    private static final String LIP_APPLICANT = "LIP_APPLICANT";
+    @Value("${stitching.enabled}")
+    private boolean stitchEnabled;
 
     public void sendJudgeFinalOrderToPrintForLIP(String authorisation, Document postJudgeOrderDocument, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {
 
@@ -103,8 +105,24 @@ public class SendFinalOrderPrintService {
             )
         );
 
+        if (stitchEnabled) {
+            stitchAndSendDocument(
+                authorisation,
+                orderDocument,
+                caseData,
+                caseEvent,
+                coverLetterCaseDocument,
+                civilCaseData,
+                recipients
+            );
+        }
+    }
+
+    private void stitchAndSendDocument(String authorisation, Document orderDocument, CaseData caseData, CaseEvent caseEvent,
+                                       CaseDocument coverLetterCaseDocument, CaseData civilCaseData, List<String> recipients) {
         List<DocumentMetaData> documentMetaDataList
             = stitchCoverLetterAndOrderDocument(coverLetterCaseDocument, orderDocument);
+
 
         CaseDocument stitchedDocument = civilDocumentStitchingService.bundle(
             documentMetaDataList,
@@ -120,7 +138,10 @@ public class SendFinalOrderPrintService {
         byte[] letterContent;
 
         try {
-            letterContent = documentDownloadService.downloadDocument(authorisation, documentId).file().getInputStream().readAllBytes();
+            letterContent = documentDownloadService.downloadDocument(
+                authorisation,
+                documentId
+            ).file().getInputStream().readAllBytes();
         } catch (IOException e) {
             log.error("Failed getting letter content for Pip Stitched Letter ");
             throw new DocumentDownloadException(stitchedDocument.getDocumentLink().getDocumentFileName(), e);
