@@ -825,6 +825,44 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldPopulatePreferredLocation_WhenRespondentIsLiP() {
+
+        CaseData caseData = getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build()).build();
+        caseDataBuilder.hearingDetailsResp(caseData.getHearingDetailsResp().toBuilder()
+                                               .hearingPreferencesPreferredType(GAHearingType.VIDEO).build());
+        caseDataBuilder.isGaRespondentOneLip(YES);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        // Civil Claim CaseDate
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(civil))
+            .thenReturn(getCivilCaseData(DUMMY_EMAIL, "abcd@gmail.com", "abc@gmail.com"));
+
+        // GA CaseData
+        CaseDetails ga = CaseDetails.builder().id(456L).build();
+        when(coreCaseDataService.getCase(456L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(ga))
+            .thenReturn(caseDataBuilder.build());
+
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
+        callbackParamsBuilder.request(CallbackRequest.builder().caseDetails(ga).build());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(callbackParamsBuilder.build());
+
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp()).isNull();
+        assertThat(responseCaseData.getRespondentsResponses()
+                       .get(0).getValue().getGaHearingDetails()
+                       .getHearingPreferredLocation().getValue().getLabel()).isEqualTo("ABCD - RG0 0AL");
+    }
+
+    @Test
     void shouldReturn_No_WhenRespondIsNotAcceptedByRespondent() {
 
         // Civil Claim Case Data
