@@ -198,7 +198,7 @@ public class DashboardNotificationsParamsMapperTest {
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
-            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .additionalHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
                               .outstandingFeeInPounds(new BigDecimal(200.00)).build())
             .build();
@@ -238,7 +238,7 @@ public class DashboardNotificationsParamsMapperTest {
             .ccdState(APPLICATION_ADD_PAYMENT)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
-            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
             .build();
@@ -258,7 +258,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                 .build())
-            .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .ccdState(APPLICATION_ADD_PAYMENT)
             .hwfFeeType(FeeType.ADDITIONAL)
             .build();
