@@ -119,7 +119,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("litigiousPartyID") String litigiousPartyID,
                        @JsonProperty("generalAppSuperClaimType") String generalAppSuperClaimType,
                        @JsonProperty("caseManagementLocation") GACaseLocation caseManagementLocation,
-                       @JsonProperty("isCcmccLocation") YesOrNo isCtscLocation,
+                       @JsonProperty("isCtscLocation") YesOrNo isCtscLocation,
                        @JsonProperty("caseManagementCategory") GACaseManagementCategory caseManagementCategory,
                        @JsonProperty("locationName") String locationName,
                        @JsonProperty("CaseAccessCategory") CaseCategory caseAccessCategory,

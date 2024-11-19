@@ -117,7 +117,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                         "TRIGGER_LOCATION_UPDATE");
 
             assertThat(response.getData()).containsEntry(
-                    "isCcmccLocation",
+                    "isCtscLocation",
                     "No");
             assertThat(response.getData()).containsEntry(
                 "locationName",
@@ -171,7 +171,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                     "TRIGGER_TASK_RECONFIG");
 
             assertThat(response.getData()).containsEntry(
-                "isCcmccLocation",
+                "isCtscLocation",
                 "No");
             assertThat(response.getData()).containsEntry(
                 "locationName",
