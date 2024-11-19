@@ -51,7 +51,7 @@ public class ReferToJudgeOrLegalAdvisorHandler extends CallbackHandler {
 
     public List<String> courtAssignedValidation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        YesOrNo localCourtAssigned = caseData.getIsCcmccLocation();
+        YesOrNo localCourtAssigned = caseData.getIsCtscLocation();
 
         List<String> errors = new ArrayList<>();
         if (YesOrNo.NO.equals(localCourtAssigned)

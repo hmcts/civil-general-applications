@@ -848,7 +848,7 @@ public class ParentCaseUpdateHelper {
             .claimant2PartyName(EMPTY)
             .defendant1PartyName(EMPTY)
             .isMultiParty(null)
-            .isCcmccLocation(null)
+            .isCtscLocation(null)
             .caseAccessCategory(null)
             .defendant2PartyName(EMPTY)
             .generalAppSuperClaimType(EMPTY)

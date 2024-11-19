@@ -183,7 +183,7 @@ public class ReferToJudgeOrLegalAdvisorHandlerTest extends BaseCallbackHandlerTe
                                  .status(BusinessProcessStatus.FINISHED)
                                  .activityId("anyActivity")
                                  .build())
-            .isCcmccLocation(courtAssigned)
+            .isCtscLocation(courtAssigned)
             .ccdState(state)
             .build();
     }
