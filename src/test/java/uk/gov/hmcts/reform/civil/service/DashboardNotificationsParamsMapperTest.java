@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
@@ -168,7 +169,48 @@ public class DashboardNotificationsParamsMapperTest {
     }
 
     @Test
-    void shouldMapParametersWhenHwfApplicationFeeIsRequestedAndIsPartAdmitted() {
+    void shouldMapParametersWhenHwfApplicationFeeIsRequestedAndMoreInfoRequired() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
+            .hwfFeeType(FeeType.APPLICATION)
+            .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
+                              .remissionAmount(BigDecimal.valueOf(7500))
+                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndMoreInfoRequired() {
+        caseData = CaseDataBuilder.builder().build().toBuilder()
+            .ccdCaseReference(1644495739087775L)
+            .ccdState(AWAITING_APPLICATION_PAYMENT)
+            .legacyCaseReference("000DC001")
+            .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .generalAppSuperClaimType("SPEC_CLAIM")
+            .hwfFeeType(FeeType.ADDITIONAL)
+            .additionalHwfDetails(HelpWithFeesDetails.builder()
+                                      .hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
+                                      .remissionAmount(BigDecimal.valueOf(7500))
+                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+            .build();
+
+        Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
+
+        assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+    }
+
+    @Test
+    void shouldMapParametersWhenHwfApplicationFeeIsRequestedAndIsPartAdmitted_PartRemission() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
             .ccdState(AWAITING_APPLICATION_PAYMENT)
@@ -177,7 +219,8 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.APPLICATION)
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
-            .gaHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
+            .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA)
+                              .remissionAmount(BigDecimal.valueOf(7500))
                               .outstandingFeeInPounds(new BigDecimal(200.00)).build())
             .build();
 
@@ -190,7 +233,7 @@ public class DashboardNotificationsParamsMapperTest {
     }
 
     @Test
-    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndIsPartAdmitted() {
+    void shouldMapParametersWhenHwfAdditionalApplicationFeeIsRequestedAndIsPartAdmitted_PartRemission() {
         caseData = CaseDataBuilder.builder().build().toBuilder()
             .ccdCaseReference(1644495739087775L)
             .ccdState(APPLICATION_ADD_PAYMENT)
@@ -199,8 +242,9 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppSuperClaimType("SPEC_CLAIM")
             .hwfFeeType(FeeType.ADDITIONAL)
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
-            .additionalHwfDetails(HelpWithFeesDetails.builder().remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+            .additionalHwfDetails(HelpWithFeesDetails.builder()
+                                      .hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA).remissionAmount(BigDecimal.valueOf(7500))
+                                      .outstandingFeeInPounds(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
