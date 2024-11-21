@@ -329,6 +329,8 @@ public class CaseData implements MappableObject {
     private final YesOrNo applicant1Represented;
     private final YesOrNo respondent1Represented;
     private final YesOrNo specRespondent1Represented;
+    private final YesOrNo respondent2Represented;
+    private final YesOrNo specRespondent2Represented;
 
     // GA for LIP
     private final YesOrNo isGaApplicantLip;
@@ -558,5 +560,24 @@ public class CaseData implements MappableObject {
             )
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
+    }
+
+    public YesOrNo getRespondent2Represented() {
+        return Stream.of(
+                        respondent2Represented,
+                        specRespondent2Represented
+                )
+                .filter(Objects::nonNull)
+                .findFirst().orElse(null);
+    }
+
+    @JsonIgnore
+    public boolean isRespondent1LiP() {
+        return YesOrNo.NO == getRespondent1Represented();
+    }
+
+    @JsonIgnore
+    public boolean isRespondent2LiP() {
+        return YesOrNo.NO == getRespondent2Represented();
     }
 }

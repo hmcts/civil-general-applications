@@ -4,18 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
-import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.handler.event.UpdateFromGACaseEventHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -29,17 +28,19 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
+import static java.time.LocalDateTime.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ADD_PDF_TO_MAIN_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -47,36 +48,33 @@ import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.STRING_CONSTA
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SuppressWarnings({"checkstyle:EmptyLineSeparator", "checkstyle:Indentation"})
-@SpringBootTest(classes = {
-    UploadAdditionalDocumentsCallbackHandler.class,
-    JacksonAutoConfiguration.class})
+@ExtendWith(MockitoExtension.class)
 class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTest {
 
-    @Autowired
     UploadAdditionalDocumentsCallbackHandler handler;
-    @Autowired
+
     ObjectMapper objectMapper;
-    @MockBean
+
+    @Mock
     IdamClient idamClient;
 
-    @MockBean
+    @Mock
     CaseDetailsConverter caseDetailsConverter;
 
-    @MockBean
-    AssignCategoryId assignCategoryId;
+    @Mock
+    UpdateFromGACaseEventHandler updateFromGACaseEventHandler;
 
-    List<Element<CaseDocument>> documents = new ArrayList<>();
+    @Mock
+    AssignCategoryId assignCategoryId;
 
     private static final String DUMMY_EMAIL = "test@gmail.com";
 
     @BeforeEach
     public void setUp() throws IOException {
 
-        when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
-                                                                 .sub(DUMMY_EMAIL)
-                                                                 .uid(STRING_CONSTANT)
-                                                                 .build());
-
+        objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        handler = new UploadAdditionalDocumentsCallbackHandler(objectMapper, assignCategoryId, caseDetailsConverter, idamClient, updateFromGACaseEventHandler);
     }
 
     @Test
@@ -86,6 +84,16 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
     @Nested
     class AboutToSubmit {
+
+        @BeforeEach
+        public void setUp() throws IOException {
+
+            when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
+                    .sub(DUMMY_EMAIL)
+                    .uid(STRING_CONSTANT)
+                    .build());
+
+        }
 
         @Test
         void shouldSetUpReadyBusinessProcessWhenJudgeUncloaked() {
@@ -102,7 +110,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .applicationIsUncloakedOnce(YES)
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
@@ -116,8 +124,6 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(UPLOAD_ADDL_DOCUMENTS.toString());
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
         }
 
@@ -136,7 +142,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .applicationIsCloaked(NO)
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
@@ -150,8 +156,6 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(UPLOAD_ADDL_DOCUMENTS.toString());
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
         }
 
@@ -170,7 +174,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
@@ -184,8 +188,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
         }
 
         @Test
@@ -208,7 +211,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
@@ -223,8 +226,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.NO);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(NO);
         }
 
         @Test
@@ -247,7 +249,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id1").forename("GAApplnSolicitor")
@@ -262,8 +264,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.NO);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(NO);
         }
 
         @Test
@@ -286,7 +287,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .isMultiParty(NO)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                 .parentClaimantIsApplicant(NO)
@@ -302,8 +303,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
         }
 
@@ -340,7 +340,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .generalAppRespondentSolicitors(gaRespSolicitors)
                 .parentClaimantIsApplicant(NO)
@@ -356,8 +356,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
         }
 
@@ -398,7 +397,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .generalAppRespondentSolicitors(gaRespSolicitors)
                 .parentClaimantIsApplicant(NO)
@@ -414,8 +413,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(1);
         }
 
@@ -438,7 +436,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                                                                   .documentBinaryUrl("http://dm-store:8080/documents")
                                                                   .build())
                                                 .documentName("witness_document.docx")
-                                                .createdDatetime(LocalDateTime.now()).build()));
+                                                .createdDatetime(now()).build()));
 
             List<Element<GASolicitorDetailsGAspec>> gaRespSolicitors = new ArrayList<>();
             gaRespSolicitors.add(element(GASolicitorDetailsGAspec.builder()
@@ -453,7 +451,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .generalAppRespondentSolicitors(gaRespSolicitors)
                 .parentClaimantIsApplicant(NO)
@@ -472,8 +470,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSolTwo().size()).isEqualTo(2);
         }
 
@@ -492,7 +489,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename("GAApplnSolicitor")
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
@@ -505,8 +502,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.NO);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(NO);
         }
 
         @Test
@@ -534,7 +530,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .generalAppConsentOrder(YES)
                 .generalAppRespondentSolicitors(gaRespSolicitors)
                 .parentClaimantIsApplicant(NO)
@@ -550,8 +546,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
 
-            assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
-            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
+            assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSolTwo()).isNull();
             assertThat(responseCaseData.getGaAddlDocBundle().size()).isEqualTo(1);
         }
@@ -567,11 +562,14 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
                 .atStateClaimDraft()
                 .ccdCaseReference(1678356749555475L)
                 .build().toBuilder()
-                .respondent2SameLegalRepresentative(YesOrNo.NO)
+                .respondent2SameLegalRepresentative(NO)
                 .claimant1PartyName("Mr. John Rambo")
                 .defendant1PartyName("Mr. Sole Trader")
                 .build();
+
             CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+            doNothing().when(updateFromGACaseEventHandler).handleEventUpdate(params, ADD_PDF_TO_MAIN_CASE);
+
             SubmittedCallbackResponse response = (SubmittedCallbackResponse) handler.handle(params);
             assertThat(response).usingRecursiveComparison().isEqualTo(
                 SubmittedCallbackResponse.builder()

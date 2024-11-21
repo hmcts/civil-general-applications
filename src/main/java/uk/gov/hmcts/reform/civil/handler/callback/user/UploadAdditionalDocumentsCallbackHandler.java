@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.handler.event.UpdateFromGACaseEventHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ADD_PDF_TO_MAIN_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_ADDL_DOCUMENTS;
 
 @Slf4j
@@ -45,8 +46,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
-
     private final IdamClient idamClient;
+    private final UpdateFromGACaseEventHandler updateFromGACaseEventHandler;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -65,7 +66,6 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
                                                      caseData.getUploadDocument(), role, true);
 
         caseDataBuilder.uploadDocument(null);
-        caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
@@ -101,16 +101,18 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse submittedConfirmation(CallbackParams callbackParams) {
+
+        log.info("Submit update for ADD_PDF_TO_MAIN_CASE for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
+        updateFromGACaseEventHandler.handleEventUpdate(callbackParams, ADD_PDF_TO_MAIN_CASE);
+
         String body = "<br/> <br/>";
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(CONFIRMATION_MESSAGE)
             .confirmationBody(body)
             .build();
     }
-
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
-
 }
