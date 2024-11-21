@@ -51,7 +51,9 @@ public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHa
         if (caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
             if (caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
-            } else {
+            }
+
+            if (caseData.claimIssueFullRemissionGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario());
             }
         }

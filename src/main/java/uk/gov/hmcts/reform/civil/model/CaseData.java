@@ -532,6 +532,13 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
+    public boolean claimIssueFullRemissionGrantedHWF(CaseData caseData) {
+        return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && (caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == YES
+            || caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == YES);
+    }
+
+    @JsonIgnore
     public boolean isApplicantNotRepresented() {
         return this.applicant1Represented == NO;
     }

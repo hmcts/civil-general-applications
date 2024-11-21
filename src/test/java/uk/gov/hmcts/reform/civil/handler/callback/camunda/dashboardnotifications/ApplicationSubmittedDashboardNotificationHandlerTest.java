@@ -25,6 +25,7 @@ import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -141,6 +142,34 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldRecordWhenLipApplicationIsFeePaidWithoutFeeOutcome() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            CaseData caseData = CaseData.builder()
+                .ccdCaseReference(123456L)
+                .generalAppHelpWithFees(
+                    HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                        .helpWithFee(YesOrNo.YES).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(UPDATE_GA_DASHBOARD_NOTIFICATION.name())
+                    .build()
+            ).build();
+            handler.handle(params);
+
+            verify(dashboardApiClient, times(1)).recordScenario(any(), any(), any(), any());
+
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
                 SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
