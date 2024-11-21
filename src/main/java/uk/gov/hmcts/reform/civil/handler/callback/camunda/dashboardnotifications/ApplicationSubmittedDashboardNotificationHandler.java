@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -48,7 +49,7 @@ public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHa
 
     public List<String> getScenarios(CaseData caseData) {
         List<String> scenarios = new ArrayList<>();
-        if (caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
+        if (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())) {
             if (caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
             } else {
