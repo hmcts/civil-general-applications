@@ -79,16 +79,16 @@ public class DashboardNotificationsParamsMapper {
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
         }
 
-        if (caseData.getHwfFeeType() != null) {
-            if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
-                params.put("applicationFeeTypeEn", "additional application");
-                params.put("applicationFeeTypeCy", "cais ychwanegol");
-            } else if (FeeType.APPLICATION == caseData.getHwfFeeType()
-                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
+        if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())) {
+            if (caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "application");
                 params.put("applicationFeeTypeCy", "cais");
+            } else if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+                params.put("applicationFeeTypeEn", "additional application");
+                params.put("applicationFeeTypeCy", "cais ychwanegol");
             }
         }
+
         if (Objects.nonNull(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations())) {
             LocalDate applicantDeadlineDate;
             LocalDate respondentDeadlineDate;
