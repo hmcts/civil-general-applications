@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -74,6 +75,8 @@ class ParentCaseUpdateHelperTest {
     CoreCaseDataService coreCaseDataService;
     @MockBean
     CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    FeatureToggleService featureToggleService;
     @Autowired
     ObjectMapper objectMapper;
     @Captor
@@ -226,6 +229,13 @@ class ParentCaseUpdateHelperTest {
                                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                         .organisationIdentifier("Nothing").build()).build()))
                 .isNull();
+
+        role = "RespondentLip";
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        assertThat(parentCaseUpdateHelper
+                       .findGaCreator(getVaryMainCaseData(role),
+                                      getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED, NO)))
+            .isEqualTo("RespondentSol");
     }
 
     @Test
@@ -678,6 +688,12 @@ class ParentCaseUpdateHelperTest {
                     .isMultiParty(isMultiparty).generalAppApplnSolicitor(
                         GASolicitorDetailsGAspec.builder()
                                 .organisationIdentifier("RespondentSolTwo").build());
+                break;
+            case "RespondentLip":
+                builder.parentClaimantIsApplicant(NO)
+                    .isGaApplicantLip(YES)
+                    .isMultiParty(isMultiparty)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build());
                 break;
             default:
                 break;
