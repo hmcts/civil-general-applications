@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT;
 
 @Service
@@ -31,7 +32,7 @@ public class ApplicationIssuedFeeRequiredHandler extends DashboardCallbackHandle
     protected String getScenario(CaseData caseData) {
 
         if (generalAppFeesService.isFreeApplication(caseData)) {
-            return "";
+            return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
         }
         return SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT.getScenario();
     }

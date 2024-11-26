@@ -37,6 +37,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_APPLICATION_FEE_REQUIRED_APPLICANT;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,7 +102,7 @@ public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandler
         }
 
         @Test
-        void shouldNotRecordApplicationIssueFeeRequiredScenarioWhenInvokedForFreeApplication() {
+        void shouldRecordApplicationSubmittedScenarioWhenInvokedForFreeApplication() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
@@ -129,7 +130,12 @@ public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandler
             ).build();
 
             handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
 
         @Test
