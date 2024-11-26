@@ -29,7 +29,9 @@ public class ExternalTaskListenerConfiguration {
         return ExternalTaskClient.create()
             .addInterceptor(new ServiceAuthProvider())
             .asyncResponseTimeout(29000)
+            .maxTasks(1)
             .backoffStrategy(new ExponentialBackoffStrategy(0, 0, 0))
+            .lockDuration(33L * 60L * 1000L) //wait for 33min to finish task before it gets picked by other client
             .baseUrl(baseUrl)
             .build();
     }
