@@ -32,7 +32,9 @@ public class GeneralApplication implements MappableObject {
     private final GAPbaDetails generalAppPBADetails;
     private YesOrNo generalAppAskForCosts;
     private String generalAppDetailsOfOrder;
+    private List<Element<String>> generalAppDetailsOfOrderColl;
     private String generalAppReasonsOfOrder;
+    private List<Element<String>> generalAppReasonsOfOrderColl;
     private GAInformOtherParty generalAppInformOtherParty;
     private GAUrgencyRequirement generalAppUrgencyRequirement;
     private GAStatementOfTruth generalAppStatementOfTruth;
@@ -88,7 +90,9 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppPBADetails") GAPbaDetails generalAppPBADetails,
                        @JsonProperty("generalAppAskForCosts") YesOrNo generalAppAskForCosts,
                        @JsonProperty("generalAppDetailsOfOrder") String generalAppDetailsOfOrder,
+                       @JsonProperty("generalAppDetailsOfOrderColl") List<Element<String>> generalAppDetailsOfOrderColl,
                        @JsonProperty("generalAppReasonsOfOrder") String generalAppReasonsOfOrder,
+                       @JsonProperty("generalAppReasonsOfOrderColl") List<Element<String>> generalAppReasonsOfOrderColl,
                        @JsonProperty("generalAppInformOtherParty") GAInformOtherParty generalAppInformOtherParty,
                        @JsonProperty("generalAppUrgencyRequirement") GAUrgencyRequirement generalAppUrgencyRequirement,
                        @JsonProperty("generalAppStatementOfTruth") GAStatementOfTruth generalAppStatementOfTruth,
@@ -139,7 +143,9 @@ public class GeneralApplication implements MappableObject {
         this.generalAppPBADetails = generalAppPBADetails;
         this.generalAppAskForCosts = generalAppAskForCosts;
         this.generalAppDetailsOfOrder = generalAppDetailsOfOrder;
+        this.generalAppDetailsOfOrderColl = generalAppDetailsOfOrderColl;
         this.generalAppReasonsOfOrder = generalAppReasonsOfOrder;
+        this.generalAppReasonsOfOrderColl = generalAppReasonsOfOrderColl;
         this.generalAppInformOtherParty = generalAppInformOtherParty;
         this.generalAppUrgencyRequirement = generalAppUrgencyRequirement;
         this.generalAppStatementOfTruth = generalAppStatementOfTruth;
