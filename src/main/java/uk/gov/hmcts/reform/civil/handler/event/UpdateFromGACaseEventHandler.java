@@ -68,7 +68,6 @@ public class UpdateFromGACaseEventHandler {
                         getUpdatedCaseData(caseData, generalAppCaseData)
                 )
         );
-
     }
 
     private Map<String, Object> getUpdatedCaseData(CaseData civilCaseData, CaseData generalAppCaseData) {
@@ -251,7 +250,6 @@ public class UpdateFromGACaseEventHandler {
                 .anyMatch(civilGaData -> generalAppCaseData.getCcdCaseReference()
                         .equals(parseLong(civilGaData.getValue().getCaseLink().getCaseReference())));
     }
-
 
     @SuppressWarnings("unchecked")
     protected int checkIfDocumentExists(List<Element<?>> civilCaseDocumentList,

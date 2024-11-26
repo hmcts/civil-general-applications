@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.handler.event.UpdateFromGACaseEventHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -27,7 +26,6 @@ import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +68,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
     private static final String DUMMY_EMAIL = "test@gmail.com";
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() {
 
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
@@ -86,7 +84,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
     class AboutToSubmit {
 
         @BeforeEach
-        public void setUp() throws IOException {
+        public void setUp() {
 
             when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
                     .sub(DUMMY_EMAIL)
@@ -96,7 +94,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenJudgeUncloaked() {
+        void shouldBeVisibleDocumentWhenJudgeUncloaked() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -128,7 +126,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenJudgeCloakedApplication() {
+        void shouldBeVisibleDocumentWhenJudgeCloakedApplication() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -160,7 +158,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenJudgeIsNotUncloakedAndInformOtherPartyIsYes() {
+        void shouldBeVisibleDocumentWhenJudgeIsNotUncloakedAndInformOtherPartyIsYes() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -192,7 +190,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsUrgent() {
+        void shouldNotBeVisibleDocumentWhenApplicationIsUrgent() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -230,7 +228,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsUrgentAddedToApplicantAddlUser() {
+        void shouldNotBeVisibleDocumentWhenApplicationIsUrgentAddedToApplicantAddlUser() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -268,7 +266,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsNonUrgentAndAddedToRespCollection() {
+        void shouldBeVisibleDocWhenApplicationIsNonUrgentAndAddedToRespCollection() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByRespondent = new ArrayList<>();
             uploadDocumentByRespondent.add(element(UploadDocumentByType.builder()
@@ -308,7 +306,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsConsentOrderAndAddedToResp1Collection1v2() {
+        void shouldBeVisibleDocWhenApplicationIsConsentOrderAndAddedToResp1Collection1v2() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -361,7 +359,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsConsentOrderAndAddedToResp2Collection1v2() {
+        void shouldBeVisibleDocWhenApplicationIsConsentOrderAndAddedToResp2Collection1v2() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -418,7 +416,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsConsentOrderAndAddedToResp2Collection1v2MultipleCollection() {
+        void shouldBeVisibleDocWhenApplicationIsConsentOrderAndAddedToResp2Collection1v2MultipleCollection() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
@@ -475,7 +473,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         }
 
         @Test
-        void shouldSetUpReadyBusinessProcessWhenApplicationIsNotConsentOrder() {
+        void shouldNotBeVisibleDocWhenApplicationIsNotConsentOrder() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
             uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()

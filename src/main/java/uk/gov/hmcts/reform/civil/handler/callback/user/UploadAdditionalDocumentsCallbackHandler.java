@@ -102,7 +102,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submittedConfirmation(CallbackParams callbackParams) {
 
-        log.info("Submit update for ADD_PDF_TO_MAIN_CASE for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
+        log.info("Triggering ADD_PDF_TO_MAIN_CASE event for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         updateFromGACaseEventHandler.handleEventUpdate(callbackParams, ADD_PDF_TO_MAIN_CASE);
 
         String body = "<br/> <br/>";
@@ -111,6 +111,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
             .confirmationBody(body)
             .build();
     }
+
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
