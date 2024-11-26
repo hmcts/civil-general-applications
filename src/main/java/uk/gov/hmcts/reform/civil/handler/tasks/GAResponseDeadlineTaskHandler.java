@@ -35,7 +35,8 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
         List<CaseDetails> cases = getAwaitingResponseCasesThatArePastDueDate();
-        log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
+        List<Long> ids = cases.stream().map(CaseDetails::getId).toList();
+        log.info("GAResponseDeadlineTaskHandler Job '{}' found {} case(s) with ids {}", externalTask.getTopicName(), cases.size(), ids);
 
         cases.forEach(this::deleteDashboardNotifications);
         cases.forEach(this::fireEventForStateChange);

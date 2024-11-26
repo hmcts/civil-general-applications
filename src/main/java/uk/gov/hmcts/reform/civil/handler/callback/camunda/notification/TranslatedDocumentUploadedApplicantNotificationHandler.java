@@ -88,7 +88,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
 
     private String addTemplate(CaseData caseData) {
         if (gaForLipService.isLipApp(caseData)) {
-            if (caseData.isApplicantBilingual(caseData.getParentClaimantIsApplicant())) {
+            if (caseData.isApplicantBilingual()) {
                 return notificationsProperties.getNotifyApplicantLiPTranslatedDocumentUploadedWhenParentCaseInBilingual();
             }
             return notificationsProperties.getLipGeneralAppApplicantEmailTemplate();

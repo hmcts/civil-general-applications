@@ -51,6 +51,7 @@ java:
     SOME_ENV_VARIABLE: false
     GA_S2S_AUTHORISED_SERVICES: payment_app,ccd_data,civil_service
     CUI_URL: https://civil-citizen-ui.{{ .Values.global.environment }}.platform.hmcts.net
+    EM_CCD_ORCHESTRATOR_URL: http://em-ccd-orchestrator-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
 
   keyVaults:
     civil:
@@ -78,12 +79,11 @@ java:
           alias: SENDGRID_API_KEY
         - name: launch-darkly-sdk-key
           alias: LAUNCH_DARKLY_SDK_KEY
-        - name: AppInsightsInstrumentationKey
+        - name: appinsights-instrumentation-key
           alias: azure.application-insights.instrumentation-key
         - name: ordnance-survey-api-key
           alias: OS_POSTCODE_LOOKUP_API_KEY
-        - name: genapp-appinsights-connection-string
-          alias: appinsights-connection-string
+        - name: appinsights-connection-string
     civil-gen-apps:
         resourceGroup: civil
         secrets:
