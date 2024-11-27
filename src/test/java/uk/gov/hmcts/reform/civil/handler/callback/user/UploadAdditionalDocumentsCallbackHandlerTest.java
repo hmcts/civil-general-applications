@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -35,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -65,14 +68,20 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
     @Mock
     AssignCategoryId assignCategoryId;
 
+    @Mock
+    DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+
+    @Mock
+    GaForLipService gaForLipService;
+
     private static final String DUMMY_EMAIL = "test@gmail.com";
 
     @BeforeEach
     public void setUp() {
-
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
-        handler = new UploadAdditionalDocumentsCallbackHandler(objectMapper, assignCategoryId, caseDetailsConverter, idamClient, updateFromGACaseEventHandler);
+        handler = new UploadAdditionalDocumentsCallbackHandler(objectMapper, assignCategoryId, caseDetailsConverter,
+                docUploadDashboardNotificationService, gaForLipService, idamClient, updateFromGACaseEventHandler);
     }
 
     @Test
@@ -268,6 +277,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         @Test
         void shouldBeVisibleDocWhenApplicationIsNonUrgentAndAddedToRespCollection() {
 
+            when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
             List<Element<UploadDocumentByType>> uploadDocumentByRespondent = new ArrayList<>();
             uploadDocumentByRespondent.add(element(UploadDocumentByType.builder()
                                                        .documentType("witness")
@@ -303,6 +313,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
+            verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
         }
 
         @Test

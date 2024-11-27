@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPOND_FOR_INFORMATION;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RespondForInformationGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -40,6 +42,7 @@ public class RespondForInformationGenerator implements TemplateDataGenerator<Jud
                 docmosisTemplate
         );
 
+        log.info("Generate respond for information for caseId: {}", caseData.getCcdCaseReference());
         return documentManagementService.uploadDocument(
                 authorisation,
                 new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),

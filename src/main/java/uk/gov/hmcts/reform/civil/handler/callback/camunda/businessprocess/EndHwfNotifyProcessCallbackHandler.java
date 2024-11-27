@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_GA_HWF_NOTIFY_PROCESS;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -18,6 +19,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EndHwfNotifyProcessCallbackHandler extends CallbackHandler {
@@ -37,6 +39,7 @@ public class EndHwfNotifyProcessCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse endHwfNotifyBusinessProcess(CallbackParams callbackParams) {
+        log.info("End Hwf notify business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         return evaluateReady(callbackParams);
     }

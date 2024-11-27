@@ -124,6 +124,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                                                       .getHelpWithFeesReferenceNumber()).build())
                     .businessProcess(BusinessProcess.ready(UPDATE_GA_ADD_HWF))
                     .build();
+                log.info("Start business process UPDATE_GA_ADD_HWF for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
             } else {
                 errors.add(CASE_STATE_INVALID);
             }
