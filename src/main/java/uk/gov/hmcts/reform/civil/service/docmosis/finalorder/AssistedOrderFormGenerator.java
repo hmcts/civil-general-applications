@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.AppealOriginTypes;
@@ -43,6 +44,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.OT
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AssistedOrderFormGenerator implements TemplateDataGenerator<AssistedOrderForm> {
@@ -56,12 +58,14 @@ public class AssistedOrderFormGenerator implements TemplateDataGenerator<Assiste
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         AssistedOrderForm templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        log.info("Generate assisted order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         AssistedOrderForm templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate assisted order form for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 

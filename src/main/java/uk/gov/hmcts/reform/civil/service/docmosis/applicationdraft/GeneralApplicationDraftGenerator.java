@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -38,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.OTHER_SUPPO
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.SIGN_INTERPRETER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_APPLICATION_DRAFT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<GADraftForm> {
@@ -100,8 +102,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                            .getHearingDetailsEmailID())
                 .unavailableTrialRequiredYesOrNo(caseData.getGeneralAppHearingDetails()
                                                      .getUnavailableTrialRequiredYesOrNo())
-                .unavailableTrialDateTo(getAppUnavailabilityDate(caseData, YesOrNo.YES))
-                .unavailableTrialDateFrom(getAppUnavailabilityDate(caseData, YesOrNo.NO))
+                .unavailableTrialDateTo(getAppUnavailabilityDate(caseData, YesOrNo.NO))
+                .unavailableTrialDateFrom(getAppUnavailabilityDate(caseData, YesOrNo.YES))
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
                 .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
@@ -256,16 +258,19 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
 
     private Boolean checkAdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String appSupportRequirement = getGaSupportRequirement(caseData);
+        log.info("Check additional support for caseId: {}", caseData.getCcdCaseReference());
         return appSupportRequirement != null && appSupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String resp1SupportRequirement = getRespSupportRequirement(caseData, ONE_V_ONE);
+        log.info("Check additional support for respondent 1 for caseId: {}", caseData.getCcdCaseReference());
         return resp1SupportRequirement != null && resp1SupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp2AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String resp2SupportRequirement = getRespSupportRequirement(caseData, ONE_V_TWO);
+        log.info("Check additional support for respondent 2 for caseId: {}", caseData.getCcdCaseReference());
         return resp2SupportRequirement != null && resp2SupportRequirement.contains(additionalSupport.getDisplayedValue());
 
     }
@@ -361,6 +366,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
             templateData,
             docmosisTemplate
         );
+        log.info("Generate general application draft for caseId: {}", caseData.getCcdCaseReference());
 
         return documentManagementService.uploadDocument(
             authorisation,

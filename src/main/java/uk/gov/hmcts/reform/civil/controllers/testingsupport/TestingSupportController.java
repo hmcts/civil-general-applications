@@ -55,6 +55,7 @@ public class TestingSupportController {
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
     public ResponseEntity<BusinessProcessInfo> getBusinessProcess(@PathVariable("caseId") Long caseId) {
+        log.info("Get business process for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
         var businessProcess = caseData.getBusinessProcess();
         var caseState = caseData.getCcdState();
@@ -81,6 +82,7 @@ public class TestingSupportController {
     if so, generalApplicationsDetails object will be populated with GA case references*/
     @GetMapping("/testing-support/case/{caseId}/business-process/ga")
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
+        log.info("Get GA case reference for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
 
         int size = caseData.getGeneralApplications().size();
@@ -179,7 +181,7 @@ public class TestingSupportController {
         String organisationId = organisationService.findOrganisation(authorisation)
             .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
         coreCaseUserService.assignCase(caseId, userId, organisationId, caseRole);
-
+        log.info("Assign caseId: {}", caseId);
     }
 
     @GetMapping(value = {"/getOrgDetails"})

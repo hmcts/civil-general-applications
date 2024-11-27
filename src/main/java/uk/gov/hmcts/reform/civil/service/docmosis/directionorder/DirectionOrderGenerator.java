@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.directionorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIREC
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DIRECTION_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -42,6 +44,7 @@ public class DirectionOrderGenerator implements TemplateDataGenerator<JudgeDecis
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate direction order for caseId: {}", caseData.getCcdCaseReference());
         return  generateDocmosisDocument(templateData, authorisation, userType);
     }
 

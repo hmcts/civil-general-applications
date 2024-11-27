@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -102,6 +103,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
@@ -369,13 +371,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
             if (isAdditionalPaymentMade(caseData).equals(YES)) {
+                log.info("General app respondent has not agreed and the additional payment has been made for caseId: {}", caseData.getCcdCaseReference());
                 gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
             } else {
+                log.info("General app respondent has not agreed and the additional payment has not been made for caseId: {}", caseData.getCcdCaseReference());
                 gaJudicialRequestMoreInfoBuilder
                         .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
             }
 
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+            log.info("General app respondent has agreed for caseId: {}", caseData.getCcdCaseReference());
             if (isGeneralAppConsentOrder(caseData)) {
                 gaJudicialRequestMoreInfoBuilder.isWithNotice(NO).build();
             } else {
@@ -602,6 +607,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("General order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (judicialDecisionMakeOrder.getDirectionsText() != null
                     && judicialDecisionMakeOrder.getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
@@ -609,12 +615,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("Direction order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (judicialDecisionMakeOrder.getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
                 judgeDecision = dismissalOrderGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("Dismissal order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             }
         }
@@ -786,6 +794,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             judgeDecision = requestForInformationGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString());
+            log.info("Request for information is generated for caseId: {}", caseData.getCcdCaseReference());
 
             caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
         }
@@ -864,8 +873,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
          * */
 
         if (isApplicationUncloaked != null
-                && isApplicationUncloaked.equals(NO)
-                && !gaForLipService.isGaForLip(caseData)) {
+                && isApplicationUncloaked.equals(NO)) {
             dataBuilder.applicationIsUncloakedOnce(YES);
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
 
@@ -1026,6 +1034,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            log.info("Written representation sequential order is generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
@@ -1039,6 +1048,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            log.info("Written representation concurrent order is generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         }
@@ -1627,10 +1637,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppRespondentSolicitors() != null
                 && caseData.getGeneralAppRespondentSolicitors().size() > 0) {
+            log.info("General app respondent has more than 0 solicitor(s) for caseId: {}", caseData.getCcdCaseReference());
             responseElementOptional1 = response1(caseData);
         }
         if (caseData.getGeneralAppRespondentSolicitors() != null
                 && caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+            log.info("General app respondent has more than 1 solicitor(s) for caseId: {}", caseData.getCcdCaseReference());
             responseElementOptional2 = response2(caseData);
         }
         YesOrNo hasRespondent1PreferredLocation = hasPreferredLocation(responseElementOptional1);

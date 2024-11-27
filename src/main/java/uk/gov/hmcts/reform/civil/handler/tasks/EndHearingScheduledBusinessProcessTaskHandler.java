@@ -35,6 +35,7 @@ public class EndHearingScheduledBusinessProcessTaskHandler extends BaseExternalT
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_HEARING_SCHEDULED_PROCESS_GASPEC);
+        log.info("Started GA update event for case ID: {} with event: {}", caseId, END_HEARING_SCHEDULED_PROCESS_GASPEC);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));

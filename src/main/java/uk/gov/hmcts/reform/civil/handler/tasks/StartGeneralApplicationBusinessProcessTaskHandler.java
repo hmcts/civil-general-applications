@@ -34,6 +34,7 @@ public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExter
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
         CaseData caseData = startGeneralApplicationBusinessProcess(externalTask);
+        log.debug("Started General Application Business Process for case ID: {}", caseData.getCcdCaseReference());
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
@@ -56,17 +57,21 @@ public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExter
         );
         String caseId = externalTaskInput.getCaseId();
         CaseEvent caseEvent = externalTaskInput.getCaseEvent();
+        log.info("Starting process for Case ID: {}, Event: {}", caseId, caseEvent);
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, caseEvent);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
+        log.debug("Business Process Status: {}", businessProcess.getStatusOrDefault());
         switch (businessProcess.getStatusOrDefault()) {
             case READY, DISPATCHED -> {
                 return updateBusinessProcess(caseId, externalTask, startEventResponse, businessProcess);
             }
             case STARTED -> {
                 if (businessProcess.hasSameProcessInstanceId(externalTask.getProcessInstanceId())) {
+                    log.warn("Process instance ID already exists. Aborting for Case ID: {}", caseId);
                     throw new BpmnError("ABORT");
                 }
+                log.debug("Process already started for Case ID: {}", caseId);
                 return data;
             }
             default -> {
@@ -87,12 +92,14 @@ public class StartGeneralApplicationBusinessProcessTaskHandler extends BaseExter
         BusinessProcess businessProcess
     ) {
         businessProcess = businessProcess.updateProcessInstanceId(externalTask.getProcessInstanceId());
+        log.info("Business process updated and submitted for Case ID: {}", ccdId);
         return coreCaseDataService.submitGaUpdate(ccdId, caseDataContent(startEventResponse, businessProcess));
     }
 
     private CaseDataContent caseDataContent(StartEventResponse startEventResponse, BusinessProcess businessProcess) {
         Map<String, Object> data = startEventResponse.getCaseDetails().getData();
         data.put(BUSINESS_PROCESS, businessProcess);
+        log.debug("Prepared case data content with updated BusinessProcess for Case ID: {}", startEventResponse.getCaseDetails().getId());
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
