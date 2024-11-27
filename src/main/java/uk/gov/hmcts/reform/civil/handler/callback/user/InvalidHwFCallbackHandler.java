@@ -55,7 +55,9 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
     private CaseData setUpBusinessProcess(CaseData caseData) {
         CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
                 .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        log.info("Start business process NOTIFY_APPLICANT_LIP_HWF for caseId: {}", caseData.getCcdCaseReference());
         HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, INVALID_HWF_REFERENCE_GA);
+        log.info("Update event in HWF to INVALID_HWF_REFERENCE_GA for caseId: {}", caseData.getCcdCaseReference());
         return updatedData.build();
     }
 }

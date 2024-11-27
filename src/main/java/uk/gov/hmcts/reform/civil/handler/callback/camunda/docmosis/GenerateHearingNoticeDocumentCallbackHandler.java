@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.docmosis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -33,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTI
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandler {
@@ -68,7 +70,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
     }
 
     private CallbackResponse generateHearingNoticeDocument(CallbackParams callbackParams) {
-
+        log.info("Generate hearing notice document for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         buildDocument(callbackParams, caseDataBuilder, caseData);

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandlerFactory;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CallbackType;
@@ -22,6 +24,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackVersion;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Tag(name = "CallbackController")
@@ -52,6 +55,8 @@ public class CallbackController {
         @PathVariable("version") Optional<CallbackVersion> version,
         @PathVariable("page-id") Optional<String> pageId
     ) {
+        final CaseDetails caseDetails = callback.getCaseDetails();
+        MDC.put("caseId", Objects.toString(caseDetails.getId(), ""));
         log.info("Received callback from CCD, eventId: {}, callback type: {}, page id: {}, version: {}",
                  callback.getEventId(), callbackType, pageId, version
         );
@@ -62,7 +67,7 @@ public class CallbackController {
             .params(Map.of(CallbackParams.Params.BEARER_TOKEN, authorisation))
             .version(version.orElse(null))
             .pageId(pageId.orElse(null))
-            .caseData(caseDetailsConverter.toCaseData(callback.getCaseDetails()))
+            .caseData(caseDetailsConverter.toCaseData(caseDetails))
             .build();
 
         return callbackHandlerFactory.dispatch(callbackParams);

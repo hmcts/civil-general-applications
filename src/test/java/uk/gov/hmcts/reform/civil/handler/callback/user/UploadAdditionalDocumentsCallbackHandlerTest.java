@@ -24,6 +24,8 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -37,6 +39,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
@@ -64,6 +67,10 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
     @MockBean
     AssignCategoryId assignCategoryId;
+    @MockBean
+    DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    @MockBean
+    GaForLipService gaForLipService;
 
     List<Element<CaseDocument>> documents = new ArrayList<>();
 
@@ -71,6 +78,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
 
     @BeforeEach
     public void setUp() throws IOException {
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(false);
 
         when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
                                                                  .sub(DUMMY_EMAIL)
@@ -269,6 +277,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
         @Test
         void shouldSetUpReadyBusinessProcessWhenApplicationIsNonUrgentAndAddedToRespCollection() {
 
+            when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
             List<Element<UploadDocumentByType>> uploadDocumentByRespondent = new ArrayList<>();
             uploadDocumentByRespondent.add(element(UploadDocumentByType.builder()
                                                        .documentType("witness")
@@ -305,6 +314,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
+            verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
         }
 
         @Test

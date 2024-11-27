@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPOND_FOR_WRITTEN_REPRESENTATION;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RespondToWrittenRepresentationGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument>  {
@@ -35,6 +37,7 @@ public class RespondToWrittenRepresentationGenerator implements TemplateDataGene
             templateData,
             docmosisTemplate
         );
+        log.info("Generate respond to written representation document for caseId: {}", caseData.getCcdCaseReference());
 
         return documentManagementService.uploadDocument(
             authorisation,

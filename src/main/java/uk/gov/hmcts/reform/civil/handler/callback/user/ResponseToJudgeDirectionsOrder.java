@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
@@ -67,6 +69,7 @@ public class ResponseToJudgeDirectionsOrder extends CallbackHandler {
 
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
+            log.info("General dashboard notification for Lip party for caseId: {}", caseData.getCcdCaseReference());
             docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);

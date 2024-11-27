@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -45,6 +47,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    private final GaForLipService gaForLipService;
 
     private final IdamClient idamClient;
 
@@ -57,6 +61,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         caseData = buildBundleData(caseData, userId);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
@@ -67,6 +72,12 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
+
+        // Generate Dashboard Notification for Lip Party
+        if (gaForLipService.isGaForLip(caseData)) {
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();

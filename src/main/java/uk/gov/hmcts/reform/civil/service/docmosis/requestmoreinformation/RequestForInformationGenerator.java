@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -33,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUE
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RequestForInformationGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -45,12 +47,14 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
+        log.info("Generate request for information with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
 
+        log.info("Generate request for information for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, caseData, authorisation, userType);
     }
 

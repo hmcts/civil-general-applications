@@ -22,6 +22,7 @@ public class FeatureToggleAspect {
         if (featureToggle.value() && featureToggleService.isFeatureEnabled(featureToggle.feature())) {
             joinPoint.proceed();
         } else if (!featureToggle.value() && !featureToggleService.isFeatureEnabled(featureToggle.feature())) {
+            log.info("Feature {} is enabled. Proceeding with method {}", featureToggle.feature(), joinPoint.getSignature().getName());
             joinPoint.proceed();
         } else {
             log.warn(
