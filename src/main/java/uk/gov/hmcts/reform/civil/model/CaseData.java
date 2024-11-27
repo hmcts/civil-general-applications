@@ -105,7 +105,9 @@ public class CaseData implements MappableObject {
     private final YesOrNo generalAppConsentOrder;
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
+    private final List<Element<String>> generalAppDetailsOfOrderColl;
     private final String generalAppReasonsOfOrder;
+    private final List<Element<String>> generalAppReasonsOfOrderColl;
     private final String legacyCaseReference;
     private final LocalDateTime notificationDeadline;
     private final LocalDate submittedOn;
