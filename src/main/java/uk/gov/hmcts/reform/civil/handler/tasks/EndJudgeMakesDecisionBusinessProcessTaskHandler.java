@@ -35,6 +35,7 @@ public class EndJudgeMakesDecisionBusinessProcessTaskHandler extends BaseExterna
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_JUDGE_BUSINESS_PROCESS_GASPEC);
+        log.info("Started GA update event for case ID: {} with event: {}", caseId, END_JUDGE_BUSINESS_PROCESS_GASPEC);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));

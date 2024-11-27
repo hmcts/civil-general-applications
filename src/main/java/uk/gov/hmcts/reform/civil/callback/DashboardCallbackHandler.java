@@ -6,6 +6,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import com.google.common.base.Strings;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
@@ -14,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
+@Slf4j
 @RequiredArgsConstructor
 public abstract class DashboardCallbackHandler extends CallbackHandler {
 
@@ -50,6 +52,7 @@ public abstract class DashboardCallbackHandler extends CallbackHandler {
         String scenario = getScenario(caseData);
         ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
             caseData)).build();
+        log.info("Configure dashboard scenario for case id: {}", callbackParams.getCaseData().getCcdCaseReference());
 
         if (!Strings.isNullOrEmpty(scenario) && shouldRecordScenario(callbackParams)) {
             dashboardApiClient.recordScenario(

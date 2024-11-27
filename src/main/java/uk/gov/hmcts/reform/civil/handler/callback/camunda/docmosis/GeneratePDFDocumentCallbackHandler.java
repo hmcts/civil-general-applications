@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.docmosis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -58,6 +59,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
@@ -112,6 +114,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
          * */
 
         CaseData caseData = callbackParams.getCaseData();
+        log.info("Create PDF document for case: {}", caseData);
 
         CaseData civilCaseData = CaseData.builder().build();
         if (gaForLipService.isGaForLip(caseData)) {
@@ -554,6 +557,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         /*
          * Generate Judge Request for Information order document with LIP Applicant Post Address
          * */
+        log.info("Generate Judge Request for Information order document with LIP Applicant Post Address for case: {}", caseData.getCcdCaseReference());
         return freeFormOrderGenerator.generate(
             civilCaseData,
             caseData,
@@ -568,6 +572,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
          * Generate Judge Request for Information order document with LIP Respondent Post Address
          * if GA is with notice
          * */
+        log.info("Generate Judge Request for Information order document with LIP Respondent Post Address if GA is with notice for case: {}", caseData.getCcdCaseReference());
         return freeFormOrderGenerator.generate(
             civilCaseData,
             caseData,
@@ -577,6 +582,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
     }
 
     private void sendJudgeFinalOrderPrintService(String authorisation, CaseDocument decision, CaseData caseData, CaseData civilCaseData, FlowFlag lipUserType) {
+        log.info("Send judge final order print service for case: {}", caseData.getCcdCaseReference());
         sendFinalOrderPrintService
             .sendJudgeFinalOrderToPrintForLIP(
                 authorisation,
