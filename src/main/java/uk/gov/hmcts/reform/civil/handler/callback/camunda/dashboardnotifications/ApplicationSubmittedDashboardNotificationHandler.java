@@ -49,7 +49,8 @@ public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHa
 
     public List<String> getScenarios(CaseData caseData) {
         List<String> scenarios = new ArrayList<>();
-        if (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())) {
+        if (Objects.nonNull(caseData.getGaHwfDetails())
+            && !(caseData.getGaHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA)) {
             if (caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
             } else {
