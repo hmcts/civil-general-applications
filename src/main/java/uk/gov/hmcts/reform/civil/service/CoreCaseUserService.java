@@ -6,9 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
+import uk.gov.hmcts.reform.ccd.client.CaseAccessApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
+import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRoleWithOrganisation;
+import uk.gov.hmcts.reform.ccd.model.CaseAssignedUserRolesRequest;
 import uk.gov.hmcts.reform.civil.config.CrossAccessUserConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseRole;
 
@@ -23,6 +26,7 @@ public class CoreCaseUserService {
     Logger log = LoggerFactory.getLogger(CoreCaseUserService.class);
 
     private final CaseAssignmentApi caseAssignmentApi;
+    private final CaseAccessApi caseAccessDataStoreApi;
     private final UserService userService;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
@@ -135,5 +139,28 @@ public class CoreCaseUserService {
 
         return userRoles.getCaseAssignmentUserRoles().stream()
             .anyMatch(c -> c.getCaseRole().equals(caseRole.getFormattedName()));
+    }
+
+    public void unassignCase(String caseId, String userId, String organisationId, CaseRole caseRole) {
+        String caaAccessToken = getCaaAccessToken();
+        if (userWithCaseRoleExistsOnCase(caseId, caaAccessToken, caseRole)) {
+            CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation = CaseAssignedUserRoleWithOrganisation.builder()
+                .caseDataId(caseId)
+                .userId(userId)
+                .caseRole(caseRole.getFormattedName())
+                .organisationId(organisationId)
+                .build();
+            removeAccessFromRole(caseAssignedUserRoleWithOrganisation, caaAccessToken);
+        }
+    }
+
+    private void removeAccessFromRole(CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation, String caaAccessToken) {
+        caseAccessDataStoreApi.revokeAccessToCase(
+            caaAccessToken,
+            authTokenGenerator.generate(),
+            CaseAssignedUserRolesRequest.builder()
+                .caseAssignedUserRoles(List.of(caseAssignedUserRoleWithOrganisation))
+                .build()
+        );
     }
 }
