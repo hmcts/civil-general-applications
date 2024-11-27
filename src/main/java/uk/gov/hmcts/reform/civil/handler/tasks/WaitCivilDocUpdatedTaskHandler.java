@@ -48,6 +48,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, eventType);
         CaseData gaCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        log.info("Started GA update for Case ID: {}, Event Type: {}", caseId, eventType);
 
         if (!gaForLipService.isGaForLip(gaCaseData)) {
             boolean civilUpdated = checkCivilDocUpdated(gaCaseData);

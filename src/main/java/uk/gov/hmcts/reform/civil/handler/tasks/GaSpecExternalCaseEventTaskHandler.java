@@ -35,6 +35,7 @@ public class GaSpecExternalCaseEventTaskHandler extends BaseExternalTaskHandler 
         String caseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(caseId,
                                                 variables.getCaseEvent());
+        log.info("Started GA update event for case ID: {} with event: {}", caseId, variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()

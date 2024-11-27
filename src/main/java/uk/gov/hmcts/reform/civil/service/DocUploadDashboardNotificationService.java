@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -15,6 +16,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocUploadDashboardNotificationService {
@@ -27,6 +29,7 @@ public class DocUploadDashboardNotificationService {
     public void createDashboardNotification(CaseData caseData, String role, String authToken) {
 
         if (isWithNoticeOrConsent(caseData) && featureToggleService.isDashboardServiceEnabled()) {
+            log.info("Case {} is with notice or consent and the dashboard service is enabled", caseData.getCcdCaseReference());
             String scenario = getDashboardScenario(role, caseData);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();

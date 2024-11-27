@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHandler {
@@ -30,6 +32,7 @@ public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHand
 
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
+        log.info("Starting handleTask for ExternalTask ID: {}", externalTask.getId());
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
@@ -39,6 +42,7 @@ public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHand
         businessProcess.updateActivityId(externalTask.getActivityId());
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
         var data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        log.info("Successfully submitted update for caseId: {}", generalApplicationCaseId);
         return ExternalTaskData.builder().caseData(data).build();
     }
 

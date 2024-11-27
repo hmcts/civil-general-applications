@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -20,6 +21,7 @@ import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HearingScheduledNotificationService implements NotificationData {
@@ -102,6 +104,7 @@ public class HearingScheduledNotificationService implements NotificationData {
                          gaForLipService.isLipApp(caseData)
                              ? getLiPApplicantTemplates(caseData)
                              : notificationProperties.getHearingNoticeTemplate(), APPLICANT);
+        log.info("Sending hearing scheduled notification for claimant for Case ID: {}", caseData.getCcdCaseReference());
 
         return caseData;
     }
@@ -129,6 +132,7 @@ public class HearingScheduledNotificationService implements NotificationData {
                 ? getLiPRespondentTemplate(civilCaseData, updatedCaseData)
                 : notificationProperties.getHearingNoticeTemplate(), RESPONDENT));
 
+        log.info("Sending hearing scheduled notification for respondent for Case ID: {}", caseData.getCcdCaseReference());
         return caseData;
     }
 
