@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
@@ -15,6 +16,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
 import org.junit.jupiter.api.BeforeEach;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -70,6 +72,82 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(FEE_PAYMENT_OUTCOME_GA);
+    }
+
+    @Nested
+    class AboutToStartCallbackHandling {
+
+        @Test
+        void updateFeeType_shouldSetAdditionalFeeTypeWithEmptyRef_whenCaseStateIsApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void updateFeeType_shouldSetAdditionalFeeTypeWithRef_whenCaseStateIsApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.YES);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberForFeePaymentOutcome()).isEqualTo("123");
+        }
+
+        @Test
+        void updateFeeType_shouldSetApplicationFeeTypeWithEmptyRef_whenCaseStateIsNotApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void updateFeeType_shouldSetApplicationFeeTypeWithRef_whenCaseStateIsNotApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.YES);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberForFeePaymentOutcome()).isEqualTo("123");
+        }
     }
 
     @Nested
