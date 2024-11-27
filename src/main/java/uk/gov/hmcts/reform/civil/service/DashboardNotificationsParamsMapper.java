@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
@@ -56,14 +57,17 @@ public class DashboardNotificationsParamsMapper {
         }
 
         if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
-            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
-            params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
+            if (caseData.getGaHwfDetails().getHwfCaseEvent().equals(CaseEvent.PARTIAL_REMISSION_HWF_GA)) {
+                params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
+                params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
+            }
         } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
             && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
-            params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
-                                                                                        .getRemissionAmount()));
-            params.put("outstandingFeeInPounds", "£" + caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds());
-
+            if (caseData.getAdditionalHwfDetails().getHwfCaseEvent().equals(CaseEvent.PARTIAL_REMISSION_HWF_GA)) {
+                params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
+                                                                                            .getRemissionAmount()));
+                params.put("outstandingFeeInPounds", "£" + caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds());
+            }
         }
 
         if (Objects.nonNull(caseData.getJudicialDecisionRequestMoreInfo())) {
@@ -75,16 +79,16 @@ public class DashboardNotificationsParamsMapper {
                        DateUtils.formatDateInWelsh(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate()));
         }
 
-        if (caseData.getHwfFeeType() != null) {
-            if (FeeType.ADDITIONAL == caseData.getHwfFeeType()) {
-                params.put("applicationFeeTypeEn", "additional application");
-                params.put("applicationFeeTypeCy", "cais ychwanegol");
-            } else if (FeeType.APPLICATION == caseData.getHwfFeeType()
-                || caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
+        if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())) {
+            if (caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "application");
                 params.put("applicationFeeTypeCy", "cais");
+            } else if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+                params.put("applicationFeeTypeEn", "additional application");
+                params.put("applicationFeeTypeCy", "cais ychwanegol");
             }
         }
+
         if (Objects.nonNull(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations())) {
             LocalDate applicantDeadlineDate;
             LocalDate respondentDeadlineDate;
