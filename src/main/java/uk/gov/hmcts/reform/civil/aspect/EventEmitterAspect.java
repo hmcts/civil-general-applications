@@ -33,6 +33,7 @@ public class EventEmitterAspect {
         if (callbackParams.getType() == SUBMITTED) {
             CaseData caseData = callbackParams.getCaseData();
             var caseId = caseData.getCcdCaseReference();
+            log.info("Callback type is SUBMITTED for caseId: {}", caseId);
             List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
 
             if (generalApplications != null) {
@@ -46,6 +47,7 @@ public class EventEmitterAspect {
                 }
             } else {
                 if (caseData.getBusinessProcess() != null && caseData.getBusinessProcess().getStatus() == READY) {
+                    log.info("Emitting business process GA event for caseId: {}", caseId);
                     eventEmitterService.emitBusinessProcessCamundaGAEvent(caseData, false);
                 }
             }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -38,14 +40,14 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
-
+        log.info("Generate hearing order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
-
+        log.info("Generate hearing order form for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 
