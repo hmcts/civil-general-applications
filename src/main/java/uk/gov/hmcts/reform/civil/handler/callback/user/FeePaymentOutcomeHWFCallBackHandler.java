@@ -13,11 +13,15 @@ import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
@@ -56,6 +60,44 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             .put(callbackKey(ABOUT_TO_SUBMIT), this::submitFeePaymentOutcome)
             .put(callbackKey(MID, "remission-type"), this::validateSelectedRemissionType)
             .put(callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse)
+            .build();
+    }
+
+    @Override
+    protected CallbackResponse setData(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData();
+        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        FeePaymentOutcomeDetails.FeePaymentOutcomeDetailsBuilder feeDetailBuilder = FeePaymentOutcomeDetails.builder();
+        feeDetailBuilder.hwfNumberAvailable(YesOrNo.NO);
+        if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
+            caseDataBuilder.hwfFeeType(FeeType.ADDITIONAL);
+            if (Objects.isNull(caseData.getAdditionalHwfDetails())) {
+                caseDataBuilder.additionalHwfDetails(HelpWithFeesDetails.builder()
+                                                         .hwfFeeType(FeeType.ADDITIONAL).build());
+            }
+            if (Objects.nonNull(caseData.getGaAdditionalHelpWithFees())
+                && Objects.nonNull(caseData.getGaAdditionalHelpWithFees().getHelpWithFeesReferenceNumber())) {
+                feeDetailBuilder.hwfNumberAvailable(YesOrNo.YES)
+                    .hwfNumberForFeePaymentOutcome(caseData.getGaAdditionalHelpWithFees()
+                                                       .getHelpWithFeesReferenceNumber());
+            }
+        } else {
+            caseDataBuilder.hwfFeeType(FeeType.APPLICATION);
+            if (Objects.isNull(caseData.getGaHwfDetails())) {
+                caseDataBuilder.gaHwfDetails(HelpWithFeesDetails.builder()
+                                                 .hwfFeeType(FeeType.APPLICATION).build());
+
+            }
+            if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
+                && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())) {
+                feeDetailBuilder.hwfNumberAvailable(YesOrNo.YES)
+                    .hwfNumberForFeePaymentOutcome(caseData.getGeneralAppHelpWithFees()
+                                                       .getHelpWithFeesReferenceNumber());
+            }
+        }
+        caseDataBuilder.feePaymentOutcomeDetails(feeDetailBuilder.build());
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
 
