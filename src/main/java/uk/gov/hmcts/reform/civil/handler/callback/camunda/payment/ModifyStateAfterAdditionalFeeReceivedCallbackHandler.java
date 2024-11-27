@@ -123,7 +123,8 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
         if (caseData.getIsGaApplicantLip() == YES
-            && Objects.nonNull(caseData.getFeePaymentOutcomeDetails())) {
+            && (Objects.nonNull(caseData.getAdditionalHwfDetails())
+            && (caseData.getAdditionalHwfDetails().getHwfCaseEvent() != CaseEvent.NO_REMISSION_HWF_GA))) {
             return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
                 ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
                 : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();
