@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
@@ -44,6 +45,8 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private final RespondForInformationGenerator respondForInformationGenerator;
     private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
     private final GaForLipService gaForLipService;
+    private final CoreCaseDataService coreCaseDataService;
+    private final ObjectMapper mapper;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -98,4 +101,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     public List<CaseEvent> handledEvents() {
         return EVENTS;
     }
+
+
 }

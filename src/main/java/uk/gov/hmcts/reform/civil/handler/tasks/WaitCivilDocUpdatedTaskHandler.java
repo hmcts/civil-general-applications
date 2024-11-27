@@ -19,10 +19,13 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -50,19 +53,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
         CaseData gaCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
 
         if (!gaForLipService.isGaForLip(gaCaseData)) {
-            boolean civilUpdated = checkCivilDocUpdated(gaCaseData);
-            int wait = maxWait;
-            log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
-            while (!civilUpdated && wait > 0) {
-                wait--;
-                TimeUnit.SECONDS.sleep(waitGap);
-                civilUpdated = checkCivilDocUpdated(gaCaseData);
-                log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), wait);
-            }
-            if (!civilUpdated) {
-                log.error("Civil draft document update wait time out");
-                throw new BpmnError("ABORT");
-            }
+            waitForCivilDocToBeUpdated(gaCaseData, eventType);
         } else {
 
             CaseDataContent caseDataContent = gaCaseDataContent(startEventResponse, gaCaseData);
@@ -71,6 +62,35 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
         }
         return ExternalTaskData.builder().build();
     }
+
+    protected void waitForCivilDocToBeUpdated(CaseData gaCaseData, CaseEvent eventType) throws InterruptedException {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        int[] remainingAttempts = {maxWait};
+
+        Runnable task = () -> {
+            boolean civilUpdated = checkCivilDocUpdated(gaCaseData);
+            log.info("Civil Doc update = {}, event {}, try {}", civilUpdated, eventType.name(), remainingAttempts[0]);
+
+            if (civilUpdated || remainingAttempts[0] <= 0) {
+                scheduler.shutdown();
+                if (!civilUpdated) {
+                    log.error("Civil draft document update wait time out");
+                    throw new RuntimeException("ABORT"); // Replace with `BpmnError` if available
+                }
+            }
+            remainingAttempts[0]--;
+        };
+
+        scheduler.scheduleAtFixedRate(task, 0, waitGap, TimeUnit.SECONDS);
+
+        try {
+            scheduler.awaitTermination(maxWait * waitGap + 1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Task interrupted", e);
+        }
+    }
+
 
     private Map<String, Object> getUpdatedCaseData(CaseData gaCaseData) {
         Map<String, Object> output = gaCaseData.toMap(mapper);
