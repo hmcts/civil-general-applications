@@ -6,6 +6,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -21,6 +22,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class NoRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
@@ -47,8 +49,10 @@ public class NoRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
         CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
             .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        log.info("NOTIFY_APPLICANT_LIP_HWF business process for caseId: {}", caseData.getCcdCaseReference());
 
         HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, NO_REMISSION_HWF_GA);
+        log.info("NO_REMISSION_HWF_GA for caseId: {}", caseData.getCcdCaseReference());
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedData.build().toMap(objectMapper))

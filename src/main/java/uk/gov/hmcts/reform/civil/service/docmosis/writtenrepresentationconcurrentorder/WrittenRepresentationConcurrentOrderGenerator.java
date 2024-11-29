@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.WRITTEN_REPRESENTATION_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -40,6 +42,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        log.info("Generate written representation concurrent order with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
     }
@@ -47,6 +50,7 @@ public class WrittenRepresentationConcurrentOrderGenerator implements TemplateDa
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate written representation concurrent order for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 

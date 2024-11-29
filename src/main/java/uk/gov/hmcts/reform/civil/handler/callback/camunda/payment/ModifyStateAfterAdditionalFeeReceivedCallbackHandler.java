@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
@@ -122,7 +123,8 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
         if (caseData.getIsGaApplicantLip() == YES
-            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
+            && (Objects.nonNull(caseData.getAdditionalHwfDetails())
+            && (caseData.getAdditionalHwfDetails().getHwfCaseEvent() != CaseEvent.NO_REMISSION_HWF_GA))) {
             return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
                 ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
                 : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();

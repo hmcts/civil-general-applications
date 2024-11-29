@@ -202,6 +202,20 @@ class GAResponseDeadlineTaskHandlerTest {
     }
 
     @Test
+    void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFoundRemovingDuplicates() {
+        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
+            .thenReturn(List.of(caseDetails1, caseDetails1));
+
+        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
+        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(externalTask);
+
+    }
+
+    @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineNotFound() {
         when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of(caseDetails3));
 

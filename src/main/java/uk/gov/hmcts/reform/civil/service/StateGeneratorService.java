@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -30,6 +31,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StateGeneratorService {
@@ -37,6 +39,7 @@ public class StateGeneratorService {
     private final JudicialDecisionHelper judicialDecisionHelper;
 
     public CaseState getCaseStateForEndJudgeBusinessProcess(CaseData data) {
+        log.info("Starting getCaseStateForEndJudgeBusinessProcess for Case ID: {}", data.getCcdCaseReference());
         GAJudgeDecisionOption decision;
         if (data.getJudicialDecision() != null) {
             decision = data.getJudicialDecision().getDecision();
@@ -87,6 +90,7 @@ public class StateGeneratorService {
     }
 
     private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
+        log.info("Processing new state for 'Request More Info' for Case ID: {}", caseData.getCcdCaseReference());
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
                 && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
