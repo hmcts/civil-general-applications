@@ -84,6 +84,8 @@ public class UploadTranslatedDocumentService {
                 return ofNullable(caseData.getGeneralOrderDocument()).orElse(new ArrayList<>());
             case HEARING_ORDER:
                 return ofNullable(caseData.getHearingOrderDocument()).orElse(new ArrayList<>());
+            case HEARING_NOTICE:
+                return ofNullable(caseData.getHearingNoticeDocument()).orElse(new ArrayList<>());
             case DISMISSAL_ORDER:
                 return ofNullable(caseData.getDismissalOrderDocument()).orElse(new ArrayList<>());
             case WRITTEN_REPRESENTATION_CONCURRENT:
@@ -116,6 +118,9 @@ public class UploadTranslatedDocumentService {
                 break;
             case HEARING_ORDER:
                 caseDataBuilder.hearingOrderDocument(documents);
+                break;
+            case HEARING_NOTICE:
+                caseDataBuilder.hearingNoticeDocument(documents);
                 break;
             case WRITTEN_REPRESENTATION_CONCURRENT:
                 caseDataBuilder.writtenRepConcurrentDocument(documents);
