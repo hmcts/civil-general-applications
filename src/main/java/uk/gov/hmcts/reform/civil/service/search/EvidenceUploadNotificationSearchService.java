@@ -34,9 +34,8 @@ public class EvidenceUploadNotificationSearchService extends ElasticSearchServic
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
-            SearchResult result = coreCaseDataService
-                    .searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT));
-            caseDetails.addAll(result.getCases());
+            caseDetails.addAll(coreCaseDataService
+                                   .searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT)).getCases());
         }
 
         return new HashSet<>(caseDetails);
