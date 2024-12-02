@@ -24,6 +24,9 @@ import static uk.gov.hmcts.reform.civil.helpers.ExponentialRetryTimeoutHelper.ca
  */
 public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
 
+    public static final String FLOW_STATE = "flowState";
+    public static final String FLOW_FLAGS = "flowFlags";
+
     Logger log = LoggerFactory.getLogger(BaseExternalTaskHandler.class);
 
     /**
@@ -181,5 +184,5 @@ public abstract class BaseExternalTaskHandler implements ExternalTaskHandler {
      *
      * @param externalTask the external task to be handled.
      */
-    protected abstract ExternalTaskData handleTask(ExternalTask externalTask);
+    protected abstract ExternalTaskData handleTask(ExternalTask externalTask) throws Exception;
 }
