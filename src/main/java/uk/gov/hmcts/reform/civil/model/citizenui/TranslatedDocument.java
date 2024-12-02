@@ -13,6 +13,7 @@ import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DIRECTION_O
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_APPLICATION_DRAFT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_NOTICE;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_ORDER;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.JUDGES_DIRECTIONS_APPLICANT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.JUDGES_DIRECTIONS_RESPONDENT_TRANSLATED;
@@ -56,6 +57,8 @@ public class TranslatedDocument {
                 return JUDGES_DIRECTIONS_RESPONDENT_TRANSLATED;
             case HEARING_ORDER:
                 return HEARING_ORDER;
+            case HEARING_NOTICE:
+                return HEARING_NOTICE;
             case WITHOUT_NOTICE_TO_WITH_NOTICE_DOCUMENT:
                 return SEND_APP_TO_OTHER_PARTY;
             case DISMISSAL_ORDER:
