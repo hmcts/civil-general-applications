@@ -79,6 +79,8 @@ public class GeneralApplication implements MappableObject {
     private final CertOfSC certOfSC;
     //Case name for manage case
     private String caseNameGaInternal;
+    //WA claim track description
+    private final String gaWaTrackLabel;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -135,7 +137,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("isGaRespondentTwoLip") YesOrNo isGaRespondentTwoLip,
                        @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees,
                        @JsonProperty("certOfSC") CertOfSC certOfSC,
-                       @JsonProperty("caseNameGaInternal") String caseNameGaInternal) {
+                       @JsonProperty("caseNameGaInternal") String caseNameGaInternal,
+                       @JsonProperty("gaWaTrackLabel") String gaWaTrackLabel) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -187,6 +190,7 @@ public class GeneralApplication implements MappableObject {
         this.generalAppHelpWithFees = generalAppHelpWithFees;
         this.certOfSC = certOfSC;
         this.caseNameGaInternal = caseNameGaInternal;
+        this.gaWaTrackLabel = gaWaTrackLabel;
     }
 
     @JsonIgnore

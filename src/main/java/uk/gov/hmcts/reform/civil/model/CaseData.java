@@ -362,6 +362,8 @@ public class CaseData implements MappableObject {
     private YesOrNo bilingualHint;
     private YesOrNo applicantBilingualLanguagePreference;
     private YesOrNo respondentBilingualLanguagePreference;
+    //WA claim track description
+    private final String gaWaTrackLabel;
 
     @Builder.Default
     private final List<Value<Document>> caseDocuments = new ArrayList<>();
