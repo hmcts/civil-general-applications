@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
-import uk.gov.hmcts.reform.ccd.client.CaseAccessApi;
+import uk.gov.hmcts.reform.ccd.client.CaseAccessDataStoreApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
@@ -26,7 +26,7 @@ public class CoreCaseUserService {
     Logger log = LoggerFactory.getLogger(CoreCaseUserService.class);
 
     private final CaseAssignmentApi caseAssignmentApi;
-    private final CaseAccessApi caseAccessDataStoreApi;
+    private final CaseAccessDataStoreApi caseAccessDataStoreApi;
     private final UserService userService;
     private final CrossAccessUserConfiguration crossAccessUserConfiguration;
     private final AuthTokenGenerator authTokenGenerator;
@@ -155,7 +155,7 @@ public class CoreCaseUserService {
     }
 
     private void removeAccessFromRole(CaseAssignedUserRoleWithOrganisation caseAssignedUserRoleWithOrganisation, String caaAccessToken) {
-        caseAccessDataStoreApi.revokeAccessToCase(
+        caseAccessDataStoreApi.removeCaseUserRoles(
             caaAccessToken,
             authTokenGenerator.generate(),
             CaseAssignedUserRolesRequest.builder()
