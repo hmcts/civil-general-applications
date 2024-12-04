@@ -338,11 +338,11 @@ class CoreCaseDataServiceTest {
     }
 
     @Nested
-    class searchGeneralApplicationWithCaseId {
+    class SearchGeneralApplicationWithCaseId {
 
         @Test
         void shouldReturnMoreThan10GeneralApplications_WhenSearchingGeneralApplicationsAsSystemUpdateUser() {
-            Query query = new Query(matchQuery("data.generalAppParentCaseLink.CaseReference", CASE_ID),
+            final Query query = new Query(matchQuery("data.generalAppParentCaseLink.CaseReference", CASE_ID),
                                     List.of("data.applicationTypes",
                                             "data.generalAppInformOtherParty.isWithNotice",
                                             "data.generalAppRespondentAgreement.hasAgreed",
@@ -391,6 +391,7 @@ class CoreCaseDataServiceTest {
             assertThat(casesFound.size()).isEqualTo(11);
         }
     }
+
     @Nested
     class GetCase {
 
