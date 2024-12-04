@@ -103,6 +103,12 @@ public class UploadTranslatedDocumentServiceTest {
 
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
+                .documentType(TranslatedDocumentType.HEARING_NOTICE)
+                .file(mock(Document.class))
+                .build()).build());
+
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(
+            TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.JUDGES_DIRECTIONS_ORDER)
                 .file(mock(Document.class))
                 .build()).build());
@@ -142,12 +148,13 @@ public class UploadTranslatedDocumentServiceTest {
         // Then
         assertThat(result.getGeneralOrderDocument()).isNotNull();
         assertThat(result.getHearingOrderDocument()).isNotNull();
+        assertThat(result.getHearingNoticeDocument()).isNotNull();
         assertThat(result.getDirectionOrderDocument()).isNotNull();
         assertThat(result.getWrittenRepSequentialDocument()).isNotNull();
         assertThat(result.getWrittenRepConcurrentDocument()).isNotNull();
         assertThat(result.getDismissalOrderDocument()).isNotNull();
         assertThat(result.getGaDraftDocument()).isNotNull();
         assertThat(result.getGeneralOrderDocument().get(0).getValue().getCreatedBy()).isEqualTo(translator);
-        verify(assignCategoryId, times(8)).assignCategoryIdToCollection(anyList(), any(), any());
+        verify(assignCategoryId, times(9)).assignCategoryIdToCollection(anyList(), any(), any());
     }
 }
