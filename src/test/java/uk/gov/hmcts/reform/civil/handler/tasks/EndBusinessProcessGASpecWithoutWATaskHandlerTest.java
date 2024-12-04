@@ -89,7 +89,7 @@ public class EndBusinessProcessGASpecWithoutWATaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
-        verify(externalTaskService).complete(mockExternalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class EndBusinessProcessGASpecWithoutWATaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC_WITHOUT_WA_TASK);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
-        verify(externalTaskService).complete(mockExternalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {
