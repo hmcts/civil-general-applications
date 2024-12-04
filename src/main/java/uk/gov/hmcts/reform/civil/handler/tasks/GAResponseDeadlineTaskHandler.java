@@ -20,6 +20,7 @@ import static java.time.LocalDateTime.now;
 import static java.util.stream.Collectors.toSet;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPONDENT_RESPONSE_DEADLINE_CHECK;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @Slf4j
@@ -42,6 +43,11 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
 
         cases.forEach(this::deleteDashboardNotifications);
         cases.forEach(this::fireEventForStateChange);
+
+        List<CaseDetails> caseList = getUrgentApplicationCasesThatArePastDueDate();
+        List<Long> ids2 = caseList.stream().map(CaseDetails::getId).toList();
+        log.info("GAResponseDeadlineTaskHandler Job '{}' found {} case(s) with ids {}", externalTask.getTopicName(), caseList.size(), ids2);
+        caseList.forEach(this::deleteDashboardNotifications);
 
         return ExternalTaskData.builder().build();
     }
@@ -88,6 +94,24 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
                 return false;
             })
             .collect(toSet());
+    }
+
+    private List<CaseDetails> getUrgentApplicationCasesThatArePastDueDate() {
+        List<CaseDetails> awaitingResponseCases = caseSearchService
+            .getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+
+        return awaitingResponseCases.stream()
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
+                        && now().isAfter(
+                        caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate());
+                } catch (Exception e) {
+                    log.error("GAResponseDeadlineTaskHandler failed: " + e);
+                }
+                return false;
+            })
+            .toList();
     }
 
     @Override
