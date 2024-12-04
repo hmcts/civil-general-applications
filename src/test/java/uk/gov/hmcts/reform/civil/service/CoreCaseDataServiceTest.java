@@ -410,7 +410,6 @@ class CoreCaseDataServiceTest {
             cases.add(CaseDetails.builder().id(2L).build());
             cases.add(CaseDetails.builder().id(3L).build());
 
-
             SearchResult searchResult = SearchResult.builder()
                 .total(3)
                 .cases(cases).build();
