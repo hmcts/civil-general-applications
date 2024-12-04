@@ -390,6 +390,51 @@ class CoreCaseDataServiceTest {
             );
             assertThat(casesFound.size()).isEqualTo(11);
         }
+
+        @Test
+        void shouldReturnLessThan10GeneralApplications_WhenSearchingGeneralApplicationsAsSystemUpdateUser() {
+            final Query query = new Query(matchQuery("data.generalAppParentCaseLink.CaseReference", CASE_ID),
+                                          List.of("data.applicationTypes",
+                                                  "data.generalAppInformOtherParty.isWithNotice",
+                                                  "data.generalAppRespondentAgreement.hasAgreed",
+                                                  "data.parentClaimantIsApplicant",
+                                                  "data.applicationIsUncloakedOnce",
+                                                  "state",
+                                                  "data.applicationIsCloaked",
+                                                  "data.judicialDecisionRequestMoreInfo",
+                                                  "data.generalAppPBADetails"),
+                                          0);
+
+            List<CaseDetails> cases = new ArrayList<>();
+            cases.add(CaseDetails.builder().id(1L).build());
+            cases.add(CaseDetails.builder().id(2L).build());
+            cases.add(CaseDetails.builder().id(3L).build());
+
+
+            SearchResult searchResult = SearchResult.builder()
+                .total(3)
+                .cases(cases).build();
+
+            when(coreCaseDataApi.searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            ))
+                .thenReturn(searchResult);
+
+            List<CaseDetails> casesFound = service.searchGeneralApplicationWithCaseId(CASE_ID, USER_AUTH_TOKEN).getCases();
+
+            assertThat(casesFound).isEqualTo(cases);
+            verify(coreCaseDataApi).searchCases(
+                USER_AUTH_TOKEN,
+                SERVICE_AUTH_TOKEN,
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            );
+            assertThat(casesFound.size()).isEqualTo(3);
+        }
+
     }
 
     @Nested
