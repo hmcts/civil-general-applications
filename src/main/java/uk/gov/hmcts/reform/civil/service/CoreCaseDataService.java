@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
@@ -17,9 +18,12 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.data.UserAuthContent;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.GENERAL_APPLICATION_CASE_TYPE;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.JURISDICTION;
@@ -193,6 +197,44 @@ public class CoreCaseDataService {
                 GENERAL_APPLICATION_CASE_TYPE,
                 query.toString()
         );
+    }
+
+    public SearchResult searchGeneralApplicationWithCaseId(String caseId, String userToken) {
+        int pageSize = 10;
+        int startIndex = 0;
+        SearchResult aggregatedResults = SearchResult.builder()
+            .cases(new ArrayList<>())
+            .total(0)
+            .build();
+        do {
+            Query query = getQueryWithIndex(caseId, startIndex);
+            SearchResult currentPageResults =  coreCaseDataApi.searchCases(
+                userToken,
+                authTokenGenerator.generate(),
+                GENERAL_APPLICATION_CASE_TYPE,
+                query.toString()
+            );
+
+            aggregatedResults.getCases().addAll(currentPageResults.getCases());
+            aggregatedResults.setTotal(currentPageResults.getTotal());
+            startIndex += pageSize;
+        } while (aggregatedResults.getCases().size() != aggregatedResults.getTotal());
+        return  aggregatedResults;
+    }
+
+    @NotNull
+    private static Query getQueryWithIndex(String caseId, int startIndex) {
+        return new Query(matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
+                         List.of("data.applicationTypes",
+                                 "data.generalAppInformOtherParty.isWithNotice",
+                                 "data.generalAppRespondentAgreement.hasAgreed",
+                                 "data.parentClaimantIsApplicant",
+                                 "data.applicationIsUncloakedOnce",
+                                 "state",
+                                 "data.applicationIsCloaked",
+                                 "data.judicialDecisionRequestMoreInfo",
+                                 "data.generalAppPBADetails"),
+                         startIndex);
     }
 
     public CaseDetails getCase(Long caseId) {
