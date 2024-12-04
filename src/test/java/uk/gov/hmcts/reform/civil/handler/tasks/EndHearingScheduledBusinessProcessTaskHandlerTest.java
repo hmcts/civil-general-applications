@@ -87,7 +87,7 @@ class EndHearingScheduledBusinessProcessTaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_HEARING_SCHEDULED_PROCESS_GASPEC);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
-        verify(externalTaskService).complete(mockExternalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {

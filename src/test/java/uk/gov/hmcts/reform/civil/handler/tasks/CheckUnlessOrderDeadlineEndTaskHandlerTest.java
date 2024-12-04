@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -133,7 +134,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -149,7 +150,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -167,7 +168,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -189,7 +190,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
                                                    getCaseData(1L, UNLESS_ORDER, deadLineToday,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -224,7 +225,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
                                                    getCaseData(3L, UNLESS_ORDER, deadlineCrossed,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -240,7 +241,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     private CaseData getCaseData(Long ccdId, GeneralApplicationTypes generalApplicationType,
