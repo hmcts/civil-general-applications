@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.service.search.DeleteExpiredResponseRespondentN
 import java.util.Map;
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +69,6 @@ class DeleteExpiredResponseRespondentNotificationsHandlerTest {
         handler.execute(mockTask, externalTaskService);
 
         verify(applicationEventPublisher).publishEvent(new DeleteExpiredResponseRespondentNotificationsEvent(caseId));
-        verify(externalTaskService).complete(mockTask);
+        verify(externalTaskService).complete(any(), any());
     }
 }

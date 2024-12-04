@@ -221,7 +221,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService).triggerEvent(2L, DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION);
         verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
         listAppender.stop();
     }
@@ -277,7 +277,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
         listAppender.stop();
     }
 
@@ -307,7 +307,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService, times(1)).triggerEvent(any(), any());
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
         listAppender.stop();
     }
 
@@ -333,7 +333,7 @@ class GAJudgeRevisitTaskHandlerTest {
 
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -346,7 +346,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -368,7 +368,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -391,7 +391,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
         verify(coreCaseDataService, times(0)).triggerEvent(1L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -408,7 +408,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -432,7 +432,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService).triggerEvent(2L, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -453,7 +453,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         verify(coreCaseDataService, times(0)).triggerEvent(2L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -478,7 +478,7 @@ class GAJudgeRevisitTaskHandlerTest {
             .getSystemUpdateUserToken();
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -494,7 +494,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(dashboardNotificationService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -521,7 +521,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -542,7 +542,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService, times(0))
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -555,7 +555,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -580,7 +580,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(dashboardNotificationService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -608,7 +608,7 @@ class GAJudgeRevisitTaskHandlerTest {
             .getSystemUpdateUserToken();
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -631,7 +631,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(caseStateSearchService).getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
         verify(coreCaseDataService, times(0)).triggerEvent(4L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -647,7 +647,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(coreCaseDataService)
             .triggerEvent(3L, CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test

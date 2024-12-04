@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -135,7 +136,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -150,7 +151,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -170,7 +171,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -191,7 +192,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         verifyNoInteractions(coreCaseDataService);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -226,7 +227,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                                                    getCaseData(3L, STAY_THE_CLAIM, deadlineCrossed,
                                                                YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -249,7 +250,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
                                                    getConsentOrderCaseData(1L, STAY_THE_CLAIM, deadLineToday,
                                                                            YesOrNo.YES).toMap(mapper));
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -265,7 +266,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
         verify(searchService).getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     private CaseData getCaseData(Long ccdId, GeneralApplicationTypes generalApplicationType,

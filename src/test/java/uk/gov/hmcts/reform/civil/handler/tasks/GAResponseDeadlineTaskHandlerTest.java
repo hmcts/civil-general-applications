@@ -184,7 +184,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
         verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -198,7 +198,7 @@ class GAResponseDeadlineTaskHandlerTest {
         verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         verify(coreCaseDataService).triggerEvent(2L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
 
     }
 
@@ -210,7 +210,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
         verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -221,7 +221,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
         verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test

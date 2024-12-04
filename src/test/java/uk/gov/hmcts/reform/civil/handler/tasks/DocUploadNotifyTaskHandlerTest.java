@@ -55,7 +55,7 @@ public class DocUploadNotifyTaskHandlerTest {
 
         verify(searchService).getApplications();
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -72,6 +72,6 @@ public class DocUploadNotifyTaskHandlerTest {
         verify(searchService).getApplications();
         verify(coreCaseDataService).triggerGaEvent(1L, GA_EVIDENCE_UPLOAD_CHECK,
                 Map.of());
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 }
