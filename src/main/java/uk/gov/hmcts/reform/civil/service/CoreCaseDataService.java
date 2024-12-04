@@ -219,7 +219,7 @@ public class CoreCaseDataService {
             aggregatedResults.setTotal(currentPageResults.getTotal());
             startIndex += pageSize;
         } while (aggregatedResults.getCases().size() != aggregatedResults.getTotal());
-        return  aggregatedResults;
+        return aggregatedResults;
     }
 
     @NotNull
