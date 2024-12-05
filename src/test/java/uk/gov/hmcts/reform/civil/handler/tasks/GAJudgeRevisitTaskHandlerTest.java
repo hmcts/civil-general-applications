@@ -481,7 +481,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
         verify(coreCaseDataService).triggerEvent(3L, UPDATE_CLAIMANT_TASK_LIST_GA);
         verify(coreCaseDataService).triggerEvent(3L, UPDATE_RESPONDENT_TASK_LIST_GA);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -625,7 +625,7 @@ class GAJudgeRevisitTaskHandlerTest {
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
         verify(coreCaseDataService).triggerEvent(4L, UPDATE_CLAIMANT_TASK_LIST_GA);
         verify(coreCaseDataService).triggerEvent(4L, UPDATE_RESPONDENT_TASK_LIST_GA);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
