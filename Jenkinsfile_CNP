@@ -10,7 +10,7 @@ def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
 def generalappCCDBranch = "master"
-def ccddefbranch = "master"
+def ccddefbranch = "CIV-15736-Wa-court-location-for-tasks"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 
 AppPipelineConfig pipelineConf
