@@ -60,7 +60,7 @@ oidc:
 
 send-letter:
   url: ${SEND_LETTER_URL:http://localhost:8765}
-  
+
 fees:
   api:
     service: civil money claims
@@ -194,7 +194,12 @@ print:
 
 stitching:
   api:
-    url: http://localhost:8084/api/stitch-ccd-bundles
+    url: "${EM_CCD_ORCHESTRATOR_URL:http://localhost:8084}/api/stitch-ccd-bundles"
+  enabled: ${STITCHING_API_ENABLED:true}
+
+bundle:
+  api:
+    url: "${EM_CCD_ORCHESTRATOR_URL:http://localhost:8084}/"
 
 court-location:
   specified-claim:
@@ -395,3 +400,5 @@ idam:
     url: http://ccd-test-stubs-service:5555
   api:
     url: http://ccd-test-stubs-service:5555
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY:false}
