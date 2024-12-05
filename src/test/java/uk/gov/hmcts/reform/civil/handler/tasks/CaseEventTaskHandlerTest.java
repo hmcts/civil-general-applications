@@ -23,9 +23,11 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.exceptions.CompleteTaskException;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -34,6 +36,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -130,7 +133,7 @@ class CaseEventTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -166,7 +169,7 @@ class CaseEventTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -180,11 +183,15 @@ class CaseEventTaskHandlerTest {
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
             when(coreCaseDataService.startUpdate(any(), any()))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
-
+            when(coreCaseDataService.submitGaUpdate(any(), any()))
+                .thenReturn(CaseData.builder().generalAppParentCaseLink(
+                    GeneralAppParentCaseLink.builder().caseReference("123").build()).build());
             doThrow(new NotFoundException(errorMessage, new RestException(null, null, null)))
                 .when(externalTaskService).complete(mockTask);
 
-            caseEventTaskHandler.execute(mockTask, externalTaskService);
+            assertThrows(
+                CompleteTaskException.class,
+                () -> caseEventTaskHandler.execute(mockTask, externalTaskService));
 
             verify(externalTaskService, never()).handleFailure(
                 any(ExternalTask.class),
