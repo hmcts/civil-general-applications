@@ -124,4 +124,5 @@ public class GADraftForm implements MappableObject {
     private final Boolean isResp2LanguageInterpreterExists;
     private final Boolean isResp2OtherSupportExists;
     private final Boolean isCasePastDueDate;
+    private final YesOrNo isLipCase;
 }

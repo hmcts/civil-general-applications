@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
@@ -53,6 +54,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     private final CoreCaseDataService coreCaseDataService;
     private static final int ONE_V_ONE = 1;
     private static final int ONE_V_TWO = 2;
+    private final GaForLipService gaForLipService;
 
     @Override
     public GADraftForm getTemplateData(CaseData caseData)  {
@@ -117,6 +119,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isOtherSupportExists(checkAdditionalSupport(caseData, OTHER_SUPPORT))
                 .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
                     .getGeneralAppStatementOfTruth().getName() : null)
+                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO)
                 .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
