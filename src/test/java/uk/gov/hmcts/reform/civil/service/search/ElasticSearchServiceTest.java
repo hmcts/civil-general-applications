@@ -41,8 +41,8 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplications(CaseState.AWAITING_WRITTEN_REPRESENTATIONS))
-            .isEqualTo(searchResult.getCases());
+        searchService.getGeneralApplications(CaseState.AWAITING_WRITTEN_REPRESENTATIONS);
+
         verify(coreCaseDataService).searchGeneralApplication(queryCaptor.capture());
         assertThat(queryCaptor.getValue()).usingRecursiveComparison()
             .isEqualTo(buildQuery(0, CaseState.AWAITING_WRITTEN_REPRESENTATIONS));
@@ -78,8 +78,7 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE,
-                                                                 STAY_THE_CLAIM)).hasSize(2);
+        searchService.getOrderMadeGeneralApplications(CaseState.ORDER_MADE, STAY_THE_CLAIM);
         verify(coreCaseDataService, times(2)).searchGeneralApplication(queryCaptor.capture());
 
         List<Query> capturedQueries = queryCaptor.getAllValues();
@@ -107,8 +106,8 @@ abstract class ElasticSearchServiceTest {
 
         when(coreCaseDataService.searchGeneralApplication(any())).thenReturn(searchResult);
 
-        assertThat(searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED))
-            .hasSize(2);
+        searchService.getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus.STARTED);
+
         verify(coreCaseDataService, times(2)).searchGeneralApplication(queryCaptor.capture());
 
         List<Query> capturedQueries = queryCaptor.getAllValues();

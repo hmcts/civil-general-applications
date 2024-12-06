@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.time.LocalDate.now;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_SCHEDULER_CHECK_UNLESS_ORDER_DEADLINE;
@@ -46,7 +47,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandler extends BaseExternalTaskHand
     }
 
     private List<CaseData> getUnlessOrderCasesThatAreEndingToday() {
-        List<CaseDetails> unlessOrderCases = caseSearchService
+        Set<CaseDetails> unlessOrderCases = caseSearchService
             .getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER);
         return unlessOrderCases.stream()
             .map(caseDetailsConverter::toCaseData)

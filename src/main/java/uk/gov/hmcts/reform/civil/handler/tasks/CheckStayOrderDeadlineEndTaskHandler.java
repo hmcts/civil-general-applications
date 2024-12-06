@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static java.time.LocalDate.now;
@@ -49,7 +50,7 @@ public class CheckStayOrderDeadlineEndTaskHandler extends BaseExternalTaskHandle
     }
 
     private List<CaseData> getOrderMadeCasesThatAreEndingToday() {
-        List<CaseDetails> orderMadeCases = caseSearchService
+        Set<CaseDetails> orderMadeCases = caseSearchService
             .getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM);
         return orderMadeCases.stream()
             .map(caseDetailsConverter::toCaseData)
