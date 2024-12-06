@@ -43,6 +43,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
@@ -94,6 +95,8 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     ListGeneratorService listGeneratorService;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private GaForLipService gaForLipService;
     @Autowired
     ObjectMapper objectMapper;
 
