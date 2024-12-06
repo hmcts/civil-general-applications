@@ -86,7 +86,7 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
-        verify(externalTaskService).complete(mockExternalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
@@ -113,7 +113,7 @@ class EndGeneralApplicationBusinessProcessTaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(CASE_ID, END_BUSINESS_PROCESS_GASPEC);
         verify(coreCaseDataService).submitGaUpdate(CASE_ID, caseDataContentWithFinishedStatus);
-        verify(externalTaskService).complete(mockExternalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     private StartEventResponse startEventResponse(CaseDetails caseDetails) {

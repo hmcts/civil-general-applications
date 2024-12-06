@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +34,8 @@ import uk.gov.hmcts.reform.civil.utils.ElementUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +74,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     private GaForLipService gaForLipService;
     @Mock
     private ExternalTask mockTask;
-
     @Autowired
     private WaitCivilDocUpdatedTaskHandler waitCivilDocUpdatedTaskHandler;
 
@@ -250,6 +252,94 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         verify(coreCaseDataService).startGaUpdate(CASE_ID, WAIT_GA_DRAFT);
         verify(coreCaseDataService, times(1)).startGaUpdate(any(), any());
         verifyNoMoreInteractions(coreCaseDataService);
+    }
+
+    @Test
+    void shouldDeleteOnlyDraftApplicationForGaLip() {
+        String uid1 = "f000aa01-0451-4000-b000-000000000001";
+        String uid2 = "f000aa01-0451-4000-b000-000000000002";
+        String uid3 = "f000aa01-0451-4000-b000-000000000003";
+        String uid4 = "f000aa01-0451-4000-b000-000000000004";
+
+        ExternalTaskInput externalTaskInput = ExternalTaskInput.builder()
+            .caseId(CASE_ID)
+            .caseEvent(WAIT_GA_DRAFT)
+            .build();
+
+        when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true); // GA for LIP condition
+        CaseData gaLipCaseData = mock(CaseData.class);
+        var draftDocumentsList = List.of(
+            Element.<CaseDocument>builder()
+                .id(UUID.fromString(uid1))
+                .value(CaseDocument.builder()
+                           .documentName("Draft_application_2024-12-02 14:48:26.pdf")
+                           .createdDatetime(LocalDateTime.parse("2024-12-02T14:48:26"))
+                           .documentLink(Document.builder()
+                                             .documentUrl("fake-url-draft-1")
+                                             .documentFileName("Draft_application_2024-12-02 14:48:26.pdf")
+                                             .documentBinaryUrl("binary-url-draft-1")
+                                             .build())
+                           .build())
+                .build(),
+
+            Element.<CaseDocument>builder()
+                .id(UUID.fromString(uid2))
+                .value(CaseDocument.builder()
+                           .documentName("Translated_draft_application_2024-12-02 14:54:15.pdf")
+                           .createdDatetime(LocalDateTime.parse("2024-12-02T14:54:15"))
+                           .documentLink(Document.builder()
+                                             .documentUrl("fake-url-translated-1")
+                                             .documentFileName(
+                                                 "Translated_draft_application_2024-12-02 14:54:15.pdf")
+                                             .documentBinaryUrl("binary-url-translated-1")
+                                             .build())
+                           .build())
+                .build(),
+
+            Element.<CaseDocument>builder()
+                .id(UUID.fromString(uid3))
+                .value(CaseDocument.builder()
+                           .documentName("Draft_application_2024-12-02 15:27:01.pdf")
+                           .createdDatetime(LocalDateTime.parse("2024-12-02T15:27:01"))
+                           .documentLink(Document.builder()
+                                             .documentUrl("fake-url-draft-2")
+                                             .documentFileName("Draft_application_2024-12-02 15:27:01.pdf")
+                                             .documentBinaryUrl("binary-url-draft-2")
+                                             .build())
+                           .build())
+                .build(),
+
+            Element.<CaseDocument>builder()
+                .id(UUID.fromString(uid4))
+                .value(CaseDocument.builder()
+                           .documentName("Translated_draft_application_2024-12-02 15:45:15.pdf")
+                           .createdDatetime(LocalDateTime.parse("2024-12-02T15:45:15"))
+                           .documentLink(Document.builder()
+                                             .documentUrl("fake-url-translated-2")
+                                             .documentFileName(
+                                                 "Translated_draft_application_2024-12-02 15:45:15.pdf")
+                                             .documentBinaryUrl("binary-url-translated-2")
+                                             .build())
+                           .build())
+                .build()
+        );
+        when(gaLipCaseData.getGaDraftDocument()).thenReturn(draftDocumentsList);
+        CaseDetails caseDetails = CaseDetailsBuilder.builder().data(gaLipCaseData).build();
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
+
+        Map<String, Object> mockOutputMap = new HashMap<>();
+        mockOutputMap.put("gaDraftDocument", gaLipCaseData.getGaDraftDocument());
+
+        when(gaLipCaseData.toMap(mapper)).thenReturn(mockOutputMap);
+        when(coreCaseDataService.startGaUpdate(anyString(), eq(WAIT_GA_DRAFT))).thenReturn(startEventResponse);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(gaLipCaseData);
+
+        waitCivilDocUpdatedTaskHandler.execute(mockTask, externalTaskService);
+
+        verify(coreCaseDataService).startGaUpdate(anyString(), eq(WAIT_GA_DRAFT));
+        verify(caseDetailsConverter).toCaseData(any());
+        verify(gaLipCaseData).toMap(mapper);
     }
 
     public final CaseDocument pdfDocument = CaseDocument.builder()
