@@ -44,7 +44,7 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
         cases.forEach(this::deleteDashboardNotifications);
         cases.forEach(this::fireEventForStateChange);
 
-        List<CaseDetails> caseList = getUrgentApplicationCasesThatArePastDueDate();
+        Set<CaseDetails> caseList = getUrgentApplicationCasesThatArePastDueDate();
         List<Long> ids2 = caseList.stream().map(CaseDetails::getId).toList();
         log.info("GAResponseDeadlineTaskHandler Job '{}' found {} case(s) with ids {}", externalTask.getTopicName(), caseList.size(), ids2);
         caseList.forEach(this::deleteDashboardNotifications);
@@ -96,7 +96,7 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
             .collect(toSet());
     }
 
-    private List<CaseDetails> getUrgentApplicationCasesThatArePastDueDate() {
+    protected Set<CaseDetails> getUrgentApplicationCasesThatArePastDueDate() {
         List<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
 
@@ -111,7 +111,7 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
                 }
                 return false;
             })
-            .toList();
+            .collect(toSet());
     }
 
     @Override
