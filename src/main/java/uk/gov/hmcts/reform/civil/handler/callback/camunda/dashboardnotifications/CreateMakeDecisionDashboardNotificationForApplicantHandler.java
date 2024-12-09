@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
-import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -52,9 +51,8 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
             return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_APPLICANT.getScenario();
         } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
             && caseData.getJudicialDecision() != null
-            && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS
-            && caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations().getWrittenOption()
-                == GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS) {
+            && caseData.getJudicialDecision().getDecision()
+            == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT.getScenario();
         } else if (caseData.judgeHasMadeAnOrder()
             && caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)) {

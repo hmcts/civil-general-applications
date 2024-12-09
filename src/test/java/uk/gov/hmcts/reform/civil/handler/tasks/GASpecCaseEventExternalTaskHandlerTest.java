@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -130,7 +131,7 @@ class GASpecCaseEventExternalTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -166,7 +167,7 @@ class GASpecCaseEventExternalTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -179,6 +180,9 @@ class GASpecCaseEventExternalTaskHandlerTest {
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
             when(coreCaseDataService.startGaUpdate(any(), any()))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
+            when(coreCaseDataService.submitGaUpdate(any(), any()))
+                .thenReturn(CaseData.builder().generalAppParentCaseLink(
+                    GeneralAppParentCaseLink.builder().caseReference("123").build()).build());
 
             doThrow(new NotFoundException(errorMessage, new RestException(null, null, null)))
                 .when(externalTaskService).complete(mockTask);
