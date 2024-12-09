@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.model.citizenui.dto.EventDto;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -110,10 +111,36 @@ public class CasesControllerTest extends BaseIntegrationTest {
     @SneakyThrows
     void shouldReturnApplicationsByMainCaseId() {
         SearchResult result = SearchResult.builder().cases(List.of()).total(1).build();
-        when(coreCaseDataService.searchGeneralApplication(any(), any())).thenReturn(result);
+        when(coreCaseDataService.searchGeneralApplicationWithCaseId(any(), any())).thenReturn(result);
         doGet(BEARER_TOKEN, CASE_APP_URL, 1L)
                 .andExpect(content().json(toJson(result)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldReturnApplicationsByMainCaseIdWithMoreThan10Applications() {
+        List<CaseDetails> cases = new ArrayList<>();
+        cases.add(CaseDetails.builder().id(1L).build());
+        cases.add(CaseDetails.builder().id(2L).build());
+        cases.add(CaseDetails.builder().id(3L).build());
+        cases.add(CaseDetails.builder().id(4L).build());
+        cases.add(CaseDetails.builder().id(5L).build());
+        cases.add(CaseDetails.builder().id(6L).build());
+        cases.add(CaseDetails.builder().id(7L).build());
+        cases.add(CaseDetails.builder().id(8L).build());
+        cases.add(CaseDetails.builder().id(9L).build());
+        cases.add(CaseDetails.builder().id(10L).build());
+        cases.add(CaseDetails.builder().id(11L).build());
+
+        SearchResult result = SearchResult.builder()
+            .total(10)
+            .cases(cases).total(1).build();
+
+        when(coreCaseDataService.searchGeneralApplicationWithCaseId(any(), any())).thenReturn(result);
+        doGet(BEARER_TOKEN, CASE_APP_URL, 1L)
+            .andExpect(content().json(toJson(result)))
+            .andExpect(status().isOk());
     }
 
 }

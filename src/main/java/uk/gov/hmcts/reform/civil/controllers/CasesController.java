@@ -27,9 +27,6 @@ import uk.gov.hmcts.reform.civil.service.citizen.events.CaseEventService;
 import uk.gov.hmcts.reform.civil.model.EventSubmissionParams;
 
 import static java.util.Collections.emptyList;
-import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
-
-import java.util.List;
 
 @Tag(name = "Cases Controller")
 @Slf4j
@@ -103,19 +100,7 @@ public class CasesController {
     public ResponseEntity<SearchResult> getCaseApplications(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
                                                     @PathVariable("caseId") String caseId) {
 
-        SearchResult claims = coreCaseDataService.searchGeneralApplication(new Query(
-                matchQuery("data.generalAppParentCaseLink.CaseReference", caseId),
-                List.of("data.applicationTypes",
-                        "data.generalAppInformOtherParty.isWithNotice",
-                        "data.generalAppRespondentAgreement.hasAgreed",
-                        "data.parentClaimantIsApplicant",
-                        "data.applicationIsUncloakedOnce",
-                        "state",
-                        "data.applicationIsCloaked",
-                        "data.judicialDecisionRequestMoreInfo",
-                        "data.generalAppPBADetails"),
-                0
-        ), authorization);
+        SearchResult claims = coreCaseDataService.searchGeneralApplicationWithCaseId(caseId, authorization);
         return new ResponseEntity<>(claims, HttpStatus.OK);
     }
 
