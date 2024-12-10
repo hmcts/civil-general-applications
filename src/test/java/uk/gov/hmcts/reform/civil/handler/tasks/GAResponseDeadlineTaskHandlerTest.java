@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static feign.Request.HttpMethod.GET;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -98,7 +99,7 @@ class GAResponseDeadlineTaskHandlerTest {
             .triggerEvent(any(), any());
 
         when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
-            .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
+            .thenReturn(Set.of(caseDetails1, caseDetails2, caseDetails3));
 
         assertThrows(FeignException.class, () -> coreCaseDataService
             .triggerEvent(any(), any()));
@@ -123,7 +124,7 @@ class GAResponseDeadlineTaskHandlerTest {
             Map.of("generalAppConsentOrder", "maybe")).build();
 
         when(caseSearchService.getGeneralApplications(any()))
-            .thenReturn(List.of(caseDetailsRespondentResponse));
+            .thenReturn(Set.of(caseDetailsRespondentResponse));
 
         gaResponseDeadlineTaskHandler.getAwaitingResponseCasesThatArePastDueDate();
 
@@ -148,7 +149,7 @@ class GAResponseDeadlineTaskHandlerTest {
             Map.of("generalAppConsentOrder", "maybe")).build();
 
         when(caseSearchService.getGeneralApplications(any()))
-            .thenReturn(List.of(caseDetailsRespondentResponse, caseDetails1));
+            .thenReturn(Set.of(caseDetailsRespondentResponse, caseDetails1));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
@@ -180,7 +181,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerEvent_whenZeroCasesFound() {
-        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of());
+        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(Set.of());
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
@@ -192,7 +193,7 @@ class GAResponseDeadlineTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFound() {
         when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
-            .thenReturn(List.of(caseDetails1, caseDetails2, caseDetails3));
+            .thenReturn(Set.of(caseDetails1, caseDetails2, caseDetails3));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
@@ -243,7 +244,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineNotFound() {
-        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of(caseDetails3));
+        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(Set.of(caseDetails3));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
@@ -254,7 +255,7 @@ class GAResponseDeadlineTaskHandlerTest {
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
-        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(List.of(caseDetails4));
+        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE)).thenReturn(Set.of(caseDetails4));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
