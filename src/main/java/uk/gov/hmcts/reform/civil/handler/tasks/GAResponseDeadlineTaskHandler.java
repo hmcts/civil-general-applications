@@ -73,7 +73,7 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
     }
 
     protected Set<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
-        List<CaseDetails> awaitingResponseCases = caseSearchService
+        Set<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
 
         return awaitingResponseCases.stream()

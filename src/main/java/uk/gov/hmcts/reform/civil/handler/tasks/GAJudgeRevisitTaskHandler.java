@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION;
@@ -46,7 +47,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
-        List<CaseDetails> writtenRepresentationCases = caseStateSearchService
+        Set<CaseDetails> writtenRepresentationCases = caseStateSearchService
             .getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         List<CaseDetails> claimantNotificationCases = filterForClaimantWrittenRepExpired(writtenRepresentationCases);
         log.info("Job '{}' found {} written representation case(s) with claimant deadline expired",
@@ -123,7 +124,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
         }
     }
 
-    protected List<CaseDetails> filterForClaimantWrittenRepExpired(List<CaseDetails> writtenRepCases) {
+    protected List<CaseDetails> filterForClaimantWrittenRepExpired(Set<CaseDetails> writtenRepCases) {
         return writtenRepCases.stream()
             .filter(a -> {
                 try {
@@ -144,7 +145,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
             }).toList();
     }
 
-    protected List<CaseDetails> filterForDefendantWrittenRepExpired(List<CaseDetails> writtenRepCases) {
+    protected List<CaseDetails> filterForDefendantWrittenRepExpired(Set<CaseDetails> writtenRepCases) {
         return writtenRepCases.stream()
             .filter(a -> {
                 try {
@@ -166,7 +167,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
     }
 
     protected List<CaseDetails> getDirectionOrderCaseReadyToJudgeRevisit() {
-        List<CaseDetails> judgeReadyToRevisitDirectionOrderCases = caseStateSearchService
+        Set<CaseDetails> judgeReadyToRevisitDirectionOrderCases = caseStateSearchService
             .getGeneralApplications(AWAITING_DIRECTIONS_ORDER_DOCS);
 
         return judgeReadyToRevisitDirectionOrderCases.stream()
@@ -185,7 +186,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
     }
 
     protected List<CaseDetails> getRequestForInformationCaseReadyToJudgeRevisit() {
-        List<CaseDetails> judgeReadyToRevisitRequestForInfoCases = caseStateSearchService
+        Set<CaseDetails> judgeReadyToRevisitRequestForInfoCases = caseStateSearchService
             .getGeneralApplications(AWAITING_ADDITIONAL_INFORMATION);
 
         return judgeReadyToRevisitRequestForInfoCases.stream()
