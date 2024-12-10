@@ -225,7 +225,7 @@ class GAResponseDeadlineTaskHandlerTest {
         verify(coreCaseDataService).triggerEvent(1L, RESPONDENT_RESPONSE_DEADLINE_CHECK);
         verify(coreCaseDataService).triggerEvent(2L, RESPONDENT_RESPONSE_DEADLINE_CHECK);
         verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
