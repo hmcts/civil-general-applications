@@ -206,20 +206,6 @@ class GAResponseDeadlineTaskHandlerTest {
     }
 
     @Test
-    void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFoundRemovingDuplicates() {
-        when(caseSearchService.getGeneralApplications(AWAITING_RESPONDENT_RESPONSE))
-            .thenReturn(List.of(caseDetails1, caseDetails1));
-
-        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
-
-        verify(caseSearchService).getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
-        verify(coreCaseDataService).triggerEvent(1L, CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION);
-        verifyNoMoreInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(any(), any());
-
-    }
-
-    @Test
     void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFound2() {
         CaseDetails caseDetails6 = CaseDetails.builder().id(1L).data(
             Map.of("generalAppNotificationDeadlineDate", deadlineCrossed.toString(),
@@ -231,7 +217,7 @@ class GAResponseDeadlineTaskHandlerTest {
             Map.of("generalAppNotificationDeadlineDate", deadlineInFuture.toString(),
                    "isGaApplicantLip",  YesOrNo.YES)).build();
         when(caseSearchService.getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))
-            .thenReturn(List.of(caseDetails6, caseDetails7, caseDetails8));
+            .thenReturn(Set.of(caseDetails6, caseDetails7, caseDetails8));
 
         gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
 
