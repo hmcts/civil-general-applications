@@ -52,7 +52,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
-        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData());
+        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
