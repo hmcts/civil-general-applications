@@ -538,7 +538,7 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
-    public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
+    public boolean gaApplicationFeeFullRemissionNotGrantedHWF(CaseData caseData) {
         return (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO)
             || (Objects.nonNull(caseData.getGaHwfDetails())
