@@ -540,17 +540,17 @@ public class CaseData implements MappableObject {
     @JsonIgnore
     public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
         return (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
-            && (caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO)) ||
-            (Objects.nonNull(caseData.getGaHwfDetails()) &&
-                caseData.getGaHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO)
+            || (Objects.nonNull(caseData.getGaHwfDetails())
+            && caseData.getGaHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
     }
 
     @JsonIgnore
-    public boolean GAAdditionalFeeFullRemissionNotGrantedHWF(CaseData caseData) {
+    public boolean gaAdditionalFeeFullRemissionNotGrantedHWF(CaseData caseData) {
         return (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == NO)
-            || (Objects.nonNull(caseData.getAdditionalHwfDetails()) &&
-            caseData.getAdditionalHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
+            || (Objects.nonNull(caseData.getAdditionalHwfDetails())
+            && caseData.getAdditionalHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
     }
 
     @JsonIgnore

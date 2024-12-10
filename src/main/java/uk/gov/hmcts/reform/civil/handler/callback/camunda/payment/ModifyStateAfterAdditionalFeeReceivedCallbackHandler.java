@@ -129,7 +129,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         List<String> scenarios = new ArrayList<>();
         if (caseData.getIsGaApplicantLip() == YES
             && (Objects.nonNull(caseData.getAdditionalHwfDetails()))) {
-            if (caseData.GAAdditionalFeeFullRemissionNotGrantedHWF(caseData)) {
+            if (caseData.gaAdditionalFeeFullRemissionNotGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
             } else {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario());
