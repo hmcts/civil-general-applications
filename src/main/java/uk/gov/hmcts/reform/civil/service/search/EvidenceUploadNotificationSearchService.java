@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class EvidenceUploadNotificationSearchService extends ElasticSearchServic
         super(coreCaseDataService);
     }
 
-    public List<CaseDetails> getApplications() {
+    public Set<CaseDetails> getApplications() {
 
         SearchResult searchResult = coreCaseDataService
                 .searchGeneralApplication(query(START_INDEX));
@@ -32,12 +34,11 @@ public class EvidenceUploadNotificationSearchService extends ElasticSearchServic
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
-            SearchResult result = coreCaseDataService
-                    .searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT));
-            caseDetails.addAll(result.getCases());
+            caseDetails.addAll(coreCaseDataService
+                                   .searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT)).getCases());
         }
 
-        return caseDetails;
+        return new HashSet<>(caseDetails);
     }
 
     public Query query(int startIndex) {

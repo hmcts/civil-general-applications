@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -129,7 +130,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenZeroCasesFound() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(List.of());
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(Set.of());
 
         gaOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
@@ -140,8 +141,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(List.of(
-        ));
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(Set.of());
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineReliefFromSanctionOrder))
             .thenReturn(caseDataWithTodayDeadlineReliefFromSanctionOrder);
         when(caseDetailsConverter.toCaseData(caseDetailsWithDeadlineCrossedProcessed))
@@ -157,7 +157,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesHaveFutureDeadLine() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(List.of(
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(Set.of(
             caseDetailsWithFutureDeadline
         ));
 
@@ -182,7 +182,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         CaseDetails consentOrderCaseDetails = getConsentOrderCaseDetails(1L, STAY_THE_CLAIM, deadlineInFuture,
                                                                          YesOrNo.NO);
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(
-            List.of(consentOrderCaseDetails));
+            Set.of(consentOrderCaseDetails));
 
         when(caseDetailsConverter.toCaseData(consentOrderCaseDetails))
             .thenReturn(consentOrderCaseData);
@@ -198,7 +198,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(
-            List.of(caseDetailsWithTodayDeadlineNotProcessed,
+            Set.of(caseDetailsWithTodayDeadlineNotProcessed,
                 caseDetailsWithDeadlineCrossedNotProcessed,
                 caseDetailsWithFutureDeadline,
                 caseDetailsWithNoDeadline
@@ -238,7 +238,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
         CaseDetails consentOrderCaseDetails = getConsentOrderCaseDetails(1L, STAY_THE_CLAIM, deadLineToday,
                                                              YesOrNo.NO);
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM)).thenReturn(
-            List.of(consentOrderCaseDetails));
+            Set.of(consentOrderCaseDetails));
 
         when(caseDetailsConverter.toCaseData(consentOrderCaseDetails))
             .thenReturn(consentOrderCaseData);
@@ -257,7 +257,7 @@ class CheckStayOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, STAY_THE_CLAIM))
-            .thenReturn(List.of(caseDetailsWithNoDeadline));
+            .thenReturn(Set.of(caseDetailsWithNoDeadline));
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithNoDeadline))
             .thenReturn(caseDataWithNoDeadline);
