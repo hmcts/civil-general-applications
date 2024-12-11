@@ -61,7 +61,7 @@ public class DispatchBusinessProcessCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse dispatchBusinessProcess(CallbackParams callbackParams) {
-        log.info("Dispatch business process for caseId: {}", callbackParams.getCaseData());
+        log.info("Dispatch business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData caseData = callbackParams.getCaseData();
         BusinessProcess businessProcess = caseData.getBusinessProcess();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
