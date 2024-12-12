@@ -144,7 +144,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 caseDataBuilder.gaDraftDocument(draftApplicationList);
             }
         }
-        
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();

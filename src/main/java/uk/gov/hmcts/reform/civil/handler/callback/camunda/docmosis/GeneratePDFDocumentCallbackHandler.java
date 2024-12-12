@@ -116,7 +116,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
          * */
 
         CaseData caseData = callbackParams.getCaseData();
-        log.info("Create PDF document for case: {}", caseData);
+        log.info("Create PDF document for case: {}", caseData.getCcdCaseReference());
 
         CaseData civilCaseData = CaseData.builder().build();
         if (gaForLipService.isGaForLip(caseData)) {

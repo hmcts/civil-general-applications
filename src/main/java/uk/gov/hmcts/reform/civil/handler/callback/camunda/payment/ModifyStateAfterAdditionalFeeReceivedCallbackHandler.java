@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +94,9 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         if (caseData.getMakeAppVisibleToRespondents() != null
             || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId.toString());
-            updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationRespondentScenario(caseData),
+            updateDashboardTaskListAndNotification(
+                callbackParams,
+                getScenariosAsList(getDashboardNotificationRespondentScenario(caseData)),
                                                    caseData.getCcdCaseReference().toString());
         }
 
@@ -104,33 +107,37 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             .build();
     }
 
-    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, String scenario, String caseReference) {
+    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, List<String> scenarios,
+                                                        String caseReference) {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         CaseData caseData = callbackParams.getCaseData();
         if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
-            if (scenario != null) {
-                dashboardApiClient.recordScenario(
-                    caseReference,
+            if (scenarios != null) {
+                scenarios.forEach(scenario -> dashboardApiClient.recordScenario(
+                    caseData.getCcdCaseReference().toString(),
                     scenario,
                     authToken,
                     scenarioParams
-                );
+                ));
             }
         }
     }
 
-    private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+    private List<String> getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+        List<String> scenarios = new ArrayList<>();
         if (caseData.getIsGaApplicantLip() == YES
-            && (Objects.nonNull(caseData.getAdditionalHwfDetails())
-            && (caseData.getAdditionalHwfDetails().getHwfCaseEvent() != CaseEvent.NO_REMISSION_HWF_GA))) {
-            return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
-                ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
-                : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();
+            && (Objects.nonNull(caseData.getAdditionalHwfDetails()))) {
+            if (caseData.gaAdditionalFeeFullRemissionNotGrantedHWF(caseData)) {
+                scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
+            } else {
+                scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario());
+            }
         }
 
-        return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
+        scenarios.add(SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario());
+        return scenarios;
     }
 
     private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
@@ -205,8 +212,16 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             && parentCaseData.getRespondentSolGaAppDetails().size() > 0) {
             defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT.getScenario();
         }
-        updateDashboardTaskListAndNotification(callbackParams, claimantScenario, caseData.getParentCaseReference());
-        updateDashboardTaskListAndNotification(callbackParams, defendantScenario, caseData.getParentCaseReference());
+        updateDashboardTaskListAndNotification(
+            callbackParams,
+            getScenariosAsList(claimantScenario),
+            caseData.getParentCaseReference()
+        );
+        updateDashboardTaskListAndNotification(
+            callbackParams,
+            getScenariosAsList(defendantScenario),
+            caseData.getParentCaseReference()
+        );
     }
 
     private String getDashboardNotificationRespondentScenario(CaseData caseData) {
@@ -217,4 +232,9 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         }
     }
 
+    private List<String> getScenariosAsList(String scenario) {
+        return Optional.ofNullable(scenario)
+            .map(List::of)
+            .orElse(Collections.emptyList());
+    }
 }
