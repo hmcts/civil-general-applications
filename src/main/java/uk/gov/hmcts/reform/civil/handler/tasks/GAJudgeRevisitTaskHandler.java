@@ -151,8 +151,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
     }
 
     protected List<CaseDetails> filterForClaimantWrittenRepExpired(Set<CaseDetails> writtenRepCases) {
-
-      return writtenRepCases.stream()
+        return writtenRepCases.stream()
             .filter(a -> {
                 try {
                     return (caseDetailsConverter.toCaseData(a).getJudicialDecisionMakeAnOrderForWrittenRepresentations()
