@@ -22,6 +22,8 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_CLAIMANT_WRITTEN_REPS_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_CLAIMANT_TASK_LIST_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_RESPONDENT_TASK_LIST_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_ADDITIONAL_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_DIRECTIONS_ORDER_DOCS;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESENTATIONS;
@@ -65,18 +67,26 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
         // Change state for all cases where both deadlines have passed
         claimantNotificationCases.stream().filter(defendantNotificationCases::contains)
-            .forEach(this::fireEventForStateChange);
+            .forEach(casDetails -> {
+                fireEventForStateChange(casDetails);
+                fireEventForUpdatingTaskList(casDetails);
 
+            });
         List<CaseDetails> directionOrderCases = getDirectionOrderCaseReadyToJudgeRevisit();
         log.info("Job '{}' found {} direction order case(s)",
                  externalTask.getTopicName(), directionOrderCases.size());
         directionOrderCases.forEach(this::fireEventForStateChange);
 
+        if (featureToggleService.isGaForLipsEnabled()) {
+            directionOrderCases.forEach(this::fireEventForUpdatingTaskList);
+        }
         List<CaseDetails> requestForInformationCases = getRequestForInformationCaseReadyToJudgeRevisit();
         log.info("Job '{}' found {} request for information case(s)",
                  externalTask.getTopicName(), requestForInformationCases.size());
         requestForInformationCases.forEach(this::fireEventForStateChange);
-
+        if (featureToggleService.isGaForLipsEnabled()) {
+            requestForInformationCases.forEach(this::fireEventForUpdatingTaskList);
+        }
         return ExternalTaskData.builder().build();
     }
 
@@ -121,6 +131,22 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
             coreCaseDataService.triggerEvent(caseId, DELETE_DEFENDANT_WRITTEN_REPS_NOTIFICATION);
         } catch (Exception exception) {
             log.error("Error in GAJudgeRevisitTaskHandler::fireEventForDeleteDefendantNotification: " + exception);
+        }
+    }
+
+    protected void fireEventForUpdatingTaskList(CaseDetails caseDetails) {
+        Long caseId = caseDetails.getId();
+        log.info("Firing event UPDATE_CLAIMANT_TASK_LIST_GA "
+                     + "for judge direction order"
+                     + "for caseId: {}", caseId);
+        try {
+            CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
+            if (gaForLipService.isGaForLip(caseData)) {
+                coreCaseDataService.triggerEvent(caseId, UPDATE_CLAIMANT_TASK_LIST_GA);
+                coreCaseDataService.triggerEvent(caseId, UPDATE_RESPONDENT_TASK_LIST_GA);
+            }
+        } catch (Exception exception) {
+            log.error("Error in GAJudgeRevisitTaskHandler::fireEventForUpdatingClaimantTaskList: " + exception);
         }
     }
 
