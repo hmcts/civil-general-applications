@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
@@ -38,6 +39,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPONDENT_RESPONSE_DEADLINE_CHECK;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @SpringBootTest(classes = {
@@ -200,6 +203,29 @@ class GAResponseDeadlineTaskHandlerTest {
         verifyNoMoreInteractions(coreCaseDataService);
         verify(externalTaskService).complete(any(), any());
 
+    }
+
+    @Test
+    void shouldEmitBusinessProcessEvent_whenCasesPastDeadlineFound2() {
+        CaseDetails caseDetails6 = CaseDetails.builder().id(1L).data(
+            Map.of("generalAppNotificationDeadlineDate", deadlineCrossed.toString(),
+                   "isGaApplicantLip",  YesOrNo.YES)).build();
+        CaseDetails caseDetails7 = CaseDetails.builder().id(2L).data(
+            Map.of("generalAppNotificationDeadlineDate", deadlineCrossed.toString(),
+                   "isGaApplicantLip", YesOrNo.YES)).build();
+        CaseDetails caseDetails8 = CaseDetails.builder().id(3L).data(
+            Map.of("generalAppNotificationDeadlineDate", deadlineInFuture.toString(),
+                   "isGaApplicantLip",  YesOrNo.YES)).build();
+        when(caseSearchService.getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))
+            .thenReturn(Set.of(caseDetails6, caseDetails7, caseDetails8));
+
+        gaResponseDeadlineTaskHandler.execute(externalTask, externalTaskService);
+
+        verify(caseSearchService).getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+        verify(coreCaseDataService).triggerEvent(1L, RESPONDENT_RESPONSE_DEADLINE_CHECK);
+        verify(coreCaseDataService).triggerEvent(2L, RESPONDENT_RESPONSE_DEADLINE_CHECK);
+        verifyNoMoreInteractions(coreCaseDataService);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
