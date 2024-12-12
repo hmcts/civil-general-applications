@@ -69,7 +69,6 @@ public class JudicialDecisionHelper {
                 .contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT)) {
             return true;
         }
-        return caseData.getGeneralAppType().getTypes()
-                .contains(GeneralApplicationTypes.VARY_ORDER);
+        return false;
     }
 }
