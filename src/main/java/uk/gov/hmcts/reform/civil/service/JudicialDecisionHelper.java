@@ -64,11 +64,8 @@ public class JudicialDecisionHelper {
     }
 
     public boolean containsTypesNeedNoAdditionalFee(CaseData caseData) {
-        if (caseData.getGeneralAppType().getTypes().size() == 1
+        return caseData.getGeneralAppType().getTypes().size() == 1
                 && caseData.getGeneralAppType().getTypes()
-                .contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT)) {
-            return true;
-        }
-        return false;
+                .contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT);
     }
 }
