@@ -54,14 +54,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     }
 
     private String getScenarioBasedOnDecision(CaseData caseData) {
-        if (caseData.getJudicialDecisionRequestMoreInfo() != null
-            && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData
-            .getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
-            if (Objects.isNull(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
-            }
-        } else if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING) && caseData
+        if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING) && caseData
             .getJudicialDecision().getDecision().equals(
                 GAJudgeDecisionOption.LIST_FOR_A_HEARING) && caseData.getGaHearingNoticeApplication() != null
             && caseData.getGaHearingNoticeDetail() != null) {
@@ -73,8 +66,13 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
         } else if (caseData.judgeHasMadeAnOrder()
             && caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT.getScenario();
+        } else if (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
+            || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
+            if (Objects.isNull(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+            }
         }
-
         return "";
     }
 
