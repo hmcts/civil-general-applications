@@ -252,9 +252,26 @@ public class JudicialNotificationService implements NotificationData {
 
     private CaseData applicationRequestForInformation(CaseData caseData, String solicitorType) {
 
-        if (solicitorType.equals(RESPONDENT)
+        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
+            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData)) && solicitorType.equals(APPLICANT) ) {
+
+            // Send notification to applicant only if it's without notice application
+            if (!judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
+                String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
+
+                String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
+                if (useGaForLipApplicantTemplate(caseData)) {
+                    template = getLiPApplicantTemplate(caseData);
+                }
+                sendNotificationForJudicialDecision(
+                    caseData,
+                    appSolicitorEmail,
+                        template
+                );
+            }
+        } else if (solicitorType.equals(RESPONDENT)
             && (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)
-                || judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData))) {
+            || judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData))) {
 
             // Send notification to respondent if payment is made
             caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
@@ -278,25 +295,6 @@ public class JudicialNotificationService implements NotificationData {
             }
             customProps.remove(GA_NOTIFICATION_DEADLINE);
 
-        }
-
-        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
-            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))) {
-            // Send notification to applicant only if it's without notice application
-            if (solicitorType.equals(APPLICANT)
-                    && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
-                String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
-
-                String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
-                if (useGaForLipApplicantTemplate(caseData)) {
-                    template = getLiPApplicantTemplate(caseData);
-                }
-                sendNotificationForJudicialDecision(
-                    caseData,
-                    appSolicitorEmail,
-                        template
-                );
-            }
         } else {
             // send notification to applicant and respondent if it's with notice application
             sendToBoth(caseData, solicitorType);

@@ -89,6 +89,8 @@ class JudicialApplicantNotificationServiceTest {
     private JudicialDecisionHelper judicialDecisionHelper;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private GaForLipService gaForLipService;
 
     private static final String APPLICANT = "applicant";
     private static final String RESPONDENT = "respondent";
@@ -370,6 +372,61 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void shouldSendNotification_LipRespondent_Application_WhenRequestMoreInfo() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES,
+                                                                        REQUEST_MORE_INFORMATION)
+                .toBuilder()
+                .generalAppConsentOrder(NO)
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT).generalAppType(GAApplicationType.builder()
+                                                .types(applicationTypeVaryOrder()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesVaryOrder(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void shouldSendNotification_LipRespondent_Application_WhenRequestMoreInfo_WhenNoLIpInvolved() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES,
+                                                                        REQUEST_MORE_INFORMATION)
+                .toBuilder()
+                .generalAppConsentOrder(NO)
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT).generalAppType(GAApplicationType.builder()
+                                                                                .types(applicationTypeVaryOrder()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesVaryOrder(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+
+        @Test
         void notificationShouldSendListForHearing() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
@@ -538,6 +595,15 @@ class JudicialApplicantNotificationServiceTest {
             customProp.put(NotificationData.GA_APPLICATION_TYPE,
                            GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue());
             customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
+
+            return customProp;
+        }
+
+        private Map<String, String> notificationPropertiesVaryOrder() {
+
+            customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
+            customProp.put(NotificationData.GA_APPLICATION_TYPE,
+                           GeneralApplicationTypes.VARY_ORDER.getDisplayedValue());
 
             return customProp;
         }
@@ -951,6 +1017,8 @@ class JudicialApplicantNotificationServiceTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+
+
 
         @Test
         void notificationShouldSendIfJudicialDirectionOrderRepArePresentInList() {
@@ -2138,6 +2206,12 @@ class JudicialApplicantNotificationServiceTest {
     public List<GeneralApplicationTypes> applicationTypeSummeryJudgement() {
         return List.of(
             GeneralApplicationTypes.SUMMARY_JUDGEMENT
+        );
+    }
+
+    public List<GeneralApplicationTypes> applicationTypeVaryOrder() {
+        return List.of(
+            GeneralApplicationTypes.VARY_ORDER
         );
     }
 }
