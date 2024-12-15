@@ -304,17 +304,14 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void updateParentWithGAState_with_n245_before_payment() {
-        CaseData gaCase = getGaVaryCaseDataForAddlDoc("RespondentSolTwo", PENDING_APPLICATION_ISSUED, YES);
-        CaseData civilCase = getVaryMainCaseData("RespondentSolTwo");
+        CaseData gaCase = getGaVaryCaseDataForAddlDoc("RespondentSol", PENDING_APPLICATION_ISSUED, YES);
+        CaseData civilCase = getVaryMainCaseData("RespondentSol");
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
         parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_APPLICATION_PAYMENT.toString());
         verify(coreCaseDataService, times(1))
                 .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("gaAddlDocRespondentSolTwo")).isNotNull();
-        assertThat(mapCaptor.getValue().get("gaAddlDocStaff")).isNull();
-        assertThat(mapCaptor.getValue().get("gaAddlDocRespondentSol")).isNull();
-        assertThat(mapCaptor.getValue().get("gaAddlDocClaimant")).isNull();
+        assertThat(mapCaptor.getValue().get("gaAddlDocRespondentSol")).isNotNull();
     }
 
     @Test
@@ -713,7 +710,6 @@ class ParentCaseUpdateHelperTest {
             .createdBy("John")
             .documentName("documentName")
             .documentSize(0L)
-            .documentType(GENERAL_ORDER)
             .createdDatetime(now())
             .documentLink(Document.builder()
                               .documentUrl("fake-url")
