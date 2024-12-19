@@ -325,7 +325,7 @@ public class JudicialDecisionHelperTest {
                             .types(List.of(VARY_ORDER, EXTEND_TIME))
                             .build())
                     .build();
-            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isTrue();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isFalse();
         }
     }
 
