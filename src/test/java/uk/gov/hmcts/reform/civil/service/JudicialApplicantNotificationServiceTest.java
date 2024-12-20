@@ -89,6 +89,8 @@ class JudicialApplicantNotificationServiceTest {
     private JudicialDecisionHelper judicialDecisionHelper;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private GaForLipService gaForLipService;
 
     private static final String APPLICANT = "applicant";
     private static final String RESPONDENT = "respondent";
@@ -170,6 +172,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForConcurrentWrittenOption(YES, NO));
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseDataForConcurrentWrittenOption(YES, NO), APPLICANT);
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
@@ -184,6 +187,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForSequentialWrittenOption(YES, NO));
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData = caseDataForSequentialWrittenOption(YES, NO);
 
             judicialNotificationService.sendNotification(caseData.toBuilder().applicantBilingualLanguagePreference(YES)
@@ -204,6 +208,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData claimRespondentResponseLan = CaseData.builder().claimantBilingualLanguagePreference("WELSH")
                 .applicantBilingualLanguagePreference(YES).build();
             when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData = caseDataForSequentialWrittenOption(YES, NO);
             CaseData updatedCasedata = caseData.toBuilder().applicantBilingualLanguagePreference(YES)
                 .build();
@@ -221,6 +226,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, YES, NO));
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
 
             judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  YES, NO), APPLICANT);
 
@@ -237,6 +243,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, YES, YES, NO));
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
 
             judicialNotificationService.sendNotification(caseDataForJudgeDismissal(NO, NO, NO,  YES, NO), APPLICANT);
 
@@ -258,7 +265,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
             verify(notificationService, times(1)).sendMail(
@@ -273,7 +280,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData
                 = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
                                                                                                 NO, YES, YES, YES, NO);
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -291,7 +298,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, NO));
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(
                 caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, NO), APPLICANT);
@@ -310,7 +317,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, YES));
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(
                 caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, YES), APPLICANT);
@@ -334,6 +341,7 @@ class JudicialApplicantNotificationServiceTest {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
@@ -358,7 +366,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
             verify(notificationService, times(1)).sendMail(
@@ -370,12 +378,66 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void shouldSendNotification_LipRespondent_Application_WhenRequestMoreInfo() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES,
+                                                                        REQUEST_MORE_INFORMATION)
+                .toBuilder()
+                .generalAppConsentOrder(NO)
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT).generalAppType(GAApplicationType.builder()
+                                                .types(applicationTypeVaryOrder()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesVaryOrder(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
+        void shouldSendNotification_LipRespondent_Application_WhenRequestMoreInfo_WhenNoLIpInvolved() {
+
+            CaseData caseData
+                = caseDataForJudicialRequestForInformationOfApplication(YES, YES, YES,
+                                                                        REQUEST_MORE_INFORMATION)
+                .toBuilder()
+                .generalAppConsentOrder(NO)
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT).generalAppType(GAApplicationType.builder()
+                                                                                .types(applicationTypeVaryOrder()).build()).build();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesVaryOrder(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationShouldSendListForHearing() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataListForHearing());
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseDataListForHearing(), APPLICANT);
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
@@ -534,10 +596,17 @@ class JudicialApplicantNotificationServiceTest {
         private Map<String, String> notificationPropertiesSummeryJudgement() {
 
             customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
-            customProp.put(NotificationData.CASE_TITLE, "CL v DEF");
             customProp.put(NotificationData.GA_APPLICATION_TYPE,
                            GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue());
-            customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
+
+            return customProp;
+        }
+
+        private Map<String, String> notificationPropertiesVaryOrder() {
+
+            customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
+            customProp.put(NotificationData.GA_APPLICATION_TYPE,
+                           GeneralApplicationTypes.VARY_ORDER.getDisplayedValue());
 
             return customProp;
         }
@@ -1991,7 +2060,7 @@ class JudicialApplicantNotificationServiceTest {
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                     .thenReturn(caseData);
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
-
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseData, APPLICANT);
 
             verify(notificationService, times(1)).sendMail(
@@ -2096,9 +2165,7 @@ class JudicialApplicantNotificationServiceTest {
         return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
-                NotificationData.GA_LIP_APPLICANT_NAME, "App",
-                NotificationData.CASE_TITLE, "CL v DEF"
+                GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue()
         );
     }
 
@@ -2138,6 +2205,12 @@ class JudicialApplicantNotificationServiceTest {
     public List<GeneralApplicationTypes> applicationTypeSummeryJudgement() {
         return List.of(
             GeneralApplicationTypes.SUMMARY_JUDGEMENT
+        );
+    }
+
+    public List<GeneralApplicationTypes> applicationTypeVaryOrder() {
+        return List.of(
+            GeneralApplicationTypes.VARY_ORDER
         );
     }
 }
