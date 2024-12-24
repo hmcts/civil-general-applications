@@ -196,6 +196,38 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
             );
         }
 
+        @Test
+        void shouldRecordOrderMadeApplicantScenarioWhenInvoked_isWIthOutNoticeApplication() {
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withoutNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaApplicantLip(YesOrNo.YES)
+                .parentClaimantIsApplicant(YesOrNo.YES)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
+                .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .ccdState(CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED)
+                .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
+                                               .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(CREATE_APPLICANT_DASHBOARD_NOTIFICATION_FOR_MAKE_DECISION.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
         private static Stream<Arguments> provideOrderType() {
             return Stream.of(
                 Arguments.of(GAJudgeDecisionOption.MAKE_AN_ORDER, GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT),
