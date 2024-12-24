@@ -109,7 +109,7 @@ public class ApplyForHwFDashboardNotificationHandlerTest extends BaseCallbackHan
                 .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
                                     .build())
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-                .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("HWF-111-222").build())
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("HWF-111-222").build())
                 .isGaApplicantLip(YesOrNo.YES)
                 .build();
 
