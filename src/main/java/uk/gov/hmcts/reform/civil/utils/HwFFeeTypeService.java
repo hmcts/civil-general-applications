@@ -19,7 +19,7 @@ public class HwFFeeTypeService {
     private HwFFeeTypeService() {
     }
 
-    public static CaseData.CaseDataBuilder updateFeeType(CaseData caseData) {
+    public static CaseData.CaseDataBuilder updateHwfDetails(CaseData caseData) {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())) {
             if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {

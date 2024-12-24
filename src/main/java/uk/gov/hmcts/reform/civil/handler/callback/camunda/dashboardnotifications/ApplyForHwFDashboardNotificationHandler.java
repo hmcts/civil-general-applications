@@ -40,7 +40,7 @@ public class ApplyForHwFDashboardNotificationHandler extends CallbackHandler {
 
     private CallbackResponse updateHWFDetailsAndSendNotification(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData().toBuilder().build();
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateHwfDetails(caseData);
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         HashMap<String, Object> paramsMap = mapper.mapCaseDataToParams(caseData);
         dashboardApiClient.recordScenario(caseData.getCcdCaseReference().toString(),

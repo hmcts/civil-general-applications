@@ -27,7 +27,7 @@ public class HwFFeeTypeServiceTest {
                 .build();
 
         // Act
-        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateHwfDetails(caseData);
 
         // Assert
         assertThat(updatedCaseDataBuilder.build().getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
@@ -44,7 +44,7 @@ public class HwFFeeTypeServiceTest {
             .build();
 
         // Act
-        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateHwfDetails(caseData);
 
         // Assert
         assertThat(updatedCaseDataBuilder.build().getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
@@ -59,7 +59,7 @@ public class HwFFeeTypeServiceTest {
                 .build();
 
         // Act
-        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateHwfDetails(caseData);
 
         // Assert
         assertThat(updatedCaseDataBuilder.build().getHwfFeeType()).isNull();
