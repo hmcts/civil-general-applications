@@ -23,7 +23,7 @@ public class HwFFeeTypeServiceTest {
         // Arrange
         CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("HWF-111-222").build())
                 .build();
 
         // Act
@@ -31,6 +31,7 @@ public class HwFFeeTypeServiceTest {
 
         // Assert
         assertThat(updatedCaseDataBuilder.build().getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+        assertThat(updatedCaseDataBuilder.build().getAdditionalHwfDetails().getHwfReferenceNumber().equals("HWF-111-222"));
     }
 
     @Test
@@ -39,13 +40,15 @@ public class HwFFeeTypeServiceTest {
         CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
-                .build();
+            .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("HWF-111-222").build())
+            .build();
 
         // Act
         CaseData.CaseDataBuilder updatedCaseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
 
         // Assert
         assertThat(updatedCaseDataBuilder.build().getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
+        assertThat(updatedCaseDataBuilder.build().getGaHwfDetails().getHwfReferenceNumber().equals("HWF-111-222"));
     }
 
     @Test

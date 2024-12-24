@@ -48,11 +48,4 @@ abstract class HWFCallbackHandlerBase extends CallbackHandler {
         return events;
     }
 
-    protected CallbackResponse setData(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
-        return AboutToStartOrSubmitCallbackResponse.builder()
-                .data(caseDataBuilder.build().toMap(objectMapper))
-                .build();
-    }
 }

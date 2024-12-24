@@ -1,37 +1,57 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.civil.callback.Callback;
+import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
-import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
+import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
+
+import java.util.HashMap;
 import java.util.List;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_REQUESTED_APPLICANT;
+import java.util.Map;
+
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 
 @Service
-public class ApplyForHwFDashboardNotificationHandler extends DashboardCallbackHandler {
+@RequiredArgsConstructor
+public class ApplyForHwFDashboardNotificationHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.NOTIFY_HELP_WITH_FEE);
-
-    public ApplyForHwFDashboardNotificationHandler(DashboardApiClient dashboardApiClient,
-                                                   DashboardNotificationsParamsMapper mapper,
-                                                   FeatureToggleService featureToggleService) {
-        super(dashboardApiClient, mapper, featureToggleService);
-    }
+    private final ObjectMapper objectMapper;
+    private final DashboardApiClient dashboardApiClient;
+    protected final DashboardNotificationsParamsMapper mapper;
 
     @Override
-    protected String getScenario(CaseData caseData) {
-        return SCENARIO_AAA6_GENERAL_APPS_HWF_REQUESTED_APPLICANT.getScenario();
+    protected Map<String, Callback> callbacks() {
+        return Map.of(
+            callbackKey(ABOUT_TO_SUBMIT), this::updateHWFDetailsAndSendNotification
+        );
     }
 
-    @Override
-    public boolean shouldRecordScenario(CallbackParams callbackParams) {
-        CaseData caseData = callbackParams.getCaseData();
-        return caseData.getIsGaApplicantLip() == YesOrNo.YES;
+    private CallbackResponse updateHWFDetailsAndSendNotification(CallbackParams callbackParams) {
+        CaseData caseData = callbackParams.getCaseData().toBuilder().build();
+        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        HashMap<String, Object> paramsMap = mapper.mapCaseDataToParams(caseData);
+        dashboardApiClient.recordScenario(caseData.getCcdCaseReference().toString(),
+                                          DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_REQUESTED_APPLICANT.getScenario(),
+                                          authToken,
+                                          ScenarioRequestParams.builder().params(paramsMap).build()
+
+        );
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataBuilder.build().toMap(objectMapper))
+            .build();
     }
 
     @Override

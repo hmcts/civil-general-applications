@@ -26,14 +26,20 @@ public class HwFFeeTypeService {
                 caseDataBuilder.hwfFeeType(FeeType.ADDITIONAL);
                 if (Objects.isNull(caseData.getAdditionalHwfDetails())) {
                     caseDataBuilder.additionalHwfDetails(HelpWithFeesDetails.builder()
-                                                             .hwfFeeType(FeeType.ADDITIONAL).build());
+                                                             .hwfFeeType(FeeType.ADDITIONAL)
+                                                             .fee(caseData.getGeneralAppPBADetails().getFee())
+                                                             .hwfReferenceNumber(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())
+                                                             .build());
 
                 }
             } else {
                 caseDataBuilder.hwfFeeType(FeeType.APPLICATION);
                 if (Objects.isNull(caseData.getGaHwfDetails())) {
                     caseDataBuilder.gaHwfDetails(HelpWithFeesDetails.builder()
-                                                     .hwfFeeType(FeeType.APPLICATION).build());
+                                                     .hwfFeeType(FeeType.APPLICATION)
+                                                     .fee(caseData.getGeneralAppPBADetails().getFee())
+                                                     .hwfReferenceNumber(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())
+                                                     .build());
 
                 }
             }
