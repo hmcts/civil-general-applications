@@ -202,6 +202,12 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
 
         @Test

@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
@@ -30,7 +32,7 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
         super(coreCaseDataService);
     }
 
-    public List<CaseDetails> getApplications() {
+    public Set<CaseDetails> getApplications() {
 
         SearchResult searchResult = coreCaseDataService
             .searchGeneralApplication(query(START_INDEX));
@@ -39,12 +41,10 @@ public class DeleteExpiredResponseRespondentNotificationSearchService extends El
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
-            SearchResult result = coreCaseDataService
-                .searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT));
-            caseDetails.addAll(result.getCases());
+            caseDetails.addAll(coreCaseDataService.searchGeneralApplication(query(i * ES_DEFAULT_SEARCH_LIMIT)).getCases());
         }
 
-        return caseDetails;
+        return new HashSet<>(caseDetails);
     }
 
     public Query query(int startIndex) {

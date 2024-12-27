@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.civil.event.DeleteExpiredResponseRespondentNotificati
 import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.search.DeleteExpiredResponseRespondentNotificationSearchService;
 
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class DeleteExpiredResponseRespondentNotificationsHandler extends BaseExt
 
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
-        List<CaseDetails> cases = caseSearchService.getApplications();
+        Set<CaseDetails> cases = caseSearchService.getApplications();
         log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
 
         cases.forEach(caseDetails -> {

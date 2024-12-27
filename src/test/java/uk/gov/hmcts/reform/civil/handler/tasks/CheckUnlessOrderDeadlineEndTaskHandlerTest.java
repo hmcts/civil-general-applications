@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -128,7 +129,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenZeroCasesFound() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(List.of());
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(Set.of());
 
         gaUnlessOrderMadeTaskHandler.execute(externalTask, externalTaskService);
 
@@ -139,7 +140,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesPastDeadlineFoundAndDifferentAppType() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(List.of(
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(Set.of(
             caseDetailsWithDeadlineCrossedProcessed
         ));
 
@@ -156,7 +157,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenCasesHaveFutureDeadLine() {
-        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(List.of(
+        when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(Set.of(
             caseDetailsWithFutureDeadline
         ));
 
@@ -175,8 +176,8 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldNotTriggerBusinessProcessEventWhenIsOrderProcessedIsNull() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(
-            List.of(caseDetailsWithTodayDeadlineNotProcessed,
-                    caseDetailsWithTodayDeadLineWithOrderProcessedNull));
+            Set.of(caseDetailsWithTodayDeadlineNotProcessed,
+                   caseDetailsWithTodayDeadLineWithOrderProcessedNull));
         when(caseDetailsConverter.toCaseData(caseDetailsWithTodayDeadlineNotProcessed))
             .thenReturn(caseDataWithTodayDeadlineNotProcessed);
 
@@ -196,7 +197,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_onlyWhen_NotProcessedAndDeadlineReached() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER)).thenReturn(
-            List.of(caseDetailsWithTodayDeadlineNotProcessed,
+            Set.of(caseDetailsWithTodayDeadlineNotProcessed,
                     caseDetailsWithDeadlineCrossedNotProcessed,
                     caseDetailsWithTodayDeadlineProcessed,
                     caseDetailsWithFutureDeadline,
@@ -232,7 +233,7 @@ public class CheckUnlessOrderDeadlineEndTaskHandlerTest {
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFoundWithNullDeadlineDate() {
         when(searchService.getOrderMadeGeneralApplications(ORDER_MADE, UNLESS_ORDER))
-            .thenReturn(List.of(caseDetailsWithNoDeadline));
+            .thenReturn(Set.of(caseDetailsWithNoDeadline));
 
         when(caseDetailsConverter.toCaseData(caseDetailsWithNoDeadline))
             .thenReturn(caseDataWithNoDeadline);
