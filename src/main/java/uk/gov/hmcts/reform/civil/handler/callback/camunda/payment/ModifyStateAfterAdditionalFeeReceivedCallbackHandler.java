@@ -116,7 +116,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
                 caseData)).build();
             if (scenarios != null) {
                 scenarios.forEach(scenario -> dashboardApiClient.recordScenario(
-                    caseData.getCcdCaseReference().toString(),
+                    caseReference,
                     scenario,
                     authToken,
                     scenarioParams
