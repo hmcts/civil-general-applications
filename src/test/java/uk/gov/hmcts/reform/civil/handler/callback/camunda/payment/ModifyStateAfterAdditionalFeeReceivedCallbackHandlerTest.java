@@ -255,7 +255,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -296,13 +296,13 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             AWAITING_RESPONDENT_RESPONSE.getDisplayedValue()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -343,13 +343,13 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             AWAITING_RESPONDENT_RESPONSE.getDisplayedValue()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -373,7 +373,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaRespondentOneLip(YES)
             .parentClaimantIsApplicant(YES)
             .isGaApplicantLip(NO)
-            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+            .ccdCaseReference(CCD_CASE_REFERENCE).build()
+            .toBuilder().parentCaseReference("1234").build();
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
@@ -387,7 +388,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
