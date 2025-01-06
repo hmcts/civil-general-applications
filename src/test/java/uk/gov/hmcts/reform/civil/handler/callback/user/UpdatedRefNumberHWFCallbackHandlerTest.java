@@ -18,8 +18,6 @@ import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @ExtendWith(MockitoExtension.class)
 class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
@@ -37,31 +35,6 @@ class UpdatedRefNumberHWFCallbackHandlerTest extends BaseCallbackHandlerTest {
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(UPDATE_HELP_WITH_FEE_NUMBER_GA);
-    }
-
-    @Nested
-    class AboutToStart {
-        @Test
-        void shouldSetUpDefaultData_WhileHwfFeeTypeIsBlank() {
-            CaseData caseData = CaseData.builder()
-                .ccdState(AWAITING_RESPONDENT_RESPONSE)
-                .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_START);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
-        }
-
-        @Test
-        void shouldSetUpAddData_WhileHwfFeeTypeIsBlank() {
-            CaseData caseData = CaseData.builder()
-                .ccdState(APPLICATION_ADD_PAYMENT)
-                .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_START);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
-        }
     }
 
     @Nested

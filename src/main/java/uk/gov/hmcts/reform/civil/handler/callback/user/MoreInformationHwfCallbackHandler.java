@@ -34,7 +34,7 @@ public class MoreInformationHwfCallbackHandler extends HWFCallbackHandlerBase {
     private static final String ERROR_MESSAGE_DOCUMENT_DATE_MUST_BE_AFTER_TODAY = "Documents date must be future date";
 
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(MID, "more-information-hwf"), this::validationMoreInformation,
         callbackKey(ABOUT_TO_SUBMIT), this::submitMoreInformationHwf,
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
