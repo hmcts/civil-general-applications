@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.civil.service.UserService;
-import uk.gov.hmcts.reform.civil.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Objects;
 
@@ -55,6 +55,7 @@ public class TestingSupportController {
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
     public ResponseEntity<BusinessProcessInfo> getBusinessProcess(@PathVariable("caseId") Long caseId) {
+        log.info("Get business process for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
         var businessProcess = caseData.getBusinessProcess();
         var caseState = caseData.getCcdState();
@@ -81,6 +82,7 @@ public class TestingSupportController {
     if so, generalApplicationsDetails object will be populated with GA case references*/
     @GetMapping("/testing-support/case/{caseId}/business-process/ga")
     public ResponseEntity<BusinessProcessInfo> getGACaseReference(@PathVariable("caseId") Long caseId) {
+        log.info("Get GA case reference for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(coreCaseDataService.getCase(caseId));
 
         int size = caseData.getGeneralApplications().size();
@@ -177,9 +179,9 @@ public class TestingSupportController {
                            @PathVariable("caseRole") CaseRole caseRole) {
         String userId = userService.getUserInfo(authorisation).getUid();
         String organisationId = organisationService.findOrganisation(authorisation)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
         coreCaseUserService.assignCase(caseId, userId, organisationId, caseRole);
-
+        log.info("Assign caseId: {}", caseId);
     }
 
     @GetMapping(value = {"/getOrgDetails"})
@@ -187,7 +189,7 @@ public class TestingSupportController {
     public String getOrgDetailsByUser(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation) {
         String userId = userService.getUserInfo(authorisation).getUid();
         return organisationService.findOrganisationByUserId(userId)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
 
     }
 

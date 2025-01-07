@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service.docmosis.generalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -18,15 +17,17 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_GENERAL_ORDER_LIP;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -39,8 +40,18 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
+        JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
+
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        return  generateDocmosisDocument(templateData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(JudgeDecisionPdfDocument templateData, String authorisation, FlowFlag userType) {
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(userType);
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -61,7 +72,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -72,7 +83,7 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .claimNumber(caseData.getCcdCaseReference().toString())
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
@@ -83,10 +94,27 @@ public class GeneralOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .reasonForDecision(docmosisService.populateJudgeReason(caseData))
                 .judicialByCourtsInitiative(docmosisService.populateJudicialByCourtsInitiative(caseData));
 
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            judgeDecisionPdfDocumentBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
+
         return judgeDecisionPdfDocumentBuilder.build();
     }
 
-    private DocmosisTemplates getDocmosisTemplate() {
+    private DocmosisTemplates getDocmosisTemplate(FlowFlag userType) {
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return POST_JUDGE_GENERAL_ORDER_LIP;
+        }
         return GENERAL_ORDER;
     }
 

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service.docmosis.finalorder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,8 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -44,6 +46,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_ON_COURT_INITIATIVE;
 import static uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts.ORDER_WITHOUT_NOTICE;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_FREE_FORM_ORDER_LIP;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -64,7 +67,7 @@ class FreeFormOrderGeneratorTest {
             .build();
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
 
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
@@ -75,6 +78,76 @@ class FreeFormOrderGeneratorTest {
     private ObjectMapper mapper;
     @MockBean
     private DocmosisService docmosisService;
+
+    @Nested
+    class GetTemplateDataLip {
+        @Test
+        void whenJudgeMakeDecision_ShouldGetFreeFormOrderData_1V1() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .finalOrderFreeForm().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(NO)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder()
+                                .epimmsId("2")
+                                .externalShortName("Manchester")
+                                .build());
+            FreeFormOrder templateDate = generator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+            assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
+        }
+
+        @Test
+        void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
+            when(documentGeneratorService
+                     .generateDocmosisDocument(
+                         any(MappableObject.class), eq(DocmosisTemplates.POST_JUDGE_FREE_FORM_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(
+                    DocmosisTemplates.POST_JUDGE_FREE_FORM_ORDER_LIP.getDocumentTitle(), bytes));
+            when(documentManagementService
+                     .uploadDocument(any(), any()))
+                .thenReturn(CASE_DOCUMENT);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES).build()
+                .toBuilder()
+                .freeFormRecitalText("RecitalText")
+                .freeFormOrderedText("OrderedText")
+                .orderOnCourtsList(OrderOnCourts.NOT_APPLICABLE)
+                .build();
+            CaseDocument caseDocuments = generator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThat(caseDocuments).isNotNull();
+
+            verify(documentGeneratorService)
+                .generateDocmosisDocument(any(FreeFormOrder.class), eq(POST_JUDGE_FREE_FORM_ORDER_LIP));
+            verify(documentManagementService).uploadDocument(any(), any());
+        }
+
+        private void assertThatFieldsAreCorrect_FreeFormOrder_1V1(FreeFormOrder freeFormOrder,
+                                                                  CaseData caseData) {
+            Assertions.assertAll(
+                "GeneralOrderDocument data should be as expected",
+                () -> assertEquals(freeFormOrder.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(freeFormOrder.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertNull(freeFormOrder.getClaimant2Name()),
+                () -> assertEquals(freeFormOrder.getCourtName(), "Manchester"),
+                () -> assertEquals(freeFormOrder.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(freeFormOrder.getDefendant2Name()),
+                () -> assertEquals(NO, freeFormOrder.getIsMultiParty()),
+                () -> assertEquals("applicant1partyname", freeFormOrder.getPartyName()),
+                () -> assertEquals("address1", freeFormOrder.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", freeFormOrder.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", freeFormOrder.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", freeFormOrder.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", freeFormOrder.getPartyAddressPostCode()));
+        }
+    }
 
     @Test
     void shouldHearingFormGeneratorOneForm_whenValidDataIsProvided() {
@@ -173,7 +246,7 @@ class FreeFormOrderGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(DocmosisTemplates.FREE_FORM_ORDER);
     }
 
     @Test
@@ -182,8 +255,11 @@ class FreeFormOrderGeneratorTest {
             .finalOrderFreeForm().isMultiParty(YES).build().toBuilder()
             .build();
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
-        FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("London")
+                            .build());
+        FreeFormOrder templateDate = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThatFieldsAreCorrect_FreeFormOrder(templateDate, caseData);
     }
 
@@ -212,8 +288,11 @@ class FreeFormOrderGeneratorTest {
             .build();
 
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
-        FreeFormOrder templateDate = generator.getTemplateData(caseData, "auth");
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("Manchester")
+                            .build());
+        FreeFormOrder templateDate = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThatFieldsAreCorrect_FreeFormOrder_1V1(templateDate, caseData);
     }
 
@@ -231,3 +310,4 @@ class FreeFormOrderGeneratorTest {
         );
     }
 }
+

@@ -15,7 +15,26 @@ public interface NotificationData {
     String GA_REQUEST_FOR_INFORMATION_DEADLINE = "requestForInformationDeadline";
     String GA_HEARING_DATE = "hearingDate";
     String GA_HEARING_TIME = "hearingTime";
+    String GA_LIP_APPLICANT_NAME = "applicantName";
     String GA_LIP_RESP_NAME = "respondentName";
+    String CASE_TITLE = "ClaimantvDefendant";
+    String CLAIM_LEGAL_ORG_NAME_SPEC = "legalOrgName";
+
+    //hwf
+    String CLAIMANT_NAME = "claimantName";
+    String APPLICANT_NAME = "applicantName";
+    String HWF_REFERENCE_NUMBER = "hwFReferenceNumber";
+    String TYPE_OF_FEE = "typeOfFee";
+    String TYPE_OF_FEE_WELSH = "typeOfFeeWelsh";
+    String HWF_MORE_INFO_DATE = "date";
+    String HWF_MORE_INFO_DATE_IN_WELSH = "dateInWelsh";
+    String HWF_MORE_INFO_DOCUMENTS = "documents";
+    String HWF_MORE_INFO_DOCUMENTS_WELSH  = "documentsWelsh";
+    String PART_AMOUNT = "partAmount";
+    String REMAINING_AMOUNT = "remainingAmount";
+    String FEE_AMOUNT = "amount";
+    String NO_REMISSION_REASONS = "reasons";
+    String NO_REMISSION_REASONS_WELSH = "reasonsWelsh";
 
     Map<String, String> addProperties(CaseData caseData);
 

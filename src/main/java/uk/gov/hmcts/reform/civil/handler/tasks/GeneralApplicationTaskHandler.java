@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
@@ -22,32 +23,38 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
-public class GeneralApplicationTaskHandler implements BaseExternalTaskHandler {
+public class GeneralApplicationTaskHandler extends BaseExternalTaskHandler {
 
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
 
-    private CaseData data;
-
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getGeneralApplicationCaseId();
+        if (generalApplicationCaseId == null) {
+            generalApplicationCaseId = variables.getCaseId();
+        }
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
                                                                                 variables.getCaseEvent());
+        log.info("Started GA update event for case ID: {} with event: {}", externalTask.getId(), variables.getCaseEvent());
         CaseData startEventData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = startEventData
             .getBusinessProcess().toBuilder()
             .activityId(externalTask.getActivityId()).build();
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess,
                                                           variables, startEventData.getGeneralAppParentCaseLink());
-        data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+
+        var caseData = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+
+        return ExternalTaskData.builder().caseData(caseData).build();
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        var data = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
         var stateFlow = stateFlowEngine.evaluate(data);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());

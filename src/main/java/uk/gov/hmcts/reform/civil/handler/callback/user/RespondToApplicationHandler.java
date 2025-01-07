@@ -31,8 +31,11 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentDebtorOfferGAs
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
+import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -40,7 +43,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +60,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION_URGENT_LIP;
 import static uk.gov.hmcts.reform.civil.enums.GADebtorPaymentPlanGAspec.PAYFULL;
 import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.ACCEPT;
 import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.DECLINE;
@@ -76,6 +79,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final IdamClient idamClient;
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final CoreCaseDataService coreCaseDataService;
+    private final GaForLipService gaForLipService;
+    private final DocUploadDashboardNotificationService dashboardNotificationService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
     private static final String JUDGES_REVIEW_MESSAGE =
@@ -102,7 +107,8 @@ public class RespondToApplicationHandler extends CallbackHandler {
         "The date entered cannot be in the past.";
 
     public static final String PREFERRED_TYPE_IN_PERSON = "IN_PERSON";
-    private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_APPLICATION);
+    private static final List<CaseEvent> EVENTS =
+        List.of(RESPOND_TO_APPLICATION, RESPOND_TO_APPLICATION_URGENT_LIP);
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -123,8 +129,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
         if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)) {
             caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
+            log.info("General app vary judgement type for caseId: {}", caseData.getCcdCaseReference());
         } else {
             caseDataBuilder.generalAppVaryJudgementType(NO);
+            log.info("General app does not vary judgement type for caseId: {}", caseData.getCcdCaseReference());
         }
 
         caseDataBuilder
@@ -169,6 +177,14 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildResponseConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        // Generate Dashboard Notification for Lip Party
+        if (gaForLipService.isGaForLip(caseData)) {
+            dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+            dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+
+        }
+
         return SubmittedCallbackResponse.builder()
             .confirmationHeader(RESPONSE_MESSAGE)
             .confirmationBody(buildConfirmationSummary(caseData))
@@ -180,10 +196,11 @@ public class RespondToApplicationHandler extends CallbackHandler {
         UserInfo userInfo = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
 
         List<Element<GARespondentResponse>> respondentResponse = caseData.getRespondentsResponses();
-
+        boolean isNotAllowedForLip =
+            gaForLipService.isLipResp(caseData) && JudicialDecisionNotificationUtil.isUrgent(caseData);
         List<String> errors = new ArrayList<>();
         if (caseData.getCcdState() == CaseState
-            .APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION
+            .APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION && !isNotAllowedForLip
         ) {
             errors.add(APPLICATION_RESPONSE_PRESENT);
         }
@@ -307,7 +324,6 @@ public class RespondToApplicationHandler extends CallbackHandler {
         caseDataBuilder.generalAppRespondConsentDocument(null);
         caseDataBuilder.generalAppRespondDebtorDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_APPLICATION)).build();
-
         CaseData updatedCaseData = caseDataBuilder.build();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -330,8 +346,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData, UserInfo userInfo) {
         GAHearingDetails gaHearingDetailsResp;
         String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
-        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
-            && (caseData.getHearingDetailsResp().getHearingPreferredLocation() != null)) {
+        if ((preferredType.equals(PREFERRED_TYPE_IN_PERSON) || caseData.getIsGaRespondentOneLip() == YES)
+            && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation())
+            && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue())) {
             String applicationLocationLabel = caseData.getHearingDetailsResp()
                 .getHearingPreferredLocation().getValue()
                 .getLabel();
@@ -365,7 +382,9 @@ public class RespondToApplicationHandler extends CallbackHandler {
 
         // civil claim claimant
         if (!gaCaseData.getParentClaimantIsApplicant().equals(YES)
-            && userInfo.getSub().equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail())) {
+            && (Objects.nonNull(civilCaseData.getApplicantSolicitor1UserDetails())
+            && userInfo.getSub().equals(civilCaseData.getApplicantSolicitor1UserDetails().getEmail())
+            || gaForLipService.isLipResp(gaCaseData))) {
 
             log.info("Return Civil Claim Defendant two party Name if GA Solicitor Email ID "
                          + "as same as Civil Claim Claimant Solicitor Two Email");

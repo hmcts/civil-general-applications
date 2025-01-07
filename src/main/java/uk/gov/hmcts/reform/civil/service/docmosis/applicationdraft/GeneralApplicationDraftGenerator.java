@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.GADraftForm;
+import uk.gov.hmcts.reform.civil.model.docmosis.UnavailableDates;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
@@ -18,6 +20,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
@@ -27,9 +30,11 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementSe
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
@@ -38,6 +43,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.OTHER_SUPPO
 import static uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements.SIGN_INTERPRETER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.GENERAL_APPLICATION_DRAFT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<GADraftForm> {
@@ -48,6 +54,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     private final CoreCaseDataService coreCaseDataService;
     private static final int ONE_V_ONE = 1;
     private static final int ONE_V_TWO = 2;
+    private final GaForLipService gaForLipService;
 
     @Override
     public GADraftForm getTemplateData(CaseData caseData)  {
@@ -68,12 +75,15 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .applicantPartyName(caseData.getApplicantPartyName())
                 .isCasePastDueDate(validateCasePastDueDate(caseData))
                 .hasAgreed(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-                .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+                .isWithNotice(isWithNoticeApplication(caseData))
                 .reasonsForWithoutNotice(caseData.getGeneralAppInformOtherParty() != null ? caseData.getGeneralAppInformOtherParty()
                                              .getReasonsForWithoutNotice() : null)
-                .generalAppUrgency(caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())
-                .urgentAppConsiderationDate(caseData.getGeneralAppUrgencyRequirement().getUrgentAppConsiderationDate())
-                .reasonsForUrgency(caseData.getGeneralAppUrgencyRequirement().getReasonsForUrgency())
+                .generalAppUrgency(Objects.nonNull(caseData.getGeneralAppUrgencyRequirement())
+                        ? caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() : null)
+                .urgentAppConsiderationDate(Objects.nonNull(caseData.getGeneralAppUrgencyRequirement())
+                        ? caseData.getGeneralAppUrgencyRequirement().getUrgentAppConsiderationDate() : null)
+                .reasonsForUrgency(Objects.nonNull(caseData.getGeneralAppUrgencyRequirement())
+                        ? caseData.getGeneralAppUrgencyRequirement().getReasonsForUrgency() : null)
                 .generalAppType(caseData.getGeneralAppType().getTypes().stream()
                                     .map(GeneralApplicationTypes::getDisplayedValue)
                                     .collect(Collectors.joining(", ")))
@@ -97,8 +107,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                            .getHearingDetailsEmailID())
                 .unavailableTrialRequiredYesOrNo(caseData.getGeneralAppHearingDetails()
                                                      .getUnavailableTrialRequiredYesOrNo())
-                .unavailableTrialDateTo(getAppUnavailabilityDate(caseData, YesOrNo.YES))
-                .unavailableTrialDateFrom(getAppUnavailabilityDate(caseData, YesOrNo.NO))
+                .unavailableTrialDates(getAppUnavailabilityDates(caseData.getGeneralAppHearingDetails()))
                 .vulnerabilityQuestionsYesOrNo(caseData.getGeneralAppHearingDetails().getVulnerabilityQuestionsYesOrNo())
                 .supportRequirement(getGaSupportRequirement(caseData))
                 .supportRequirementSignLanguage(caseData.getGeneralAppHearingDetails().getSupportRequirementSignLanguage())
@@ -136,8 +145,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp1PreferredTelephone(gaResp1HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp1PreferredEmail(gaResp1HearingDetails.getHearingDetailsEmailID())
                 .resp1UnavailableTrialRequired(gaResp1HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp1UnavailableTrialDateFrom(getResp1UnavailabilityDate(caseData, YesOrNo.YES))
-                .resp1UnavailableTrialDateTo(getResp1UnavailabilityDate(caseData, YesOrNo.NO))
+                .resp1UnavailableTrialDates(getResp1UnavailabilityDates(caseData))
                 .resp1VulnerableQuestions(gaResp1HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp1SupportRequirement(getRespSupportRequirement(caseData, ONE_V_ONE))
                 .resp1SignLanguage(gaResp1HearingDetails.getSupportRequirementSignLanguage())
@@ -146,7 +154,8 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                                               .getSupportRequirementLanguageInterpreter())
                 .isResp1LanguageInterpreterExists(checkResp1AdditionalSupport(caseData, LANGUAGE_INTERPRETER))
                 .isResp1OtherSupportExists(checkResp1AdditionalSupport(caseData, OTHER_SUPPORT))
-                .resp1Other(gaResp1HearingDetails.getSupportRequirementOther());
+                .resp1Other(gaResp1HearingDetails.getSupportRequirementOther())
+                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO);
         }
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() > ONE_V_ONE) {
             GAHearingDetails gaResp2HearingDetails = caseData.getRespondentsResponses().get(1)
@@ -169,8 +178,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .resp2PreferredTelephone(gaResp2HearingDetails.getHearingDetailsTelephoneNumber())
                 .resp2PreferredEmail(gaResp2HearingDetails.getHearingDetailsEmailID())
                 .resp2UnavailableTrialRequired(gaResp2HearingDetails.getUnavailableTrialRequiredYesOrNo())
-                .resp2UnavailableTrialDateFrom(getResp2UnavailabilityDate(caseData, YesOrNo.YES))
-                .resp2UnavailableTrialDateTo(getResp2UnavailabilityDate(caseData, YesOrNo.NO))
+                .resp2UnavailableTrialDates(getResp2UnavailabilityDates(caseData))
                 .resp2VulnerableQuestions(gaResp2HearingDetails.getVulnerabilityQuestionsYesOrNo())
                 .resp2SupportRequirement(getRespSupportRequirement(caseData, ONE_V_TWO))
                 .resp2SignLanguage(gaResp2HearingDetails.getSupportRequirementSignLanguage())
@@ -183,6 +191,15 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         }
 
         return gaDraftFormBuilder.build();
+    }
+
+    private YesOrNo isWithNoticeApplication(CaseData caseData) {
+        if (Objects.nonNull(caseData.getApplicationIsCloaked())
+            && caseData.getApplicationIsCloaked().equals(YesOrNo.NO)) {
+            return YesOrNo.YES;
+        }
+
+        return caseData.getGeneralAppInformOtherParty().getIsWithNotice();
     }
 
     private Boolean validateCasePastDueDate(CaseData caseData) {
@@ -206,54 +223,44 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         return unavailabilityFrom == YesOrNo.YES ? appDateFrom : appDateTo;
     }
 
-    private LocalDate getResp2UnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
-        LocalDate resp2DateFrom = null;
-        LocalDate resp2DateTo = null;
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_TWO
-            && caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                resp2DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                resp2DateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
-        }
-        return unavailabilityFrom == YesOrNo.YES ? resp2DateFrom : resp2DateTo;
+    private List<UnavailableDates> getAppUnavailabilityDates(GAHearingDetails hearingDetails) {
+        return
+            Optional.ofNullable(hearingDetails).map(GAHearingDetails::getGeneralAppUnavailableDates)
+                .orElse(Collections.emptyList()).stream()
+                .map(element -> element.getValue())
+                .map(value -> new UnavailableDates(value.getUnavailableTrialDateFrom(), value.getUnavailableTrialDateTo()))
+                .toList();
     }
 
-    private LocalDate getResp1UnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
-        LocalDate resp1DateFrom = null;
-        LocalDate resp1DateTo = null;
-        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_ONE
-            && caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                resp1DateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                resp1DateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
+    private List<UnavailableDates> getResp1UnavailabilityDates(CaseData caseData) {
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_ONE) {
+            return getAppUnavailabilityDates(caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails());
         }
-        return unavailabilityFrom == YesOrNo.YES ? resp1DateFrom : resp1DateTo;
+        return Collections.emptyList();
+    }
+
+    private List<UnavailableDates> getResp2UnavailabilityDates(CaseData caseData) {
+        if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == ONE_V_TWO) {
+            return getAppUnavailabilityDates(caseData.getRespondentsResponses().get(1).getValue().getGaHearingDetails());
+        }
+        return Collections.emptyList();
     }
 
     private Boolean checkAdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String appSupportRequirement = getGaSupportRequirement(caseData);
+        log.info("Check additional support for caseId: {}", caseData.getCcdCaseReference());
         return appSupportRequirement != null && appSupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp1AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String resp1SupportRequirement = getRespSupportRequirement(caseData, ONE_V_ONE);
+        log.info("Check additional support for respondent 1 for caseId: {}", caseData.getCcdCaseReference());
         return resp1SupportRequirement != null && resp1SupportRequirement.contains(additionalSupport.getDisplayedValue());
     }
 
     private Boolean checkResp2AdditionalSupport(CaseData caseData, SupportRequirements additionalSupport) {
         String resp2SupportRequirement = getRespSupportRequirement(caseData, ONE_V_TWO);
+        log.info("Check additional support for respondent 2 for caseId: {}", caseData.getCcdCaseReference());
         return resp2SupportRequirement != null && resp2SupportRequirement.contains(additionalSupport.getDisplayedValue());
 
     }
@@ -349,6 +356,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
             templateData,
             docmosisTemplate
         );
+        log.info("Generate general application draft for caseId: {}", caseData.getCcdCaseReference());
 
         return documentManagementService.uploadDocument(
             authorisation,

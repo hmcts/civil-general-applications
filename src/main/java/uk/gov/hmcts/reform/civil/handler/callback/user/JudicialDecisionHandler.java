@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -15,8 +16,11 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderShowToggle;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
@@ -25,6 +29,7 @@ import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.FreeFormOrderValues;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -34,7 +39,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeG
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
@@ -46,6 +53,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingOrderGener
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationconcurrentorder.WrittenRepresentationConcurrentOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentialorder.WrittenRepresentationSequentailOrderGenerator;
+import uk.gov.hmcts.reform.civil.utils.IdamUserUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
@@ -95,6 +103,7 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JudicialDecisionHandler extends CallbackHandler {
@@ -120,11 +129,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private static final String POPULATE_HEARING_ORDER_DOC = "populate-hearing-order-doc";
     private static final String POPULATE_WRITTEN_REP_PREVIEW_DOC = "populate-written-rep-preview-doc";
 
-    private static final String APPLICANT_ESTIMATES = "Applicant estimates ";
-    private static final String JUDICIAL_TIME_EST_TEXT_1 = APPLICANT_ESTIMATES + "%s. Respondent estimates %s.";
-    private static final String JUDICIAL_TIME_EST_TEXT_2 = "Both applicant and respondent estimate it would take %s.";
-    private static final String JUDICIAL_TIME_EST_TEXT_3 = APPLICANT_ESTIMATES
-            + "%s. Respondent 1 estimates %s. Respondent 2 estimates %s.";
+    private static final String APPLICANT_ESTIMATES = "Applicant estimates %s";
+    private static final String RESPONDENT_ESTIMATES = "Respondent estimates %s";
+    private static final String RESPONDENT1_ESTIMATES = "Respondent 1 estimates %s";
+    private static final String RESPONDENT2_ESTIMATES = "Respondent 2 estimates %s";
+    private static final String ESTIMATES_NOT_PROVIDED = "Applicant and respondent have not provided estimates";
+
+    private static final String JUDICIAL_TIME_EST_TEXT_BOTH = "Both applicant and respondent estimate it would take %s.";
     private static final String APPLICANT_REQUIRES = "Applicant requires ";
     private static final String JUDICIAL_APPLICANT_VULNERABILITY_TEXT = APPLICANT_REQUIRES + "support with regards to "
             + "vulnerability\n";
@@ -232,6 +243,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final FreeFormOrderGenerator gaFreeFormOrderGenerator;
     private final DeadlinesCalculator deadlinesCalculator;
     private final IdamClient idamClient;
+    private final GaForLipService gaForLipService;
+    private final CaseDetailsConverter caseDetailsConverter;
+    private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -255,7 +270,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
-        caseDataBuilder.judgeTitle(userDetails.getName());
+        caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
 
         if (caseData.getApplicationIsCloaked() == null) {
             caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
@@ -309,9 +324,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
         YesOrNo isAppAndRespSameTimeEst = (caseData.getGeneralAppHearingDetails() != null
                 && caseData.getRespondentsResponses() != null
                 && caseData.getRespondentsResponses().size() == 1
-                && caseData.getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue()
-                .equals(caseData.getRespondentsResponses().stream().iterator().next().getValue().getGaHearingDetails()
-                        .getHearingDuration().getDisplayedValue()))
+                && caseData.getGeneralAppHearingDetails().getHearingDuration() != null
+                && caseData.getGeneralAppHearingDetails().getHearingDuration()
+                    == caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails().getHearingDuration())
                 ? YES : NO;
 
         caseDataBuilder.judicialListForHearing(gaJudgesHearingListGAspecBuilder
@@ -356,13 +371,16 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(NO)) {
             if (isAdditionalPaymentMade(caseData).equals(YES)) {
+                log.info("General app respondent has not agreed and the additional payment has been made for caseId: {}", caseData.getCcdCaseReference());
                 gaJudicialRequestMoreInfoBuilder.isWithNotice(YES).build();
             } else {
+                log.info("General app respondent has not agreed and the additional payment has not been made for caseId: {}", caseData.getCcdCaseReference());
                 gaJudicialRequestMoreInfoBuilder
                         .isWithNotice(caseData.getGeneralAppInformOtherParty().getIsWithNotice()).build();
             }
 
         } else if (caseData.getGeneralAppRespondentAgreement().getHasAgreed().equals(YES)) {
+            log.info("General app respondent has agreed for caseId: {}", caseData.getCcdCaseReference());
             if (isGeneralAppConsentOrder(caseData)) {
                 gaJudicialRequestMoreInfoBuilder.isWithNotice(NO).build();
             } else {
@@ -589,6 +607,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("General order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (judicialDecisionMakeOrder.getDirectionsText() != null
                     && judicialDecisionMakeOrder.getMakeAnOrder().equals(GIVE_DIRECTIONS_WITHOUT_HEARING)) {
@@ -596,12 +615,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("Direction order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             } else if (judicialDecisionMakeOrder.getMakeAnOrder().equals(DISMISS_THE_APPLICATION)) {
                 judgeDecision = dismissalOrderGenerator.generate(
                         caseDataBuilder.build(),
                         callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
+                log.info("Dismissal order is generated for caseId: {}", caseData.getCcdCaseReference());
                 caseDataBuilder.judicialMakeOrderDocPreview(judgeDecision.getDocumentLink());
             }
         }
@@ -685,10 +706,33 @@ public class JudicialDecisionHandler extends CallbackHandler {
                         .sequentialApplicantMustRespondWithin(deadlinesCalculator
                                                                   .getJudicialOrderDeadlineDate(LocalDateTime.now(),
                                                                                                 21)).build());
+        if (featureToggleService.isGaForLipsEnabled()) {
+            caseDataBuilder.bilingualHint(setBilingualHint(caseData));
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(caseDataBuilder.build().toMap(objectMapper))
                 .errors(errors)
                 .build();
+    }
+
+    private YesOrNo setBilingualHint(CaseData caseData) {
+        CaseData civilCaseData = caseDetailsConverter
+            .toCaseData(coreCaseDataService
+                            .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
+        if (Objects.nonNull(caseData.getJudicialDecision())) {
+            switch (caseData.getJudicialDecision().getDecision()) {
+                case LIST_FOR_A_HEARING:
+                case FREE_FORM_ORDER:
+                case MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS:
+                    return gaForLipService.anyWelshNotice(caseData) ? YES : NO;
+                case MAKE_AN_ORDER:
+                case REQUEST_MORE_INFO:
+                    return gaForLipService.anyWelsh(caseData) ? YES : NO;
+                default:
+                    return NO;
+            }
+        }
+        return NO;
     }
 
     private CallbackResponse gaValidateRequestMoreInfoScreen(CallbackParams callbackParams) {
@@ -750,6 +794,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             judgeDecision = requestForInformationGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString());
+            log.info("Request for information is generated for caseId: {}", caseData.getCcdCaseReference());
 
             caseDataBuilder.judicialRequestMoreInfoDocPreview(judgeDecision.getDocumentLink());
         }
@@ -860,7 +905,9 @@ public class JudicialDecisionHandler extends CallbackHandler {
                                                    .judgeHearingSupportReqText1(null)
                                                    .build());
         }
-
+        if (featureToggleService.isGaForLipsEnabled()) {
+            dataBuilder.bilingualHint(null);
+        }
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();
@@ -987,6 +1034,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            log.info("Written representation sequential order is generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
@@ -1000,6 +1048,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
+            log.info("Written representation concurrent order is generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.judicialWrittenRepDocPreview(judgeDecision.getDocumentLink());
 
         }
@@ -1196,47 +1245,59 @@ public class JudicialDecisionHandler extends CallbackHandler {
         return StringUtils.EMPTY;
     }
 
-    private String getRespondentHearingDuration(CaseData caseData) {
-
-        return caseData.getRespondentsResponses() == null
-                ? StringUtils.EMPTY : caseData.getRespondentsResponses()
-                .stream().iterator().next().getValue().getGaHearingDetails().getHearingDuration()
-                .getDisplayedValue();
-
-    }
-
     private String getJudgeHearingTimeEst(CaseData caseData, YesOrNo isAppAndRespSameTimeEst) {
-        String respondet1HearingDuration = null;
-        String respondent2HearingDuration = null;
-
+        GAHearingDuration applicantHearingDuration = caseData.getGeneralAppHearingDetails().getHearingDuration();
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 1) {
-            return isAppAndRespSameTimeEst == YES ? format(JUDICIAL_TIME_EST_TEXT_2, caseData
-                    .getGeneralAppHearingDetails().getHearingDuration().getDisplayedValue())
-                    : format(JUDICIAL_TIME_EST_TEXT_1, caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue(), getRespondentHearingDuration(caseData));
+            GAHearingDuration respondentHearingDuration =
+                caseData.getRespondentsResponses().get(0).getValue().getGaHearingDetails().getHearingDuration();
+            if (isAppAndRespSameTimeEst == YES) {
+                return format(JUDICIAL_TIME_EST_TEXT_BOTH, applicantHearingDuration.getDisplayedValue());
+            }
+            if (applicantHearingDuration == null && respondentHearingDuration == null) {
+                return ESTIMATES_NOT_PROVIDED;
+            }
+            String hearingTimeEst = StringUtils.EMPTY;
+            if (applicantHearingDuration != null) {
+                hearingTimeEst += format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue());
+            }
+            if (respondentHearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT_ESTIMATES, respondentHearingDuration.getDisplayedValue()));
+            }
+            return hearingTimeEst + (hearingTimeEst.contains(".") ? "." : StringUtils.EMPTY);
         }
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() == 2) {
             Optional<Element<GARespondentResponse>> responseElementOptional1 = response1(caseData);
             Optional<Element<GARespondentResponse>> responseElementOptional2 = response2(caseData);
-            if (responseElementOptional1.isPresent()) {
-                respondet1HearingDuration = responseElementOptional1.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            GAHearingDuration respondent1HearingDuration = responseElementOptional1.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
+            GAHearingDuration respondent2HearingDuration = responseElementOptional2.map(Element::getValue)
+                .map(GARespondentResponse::getGaHearingDetails).map(GAHearingDetails::getHearingDuration).orElse(null);
+            if (applicantHearingDuration == null && respondent1HearingDuration == null && respondent2HearingDuration == null) {
+                return ESTIMATES_NOT_PROVIDED;
             }
-            if (responseElementOptional2.isPresent()) {
-                respondent2HearingDuration = responseElementOptional2.get().getValue()
-                        .getGaHearingDetails().getHearingDuration().getDisplayedValue();
+            String hearingTimeEst = StringUtils.EMPTY;
+            if (applicantHearingDuration != null) {
+                hearingTimeEst += format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue());
             }
-
-            return format(JUDICIAL_TIME_EST_TEXT_3, caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue(), respondet1HearingDuration, respondent2HearingDuration);
+            if (respondent1HearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT1_ESTIMATES, respondent1HearingDuration.getDisplayedValue()));
+            }
+            if (respondent2HearingDuration != null) {
+                hearingTimeEst += ((hearingTimeEst.length() > 0 ? ". " : StringUtils.EMPTY)
+                    + format(RESPONDENT2_ESTIMATES, respondent2HearingDuration.getDisplayedValue()));
+            }
+            return hearingTimeEst + (hearingTimeEst.contains(".") ? "." : StringUtils.EMPTY);
         }
 
         if ((caseData.getGeneralAppUrgencyRequirement() != null
                 && caseData.getGeneralAppUrgencyRequirement().getGeneralAppUrgency() == YesOrNo.YES)
-                || caseData.getGeneralAppHearingDetails().getHearingDuration() != null) {
-            return APPLICANT_ESTIMATES.concat(caseData.getGeneralAppHearingDetails()
-                    .getHearingDuration().getDisplayedValue());
+                || applicantHearingDuration != null) {
+            return applicantHearingDuration != null
+                ? format(APPLICANT_ESTIMATES, applicantHearingDuration.getDisplayedValue())
+                : ESTIMATES_NOT_PROVIDED;
         }
 
         return StringUtils.EMPTY;
@@ -1576,10 +1637,12 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         if (caseData.getGeneralAppRespondentSolicitors() != null
                 && caseData.getGeneralAppRespondentSolicitors().size() > 0) {
+            log.info("General app respondent has more than 0 solicitor(s) for caseId: {}", caseData.getCcdCaseReference());
             responseElementOptional1 = response1(caseData);
         }
         if (caseData.getGeneralAppRespondentSolicitors() != null
                 && caseData.getGeneralAppRespondentSolicitors().size() > 1) {
+            log.info("General app respondent has more than 1 solicitor(s) for caseId: {}", caseData.getCcdCaseReference());
             responseElementOptional2 = response2(caseData);
         }
         YesOrNo hasRespondent1PreferredLocation = hasPreferredLocation(responseElementOptional1);

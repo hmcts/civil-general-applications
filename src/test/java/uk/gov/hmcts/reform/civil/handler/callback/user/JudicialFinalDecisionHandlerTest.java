@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -17,7 +18,10 @@ import uk.gov.hmcts.reform.civil.enums.dq.ClaimantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.DefendantRepresentationType;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -32,7 +36,9 @@ import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderHe
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.AssistedOrderMadeDateHeardDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.finalorder.ClaimantDefendantRepresentation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.AssistedOrderFormGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -62,6 +68,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.HeardFromRepresentationTypes.CL
 @SpringBootTest(classes = {
     JudicialFinalDecisionHandler.class,
     JacksonAutoConfiguration.class,
+    GaForLipService.class,
 })
 class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
@@ -79,6 +86,12 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
     private DeadlinesCalculator deadlinesCalculator;
     @MockBean
     private IdamClient idamClient;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private static final String ON_INITIATIVE_SELECTION_TEST = "As this order was made on the court's own initiative, "
             + "any party affected by the order may apply to set aside, vary, or stay the order."
@@ -93,13 +106,15 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @BeforeEach
     void setUp() {
-
+        when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(7)))
             .thenReturn(localDatePlus7days);
         when(idamClient
                  .getUserInfo(any()))
-            .thenReturn(UserInfo.builder().name("John Doe").build());
+            .thenReturn(UserInfo.builder().givenName("John").familyName("Doe").build());
         when(deadlinesCalculator
                  .getJudicialOrderDeadlineDate(any(LocalDateTime.class), eq(14)))
             .thenReturn(localDatePlus14days);
@@ -118,6 +133,7 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
         CaseData caseData = CaseDataBuilder.builder()
                 .atStateClaimDraft()
                 .build().toBuilder()
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
                 .claimant1PartyName("Mr. John Rambo")
                 .defendant1PartyName("Mr. Sole Trader")
                 .build();
@@ -345,7 +361,9 @@ class JudicialFinalDecisionHandlerTest extends BaseCallbackHandlerTest {
             .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
         CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
             .build()
-            .toBuilder().finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .toBuilder()
+            .finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppDetailsOfOrder("order test")
             .assistedOrderMadeSelection(YES)
             .assistedOrderMadeDateHeardDetails(AssistedOrderMadeDateHeardDetails.builder().singleDateSelection(

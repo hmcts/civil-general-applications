@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.ElementUtils;
@@ -45,6 +47,8 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
     private final AssignCategoryId assignCategoryId;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+    private final GaForLipService gaForLipService;
 
     private final IdamClient idamClient;
 
@@ -57,16 +61,23 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
     private CallbackResponse submitDocuments(CallbackParams callbackParams) {
         CaseData caseData = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
+        String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         String userId = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString()).getUid();
         caseData = buildBundleData(caseData, userId);
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         String role = DocUploadUtils.getUserRole(caseData, userId);
         DocUploadUtils.addUploadDocumentByTypeToAddl(caseData, caseDataBuilder,
-                caseData.getUploadDocument(), role, true);
+                                                     caseData.getUploadDocument(), role, true);
 
         caseDataBuilder.uploadDocument(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_ADDL_DOCUMENTS)).build();
         CaseData updatedCaseData = caseDataBuilder.build();
+
+        // Generate Dashboard Notification for Lip Party
+        if (gaForLipService.isGaForLip(caseData)) {
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+        }
+
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
@@ -76,22 +87,22 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
         String role = DocUploadUtils.getUserRole(caseData, userId);
         if (Objects.nonNull(caseData.getUploadDocument())) {
             List<Element<UploadDocumentByType>> exBundle = caseData.getUploadDocument()
-                    .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> !x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .collect(Collectors.toList());
             List<Element<CaseDocument>> bundle = caseData.getUploadDocument()
-                    .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
-                            .contains(BUNDLE))
-                    .map(byType -> ElementUtils.element(CaseDocument.builder()
-                            .documentLink(byType.getValue().getAdditionalDocument())
-                            .documentName(byType.getValue().getDocumentType())
-                            .createdBy(role)
-                            .createdDatetime(LocalDateTime.now()).build()))
-                    .collect(Collectors.toList());
+                .stream().filter(x -> x.getValue().getDocumentType().toLowerCase()
+                    .contains(BUNDLE))
+                .map(byType -> ElementUtils.element(CaseDocument.builder()
+                                                        .documentLink(byType.getValue().getAdditionalDocument())
+                                                        .documentName(byType.getValue().getDocumentType())
+                                                        .createdBy(role)
+                                                        .createdDatetime(LocalDateTime.now()).build()))
+                .collect(Collectors.toList());
             assignCategoryId.assignCategoryIdToCollection(
-                    bundle,
-                    document -> document.getValue().getDocumentLink(),
-                    AssignCategoryId.APPLICATIONS);
+                bundle,
+                document -> document.getValue().getDocumentLink(),
+                AssignCategoryId.APPLICATIONS);
             if (Objects.nonNull(caseData.getGaAddlDocBundle())) {
                 bundle.addAll(caseData.getGaAddlDocBundle());
             }

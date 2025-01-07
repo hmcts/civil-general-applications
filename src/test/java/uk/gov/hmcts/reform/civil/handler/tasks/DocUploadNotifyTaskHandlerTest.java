@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.EvidenceUploadNotificationSearchService;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
@@ -49,20 +49,20 @@ public class DocUploadNotifyTaskHandlerTest {
 
     @Test
     void shouldNotSendMessageAndTriggerGaEvent_whenZeroCasesFound() {
-        when(searchService.getApplications()).thenReturn(List.of());
+        when(searchService.getApplications()).thenReturn(Set.of());
 
         handler.execute(externalTask, externalTaskService);
 
         verify(searchService).getApplications();
         verifyNoInteractions(coreCaseDataService);
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 
     @Test
     void shouldEmitBusinessProcessEvent_whenCasesFound() {
         long caseId = 1L;
         when(searchService.getApplications())
-                .thenReturn(List.of(CaseDetails.builder().build()));
+                .thenReturn(Set.of(CaseDetails.builder().build()));
 
         when(caseDetailsConverter.toCaseData(any()))
                 .thenReturn(CaseDataBuilder.builder().ccdCaseReference(caseId).build());
@@ -72,6 +72,6 @@ public class DocUploadNotifyTaskHandlerTest {
         verify(searchService).getApplications();
         verify(coreCaseDataService).triggerGaEvent(1L, GA_EVIDENCE_UPLOAD_CHECK,
                 Map.of());
-        verify(externalTaskService).complete(externalTask);
+        verify(externalTaskService).complete(any(), any());
     }
 }

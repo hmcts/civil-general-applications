@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,8 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDocumentBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -39,6 +41,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,6 +51,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.HEARING_NOTICE;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_APPLICATION;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_APPLICATION_LIP;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -73,7 +77,7 @@ class HearingFormGeneratorTest {
             .build();
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
 
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
@@ -133,7 +137,7 @@ class HearingFormGeneratorTest {
                  .uploadDocument(any(), any()))
             .thenReturn(CASE_DOCUMENT);
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
         Map<String, String> refMap = new HashMap<>();
         refMap.put("applicantSolicitor1Reference", "app1ref");
@@ -161,7 +165,7 @@ class HearingFormGeneratorTest {
                                                .build()).build())
             .build();
 
-        var templateData = generator.getTemplateData(caseData, "auth");
+        var templateData = generator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCourt()).isEqualTo("London");
         assertThat(templateData.getJudgeHearingLocation()).isEqualTo("sitename - location name - D12 8997");
     }
@@ -332,6 +336,66 @@ class HearingFormGeneratorTest {
     @Test
     void test_getTemplate() {
         CaseData caseData = CaseDataBuilder.builder().build();
-        assertThat(generator.getTemplate()).isEqualTo(HEARING_APPLICATION);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(HEARING_APPLICATION);
+    }
+
+    @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void test_getTemplate() {
+            assertThat(generator.getTemplate(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT)).isEqualTo(POST_JUDGE_HEARING_APPLICATION_LIP);
+        }
+
+        @Test
+        void whenJudgeMakeDecision_shouldGetHearingFormData() {
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_HEARING_APPLICATION_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_HEARING_APPLICATION_LIP.getDocumentTitle(), bytes));
+
+            when(documentManagementService
+                     .uploadDocument(any(), any()))
+                .thenReturn(CASE_DOCUMENT);
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+
+            Map<String, String> refMap = new HashMap<>();
+            refMap.put("applicantSolicitor1Reference", "app1ref");
+            refMap.put("respondentSolicitor1Reference", "resp1ref");
+            refMap.put("respondentSolicitor2Reference", "resp2ref");
+            Map<String, Object> caseDataContent = new HashMap<>();
+            caseDataContent.put("solicitorReferences", refMap);
+            CaseData mainCaseData = CaseDataBuilder.builder().getMainCaseDataWithDetails(
+                true,
+                true,
+                true, true).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(mainCaseData);
+
+            CaseDetails caseDetails = CaseDetails.builder().data(caseDataContent).build();
+            when(coreCaseDataService.getCase(
+                anyLong()
+            )).thenReturn(caseDetails);
+
+            CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YES)
+                .parentClaimantIsApplicant(YES)
+                .gaHearingNoticeDetail(GAHearingNoticeDetail
+                                           .builder()
+                                           .hearingDuration(GAHearingDuration.OTHER)
+                                           .channel(GAJudicialHearingType.IN_PERSON)
+                                           .hearingLocation(
+                                               DynamicList.builder()
+                                                   .value(selectedLocation).listItems(listItems)
+                                                   .build()).build())
+                .build();
+
+            var templateData = generator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+            assertThat(templateData.getCourt()).isEqualTo("London");
+            assertThat(templateData.getJudgeHearingLocation()).isEqualTo("sitename - location name - D12 8997");
+            assertEquals("respondent1partyname", templateData.getPartyName());
+            assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1());
+            assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2());
+            assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3());
+            assertEquals("respondent1posttown", templateData.getPartyAddressPostTown());
+            assertEquals("respondent1postcode", templateData.getPartyAddressPostCode());
+        }
     }
 }

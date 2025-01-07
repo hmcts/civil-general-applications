@@ -2,7 +2,14 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.payment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,17 +20,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
@@ -39,9 +43,12 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
     private static final List<CaseEvent> EVENTS = Collections.singletonList(MAKE_PAYMENT_SERVICE_REQ_GASPEC);
     private static final String ERROR_MESSAGE = "Technical error occurred";
     private static final String TASK_ID = "GeneralApplicationPaymentServiceReq";
+    private static final String FREE_KEYWORD = "FREE";
 
     private final PaymentsService paymentsService;
     private final GeneralAppFeesService feeService;
+    private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
     private final ObjectMapper objectMapper;
     private final Time time;
 
@@ -70,7 +77,8 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             log.info("calling payment service request " + caseData.getCcdCaseReference());
             String serviceRequestReference = GeneralAppFeesService.FREE_REF;
             boolean freeGa = feeService.isFreeApplication(caseData);
-            if (!freeGa && !isHelpWithFees(caseData)) {
+            boolean freeGaLip = isFreeGaLip(caseData);
+            if (!freeGa && !isHelpWithFees(caseData) && !freeGaLip) {
                 serviceRequestReference = paymentsService.createServiceRequest(caseData, authToken)
                         .getServiceRequestReference();
             }
@@ -84,7 +92,7 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
                                           .fee(caseData.getGeneralAppPBADetails().getFee())
                                           .serviceReqReference(serviceRequestReference).build())
                 .build();
-            if (freeGa) {
+            if (freeGa || freeGaLip) {
                 PaymentDetails paymentDetails = ofNullable(pbaDetails.getPaymentDetails())
                         .map(PaymentDetails::toBuilder)
                         .orElse(PaymentDetails.builder())
@@ -117,4 +125,10 @@ public class PaymentServiceRequestHandler extends CallbackHandler {
             .isPresent();
     }
 
+    protected boolean isFreeGaLip(CaseData caseData) {
+        return (featureToggleService.isGaForLipsEnabled() && gaForLipService.isGaForLip(caseData)
+            && Objects.nonNull(caseData.getGeneralAppPBADetails())
+            && Objects.nonNull(caseData.getGeneralAppPBADetails().getFee())
+            && (FREE_KEYWORD.equalsIgnoreCase(caseData.getGeneralAppPBADetails().getFee().getCode())));
+    }
 }

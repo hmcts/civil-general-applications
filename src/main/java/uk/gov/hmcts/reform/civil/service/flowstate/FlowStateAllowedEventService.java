@@ -20,24 +20,31 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_GENERAL_APPLIC
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_BUSINESS_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_HEARING_SCHEDULED_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FULL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTICE_DOCUMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.HEARING_SCHEDULED_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INVALID_HWF_REFERENCE_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAIN_CASE_CLOSED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_PAYMENT_SERVICE_REQ_GASPEC;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MORE_INFORMATION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_GENERAL_APPLICATION_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_CLAIMANT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_FEE_VALUE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.OBTAIN_ADDITIONAL_PAYMENT_REF;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_JUDGE;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REFER_TO_LEGAL_ADVISOR;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_APPLICATION_URGENT_LIP;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_DIRECTIONS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
@@ -45,6 +52,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_APPLICANT_NOTIF
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_GA_BUSINESS_PROCESS;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.START_RESPONDENT_NOTIFICATION_PROCESS_MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.TRIGGER_LOCATION_UPDATE;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_HELP_WITH_FEE_NUMBER_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.VALIDATE_FEE_GASPEC;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
@@ -79,6 +87,13 @@ public class FlowStateAllowedEventService {
                       REFER_TO_LEGAL_ADVISOR,
                       TRIGGER_LOCATION_UPDATE,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
+                      NO_REMISSION_HWF_GA,
+                      INVALID_HWF_REFERENCE_GA,
+                      UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                      MORE_INFORMATION_HWF_GA,
+                      FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
+                      FEE_PAYMENT_OUTCOME_GA,
                       MAIN_CASE_CLOSED)
         ),
 
@@ -87,6 +102,7 @@ public class FlowStateAllowedEventService {
             List.of(START_GA_BUSINESS_PROCESS,
                     NOTIFY_GENERAL_APPLICATION_RESPONDENT,
                     RESPOND_TO_APPLICATION,
+                    RESPOND_TO_APPLICATION_URGENT_LIP,
                     MAKE_DECISION,
                     APPROVE_CONSENT_ORDER,
                     MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
@@ -109,6 +125,7 @@ public class FlowStateAllowedEventService {
                     START_GA_BUSINESS_PROCESS,
                     NOTIFY_GENERAL_APPLICATION_RESPONDENT,
                     RESPOND_TO_APPLICATION,
+                    RESPOND_TO_APPLICATION_URGENT_LIP,
                     MAKE_DECISION,
                     REFER_TO_JUDGE,
                     REFER_TO_LEGAL_ADVISOR,
@@ -140,9 +157,17 @@ public class FlowStateAllowedEventService {
               List.of(RESPOND_TO_JUDGE_ADDITIONAL_INFO,
                       APPLICATION_PROCEEDS_IN_HERITAGE,
                       RESPOND_TO_APPLICATION,
+                      RESPOND_TO_APPLICATION_URGENT_LIP,
                       MAKE_DECISION,
                       TRIGGER_LOCATION_UPDATE,
                       MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID,
+                      NO_REMISSION_HWF_GA,
+                      INVALID_HWF_REFERENCE_GA,
+                      UPDATE_HELP_WITH_FEE_NUMBER_GA,
+                      MORE_INFORMATION_HWF_GA,
+                      FULL_REMISSION_HWF_GA,
+                      PARTIAL_REMISSION_HWF_GA,
+                      FEE_PAYMENT_OUTCOME_GA,
                       MAIN_CASE_CLOSED)
         ),
 

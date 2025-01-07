@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 
 import java.time.LocalDate;
 
@@ -52,7 +52,7 @@ class ConsentOrderGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
     @Autowired
@@ -87,7 +87,7 @@ class ConsentOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(CONSENT_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(CONSENT_ORDER_FORM.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
         consentOrderGenerator.generate(caseData, BEARER_TOKEN);
 
         verify(documentManagementService).uploadDocument(
@@ -103,7 +103,7 @@ class ConsentOrderGeneratorTest {
         CaseData caseData = CaseDataBuilder.builder().consentOrderApplication().build().toBuilder().isMultiParty(YES)
             .build();
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
         var templateData = consentOrderGenerator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_GeneralOrder(templateData, caseData);
     }
@@ -132,7 +132,7 @@ class ConsentOrderGeneratorTest {
             .isMultiParty(NO)
             .build();
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
         var templateData = consentOrderGenerator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_GeneralOrder_1v1(templateData, caseData);
     }

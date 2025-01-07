@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -28,10 +29,12 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
@@ -56,6 +59,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
@@ -179,6 +183,10 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private IdamClient idamClient;
+    @MockBean
+    private CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    private CoreCaseDataService coreCaseDataService;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -205,6 +213,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     @BeforeEach
     void setUp() {
         when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+        when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
     }
 
     @Test
@@ -220,7 +230,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             when(deadlinesCalculator.getJudicialOrderDeadlineDate(any(), anyInt())).thenReturn(localDatePlus7days);
             when(idamClient
                      .getUserInfo(any()))
-                .thenReturn(UserInfo.builder().name("John Doe").build());
+                .thenReturn(UserInfo.builder().givenName("John").familyName("Doe").build());
         }
 
         YesOrNo hasRespondentResponseVul = NO;
@@ -620,6 +630,42 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void testAboutToStartForHearingDetails_noTimeEstimates() {
+
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CaseData caseData = getHearingOrderApplnAndResp1and2(types, NO, YES, YES);
+            List<Element<GARespondentResponse>> respondentResponses = new ArrayList<>();
+            caseData.getRespondentsResponses().stream().forEach(
+                response -> respondentResponses.add(Element.<GARespondentResponse>builder()
+                    .id(response.getId())
+                    .value(response.getValue().toBuilder()
+                         .gaHearingDetails(response.getValue().getGaHearingDetails().toBuilder()
+                             .hearingDuration(null).build())
+                         .build())
+                    .build()));
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .respondentsResponses(respondentResponses)
+                .build();
+            CallbackParams params = callbackParamsOf(
+                caseData,
+                ABOUT_TO_START
+            );
+            String expectedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expectedJudicialTimeEstimateText);
+        }
+
+        @Test
         void shouldReturnEmptyStringForNullSupportReq() {
 
             List<Element<GARespondentResponse>> respondentResponse = null;
@@ -671,6 +717,28 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(expecetedJudicialSupportReqText);
 
+        }
+
+        @Test
+        void testAboutToStartForHearingScreenForUrgentApp_noTimeEstimates() {
+
+            String expecetedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+
+            CaseData caseData = getCaseDateForUrgentApp();
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
         }
 
         @Test
@@ -768,6 +836,40 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             assertThat(responseCaseData.getJudgeHearingSupportReqText1())
                 .isEqualTo(expecetedJudicialSupportReqText);
 
+        }
+
+        @Test
+        void shouldMatchHearingReqForDifferentPreferences_noTimeEstimates() {
+            List<GeneralApplicationTypes> types = List.of(
+                (GeneralApplicationTypes.STAY_THE_CLAIM), (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
+            CaseData caseData = getCaseDateWithHearingScreeen1V1(types, NO, YES);
+            List<Element<GARespondentResponse>> respondentResponses = new ArrayList<>();
+            caseData.getRespondentsResponses().stream().forEach(
+                response -> respondentResponses.add(Element.<GARespondentResponse>builder()
+                    .id(response.getId())
+                    .value(response.getValue().toBuilder()
+                        .gaHearingDetails(response.getValue().getGaHearingDetails().toBuilder()
+                            .hearingDuration(null).build())
+                        .build())
+                    .build()));
+            caseData = caseData.toBuilder()
+                .generalAppHearingDetails(
+                    caseData.getGeneralAppHearingDetails().toBuilder()
+                        .hearingDuration(null)
+                        .build())
+                .respondentsResponses(respondentResponses)
+                .build();
+
+            String expecetedJudicialTimeEstimateText = "Applicant and respondent have not provided estimates";
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            assertThat(response).isNotNull();
+            GAJudgesHearingListGAspec responseCaseData = getJudicialHearingOrder(response);
+
+            assertThat(responseCaseData.getJudgeHearingTimeEstimateText1())
+                .isEqualTo(expecetedJudicialTimeEstimateText);
         }
 
         @Test
@@ -3446,6 +3548,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                   YesOrNo hasRespondentResponseVul) {
 
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppHearingDetails(GAHearingDetails.builder()
                                           .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
@@ -3468,6 +3571,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                       YesOrNo hasRespondentResponseVul) {
 
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppHearingDetails(GAHearingDetails.builder()
                                           .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
@@ -3489,6 +3593,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
                                                  YesOrNo hasRespondentResponseVul) {
 
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppHearingDetails(GAHearingDetails.builder()
                                     .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
@@ -3536,6 +3641,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             .add(element(GASolicitorDetailsGAspec.builder().id("2L").build()));
 
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppHearingDetails(GAHearingDetails.builder()
                                     .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
@@ -3586,6 +3692,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
             .add(element(GASolicitorDetailsGAspec.builder().id("2L").build()));
 
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .hearingDetailsResp(GAHearingDetails.builder()
                                     .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
@@ -3722,6 +3829,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder()
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1").build())
             .parentClaimantIsApplicant(parentClaimantIsApplicant)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())

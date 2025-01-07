@@ -43,9 +43,10 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.ListGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -87,13 +88,15 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
     private static final String DUMMY_TELEPHONE_NUM = "234345435435";
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
     @MockBean
     ListGeneratorService listGeneratorService;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private GaForLipService gaForLipService;
     @Autowired
     ObjectMapper objectMapper;
 
@@ -184,6 +187,64 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
         assertThatRespondentFieldsAreCorrect_DraftApp(templateData, caseData);
+    }
+
+    @Test
+    void shouldGenerateDocumentWithApplicantAndRespondent1ResponseJudgeUncloaks() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        CaseData caseData = getCase(respondentSols, NO).toBuilder()
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+            .applicationIsCloaked(NO)
+            .build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsWithNotice()).isEqualTo(YES);
+    }
+
+    @Test
+    void shouldNotGenerateDocumentWithApplicantAndRespondent1ResponseWhenApplnCloaked() {
+        List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+        GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+            .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+
+        respondentSols.add(element(respondent1));
+        CaseData caseData = getCase(respondentSols, NO).toBuilder()
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
+            .applicationIsCloaked(YES)
+            .build();
+
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(GENERAL_APPLICATION_DRAFT)))
+            .thenReturn(new DocmosisDocument(GENERAL_APPLICATION_DRAFT.getDocumentTitle(), bytes));
+
+        when(listGeneratorService.applicationType(caseData)).thenReturn("Extend time");
+        when(listGeneratorService.claimantsName(caseData)).thenReturn("Test Claimant1 Name");
+        when(listGeneratorService.defendantsName(caseData)).thenReturn("Test Defendant1 Name");
+        Map<String, String> refMap = new HashMap<>();
+        refMap.put("applicantSolicitor1Reference", "app1ref");
+        refMap.put("respondentSolicitor1Reference", "resp1ref");
+        Map<String, Object> caseDataContent = new HashMap<>();
+        caseDataContent.put("solicitorReferences", refMap);
+        CaseDetails parentCaseDetails = CaseDetails.builder().data(caseDataContent).build();
+        when(coreCaseDataService.getCase(PARENT_CCD_REF)).thenReturn(parentCaseDetails);
+        var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
+        assertThat(templateData.getIsWithNotice()).isEqualTo(NO);
     }
 
     @Test

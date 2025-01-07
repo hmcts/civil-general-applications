@@ -24,6 +24,9 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
+import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RespondForInformationGenerator;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -34,7 +37,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
@@ -58,6 +64,13 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
     CaseDetailsConverter caseDetailsConverter;
     @MockBean
     IdamClient idamClient;
+    @MockBean
+    RespondForInformationGenerator respondForInformationGenerator;
+    @MockBean
+    DocUploadDashboardNotificationService docUploadDashboardNotificationService;
+
+    @MockBean
+    GaForLipService gaForLipService;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -72,6 +85,8 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
                 .sub(DUMMY_EMAIL)
                 .uid(APP_UID)
                 .build());
+        when(respondForInformationGenerator.generate(any(), anyString(), anyString()))
+                .thenReturn(CaseDocument.builder().documentLink(Document.builder().build()).build());
     }
 
     @Test
@@ -95,7 +110,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         generalAppAddlnInfoUpload.add(element(document1));
         generalAppAddlnInfoUpload.add(element(document2));
 
-        CaseData caseData = getCase(generalAppAddlnInfoUpload, null);
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, null, null);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -132,7 +147,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         gaAddlnInfoList.add(element(document2));
 
         CaseData caseData = getCase(generalAppAddlnInfoUpload,
-                DocUploadUtils.prepareDocuments(gaAddlnInfoList, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_ADDITIONAL_INFO));
+                DocUploadUtils.prepareDocuments(gaAddlnInfoList, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_ADDITIONAL_INFO), null);
 
         Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
         });
@@ -147,19 +162,69 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
     }
 
+    @Test
+    void shouldConvertToDocAndReturnNullAddlnInfoText() {
+        CaseData caseData = getCase(null, null, "more info");
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        var responseCaseData = getCaseData(response);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(1);
+        assertThat(responseCaseData.getGeneralAppAddlnInfoText()).isEqualTo(null);
+    }
+
+    @Test
+    void shouldCreateDashboardNotificationIfGaForLipIsTrue() {
+
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+
+        Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
+
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, null, null);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        when(gaForLipService.isGaForLip(any(CaseData.class))).thenReturn(true);
+
+        handler.handle(params);
+        verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
+
+    }
+
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         return responseCaseData;
     }
 
     private CaseData getCase(List<Element<Document>> generalAppAddlnInfoUpload,
-                             List<Element<CaseDocument>> gaAddlDoc) {
+                             List<Element<CaseDocument>> gaAddlDoc,
+                             String generalAppAddlnInfoText) {
         List<GeneralApplicationTypes> types = List.of(
             (GeneralApplicationTypes.SUMMARY_JUDGEMENT));
         return CaseData.builder().parentClaimantIsApplicant(YES)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                         .email("abc@gmail.com").id(APP_UID).build())
             .generalAppAddlnInfoUpload(generalAppAddlnInfoUpload)
+            .generalAppAddlnInfoText(generalAppAddlnInfoText)
             .gaAddlDoc(gaAddlDoc)
             .generalAppRespondent1Representative(
                 GARespondentRepresentative.builder()

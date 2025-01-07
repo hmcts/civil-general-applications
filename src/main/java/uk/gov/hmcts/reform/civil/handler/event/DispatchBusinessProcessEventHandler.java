@@ -22,6 +22,7 @@ public class DispatchBusinessProcessEventHandler {
     public void dispatchBusinessProcess(DispatchBusinessProcessEvent event) {
         BusinessProcess businessProcess = event.getBusinessProcess();
         if (businessProcess.getStatus() == READY) {
+            log.info("{} for caseId: {}", event, event.getCaseId());
             coreCaseDataService.triggerEvent(event.getCaseId(), DISPATCH_BUSINESS_PROCESS_GASPEC);
         }
     }

@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -63,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -71,6 +73,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.ASSISTED_ORDER_FORM;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP;
 
 @SpringBootTest(classes = {
     AssistedOrderFormGenerator.class
@@ -2071,7 +2074,7 @@ class AssistedOrderFormGeneratorTest {
 
     @Test
     void test_getTemplate() {
-        assertThat(generator.getTemplate()).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
+        assertThat(generator.getTemplate(FlowFlag.ONE_RESPONDENT_REPRESENTATIVE)).isEqualTo(DocmosisTemplates.ASSISTED_ORDER_FORM);
     }
 
     @Test
@@ -2098,7 +2101,10 @@ class AssistedOrderFormGeneratorTest {
     @Test
     void shouldGenerateAssistedOrderDocument() {
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("Reading")
+                            .build());
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(ASSISTED_ORDER_FORM)))
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
 
@@ -2118,7 +2124,7 @@ class AssistedOrderFormGeneratorTest {
             BEARER_TOKEN,
             new PDF(any(), any(), DocumentType.GENERAL_ORDER));
 
-        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        var templateData = generator.getTemplateData(null, caseData, BEARER_TOKEN, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
         assertThat(templateData.getAddress()).isEqualTo("london court");
         assertThat(templateData.getSiteName()).isEqualTo("testing");
@@ -2138,7 +2144,10 @@ class AssistedOrderFormGeneratorTest {
             .thenReturn(new DocmosisDocument(ASSISTED_ORDER_FORM.getDocumentTitle(), bytes));
 
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder()
+                            .epimmsId("2")
+                            .externalShortName("London")
+                            .build());
         CaseData caseData = getSampleGeneralApplicationCaseData(YES).toBuilder()
             .caseManagementLocation(GACaseLocation.builder().siteName("testing")
                                         .address("london court")
@@ -2154,7 +2163,7 @@ class AssistedOrderFormGeneratorTest {
             BEARER_TOKEN,
             new PDF(any(), any(), DocumentType.GENERAL_ORDER));
 
-        var templateData = generator.getTemplateData(caseData, BEARER_TOKEN);
+        var templateData = generator.getTemplateData(null, caseData, BEARER_TOKEN, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
         assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
         assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
         assertThat(templateData.getClaimant2Name()).isEqualTo(caseData.getClaimant2PartyName());
@@ -2238,5 +2247,62 @@ class AssistedOrderFormGeneratorTest {
                                                  .build())
             .build();
 
+    }
+
+    @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void test_getTemplate() {
+            assertThat(generator.getTemplate(FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT)).isEqualTo(DocmosisTemplates.POST_JUDGE_ASSISTED_ORDER_FORM_LIP);
+        }
+
+        @Test
+        void shouldGenerateAssistedOrderDocument() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder()
+                                .epimmsId("2")
+                                .externalShortName("Reading")
+                                .build());
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_ASSISTED_ORDER_FORM_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_ASSISTED_ORDER_FORM_LIP.getDocumentTitle(), bytes));
+
+            CaseData caseData = getSampleGeneralApplicationCaseData(NO).toBuilder()
+                .parentClaimantIsApplicant(YesOrNo.YES)
+                .caseManagementLocation(GACaseLocation.builder().siteName("testing")
+                                            .address("london court")
+                                            .baseLocation("1")
+                                            .postcode("BA 117").build())
+                .judgeTitle("John Doe")
+                .claimant2PartyName(null).build();
+
+            generator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            verify(documentGeneratorService).generateDocmosisDocument(any(AssistedOrderForm.class),
+                                                                      eq(POST_JUDGE_ASSISTED_ORDER_FORM_LIP));
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.GENERAL_ORDER));
+
+            var templateData = generator
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThat(templateData.getCostsProtection()).isEqualTo(YesOrNo.YES);
+            assertThat(templateData.getAddress()).isEqualTo("london court");
+            assertThat(templateData.getSiteName()).isEqualTo("testing");
+            assertThat(templateData.getPostcode()).isEqualTo("BA 117");
+            assertThat(templateData.getCourtLocation()).isEqualTo("Reading");
+            assertThat(templateData.getClaimant1Name()).isEqualTo(caseData.getClaimant1PartyName());
+            assertThat(templateData.getClaimant2Name()).isNull();
+            assertThat(templateData.getDefendant1Name()).isEqualTo(caseData.getDefendant1PartyName());
+            assertThat(templateData.getDefendant2Name()).isNull();
+            assertThat(templateData.getJudgeNameTitle()).isEqualTo("John Doe");
+            assertEquals("respondent1partyname", templateData.getPartyName());
+            assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1());
+            assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2());
+            assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3());
+            assertEquals("respondent1posttown", templateData.getPartyAddressPostTown());
+            assertEquals("respondent1postcode", templateData.getPartyAddressPostCode());
+        }
     }
 }

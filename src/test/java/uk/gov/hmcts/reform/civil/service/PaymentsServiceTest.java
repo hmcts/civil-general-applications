@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
@@ -20,7 +21,7 @@ import uk.gov.hmcts.reform.payments.request.PBAServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PBAServiceRequestResponse;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.civil.model.ContactInformation;
-import uk.gov.hmcts.reform.civil.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,7 +50,7 @@ class PaymentsServiceTest {
 
     private static final PaymentServiceResponse PAYMENT_SERVICE_RESPONSE = PaymentServiceResponse.builder()
         .serviceRequestReference("RC-1234-1234-1234-1234").build();
-    private static final Organisation ORGANISATION = Organisation.builder()
+    private static final OrganisationResponse ORGANISATION_RESPONSE = OrganisationResponse.builder()
         .name("test org")
         .contactInformation(List.of(ContactInformation.builder().build()))
         .build();
@@ -75,7 +76,7 @@ class PaymentsServiceTest {
         given(paymentsConfiguration.getSiteId()).willReturn(SITE_ID);
         given(paymentsConfiguration.getSpecSiteId()).willReturn(SPEC_SITE_ID);
         given(paymentsClient.createPbaPayment(any(), any(), any())).willReturn(PAYMENT_DTO);
-        given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION));
+        given(organisationService.findOrganisationById(any())).willReturn(Optional.of(ORGANISATION_RESPONSE));
     }
 
     @Test
@@ -197,6 +198,23 @@ class PaymentsServiceTest {
     }
 
     @Test
+    void validateRequestShouldNotThrowAnError_whenApplicantSolicitorOrgDetailsAreNotSetForLiPApplicant() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .fee(Fee.builder()
+                                               .calculatedAmountInPence(BigDecimal.TEN)
+                                               .version("version")
+                                               .code("code").build()).build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build())
+            .build();
+
+        paymentsService.validateRequest(caseData);
+
+        assertThat(caseData).isNotNull();
+    }
+
+    @Test
     void shouldCreateCreditAccountPayment_whenValidCaseDetails() {
         CaseData caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
 
@@ -213,7 +231,7 @@ class PaymentsServiceTest {
             .accountNumber("PBA0078095")
             .amount(caseData.getGeneralAppPBADetails().getFee().toFeeDto().getCalculatedAmount())
             .customerReference(CUSTOMER_REFERENCE)
-            .organisationName(ORGANISATION.getName())
+            .organisationName(ORGANISATION_RESPONSE.getName())
             .idempotencyKey("2634946490")
             .build();
     }

@@ -2,12 +2,12 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
 
@@ -25,23 +26,20 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.CASE_PROGRESSION;
 
-@SpringBootTest(classes = {
-    UpdatePaymentStatusService.class,
-    JacksonAutoConfiguration.class
-
-})
+@ExtendWith(MockitoExtension.class)
 class UpdatePaymentStatusServiceTest {
 
-    @MockBean
+    @Mock
     CaseDetailsConverter caseDetailsConverter;
     @Mock
     ObjectMapper objectMapper;
-    @MockBean
+    @Mock
     private CoreCaseDataService coreCaseDataService;
-    @Autowired
+    @InjectMocks
     UpdatePaymentStatusService updatePaymentStatusService;
 
     public static final String BUSINESS_PROCESS = "JUDICIAL_REFERRAL";
@@ -49,7 +47,7 @@ class UpdatePaymentStatusServiceTest {
     public static final String TOKEN = "1234";
 
     @Test
-    public void shouldSubmitCitizenFeePaymentEvent() {
+    public void shouldSubmitCitizenApplicationFeePaymentEvent() {
 
         CaseData caseData = CaseData.builder()
             .ccdState(CASE_PROGRESSION)
@@ -57,9 +55,9 @@ class UpdatePaymentStatusServiceTest {
                                  .status(BusinessProcessStatus.READY)
                                  .camundaEvent(BUSINESS_PROCESS)
                                  .build())
-            .generalAppPaymentDetails(PaymentDetails.builder()
-                                          .customerReference("RC-1604-0739-2145-4711")
-                                          .build())
+            .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(PaymentDetails.builder()
+                    .customerReference("RC-1604-0739-2145-4711")
+                    .build()).build())
             .build();
         CaseDetails caseDetails = buildCaseDetails(caseData);
 
@@ -67,14 +65,47 @@ class UpdatePaymentStatusServiceTest {
         when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(startEventResponse(
             caseDetails,
-            CITIZEN_GENERAL_APP_PAYMENT
+            INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT
         ));
         when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
 
         updatePaymentStatusService.updatePaymentStatus(String.valueOf(CASE_ID), getCardPaymentStatusResponse());
 
         verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
-        verify(coreCaseDataService).startUpdate(String.valueOf(CASE_ID), CITIZEN_GENERAL_APP_PAYMENT);
+        verify(coreCaseDataService).startUpdate(String.valueOf(CASE_ID), INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT);
+        verify(coreCaseDataService).submitUpdate(any(), any());
+
+    }
+
+    @Test
+    public void shouldSubmitCitizenAdditionalFeePaymentEvent() {
+
+        CaseData caseData = CaseData.builder()
+            .ccdState(CASE_PROGRESSION)
+            .businessProcess(BusinessProcess.builder()
+                                 .status(BusinessProcessStatus.READY)
+                                 .camundaEvent(BUSINESS_PROCESS)
+                                 .build())
+            .generalAppPBADetails(GAPbaDetails.builder().additionalPaymentDetails(PaymentDetails.builder()
+                                                                            .customerReference("RC-1604-0739-2145-4711")
+                                                                            .build())
+                                      .additionalPaymentServiceRef("2023-1701090705600").build())
+            .applicationFeeAmountInPence(new BigDecimal("10000"))
+            .build();
+        CaseDetails caseDetails = buildCaseDetails(caseData);
+
+        when(coreCaseDataService.getCase(CASE_ID)).thenReturn(caseDetails);
+        when(caseDetailsConverter.toCaseData(caseDetails)).thenReturn(caseData);
+        when(coreCaseDataService.startUpdate(any(), any())).thenReturn(startEventResponse(
+            caseDetails,
+            MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID
+        ));
+        when(coreCaseDataService.submitUpdate(any(), any())).thenReturn(caseData);
+
+        updatePaymentStatusService.updatePaymentStatus(String.valueOf(CASE_ID), getCardPaymentStatusResponse());
+
+        verify(coreCaseDataService, times(1)).getCase(Long.valueOf(CASE_ID));
+        verify(coreCaseDataService).startUpdate(String.valueOf(CASE_ID), MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID);
         verify(coreCaseDataService).submitUpdate(any(), any());
 
     }

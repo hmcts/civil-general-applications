@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.exceptions.CompleteTaskException;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -35,9 +36,11 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -46,6 +49,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
 import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_FLAGS;
+import static uk.gov.hmcts.reform.civil.handler.tasks.BaseExternalTaskHandler.FLOW_STATE;
 
 @SpringBootTest(classes = {
     ApplicationProcessCaseEventTaskHandler.class,
@@ -98,7 +102,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference(PARENT_CASE_ID).build())
                 .build();
             VariableMap variables = Variables.createVariables();
-            variables.putValue(BaseExternalTaskHandler.FLOW_STATE, "MAIN.DRAFT");
+            variables.putValue(FLOW_STATE, "MAIN.DRAFT");
             variables.putValue(FLOW_FLAGS, Map.of());
             variables.putValue("generalAppParentCaseLink", PARENT_CASE_ID);
 
@@ -134,7 +138,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 eq(errorMessage),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -170,7 +174,7 @@ class ApplicationProcessCaseEventTaskHandlerTest {
                 eq(String.format("[%s] during [%s] to [%s] [%s]: []", status, requestType, exampleUrl, errorMessage)),
                 anyString(),
                 eq(2),
-                eq(1000L)
+                eq(300000L)
             );
         }
 
@@ -184,11 +188,14 @@ class ApplicationProcessCaseEventTaskHandlerTest {
             CaseDetails caseDetails = CaseDetailsBuilder.builder().data(caseData).build();
             when(coreCaseDataService.startGaUpdate(any(), any()))
                 .thenReturn(StartEventResponse.builder().caseDetails(caseDetails).build());
-
+            when(coreCaseDataService.submitGaUpdate(any(), any()))
+                .thenReturn(CaseData.builder().generalAppParentCaseLink(
+                    GeneralAppParentCaseLink.builder().caseReference("123").build()).build());
             doThrow(new NotFoundException(errorMessage, new RestException(null, null, null)))
-                        .when(externalTaskService).complete(mockTask);
+                .when(externalTaskService).complete(any(), anyMap());
 
-            applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService);
+            assertThrows(CompleteTaskException.class,
+                         () -> applicationProcessCaseEventTaskHandler.execute(mockTask, externalTaskService));
 
             verify(externalTaskService, never()).handleFailure(
                 any(ExternalTask.class),

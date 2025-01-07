@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseRole;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.civil.model.Organisation;
+import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 
 import java.util.Optional;
 
@@ -41,11 +41,12 @@ public class AssignCaseSupportController {
     public void assignCase(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
                            @PathVariable("caseId") String caseId,
                            @PathVariable("caseRole") Optional<CaseRole> caseRole) {
+        log.info("Assign caseId: {}", caseId);
         String userId = idamClient.getUserInfo(authorisation).getUid();
         boolean isCitizen = !caseRole.map(CaseRole::isProfessionalRole).orElse(false);
 
         String organisationId = isCitizen ? null : organisationService.findOrganisation(authorisation)
-            .map(Organisation::getOrganisationIdentifier).orElse(null);
+            .map(OrganisationResponse::getOrganisationIdentifier).orElse(null);
 
         coreCaseUserService.assignCase(
             caseId,

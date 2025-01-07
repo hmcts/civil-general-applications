@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.tasks;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -12,24 +13,26 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
-public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskHandler {
+public class ApplicationProcessCaseEventTaskHandler extends BaseExternalTaskHandler {
 
-    private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
-    private final ObjectMapper mapper;
     private final StateFlowEngine stateFlowEngine;
-    private CaseData data;
+    private final CoreCaseDataService coreCaseDataService;
+    private final ObjectMapper mapper;
 
     @Override
-    public void handleTask(ExternalTask externalTask) {
+    public ExternalTaskData handleTask(ExternalTask externalTask) {
+        log.info("Starting handleTask for ExternalTask ID: {}", externalTask.getId());
         ExternalTaskInput variables = mapper.convertValue(externalTask.getAllVariables(), ExternalTaskInput.class);
         String generalApplicationCaseId = variables.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService.startGaUpdate(generalApplicationCaseId,
@@ -38,16 +41,19 @@ public class ApplicationProcessCaseEventTaskHandler implements BaseExternalTaskH
         BusinessProcess businessProcess = startEventData.getBusinessProcess();
         businessProcess.updateActivityId(externalTask.getActivityId());
         CaseDataContent caseDataContent = caseDataContent(startEventResponse, businessProcess);
-        data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        var data = coreCaseDataService.submitGaUpdate(generalApplicationCaseId, caseDataContent);
+        log.info("Successfully submitted update for caseId: {}", generalApplicationCaseId);
+        return ExternalTaskData.builder().caseData(data).build();
     }
 
     @Override
-    public VariableMap getVariableMap() {
+    public VariableMap getVariableMap(ExternalTaskData externalTaskData) {
+        var caseData = externalTaskData.caseData().orElseThrow();
         VariableMap variables = Variables.createVariables();
-        var stateFlow = stateFlowEngine.evaluate(data);
+        var stateFlow = stateFlowEngine.evaluate(caseData);
         variables.putValue(FLOW_STATE, stateFlow.getState().getName());
         variables.putValue(FLOW_FLAGS, stateFlow.getFlags());
-        variables.putValue("generalAppParentCaseLink", data.getGeneralAppParentCaseLink().getCaseReference());
+        variables.putValue("generalAppParentCaseLink", caseData.getGeneralAppParentCaseLink().getCaseReference());
         return variables;
     }
 

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DISPATCH_BUSINESS_PRO
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.DISPATCHED;
 import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.READY;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DispatchBusinessProcessCallbackHandler extends CallbackHandler {
@@ -45,6 +47,7 @@ public class DispatchBusinessProcessCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse checkIfBusinessProcessStarted(CallbackParams callbackParams) {
+        log.info("Check if business process started for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData caseData = callbackParams.getCaseData();
         List<String> errors = new ArrayList<>();
 
@@ -58,6 +61,7 @@ public class DispatchBusinessProcessCallbackHandler extends CallbackHandler {
     }
 
     private CallbackResponse dispatchBusinessProcess(CallbackParams callbackParams) {
+        log.info("Dispatch business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData caseData = callbackParams.getCaseData();
         BusinessProcess businessProcess = caseData.getBusinessProcess();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();

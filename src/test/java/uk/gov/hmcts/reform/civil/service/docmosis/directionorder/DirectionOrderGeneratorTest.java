@@ -29,7 +29,8 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -48,6 +49,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DIRECTION_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DIRECTION_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
 @ExtendWith(SpringExtension.class)
@@ -62,7 +64,7 @@ class DirectionOrderGeneratorTest {
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
     @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
+    private SecuredDocumentManagementService documentManagementService;
     @MockBean
     private DocumentGeneratorService documentGeneratorService;
     @Autowired
@@ -75,9 +77,9 @@ class DirectionOrderGeneratorTest {
     private GeneralAppLocationRefDataService generalAppLocationRefDataService;
 
     private static List<LocationRefData> locationRefData = Arrays
-        .asList(LocationRefData.builder().epimmsId("1").venueName("Reading").build(),
-                LocationRefData.builder().epimmsId("2").venueName("London").build(),
-                LocationRefData.builder().epimmsId("3").venueName("Manchester").build());
+        .asList(LocationRefData.builder().epimmsId("1").externalShortName("Reading").build(),
+                LocationRefData.builder().epimmsId("2").externalShortName("London").build(),
+                LocationRefData.builder().epimmsId("3").externalShortName("Manchester").build());
 
     @BeforeEach
     public void setUp() {
@@ -91,7 +93,7 @@ class DirectionOrderGeneratorTest {
         when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(DIRECTION_ORDER)))
             .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
         when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
         CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
 
         directionOrderGenerator.generate(caseData, BEARER_TOKEN);
@@ -138,9 +140,9 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = directionOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DirectionOrder(templateData, caseData);
         }
@@ -185,9 +187,9 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
 
-            var templateData = directionOrderGenerator.getTemplateData(caseData, "auth");
+            var templateData = directionOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_DirectionOrder_1v1(templateData, caseData);
         }
@@ -234,9 +236,9 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn("abcdef ".concat(LocalDate.now().format(DATE_FORMATTER)));
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
 
-            var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
+            var templateData = directionOrderGenerator.getTemplateData(null, updateCaseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertJudicialByCourtsInitiative_Option2(templateData, updateCaseData);
         }
@@ -292,9 +294,9 @@ class DirectionOrderGeneratorTest {
             when(docmosisService.populateJudicialByCourtsInitiative(any()))
                 .thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Reading").build());
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
 
-            var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
+            var templateData = directionOrderGenerator.getTemplateData(null, updateCaseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertJudicialByCourtsInitiative_Option3(templateData, updateCaseData);
         }
@@ -343,11 +345,124 @@ class DirectionOrderGeneratorTest {
 
             when(docmosisService.populateJudgeReason(any())).thenReturn(StringUtils.EMPTY);
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
-                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
-            var templateData = directionOrderGenerator.getTemplateData(updateCaseData, "auth");
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            var templateData = directionOrderGenerator.getTemplateData(null, updateCaseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertNull(templateData.getJudgeRecital());
             assertEquals("", templateData.getReasonForDecision());
+        }
+    }
+
+    @Nested
+    class GetTemplateDateLip {
+
+        @Test
+        void shouldGeneratePostJudgeDirectionOrderDocument() {
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_DIRECTION_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(DIRECTION_ORDER.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build();
+
+            directionOrderGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(), caseData, BEARER_TOKEN,
+                                             FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.DIRECTION_ORDER)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_DIRECTION_ORDER_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData_1v1_LipRespondent() {
+
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(YES)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+
+            var templateData = directionOrderGenerator
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth",
+                                 FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            assertThatFieldsAreCorrect_DirectionOrder_LipRespondent(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DirectionOrder_LipRespondent(JudgeDecisionPdfDocument templateData,
+                                                                   CaseData caseData) {
+            Assertions.assertAll(
+                "Direction Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals("respondent1partyname", templateData.getPartyName()),
+                () -> assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("respondent1posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("respondent1postcode", templateData.getPartyAddressPostCode()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetHearingOrderData_1v1_Lip() {
+
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication().build().toBuilder()
+                .defendant2PartyName(null)
+                .claimant2PartyName(null)
+                .parentClaimantIsApplicant(YES)
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .isMultiParty(NO)
+                .build();
+
+            when(docmosisService.reasonAvailable(any())).thenReturn(YesOrNo.NO);
+            when(docmosisService.populateJudgeReason(any())).thenReturn("");
+            when(docmosisService.populateJudicialByCourtsInitiative(any()))
+                .thenReturn("abcd ".concat(LocalDate.now().format(DATE_FORMATTER)));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+
+            var templateData = directionOrderGenerator
+                .getTemplateData(CaseDataBuilder.builder().getCivilCaseData(), caseData, "auth", FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            assertThatFieldsAreCorrect_DirectionOrder_1v1(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_DirectionOrder_1v1(JudgeDecisionPdfDocument templateData,
+                                                                   CaseData caseData) {
+            Assertions.assertAll(
+                "Direction Order Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getJudgeNameTitle(), caseData.getJudgeTitle()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertNull(templateData.getClaimant2Name()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertNull(templateData.getDefendant2Name()),
+                () -> assertEquals(NO, templateData.getIsMultiParty()),
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
         }
     }
 }

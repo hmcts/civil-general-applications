@@ -10,17 +10,16 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.exceptions.CaseDataUpdateException;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CardPaymentStatusResponse;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Map;
-
-import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CITIZEN_GENERAL_APP_PAYMENT;
 
 @Slf4j
 @Service
@@ -33,12 +32,15 @@ public class UpdatePaymentStatusService {
 
     @Retryable(value = CaseDataUpdateException.class, maxAttempts = 3, backoff = @Backoff(delay = 500))
     public void updatePaymentStatus(String caseReference, CardPaymentStatusResponse cardPaymentStatusResponse) {
+        log.info("Starting updatePaymentStatus for caseReference: {}", caseReference);
+        log.debug("CardPaymentStatusResponse received: {}", cardPaymentStatusResponse);
 
         try {
             CaseDetails caseDetails = coreCaseDataService.getCase(Long.valueOf(caseReference));
             CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
             caseData = updateCaseDataWithStateAndPaymentDetails(cardPaymentStatusResponse, caseData);
 
+            log.info("Creating event for updated payment status on caseReference: {}", caseReference);
             createEvent(caseData, caseReference);
         } catch (Exception ex) {
             throw new CaseDataUpdateException();
@@ -46,10 +48,13 @@ public class UpdatePaymentStatusService {
     }
 
     private void createEvent(CaseData caseData, String caseReference) {
-
+        CaseEvent caseEvent = caseData.isAdditionalFeeRequested()
+            ? CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID
+            : CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
+        log.info("Starting event creation with caseEvent: {} for caseReference: {}", caseEvent, caseReference);
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
             caseReference,
-            CITIZEN_GENERAL_APP_PAYMENT
+            caseEvent
         );
 
         CaseDataContent caseDataContent = buildCaseDataContent(
@@ -57,6 +62,7 @@ public class UpdatePaymentStatusService {
             caseData
         );
 
+        log.info("Submitting case update with new data for caseReference: {}", caseReference);
         coreCaseDataService.submitUpdate(caseReference, caseDataContent);
     }
 
@@ -75,20 +81,27 @@ public class UpdatePaymentStatusService {
 
     private CaseData updateCaseDataWithStateAndPaymentDetails(CardPaymentStatusResponse cardPaymentStatusResponse,
                                                               CaseData caseData) {
+        log.info("Updating CaseData with new payment status for caseReference: {}", caseData.getCcdCaseReference());
 
-        PaymentDetails pbaDetails = caseData.getGeneralAppPaymentDetails();
+        GAPbaDetails pbaDetails = caseData.getGeneralAppPBADetails();
+        GAPbaDetails.GAPbaDetailsBuilder pbaDetailsBuilder;
+        pbaDetailsBuilder = pbaDetails == null ? GAPbaDetails.builder() : pbaDetails.toBuilder();
 
-        PaymentDetails paymentDetails = ofNullable(pbaDetails)
-            .map(PaymentDetails::toBuilder)
-            .orElse(PaymentDetails.builder())
+        PaymentDetails paymentDetails = PaymentDetails.builder()
             .status(PaymentStatus.valueOf(cardPaymentStatusResponse.getStatus().toUpperCase()))
             .reference(cardPaymentStatusResponse.getPaymentReference())
             .errorCode(cardPaymentStatusResponse.getErrorCode())
             .errorMessage(cardPaymentStatusResponse.getErrorDescription())
             .build();
-
+        if (caseData.isAdditionalFeeRequested()) {
+            pbaDetails = pbaDetailsBuilder.additionalPaymentDetails(paymentDetails).build();
+            log.info("Applied additional payment details for caseReference: {}", caseData.getCcdCaseReference());
+        } else {
+            pbaDetails = pbaDetailsBuilder.paymentDetails(paymentDetails).build();
+            log.info("Applied standard payment details for caseReference: {}", caseData.getCcdCaseReference());
+        }
         return caseData.toBuilder()
-            .generalAppPaymentDetails(paymentDetails)
+            .generalAppPBADetails(pbaDetails)
             .build();
     }
 

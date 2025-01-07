@@ -21,6 +21,15 @@ public class NotificationsProperties {
     private String lipGeneralAppRespondentEmailTemplate;
 
     @NotEmpty
+    private String lipGeneralAppRespondentEmailTemplateInWelsh;
+
+    @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplate;
+
+    @NotEmpty
+    private String lipGeneralAppApplicantEmailTemplateInWelsh;
+
+    @NotEmpty
     private String withNoticeUpdateRespondentEmailTemplate;
 
     @NotEmpty
@@ -79,4 +88,38 @@ public class NotificationsProperties {
 
     @NotEmpty
     private String evidenceUploadTemplate;
+
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeeded;
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumber;
+
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemission;
+    @NotEmpty
+    private String notifyApplicantForNoRemission;
+    @NotEmpty
+    private String notifyApplicantForHwfPaymentOutcome;
+    @NotEmpty
+    private String notifyApplicantLiPTranslatedDocumentUploadedWhenParentCaseInBilingual;
+    @NotEmpty
+    private String notifyRespondentLiPTranslatedDocumentUploadedWhenParentCaseInBilingual;
+    @NotEmpty
+    private String notifyLRTranslatedDocumentUploaded;
+
+    @NotEmpty
+    private String notifyApplicantForHwfInvalidRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwFMoreInformationNeededWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfNoRemissionWelsh;
+    @NotEmpty
+    private String notifyApplicantForHwfUpdateRefNumberBilingual;
+    @NotEmpty
+    private String notifyApplicantForHwfPartialRemissionBilingual;
+
 }

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
@@ -54,7 +55,10 @@ public class ServiceRequestCUICallbackHandlerTest extends BaseCallbackHandlerTes
     public void setup() {
         caseData = CaseData.builder()
              .ccdCaseReference(1644495739087775L)
-             .generalAppFee(Fee.builder().calculatedAmountInPence(BigDecimal.valueOf(100)).code("CODE").build())
+                .generalAppPBADetails(GAPbaDetails.builder()
+                        .fee(Fee.builder()
+                                .calculatedAmountInPence(BigDecimal.valueOf(100))
+                                .code("CODE").build()).build())
             .build();;
     }
 
@@ -78,7 +82,7 @@ public class ServiceRequestCUICallbackHandlerTest extends BaseCallbackHandlerTes
             //THEN
             verify(paymentsService).createServiceRequest(caseData, "BEARER_TOKEN");
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            String serviceRequestReference = responseCaseData.getServiceRequestReference();
+            String serviceRequestReference = responseCaseData.getGeneralAppPBADetails().getServiceReqReference();
             assertThat(serviceRequestReference).isEqualTo(SUCCESSFUL_PAYMENT_REFERENCE);
         }
 
@@ -86,7 +90,8 @@ public class ServiceRequestCUICallbackHandlerTest extends BaseCallbackHandlerTes
         void shouldNotMakeAnyServiceRequest_whenServiceRequestHasBeenInvokedPreviously() {
             //GIVEN
             caseData = caseData.toBuilder()
-                .serviceRequestReference(CaseDataBuilder.CUSTOMER_REFERENCE)
+                    .generalAppPBADetails(GAPbaDetails.builder()
+                            .serviceReqReference(CaseDataBuilder.CUSTOMER_REFERENCE).build())
                 .build();
             params = callbackParamsOf(caseData, CREATE_SERVICE_REQUEST_CUI_GENERAL_APP, ABOUT_TO_SUBMIT);
             //WHEN
@@ -94,7 +99,7 @@ public class ServiceRequestCUICallbackHandlerTest extends BaseCallbackHandlerTes
             //THEN
             verifyNoInteractions(paymentsService);
             CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            String serviceRequestReference = responseCaseData.getServiceRequestReference();
+            String serviceRequestReference = responseCaseData.getGeneralAppPBADetails().getServiceReqReference();
             assertThat(serviceRequestReference).isEqualTo(CaseDataBuilder.CUSTOMER_REFERENCE);
         }
 

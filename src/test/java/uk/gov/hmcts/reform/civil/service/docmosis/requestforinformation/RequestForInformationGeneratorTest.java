@@ -4,12 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
@@ -18,12 +15,16 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.requestmoreinformation.RequestForInformationGenerator;
-import uk.gov.hmcts.reform.civil.service.documentmanagement.UnsecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
+import static java.time.LocalDate.now;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,27 +35,30 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-    RequestForInformationGenerator.class,
-    JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
-})
+@ExtendWith(MockitoExtension.class)
 class RequestForInformationGeneratorTest {
 
     private static final String BEARER_TOKEN = "Bearer Token";
     private static final byte[] bytes = {1, 2, 3, 4, 5, 6};
 
-    @MockBean
-    private UnsecuredDocumentManagementService documentManagementService;
-    @MockBean
+    @Mock
+    private SecuredDocumentManagementService documentManagementService;
+    @Mock
     private DocumentGeneratorService documentGeneratorService;
-    @Autowired
+    @InjectMocks
     private RequestForInformationGenerator requestForInformationGenerator;
-    @MockBean
+    @Mock
     private DocmosisService docmosisService;
+
+    @Mock
+    private GaForLipService gaForLipService;
 
     @Test
     void shouldGenerateRequestForInformationDocument() {
@@ -76,13 +80,36 @@ class RequestForInformationGeneratorTest {
     }
 
     @Test
+    void shouldGenerateSendAppToOtherPartyDocumentForLipClaimant() {
+        when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY)))
+            .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY.getDocumentTitle(), bytes));
+        when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+            .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+        CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                 .judgeRecitalText("test")
+                                                 .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                 .judgeRequestMoreInfoByDate(now()).build())
+            .build();
+
+        requestForInformationGenerator.generate(caseData, BEARER_TOKEN);
+
+        verify(documentManagementService).uploadDocument(
+            BEARER_TOKEN,
+            new PDF(any(), any(), DocumentType.SEND_APP_TO_OTHER_PARTY)
+        );
+        verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                  eq(REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY));
+    }
+
+    @Test
     void shouldThrowExceptionWhenNoLocationMatch() {
         CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
             .caseManagementLocation(GACaseLocation.builder().baseLocation("8").build())
             .build();
 
-        when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(REQUEST_FOR_INFORMATION)))
-            .thenReturn(new DocmosisDocument(REQUEST_FOR_INFORMATION.getDocumentTitle(), bytes));
         doThrow(new IllegalArgumentException("Court Name is not found in location data"))
             .when(docmosisService).getCaseManagementLocationVenueName(any(), any());
 
@@ -95,6 +122,143 @@ class RequestForInformationGeneratorTest {
     }
 
     @Nested
+    class GetTemplateDataLip {
+
+        @Test
+        void shouldGenerateRequestForInformationDocument() {
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build();
+
+            when(documentGeneratorService.generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP.getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            requestForInformationGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                                    caseData, BEARER_TOKEN, FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.REQUEST_FOR_INFORMATION)
+            );
+            verify(documentGeneratorService).generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                                                      eq(POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP));
+        }
+
+        @Test
+        void shouldGenerateSendAppToOtherPartyDocumentForLipClaimant() {
+            when(documentGeneratorService
+                     .generateDocmosisDocument(any(MappableObject.class), eq(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP)))
+                .thenReturn(new DocmosisDocument(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP
+                                                     .getDocumentTitle(), bytes));
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .build();
+
+            requestForInformationGenerator.generate(CaseDataBuilder.builder().getCivilCaseData(),
+                                                    caseData, BEARER_TOKEN,
+                                                    FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            verify(documentManagementService).uploadDocument(
+                BEARER_TOKEN,
+                new PDF(any(), any(), DocumentType.SEND_APP_TO_OTHER_PARTY)
+            );
+            verify(documentGeneratorService)
+                .generateDocmosisDocument(any(JudgeDecisionPdfDocument.class),
+                                          eq(POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("London").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .parentClaimantIsApplicant(YES)
+                .requestForInformationApplication().build().toBuilder()
+                .build();
+
+            var templateData = requestForInformationGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                                                              caseData,
+                                                                              "auth",
+                                                                              FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT);
+
+            assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
+        }
+
+        private void assertThatFieldsAreCorrect_RequestForInformation(JudgeDecisionPdfDocument templateData,
+                                                                      CaseData caseData) {
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getClaimant2Name(), caseData.getClaimant2PartyName()),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getDefendant2Name(), caseData.getDefendant2PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getCourtName(), "London"),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getAddress(), caseData.getCaseManagementLocation().getAddress()),
+                () -> assertEquals(templateData.getSiteName(), caseData.getCaseManagementLocation().getSiteName()),
+                () -> assertEquals(templateData.getPostcode(), caseData.getCaseManagementLocation().getPostcode()),
+                () -> assertEquals("applicant1partyname", templateData.getPartyName()),
+                () -> assertEquals("address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("postcode", templateData.getPartyAddressPostCode()));
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_party() {
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .parentClaimantIsApplicant(YES)
+                .requestForInformationApplication().build().toBuilder()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .build();
+
+            var templateData =
+                requestForInformationGenerator.getTemplateData(CaseDataBuilder.builder().getCivilCaseData(),
+                                                               caseData,
+                                                               "auth",
+                                                               FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT);
+
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275"),
+                () -> assertEquals("respondent1partyname", templateData.getPartyName()),
+                () -> assertEquals("respondent1address1", templateData.getPartyAddressAddressLine1()),
+                () -> assertEquals("respondent1address2", templateData.getPartyAddressAddressLine2()),
+                () -> assertEquals("respondent1address3", templateData.getPartyAddressAddressLine3()),
+                () -> assertEquals("respondent1posttown", templateData.getPartyAddressPostTown()),
+                () -> assertEquals("respondent1postcode", templateData.getPartyAddressPostCode()));
+        }
+
+    }
+
+    @Nested
     class GetTemplateData {
 
         @Test
@@ -104,7 +268,7 @@ class RequestForInformationGeneratorTest {
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
                 .build();
 
-            var templateData = requestForInformationGenerator.getTemplateData(caseData, "auth");
+            var templateData = requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation(templateData, caseData);
         }
@@ -141,7 +305,7 @@ class RequestForInformationGeneratorTest {
                 .build();
 
             var templateData =
-                requestForInformationGenerator.getTemplateData(caseData, "auth");
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
 
             assertThatFieldsAreCorrect_RequestForInformation_1v1(templateData, caseData);
         }
@@ -161,6 +325,37 @@ class RequestForInformationGeneratorTest {
                     .getJudgeRecitalText()),
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText())
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_party() {
+
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").build());
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .build();
+
+            var templateData =
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
             );
         }
     }

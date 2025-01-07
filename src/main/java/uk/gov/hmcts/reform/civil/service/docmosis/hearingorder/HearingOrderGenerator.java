@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
@@ -16,14 +17,18 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.docmosis.TemplateDataGenerator;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
+import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -34,9 +39,21 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
-        JudgeDecisionPdfDocument templateData = getTemplateData(caseData, authorisation);
+        JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+        log.info("Generate hearing order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
+        return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+    }
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
+    public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
+
+        JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
+        log.info("Generate hearing order form for caseId: {}", caseData.getCcdCaseReference());
+        return generateDocmosisDocument(templateData, authorisation, userType);
+    }
+
+    public CaseDocument generateDocmosisDocument(JudgeDecisionPdfDocument templateData, String authorisation, FlowFlag userType) {
+
+        DocmosisTemplates docmosisTemplate = getDocmosisTemplate(userType);
 
         DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
             templateData,
@@ -57,7 +74,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     }
 
     @Override
-    public JudgeDecisionPdfDocument getTemplateData(CaseData caseData, String authorisation) {
+    public JudgeDecisionPdfDocument getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
@@ -75,7 +92,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .estimatedHearingLength(caseData.getJudicialListForHearing()
                                             .getJudicialTimeEstimate().getDisplayedValue())
                 .submittedOn(LocalDate.now())
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .judgeHearingLocation(caseData.getJudicialListForHearing()
                                           .getHearingPreferencesPreferredType() == GAJudicialHearingType.IN_PERSON
                                           ? caseData.getJudicialListForHearing()
@@ -84,6 +101,19 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
                 .judicialByCourtsInitiativeListForHearing(populateJudicialByCourtsInitiative(caseData));
+
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
+
+            judgeDecisionPdfDocumentBuilder
+                .partyName(caseData.getPartyName(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine1(caseData.partyAddressAddressLine1(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine2(caseData.partyAddressAddressLine2(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressAddressLine3(caseData.partyAddressAddressLine3(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostCode(caseData.partyAddressPostCode(parentClaimantIsApplicant, userType, civilCaseData))
+                .partyAddressPostTown(caseData.partyAddressPostTown(parentClaimantIsApplicant, userType, civilCaseData))
+                .build();
+        }
 
         return judgeDecisionPdfDocumentBuilder.build();
     }
@@ -107,7 +137,10 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         }
     }
 
-    private DocmosisTemplates getDocmosisTemplate() {
+    private DocmosisTemplates getDocmosisTemplate(FlowFlag userType) {
+        if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
+            return POST_JUDGE_HEARING_ORDER_LIP;
+        }
         return HEARING_ORDER;
     }
 }

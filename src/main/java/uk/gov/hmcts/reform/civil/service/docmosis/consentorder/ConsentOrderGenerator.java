@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.consentorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import static java.util.Objects.isNull;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.CONSENT_ORDER_FORM;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrderForm> {
@@ -42,7 +44,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .orderDate(LocalDate.now())
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
@@ -68,6 +70,8 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
             templateData,
             docmosisTemplate
         );
+
+        log.info("Generate consent order for caseId: {}", caseData.getCcdCaseReference());
 
         return documentManagementService.uploadDocument(
             authorisation,

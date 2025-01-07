@@ -15,11 +15,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.PaymentsService;
 import uk.gov.hmcts.reform.civil.service.Time;
@@ -54,6 +57,11 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private Time time;
+    @MockBean
+    private FeatureToggleService featureToggleService;
+
+    @MockBean
+    private GaForLipService gaForLipService;
 
     @Autowired
     private PaymentServiceRequestHandler handler;
@@ -68,6 +76,8 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
     @BeforeEach
     public void setup() {
         caseData = CaseDataBuilder.builder().buildMakePaymentsCaseData();
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
 
         when(time.now()).thenReturn(LocalDateTime.of(2020, 1, 1, 12, 0, 0));
     }
@@ -99,7 +109,7 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldNotMakePaymentServiceRequest_shouldAddFreePaymentDetails_whenInvoked() throws Exception {
+        void shouldNotMakePaymentServiceRequest_shouldAddFreePaymentDetails_whenInvoked() {
             when(paymentsService.createServiceRequest(any(), any()))
                 .thenReturn(PaymentServiceResponse.builder()
                                 .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
@@ -119,20 +129,25 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
+        void shouldNotMakePaymentServiceRequest_shouldAddFreePaymentDetails_for_Lip_whenInvoked() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(paymentsService.createServiceRequest(any(), any()))
                 .thenReturn(PaymentServiceResponse.builder()
                                 .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
-            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
-            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
-                                                                       .helpWithFee(YesOrNo.YES).build()).build();
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(true);
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
             verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
             assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
                 .isEqualTo(FREE_PAYMENT_REFERENCE);
             PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
-            assertThat(paymentDetails).isNull();
+            assertThat(paymentDetails).isNotNull();
+            assertThat(paymentDetails.getStatus()).isEqualTo(SUCCESS);
+            assertThat(paymentDetails.getCustomerReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
+            assertThat(paymentDetails.getReference()).isEqualTo(FREE_PAYMENT_REFERENCE);
+            assertThat(extractPaymentDetailsFromResponse(response).getPaymentSuccessfulDate())
+                .isNotNull();
         }
 
         @Test
@@ -145,6 +160,23 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
             assertThat(response.getErrors().size())
                 .isEqualTo(1);
+        }
+
+        @Test
+        void shouldNotMakePaymentServiceRequest_ifHelpWithFees_whenInvoked() throws Exception {
+            when(paymentsService.createServiceRequest(any(), any()))
+                .thenReturn(paymentServiceResponse.builder()
+                                .serviceRequestReference(FREE_PAYMENT_REFERENCE).build());
+            when(generalAppFeesService.isFreeApplication(any())).thenReturn(false);
+            caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
+                                                                       .helpWithFee(YesOrNo.YES).build()).build();
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(paymentsService, never()).createServiceRequest(caseData, "BEARER_TOKEN");
+            assertThat(extractPaymentDetailsFromResponse(response).getServiceReqReference())
+                .isEqualTo(FREE_PAYMENT_REFERENCE);
+            PaymentDetails paymentDetails = extractPaymentDetailsFromResponse(response).getPaymentDetails();
+            assertThat(paymentDetails).isNull();
         }
 
         @Test
@@ -170,6 +202,42 @@ class CreateServiceRequestHandlerTest extends BaseCallbackHandlerTest {
             caseData = caseData.toBuilder().generalAppHelpWithFees(HelpWithFees.builder()
                                                                        .helpWithFee(YesOrNo.NO).build()).build();
             assertThat(handler.isHelpWithFees(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnFreeLipGa_True() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            caseData = caseData.toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                                                                     .fee(Fee.builder().code("FREE").build()).build()).build();
+            assertThat(handler.isFreeGaLip(caseData)).isTrue();
+        }
+
+        @Test
+        void shouldReturnFreeLipGa_whenPbaDetailsAreNull_false() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            caseData = caseData.toBuilder().build();
+            assertThat(handler.isFreeGaLip(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnFreeLipGa_whenFeeDetailsAreNull_false() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            caseData = caseData.toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                                                                  .build()).build();
+            assertThat(handler.isFreeGaLip(caseData)).isFalse();
+        }
+
+        @Test
+        void shouldReturnFreeLipGa_whenFeeCodeIsNotFree_false() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            caseData = caseData.toBuilder().generalAppPBADetails(GAPbaDetails.builder()
+                                                                     .fee(Fee.builder().code("1").build()).build())
+                                                                     .build();
+            assertThat(handler.isFreeGaLip(caseData)).isFalse();
         }
     }
 

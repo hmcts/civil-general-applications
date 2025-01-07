@@ -95,4 +95,13 @@ public class CasesController {
         return new ResponseEntity<>(caseDetails, HttpStatus.OK);
     }
 
+    @GetMapping(path = "/{caseId}/applications")
+    @Operation(summary = "get list of the applications with given civil case id from CCD")
+    public ResponseEntity<SearchResult> getCaseApplications(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+                                                    @PathVariable("caseId") String caseId) {
+
+        SearchResult claims = coreCaseDataService.searchGeneralApplicationWithCaseId(caseId, authorization);
+        return new ResponseEntity<>(claims, HttpStatus.OK);
+    }
+
 }
