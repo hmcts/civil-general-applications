@@ -501,18 +501,20 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             );
         }
 
-        @Test
-        void shouldRecordOrderMadeApplicantScenarioWhenInvoked_isWIthNoticeApplication() {
+        @ParameterizedTest
+        @MethodSource("provideOrderType")
+        void shouldRecordOrderMadeApplicantScenarioWhenInvoked_isWIthNoticeApplication(
+            GAJudgeDecisionOption decisionOption, GAJudgeMakeAnOrderOption orderOption) {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
                 .isGaApplicantLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
-                .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.MAKE_AN_ORDER).build())
+                .judicialDecision(GAJudicialDecision.builder().decision(decisionOption).build())
                 .ccdState(CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED)
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
-                                               .makeAnOrder(GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT).build()).build();
+                                               .makeAnOrder(orderOption).build()).build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
