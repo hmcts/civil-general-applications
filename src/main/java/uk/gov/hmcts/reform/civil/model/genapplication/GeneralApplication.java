@@ -140,7 +140,7 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("certOfSC") CertOfSC certOfSC,
                        @JsonProperty("caseNameGaInternal") String caseNameGaInternal,
                        @JsonProperty("gaWaTrackLabel") String gaWaTrackLabel,
-                       @JsonProperty("gaWaTrackLabel")  String emailPartyReference){
+                       @JsonProperty("gaWaTrackLabel")  String emailPartyReference) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
