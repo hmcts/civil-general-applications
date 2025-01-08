@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
-import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 
 @Service
 @RequiredArgsConstructor
@@ -31,18 +30,11 @@ public class UpdatedRefNumberHWFCallbackHandler extends CallbackHandler {
     private final ObjectMapper objectMapper;
 
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(ABOUT_TO_SUBMIT),
         this::updatedRefNumberHWF,
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
-
-    private CallbackResponse setData(CallbackParams callbackParams) {
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(callbackParams.getCaseData());
-        return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataBuilder.build().toMap(objectMapper))
-            .build();
-    }
 
     @Override
     protected Map<String, Callback> callbacks() {

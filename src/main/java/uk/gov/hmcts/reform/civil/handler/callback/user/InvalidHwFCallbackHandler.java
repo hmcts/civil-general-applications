@@ -29,7 +29,7 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
     private static final List<CaseEvent> EVENTS = List.of(INVALID_HWF_REFERENCE_GA);
 
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(ABOUT_TO_SUBMIT), this::aboutToSubmit,
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
