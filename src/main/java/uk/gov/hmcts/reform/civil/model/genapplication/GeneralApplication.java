@@ -81,6 +81,7 @@ public class GeneralApplication implements MappableObject {
     private String caseNameGaInternal;
     //WA claim track description
     private final String gaWaTrackLabel;
+    private final String emailPartyReference;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -138,7 +139,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("generalAppHelpWithFees") HelpWithFees generalAppHelpWithFees,
                        @JsonProperty("certOfSC") CertOfSC certOfSC,
                        @JsonProperty("caseNameGaInternal") String caseNameGaInternal,
-                       @JsonProperty("gaWaTrackLabel") String gaWaTrackLabel) {
+                       @JsonProperty("gaWaTrackLabel") String gaWaTrackLabel,
+                       @JsonProperty("gaWaTrackLabel")  String emailPartyReference){
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -191,6 +193,7 @@ public class GeneralApplication implements MappableObject {
         this.certOfSC = certOfSC;
         this.caseNameGaInternal = caseNameGaInternal;
         this.gaWaTrackLabel = gaWaTrackLabel;
+        this.emailPartyReference = emailPartyReference;
     }
 
     @JsonIgnore
