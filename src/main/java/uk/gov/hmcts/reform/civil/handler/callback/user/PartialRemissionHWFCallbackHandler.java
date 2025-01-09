@@ -35,7 +35,7 @@ public class PartialRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
     public static final String ERR_MSG_REMISSION_AMOUNT_LESS_THAN_ZERO = "Remission amount must be greater than zero";
 
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(MID, "remission-amount"), this::validateRemissionAmount,
         callbackKey(ABOUT_TO_SUBMIT),
         this::partRemissionHWF,

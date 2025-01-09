@@ -63,10 +63,9 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             .build();
     }
 
-    @Override
-    protected CallbackResponse setData(CallbackParams callbackParams) {
+    private CallbackResponse setData(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
-        CaseData.CaseDataBuilder caseDataBuilder = HwFFeeTypeService.updateFeeType(caseData);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         FeePaymentOutcomeDetails.FeePaymentOutcomeDetailsBuilder feeDetailBuilder = FeePaymentOutcomeDetails.builder();
         feeDetailBuilder.hwfNumberAvailable(YesOrNo.NO);
         if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
