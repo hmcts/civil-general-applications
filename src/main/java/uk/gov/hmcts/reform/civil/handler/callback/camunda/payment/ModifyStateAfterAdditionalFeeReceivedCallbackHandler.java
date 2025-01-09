@@ -12,11 +12,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -88,6 +91,11 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     private CallbackResponse changeApplicationState(CallbackParams callbackParams) {
         Long caseId = callbackParams.getCaseData().getCcdCaseReference();
         CaseData caseData = callbackParams.getCaseData();
+        // Do not progress the application if payment not successful
+        if (gaForLipService.isLipApp(caseData) && getPaymentStatus(caseData) == PaymentStatus.FAILED) {
+            log.info("Payment status is failed for caseId: {}", caseData.getCcdCaseReference());
+            return AboutToStartOrSubmitCallbackResponse.builder().build();
+        }
         String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).toString();
         log.info("Changing state to {} for caseId: {}", newCaseState, caseId);
 
@@ -116,7 +124,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
                 caseData)).build();
             if (scenarios != null) {
                 scenarios.forEach(scenario -> dashboardApiClient.recordScenario(
-                    caseData.getCcdCaseReference().toString(),
+                    caseReference,
                     scenario,
                     authToken,
                     scenarioParams
@@ -152,6 +160,11 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private CallbackResponse changeGADetailsStatusInParent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        // Do not progress the application if payment not successful
+        if (gaForLipService.isLipApp(caseData) && getPaymentStatus(caseData) == PaymentStatus.FAILED) {
+            log.info("Payment status is failed for caseId: {}", caseData.getCcdCaseReference());
+            return SubmittedCallbackResponse.builder().build();
+        }
         String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData)
             .getDisplayedValue();
         log.info("Updating parent with latest state {} of application-caseId: {}",
@@ -163,6 +176,13 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         );
         updateTaskListClaimantAndDefendant(callbackParams, caseData);
         return SubmittedCallbackResponse.builder().build();
+    }
+
+    private PaymentStatus getPaymentStatus(CaseData caseData) {
+        return Optional.of(caseData)
+            .map(CaseData::getGeneralAppPBADetails)
+            .map(GAPbaDetails::getAdditionalPaymentDetails)
+            .map(PaymentDetails::getStatus).orElse(null);
     }
 
     private void updateTaskListClaimantAndDefendant(CallbackParams callbackParams, CaseData caseData) {

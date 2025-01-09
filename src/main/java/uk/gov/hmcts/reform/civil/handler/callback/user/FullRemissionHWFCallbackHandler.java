@@ -30,10 +30,9 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
     private static final List<CaseEvent> EVENTS = List.of(FULL_REMISSION_HWF_GA);
     private final Map<String, Callback> callbackMap = Map.of(
-            callbackKey(ABOUT_TO_START), this::setData,
-            callbackKey(ABOUT_TO_SUBMIT),
-            this::fullRemissionHWF,
-            callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
+        callbackKey(ABOUT_TO_SUBMIT), this::fullRemissionHWF,
+        callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
 
     public FullRemissionHWFCallbackHandler(ObjectMapper objectMapper) {
