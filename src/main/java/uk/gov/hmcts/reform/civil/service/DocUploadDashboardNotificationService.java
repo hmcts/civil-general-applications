@@ -38,7 +38,7 @@ public class DocUploadDashboardNotificationService {
             List<String> scenarios = getDashboardScenario(role, caseData);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
-            if (scenarios!= null) {
+            if (scenarios != null) {
                 scenarios.forEach(scenario -> dashboardApiClient.recordScenario(
                     caseData.getCcdCaseReference().toString(),
                     scenario,
@@ -84,7 +84,7 @@ public class DocUploadDashboardNotificationService {
         } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipApp(caseData)) {
             scenarios.add(SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT.getScenario());
         }
-        if(Objects.equals(caseData.getBusinessProcess().getCamundaEvent(), CaseEvent.UPLOAD_ADDL_DOCUMENTS.toString())
+        if (Objects.equals(caseData.getBusinessProcess().getCamundaEvent(), CaseEvent.UPLOAD_ADDL_DOCUMENTS.toString())
             && caseData.isUrgent()
             && caseData.getIsGaApplicantLip() == YesOrNo.YES
             && caseData.getIsGaRespondentOneLip() == YesOrNo.NO) {
