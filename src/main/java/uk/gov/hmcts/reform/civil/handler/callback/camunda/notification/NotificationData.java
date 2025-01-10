@@ -7,6 +7,8 @@ import java.util.Map;
 public interface NotificationData {
 
     String CASE_REFERENCE = "claimReferenceNumber";
+    String GENAPP_REFERENCE = "GenAppclaimReferenceNumber";
+    String PARTY_REFERENCE = "partyReferences";
     String APPLICANT_REFERENCE = "claimantOrDefendant";
     String GA_NOTIFICATION_DEADLINE = "notificationDeadLine";
     String GA_APPLICATION_TYPE = "generalAppType";

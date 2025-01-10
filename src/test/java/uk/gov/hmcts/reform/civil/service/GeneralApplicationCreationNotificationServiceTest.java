@@ -81,6 +81,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
+    private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
     private static final LocalDateTime DUMMY_DATE = LocalDateTime.of(2022, 02, 15, 12, 00, 00);
     public static LocalDateTime NOTIFICATION_DEADLINE = LocalDateTime.of(2022, 02, 15, 12, 00, 00);
 
@@ -170,7 +171,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
         void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
             CaseData caseData = getCaseData(true).toBuilder()
                     .isGaRespondentOneLip(YES)
-                    .generalAppPBADetails(GAPbaDetails.builder()
+                .ccdCaseReference(CASE_REFERENCE)
+                .generalAppPBADetails(GAPbaDetails.builder()
                             .fee(Fee.builder().code("PAID").build())
                             .paymentDetails(PaymentDetails.builder().status(
                                     PaymentStatus.SUCCESS).build()).build())
@@ -263,6 +265,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
             return Map.of(
                 NotificationData.APPLICANT_REFERENCE, "claimant",
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.PARTY_REFERENCE, PARTY_REFERENCE,
+                NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_NOTIFICATION_DEADLINE,
                 NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
                 NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : "",
@@ -289,6 +293,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                     .applicantPartyName("App")
                     .claimant1PartyName("CL")
                     .defendant1PartyName("DEF")
+                    .ccdCaseReference(CASE_REFERENCE)
                     .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
                                                   .email(DUMMY_EMAIL).organisationIdentifier("1").build())
                     .generalAppRespondentSolicitors(respondentSols)
@@ -318,6 +323,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                     .build();
             } else {
                 return new CaseDataBuilder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .applicantPartyName("App")
                     .claimant1PartyName("CL")
                     .defendant1PartyName("DEF")
