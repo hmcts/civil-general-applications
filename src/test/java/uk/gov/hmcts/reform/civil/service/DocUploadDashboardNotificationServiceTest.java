@@ -128,7 +128,6 @@ public class DocUploadDashboardNotificationServiceTest {
                 .claimant1PartyName("Mr. John Rambo")
                 .defendant1PartyName("Mr. Sole Trader")
                 .generalAppConsentOrder(YES)
-                .isGaApplicantLip(YES)
                 .isGaRespondentOneLip(NO)
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename(

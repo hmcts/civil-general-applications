@@ -82,7 +82,6 @@ public class DocUploadDashboardNotificationService {
         } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipApp(caseData)) {
             if (itsUploadAddlDocEvent
                 && caseData.isUrgent()
-                && caseData.getIsGaApplicantLip() == YesOrNo.YES
                 && caseData.getIsGaRespondentOneLip() == YesOrNo.NO) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario());
             }
