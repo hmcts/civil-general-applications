@@ -90,7 +90,7 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
             log.info("General dashboard notification for Lip party for caseId: {}", caseData.getCcdCaseReference());
-            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
             docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
         }

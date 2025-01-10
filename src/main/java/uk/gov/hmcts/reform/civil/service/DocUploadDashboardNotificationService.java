@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.civil.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -14,7 +13,6 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
@@ -31,11 +29,11 @@ public class DocUploadDashboardNotificationService {
     private final GaForLipService gaForLipService;
     private final DashboardNotificationsParamsMapper mapper;
 
-    public void createDashboardNotification(CaseData caseData, String role, String authToken) {
+    public void createDashboardNotification(CaseData caseData, String role, String authToken, boolean itsUploadAddlDocEvent) {
 
         if (isWithNoticeOrConsent(caseData) && featureToggleService.isDashboardServiceEnabled()) {
             log.info("Case {} is with notice or consent and the dashboard service is enabled", caseData.getCcdCaseReference());
-            List<String> scenarios = getDashboardScenario(role, caseData);
+            List<String> scenarios = getDashboardScenario(role, caseData, itsUploadAddlDocEvent);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
             if (scenarios != null) {
@@ -77,18 +75,18 @@ public class DocUploadDashboardNotificationService {
         return null;
     }
 
-    private List<String> getDashboardScenario(String role, CaseData caseData) {
+    private List<String> getDashboardScenario(String role, CaseData caseData, boolean itsUploadAddlDocEvent) {
         List<String> scenarios = new ArrayList<>();
         if (DocUploadUtils.APPLICANT.equals(role) && gaForLipService.isLipResp(caseData)) {
             scenarios.add(SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT.getScenario());
         } else if (DocUploadUtils.RESPONDENT_ONE.equals(role) && gaForLipService.isLipApp(caseData)) {
+            if (itsUploadAddlDocEvent
+                && caseData.isUrgent()
+                && caseData.getIsGaApplicantLip() == YesOrNo.YES
+                && caseData.getIsGaRespondentOneLip() == YesOrNo.NO) {
+                scenarios.add(SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario());
+            }
             scenarios.add(SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT.getScenario());
-        }
-        if (Objects.equals(caseData.getBusinessProcess().getCamundaEvent(), CaseEvent.UPLOAD_ADDL_DOCUMENTS.toString())
-            && caseData.isUrgent()
-            && caseData.getIsGaApplicantLip() == YesOrNo.YES
-            && caseData.getIsGaRespondentOneLip() == YesOrNo.NO) {
-            scenarios.add(SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario());
         }
         return scenarios;
     }
