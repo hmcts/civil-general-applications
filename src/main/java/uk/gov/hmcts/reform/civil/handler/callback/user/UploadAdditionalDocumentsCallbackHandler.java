@@ -75,7 +75,7 @@ public class UploadAdditionalDocumentsCallbackHandler extends CallbackHandler {
 
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
-            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken);
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, true);
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
