@@ -68,6 +68,7 @@ public class DocUploadNotificationServiceTest {
     private static final Long CASE_REFERENCE = 111111L;
     private static final String PROCESS_INSTANCE_ID = "1";
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
+    private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
     private final Map<String, String> customProp = new HashMap<>();
 
     @Nested
@@ -200,7 +201,9 @@ public class DocUploadNotificationServiceTest {
         private Map<String, String> getNotificationDataMapForLip(YesOrNo isLipAppln, YesOrNo isLipRespondent) {
 
             customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
+            customProp.put(NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString());
             customProp.put(NotificationData.CASE_TITLE, "CL v DEF");
+            customProp.put(NotificationData.PARTY_REFERENCE, PARTY_REFERENCE);
 
             if (isLipAppln == YES) {
                 customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "App");
@@ -214,8 +217,10 @@ public class DocUploadNotificationServiceTest {
 
         private Map<String, String> getNotificationDataMap() {
             return Map.of(
-                    NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString()
-            );
+                    NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                    NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
+                    NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
+                    );
         }
 
         private CaseData getCaseData(boolean isMet, YesOrNo isGaApplicantLip, YesOrNo isGaRespondentOneLip) {
