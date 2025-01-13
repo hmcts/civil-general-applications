@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
@@ -89,11 +90,64 @@ public class DocUploadDashboardNotificationServiceTest {
 
                 .build();
 
-            docUploadDashboardNotificationService.createDashboardNotification(caseData, "Applicant", "BEARER_TOKEN");
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, "Applicant", "BEARER_TOKEN", false);
 
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
                 SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldCreateDashboardNotificationWhenLRApplicantUploadDoc() {
+
+            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
+            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
+                                                      .documentType("Witness")
+                                                      .additionalDocument(Document.builder()
+                                                                              .documentFileName("witness_document.pdf")
+                                                                              .documentUrl("http://dm-store:8080")
+                                                                              .documentBinaryUrl(
+                                                                                  "http://dm-store:8080/documents")
+                                                                              .build()).build()));
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CaseData caseData = CaseDataBuilder.builder()
+                .atStateClaimDraft()
+                .ccdCaseReference(1678356749555475L)
+                .build().toBuilder()
+                .respondent2SameLegalRepresentative(NO)
+                .applicationIsUncloakedOnce(YES)
+                .parentClaimantIsApplicant(YES)
+                .uploadDocument(uploadDocumentByApplicant)
+                .claimant1PartyName("Mr. John Rambo")
+                .defendant1PartyName("Mr. Sole Trader")
+                .generalAppConsentOrder(YES)
+                .isGaRespondentOneLip(NO)
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename(
+                        "GAApplnSolicitor")
+                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
+
+                .build();
+
+            docUploadDashboardNotificationService.createDashboardNotification(caseData, "Respondent One", "BEARER_TOKEN", true);
+
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
@@ -144,7 +198,8 @@ public class DocUploadDashboardNotificationServiceTest {
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,
                 "Respondent One",
-                "BEARER_TOKEN"
+                "BEARER_TOKEN",
+                false
             );
 
             verify(dashboardApiClient).recordScenario(
@@ -190,7 +245,8 @@ public class DocUploadDashboardNotificationServiceTest {
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,
                 "Respondent One",
-                "BEARER_TOKEN"
+                "BEARER_TOKEN",
+                false
             );
 
             verifyNoInteractions(dashboardApiClient);
@@ -241,7 +297,8 @@ public class DocUploadDashboardNotificationServiceTest {
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,
                 "Respondent One",
-                "BEARER_TOKEN"
+                "BEARER_TOKEN",
+                false
             );
 
             verify(dashboardApiClient).recordScenario(
@@ -492,7 +549,8 @@ public class DocUploadDashboardNotificationServiceTest {
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,
                 "Respondent Not",
-                "BEARER_TOKEN"
+                "BEARER_TOKEN",
+                false
             );
 
             verifyNoInteractions(dashboardApiClient);
