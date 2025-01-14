@@ -114,7 +114,6 @@ public class JudicialNotificationService implements NotificationData {
             Objects.requireNonNull(requiredGAType(caseData))
         );
         if (!gaForLipService.isLipApp(caseData)) {
-            System.out.println(gaForLipService.isLipApp(caseData));
             customProps.put(
                 GENAPP_REFERENCE,
                 String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))

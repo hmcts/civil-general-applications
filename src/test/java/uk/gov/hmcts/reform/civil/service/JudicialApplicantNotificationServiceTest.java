@@ -2130,6 +2130,7 @@ class JudicialApplicantNotificationServiceTest {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             when(gaForLipService.isLipResp(any())).thenReturn(true);
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO, YES, YES,
                                                                                       REQUEST_MORE_INFORMATION
             ).toBuilder().ccdState(ORDER_MADE)
