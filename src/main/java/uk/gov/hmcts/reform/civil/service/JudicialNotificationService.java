@@ -143,7 +143,9 @@ public class JudicialNotificationService implements NotificationData {
 
         if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
-            String isLipRespondentName = caseData.getDefendant1PartyName();
+            String isLipRespondentName =
+                caseData.getParentClaimantIsApplicant() == NO ? caseData.getClaimant1PartyName() :
+                    caseData.getDefendant1PartyName();
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)
