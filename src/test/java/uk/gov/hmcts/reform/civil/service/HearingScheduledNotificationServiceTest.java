@@ -60,6 +60,7 @@ public class HearingScheduledNotificationServiceTest {
     private static final LocalTime GA_HEARING_TIME_SAMPLE = LocalTime.of(15, 30, 0);
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
     private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
+    private static final String CUSTOM_PARTY_REFERENCE = "Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd";
     private Map<String, String> customProp = new HashMap<>();
 
     @BeforeEach
@@ -76,14 +77,14 @@ public class HearingScheduledNotificationServiceTest {
             .thenReturn("ga-notice-of-hearing-respondent-welsh-template-id");
     }
 
-    private Map<String, String> getNotificationDataMap() {
+    private Map<String, String> getNotificationDataMap(boolean customEmailReference) {
         return Map.of(
             NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
             NotificationData.GENAPP_REFERENCE, CASE_ID.toString(),
             NotificationData.GA_HEARING_DATE, DateFormatHelper.formatLocalDate(
                 GA_HEARING_DATE_SAMPLE, DateFormatHelper.DATE),
             NotificationData.GA_HEARING_TIME, GA_HEARING_TIME_SAMPLE.toString(),
-            NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
+            NotificationData.PARTY_REFERENCE, customEmailReference ? CUSTOM_PARTY_REFERENCE : PARTY_REFERENCE
         );
     }
 
@@ -119,7 +120,26 @@ public class HearingScheduledNotificationServiceTest {
         verify(notificationService, times(2)).sendMail(
             DUMMY_EMAIL,
             "general-apps-notice-of-hearing-template-id",
-            getNotificationDataMap(),
+            getNotificationDataMap(false),
+            "general-apps-notice-of-hearing-" + CASE_REFERENCE
+        );
+    }
+
+    @Test
+    void notificationShouldSendEmailReferenceWhenSolicitorReferenceisPresent() {
+
+        CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
+            .emailPartyReference("Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd")
+            .build();
+        when(solicitorEmailValidation
+                 .validateSolicitorEmail(any(), any()))
+            .thenReturn(caseData);
+
+        hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
+        verify(notificationService, times(2)).sendMail(
+            DUMMY_EMAIL,
+            "general-apps-notice-of-hearing-template-id",
+            getNotificationDataMap(true),
             "general-apps-notice-of-hearing-" + CASE_REFERENCE
         );
     }
@@ -136,7 +156,7 @@ public class HearingScheduledNotificationServiceTest {
         verify(notificationService, times(1)).sendMail(
             DUMMY_EMAIL,
             "general-apps-notice-of-hearing-template-id",
-            getNotificationDataMap(),
+            getNotificationDataMap(false),
             "general-apps-notice-of-hearing-" + CASE_REFERENCE
         );
     }
