@@ -191,6 +191,32 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
+        void notificationSendShouldContainSolicitorEmailReferenceifAdded() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .emailPartyReference("Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd")
+                .isGaRespondentOneLip(YES)
+                .ccdCaseReference(CASE_REFERENCE)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                                              PaymentStatus.SUCCESS).build()).build())
+                .build();
+
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
+
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), eq("general-application-respondent-template-id"), argumentCaptor.capture(), any()
+            );
+            assertThat(argumentCaptor.getValue().get("partyReferences"))
+                .isEqualTo("Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd");
+        }
+
+        @Test
         void notificationRespondentInWelshShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
             CaseData caseData = getCaseData(true).toBuilder()
                 .isGaRespondentOneLip(YES)
