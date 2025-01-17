@@ -129,7 +129,9 @@ public class JudicialNotificationService implements NotificationData {
 
         if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
-            String isLipRespondentName = caseData.getDefendant1PartyName();
+            String isLipRespondentName =
+                caseData.getParentClaimantIsApplicant() == NO ? caseData.getClaimant1PartyName() :
+                    caseData.getDefendant1PartyName();
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)
@@ -278,9 +280,7 @@ public class JudicialNotificationService implements NotificationData {
             }
             customProps.remove(GA_NOTIFICATION_DEADLINE);
 
-        }
-
-        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
+        } else if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
             || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))) {
             // Send notification to applicant only if it's without notice application
             if (solicitorType.equals(APPLICANT)

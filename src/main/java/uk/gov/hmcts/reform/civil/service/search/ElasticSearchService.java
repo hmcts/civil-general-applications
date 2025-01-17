@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.math.RoundingMode.UP;
 
@@ -23,7 +25,7 @@ public abstract class ElasticSearchService {
     protected static final int START_INDEX = 0;
     protected static final int ES_DEFAULT_SEARCH_LIMIT = 10;
 
-    public List<CaseDetails> getGeneralApplications(CaseState caseState) {
+    public Set<CaseDetails> getGeneralApplications(CaseState caseState) {
         SearchResult searchResult = coreCaseDataService.searchGeneralApplication(query(START_INDEX, caseState));
         int pages = calculatePages(searchResult);
         List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
@@ -34,10 +36,10 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return caseDetails;
+        return new HashSet<>(caseDetails);
     }
 
-    public List<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState, GeneralApplicationTypes gaType) {
+    public Set<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState, GeneralApplicationTypes gaType) {
 
         SearchResult searchResult = coreCaseDataService
             .searchGeneralApplication(queryForOrderMade(START_INDEX, caseState, gaType));
@@ -51,10 +53,10 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return caseDetails;
+        return new HashSet<>(caseDetails);
     }
 
-    public List<CaseDetails> getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus processStatus) {
+    public Set<CaseDetails> getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus processStatus) {
         SearchResult searchResult = coreCaseDataService
             .searchGeneralApplication(queryForBusinessProcessStatus(START_INDEX, processStatus));
         int pages = calculatePages(searchResult);
@@ -66,7 +68,7 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return caseDetails;
+        return new HashSet<>(caseDetails);
     }
 
     abstract Query query(int startIndex, CaseState caseState);

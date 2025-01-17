@@ -37,32 +37,43 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     protected String getScenario(CaseData caseData) {
         if (isWithoutNotice(caseData)
             && caseData.getApplicationIsUncloakedOnce() != null
-            && caseData.getApplicationIsUncloakedOnce().equals(YES)
-            && caseData.getMakeAppVisibleToRespondents() != null) {
-            return SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT.getScenario();
-        }
-
-        if (isWithNoticeOrConsent(caseData)) {
-            if (caseData.getJudicialDecisionRequestMoreInfo() != null
-                && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData
-                .getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-                || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION))) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
-            } else if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING) && caseData
-                .getJudicialDecision().getDecision().equals(
-                    GAJudgeDecisionOption.LIST_FOR_A_HEARING) && caseData.getGaHearingNoticeApplication() != null
-                && caseData.getGaHearingNoticeDetail() != null) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT.getScenario();
-            } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
-                && caseData.getJudicialDecision() != null
-                && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario();
-            } else if (caseData.judgeHasMadeAnOrder()
-                && caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)) {
-                return SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT.getScenario();
+            && caseData.getApplicationIsUncloakedOnce().equals(YES)) {
+            if (caseData.getMakeAppVisibleToRespondents() != null) {
+                return SCENARIO_AAA6_GENERAL_APPLICATION_JUDGE_UNCLOAK_RESPONDENT.getScenario();
+            } else {
+                return getScenarioBasedOnDecision(caseData);
             }
         }
 
+        if (isWithNoticeOrConsent(caseData)) {
+            return getScenarioBasedOnDecision(caseData);
+        }
+
+        return "";
+    }
+
+    private String getScenarioBasedOnDecision(CaseData caseData) {
+        if (caseData.getCcdState().equals(CaseState.LISTING_FOR_A_HEARING) && caseData
+            .getJudicialDecision().getDecision().equals(
+                GAJudgeDecisionOption.LIST_FOR_A_HEARING) && caseData.getGaHearingNoticeApplication() != null
+            && caseData.getGaHearingNoticeDetail() != null) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT.getScenario();
+        } else if (caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations() != null
+            && caseData.getJudicialDecision() != null
+            && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario();
+        } else if (caseData.judgeHasMadeAnOrder()
+            && List.of(
+                CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
+                CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED
+            )
+            .contains(caseData.getCcdState())) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT.getScenario();
+        } else if (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY
+            && caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)) {
+            return SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario();
+        }
         return "";
     }
 

@@ -129,7 +129,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
-        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData());
+        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -146,14 +146,14 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     }
 
     private boolean isLipPaymentViaServiceRequest(CaseData data) {
-        log.info("Is LIP payment via service request for caseId: {}", data);
+        log.info("Is LIP payment via service request for caseId: {}", data.getCcdCaseReference());
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && (Objects.isNull(data.getGeneralAppHelpWithFees())
             || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
     }
 
     private boolean isLipPaymentViaHelpWithFees(CaseData data) {
-        log.info("Is LIP payment via help with fees for caseId: {}", data);
+        log.info("Is LIP payment via help with fees for caseId: {}", data.getCcdCaseReference());
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && !Objects.isNull(data.getGeneralAppHelpWithFees())
             && data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.YES

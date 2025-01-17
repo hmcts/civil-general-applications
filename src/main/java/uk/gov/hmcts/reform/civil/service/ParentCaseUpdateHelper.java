@@ -75,13 +75,14 @@ public class ParentCaseUpdateHelper {
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
         "directionOrder", "hearingNotice",
-        "gaResp", GA_DRAFT_FORM
+        "gaResp", GA_DRAFT_FORM, "gaAddl"
     };
     private static final String CLAIMANT_ROLE = "Claimant";
     private static final String RESPONDENTSOL_ROLE = "RespondentSol";
     private static final String RESPONDENTSOL_TWO_ROLE = "RespondentSolTwo";
     private String[] roles = {CLAIMANT_ROLE, RESPONDENTSOL_ROLE, RESPONDENTSOL_TWO_ROLE};
     private static final String GA_EVIDENCE = "gaEvidence";
+    private static final String GA_ADDL = "gaAddl";
     private static final String CIVIL_GA_EVIDENCE = "generalAppEvidence";
     private static final String FREE_KEYWORD = "FREE";
 
@@ -746,6 +747,9 @@ public class ParentCaseUpdateHelper {
         String gaCollectionName = type + "Document";
         if (type.equals(GA_EVIDENCE)) {
             gaCollectionName = CIVIL_GA_EVIDENCE + "Document";
+        }
+        if (type.equals(GA_ADDL)) {
+            gaCollectionName = type + "Doc";
         }
 
         String civilCollectionName = type + "Doc" + role;
