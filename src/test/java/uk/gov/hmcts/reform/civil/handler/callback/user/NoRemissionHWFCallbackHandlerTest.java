@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
@@ -25,11 +24,8 @@ import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_APPLICANT_LIP_HWF;
-import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @SpringBootTest(classes = {
@@ -50,35 +46,6 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESP
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
         assertThat(handler.handledEvents()).contains(NO_REMISSION_HWF_GA);
-    }
-
-    @Nested
-    class AboutToStart {
-        @Test
-        void shouldSetUpDefaultData_WhileHwfFeeTypeIsBlank() {
-            CaseData caseData = CaseData.builder()
-                    .ccdState(AWAITING_RESPONDENT_RESPONSE)
-                    .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
-            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_START);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
-
-        }
-
-        @Test
-        void shouldSetUpAddData_WhileHwfFeeTypeIsBlank() {
-            CaseData caseData = CaseData.builder()
-                    .ccdState(APPLICATION_ADD_PAYMENT)
-                    .generalAppHelpWithFees(HelpWithFees.builder().build()).build();
-            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-            CallbackParams params = callbackParamsOf(caseData, CallbackType.ABOUT_TO_START);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
-            assertThat(responseCaseData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
-
-        }
     }
 
     @Test

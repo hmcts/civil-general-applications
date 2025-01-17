@@ -83,6 +83,10 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
                 .build();
 
             // Act
@@ -118,6 +122,10 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
                 .build();
 
             // Act
