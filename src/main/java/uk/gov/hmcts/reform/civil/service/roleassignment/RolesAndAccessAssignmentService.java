@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.SystemUpdateUserConfiguration;
 import uk.gov.hmcts.reform.civil.ras.model.GrantType;
 import uk.gov.hmcts.reform.civil.ras.model.RoleAssignment;
 import uk.gov.hmcts.reform.civil.ras.model.RoleAssignmentRequest;
@@ -31,6 +32,7 @@ public class RolesAndAccessAssignmentService {
         "allocated-admin-caseworker", "allocated-ctsc-caseworker", "allocated-nbc-caseworker");
     private final RoleAssignmentsService roleAssignmentService;
     private final UserService userService;
+    private final SystemUpdateUserConfiguration systemUserConfig;
 
     public void copyAllocatedRolesFromRolesAndAccess(String caseId, String bearerToken) {
         try {
@@ -108,7 +110,7 @@ public class RolesAndAccessAssignmentService {
     }
 
     private String getSystemUserToken() {
-        return userService.getAccessToken("4917924EMP-@ejudiciary.net", "Hmcts1234");
+        return userService.getAccessToken(systemUserConfig.getUserName(), systemUserConfig.getPassword());
     }
 
 }
