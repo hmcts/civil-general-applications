@@ -57,7 +57,7 @@ public class DashboardNotificationsParamsMapper {
         }
 
         if (caseData.getGaHwfDetails() != null && (caseData.getHwfFeeType() != null && FeeType.APPLICATION == caseData.getHwfFeeType())) {
-            if (caseData.getAdditionalHwfDetails().getHwfCaseEvent() != null
+            if (caseData.getGaHwfDetails().getHwfCaseEvent() != null
                 && caseData.getGaHwfDetails().getHwfCaseEvent().equals(CaseEvent.PARTIAL_REMISSION_HWF_GA)) {
                 params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
                 params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
