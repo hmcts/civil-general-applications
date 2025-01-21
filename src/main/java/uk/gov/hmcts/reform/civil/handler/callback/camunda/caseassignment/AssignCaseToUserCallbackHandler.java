@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
+import uk.gov.hmcts.reform.civil.service.roleassignment.RolesAndAccessAssignmentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ASSIGN_GA_ROLES;
@@ -57,6 +59,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     private final GaForLipService gaForLipService;
+
+    private final RolesAndAccessAssignmentService rolesAndAccessAssignmentService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -149,6 +153,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                 }
 
             }
+
+            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseId, callbackParams.getParams().get(BEARER_TOKEN).toString());
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)

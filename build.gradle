@@ -407,6 +407,7 @@ dependencies {
 
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.3.0'
 
+  implementation 'com.github.hmcts:civil-commons:vCIV-15733v2'
 
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.1.1'
