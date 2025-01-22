@@ -767,7 +767,7 @@ public class HwfNotificationServiceTest {
             TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
             TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
-            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            FEE_AMOUNT, "5.00",
             NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
             NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
@@ -780,7 +780,7 @@ public class HwfNotificationServiceTest {
             TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
             TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
-            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            FEE_AMOUNT, "5.00",
             NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
             NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
@@ -794,7 +794,7 @@ public class HwfNotificationServiceTest {
                 TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
-                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
+                REMAINING_AMOUNT, "5.00"
         );
     }
 
@@ -806,7 +806,7 @@ public class HwfNotificationServiceTest {
                 TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
-                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
+                REMAINING_AMOUNT, "5.00"
         );
     }
 
