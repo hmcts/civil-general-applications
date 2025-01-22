@@ -153,7 +153,9 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             }
 
-            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseId);
+            log.info("MAIN CASE ID {}", caseData.getGeneralAppParentCaseLink().getCaseReference());
+            log.info("GA CASE ID {}", caseId);
+            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
