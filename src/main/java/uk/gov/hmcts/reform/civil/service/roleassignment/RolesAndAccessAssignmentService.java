@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.civil.ras.model.RoleRequest;
 import uk.gov.hmcts.reform.civil.ras.model.RoleType;
 import uk.gov.hmcts.reform.civil.service.UserService;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class RolesAndAccessAssignmentService {
         Optional.ofNullable(roleAssignmentResponse.getRoleAssignmentResponse())
             .ifPresentOrElse(response -> {
                 if (response.isEmpty()) {
-                    log.info("Role assignment list empty for case ID {}", mainCaseId);
+                    log.info("Role assignment list empty for case ID, and allocated roles {}", mainCaseId);
                 } else {
                     log.info("GET ROLES case id roleAssignmentResponse:  {}", response);
                     Map<String, List<RoleAssignmentResponse>> roleAssignmentsByActorId = response.stream()
@@ -62,7 +62,6 @@ public class RolesAndAccessAssignmentService {
     }
 
     private void assignRoles(String gaCaseId, RoleAssignmentResponse roleToAssign, String bearerToken) {
-        //TODO we will use system user to make assignment, currently unavailable, so temporary using hardcoded ID
         String systemUserId = userService.getUserInfo(bearerToken).getUid();
 
         roleAssignmentService.assignUserRoles(
@@ -73,11 +72,11 @@ public class RolesAndAccessAssignmentService {
                                  .assignerId(systemUserId)
                                  .replaceExisting(false)
                                  .build())
-                .requestedRoles(buildRoleAssignments(gaCaseId, Collections.singletonList(roleToAssign.getActorId()), roleToAssign)).build());
+                .requestedRoles(buildRoleAssignments(gaCaseId, roleToAssign)).build());
         log.info("Assigned roles successfully");
     }
 
-    private static RoleAssignment buildRoleAssignment(String gaCaseId, String userId, RoleAssignmentResponse roleToAssign) {
+    private static RoleAssignment buildRoleAssignment(String gaCaseId, RoleAssignmentResponse roleToAssign) {
 
         Map<String, Object> roleAssignmentAttributes = new HashMap<>();
         roleAssignmentAttributes.put("caseId", gaCaseId);
@@ -94,7 +93,7 @@ public class RolesAndAccessAssignmentService {
         }
 
         return RoleAssignment.builder()
-            .actorId(userId)
+            .actorId(roleToAssign.getActorId())
             .actorIdType(roleToAssign.getActorIdType())
             .grantType(GrantType.valueOf(roleToAssign.getGrantType()))
             .roleCategory(RoleCategory.valueOf(roleToAssign.getRoleCategory()))
@@ -108,10 +107,11 @@ public class RolesAndAccessAssignmentService {
             .build();
     }
 
-    private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, List<String> userIds, RoleAssignmentResponse roleToAssign) {
-        return userIds.stream()
-            .map(user -> buildRoleAssignment(gaCaseId, user, roleToAssign))
-            .collect(Collectors.toList());
+    private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, RoleAssignmentResponse roleToAssign) {
+        RoleAssignment roleAssignment = buildRoleAssignment(gaCaseId, roleToAssign);
+        List<RoleAssignment> roleAssignments = new ArrayList<>();
+        roleAssignments.add(roleAssignment);
+        return roleAssignments;
     }
 
     private String getSystemUserToken() {
