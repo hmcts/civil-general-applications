@@ -34,29 +34,34 @@ public class RolesAndAccessAssignmentService {
     private final UserService userService;
     private final SystemUpdateUserConfiguration systemUserConfig;
 
-    public void copyAllocatedRolesFromRolesAndAccess(String caseId) {
+    public void copyAllocatedRolesFromRolesAndAccess(String mainCaseId, String gaCaseId) {
         try {
-            getCaseRoles(caseId, getSystemUserToken());
+            getCaseRoles(mainCaseId, gaCaseId, getSystemUserToken());
         } catch (Exception e) {
             log.error("Could not automatically copy and assign roles from Roles And Access", e);
         }
     }
 
-    private void getCaseRoles(String caseId, String bearerToken) {
+    private void getCaseRoles(String mainCaseId, String gaCaseId, String bearerToken) {
         log.info("GET Assigned roles for {}, user id{}", bearerToken, userService.getUserInfo(bearerToken).getUid());
-        RoleAssignmentServiceResponse roleAssignmentResponse = roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(caseId, ROLE_TYPE, ROLE_NAMES, bearerToken);
+        RoleAssignmentServiceResponse roleAssignmentResponse = roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(mainCaseId, ROLE_TYPE, ROLE_NAMES, bearerToken);
         Optional.ofNullable(roleAssignmentResponse.getRoleAssignmentResponse())
             .ifPresentOrElse(response -> {
-                log.info("GET ROLES case id roleAssignmentResponse:  {}", response);
-                Map<String, List<RoleAssignmentResponse>> roleAssignmentsByActorId = response.stream()
-                    .collect(Collectors.groupingBy(RoleAssignmentResponse::getActorId));
+                if (response.isEmpty()) {
+                    log.info("Role assignment list empty for case ID {}", mainCaseId);
+                } else {
+                    log.info("GET ROLES case id roleAssignmentResponse:  {}", response);
+                    Map<String, List<RoleAssignmentResponse>> roleAssignmentsByActorId = response.stream()
+                        .collect(Collectors.groupingBy(RoleAssignmentResponse::getActorId));
 
-                roleAssignmentsByActorId.forEach((actorId, actorRoles)
-                    -> actorRoles.forEach(role -> assignRoles(caseId, role, bearerToken)));
-            }, () -> log.info("No role assignment response found for case ID {}", caseId));
+                    roleAssignmentsByActorId.forEach((actorId, actorRoles) ->
+                                                         actorRoles.forEach(role -> assignRoles(gaCaseId, role, bearerToken))
+                    );
+                }
+            }, () -> log.info("No role assignment response found for case ID {}", mainCaseId));
     }
 
-    private void assignRoles(String caseId, RoleAssignmentResponse roleToAssign, String bearerToken) {
+    private void assignRoles(String gaCaseId, RoleAssignmentResponse roleToAssign, String bearerToken) {
         //TODO we will use system user to make assignment, currently unavailable, so temporary using hardcoded ID
         String systemUserId = userService.getUserInfo(bearerToken).getUid();
 
@@ -68,14 +73,14 @@ public class RolesAndAccessAssignmentService {
                                  .assignerId(systemUserId)
                                  .replaceExisting(false)
                                  .build())
-                .requestedRoles(buildRoleAssignments(caseId, Collections.singletonList(roleToAssign.getActorId()), roleToAssign)).build());
+                .requestedRoles(buildRoleAssignments(gaCaseId, Collections.singletonList(roleToAssign.getActorId()), roleToAssign)).build());
         log.info("Assigned roles successfully");
     }
 
-    private static RoleAssignment buildRoleAssignment(String caseId, String userId, RoleAssignmentResponse roleToAssign) {
+    private static RoleAssignment buildRoleAssignment(String gaCaseId, String userId, RoleAssignmentResponse roleToAssign) {
 
         Map<String, Object> roleAssignmentAttributes = new HashMap<>();
-        roleAssignmentAttributes.put("caseId", caseId);
+        roleAssignmentAttributes.put("caseId", gaCaseId);
         roleAssignmentAttributes.put("caseType", "GENERALAPPLICATION");
         roleAssignmentAttributes.put("jurisdiction", "CIVIL");
         if (roleToAssign.getAttributes().getContractType() != null) {
@@ -103,9 +108,9 @@ public class RolesAndAccessAssignmentService {
             .build();
     }
 
-    private static List<RoleAssignment> buildRoleAssignments(String caseId, List<String> userIds, RoleAssignmentResponse roleToAssign) {
+    private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, List<String> userIds, RoleAssignmentResponse roleToAssign) {
         return userIds.stream()
-            .map(user -> buildRoleAssignment(caseId, user, roleToAssign))
+            .map(user -> buildRoleAssignment(gaCaseId, user, roleToAssign))
             .collect(Collectors.toList());
     }
 
