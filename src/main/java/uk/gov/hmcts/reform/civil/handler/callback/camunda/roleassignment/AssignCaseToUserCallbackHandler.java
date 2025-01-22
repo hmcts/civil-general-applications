@@ -154,7 +154,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             }
 
-            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseId, callbackParams.getParams().get(BEARER_TOKEN).toString());
+            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseId);
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)

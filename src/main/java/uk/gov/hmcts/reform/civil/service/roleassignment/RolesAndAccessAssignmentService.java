@@ -34,15 +34,16 @@ public class RolesAndAccessAssignmentService {
     private final UserService userService;
     private final SystemUpdateUserConfiguration systemUserConfig;
 
-    public void copyAllocatedRolesFromRolesAndAccess(String caseId, String bearerToken) {
+    public void copyAllocatedRolesFromRolesAndAccess(String caseId) {
         try {
-            getCaseRoles(caseId, bearerToken);
+            getCaseRoles(caseId, getSystemUserToken());
         } catch (Exception e) {
             log.error("Could not automatically copy and assign roles from Roles And Access", e);
         }
     }
 
     private void getCaseRoles(String caseId, String bearerToken) {
+        log.info("GET Assigned roles for {}, user id{}", bearerToken, userService.getUserInfo(bearerToken).getUid());
         RoleAssignmentServiceResponse roleAssignmentResponse = roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(caseId, ROLE_TYPE, ROLE_NAMES, bearerToken);
         Optional.ofNullable(roleAssignmentResponse.getRoleAssignmentResponse())
             .ifPresentOrElse(response -> {
@@ -51,18 +52,17 @@ public class RolesAndAccessAssignmentService {
                     .collect(Collectors.groupingBy(RoleAssignmentResponse::getActorId));
 
                 roleAssignmentsByActorId.forEach((actorId, actorRoles)
-                    -> actorRoles.forEach(role -> assignRoles(caseId, role)));
+                    -> actorRoles.forEach(role -> assignRoles(caseId, role, bearerToken)));
             }, () -> log.info("No role assignment response found for case ID {}", caseId));
     }
 
-    private void assignRoles(String caseId, RoleAssignmentResponse roleToAssign) {
+    private void assignRoles(String caseId, RoleAssignmentResponse roleToAssign, String bearerToken) {
         //TODO we will use system user to make assignment, currently unavailable, so temporary using hardcoded ID
-        String userAuth = getSystemUserToken();
-        String systemUserId = userService.getUserInfo(userAuth).getUid();
+        String systemUserId = userService.getUserInfo(bearerToken).getUid();
 
         roleAssignmentService.assignUserRoles(
             systemUserId,
-            userAuth,
+            bearerToken,
             RoleAssignmentRequest.builder()
                 .roleRequest(RoleRequest.builder()
                                  .assignerId(systemUserId)
@@ -76,7 +76,7 @@ public class RolesAndAccessAssignmentService {
 
         Map<String, Object> roleAssignmentAttributes = new HashMap<>();
         roleAssignmentAttributes.put("caseId", caseId);
-        roleAssignmentAttributes.put("caseType", "CIVIL");
+        roleAssignmentAttributes.put("caseType", "GENERALAPPLICATION");
         roleAssignmentAttributes.put("jurisdiction", "CIVIL");
         if (roleToAssign.getAttributes().getContractType() != null) {
             roleAssignmentAttributes.put("contractType", roleToAssign.getAttributes().getContractType());
