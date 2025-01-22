@@ -170,7 +170,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .gaHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When
@@ -189,7 +189,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForAdditionalFee(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .additionalHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When

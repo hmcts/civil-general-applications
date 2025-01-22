@@ -107,13 +107,13 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         if ((caseData.isHWFTypeApplication()
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == YesOrNo.YES
             && Objects.nonNull(caseData.getGaHwfDetails())
-            && Objects.nonNull(caseData.getGaHwfDetails().getOutstandingFeeInPounds())
-            && !Objects.equals(caseData.getGaHwfDetails().getOutstandingFeeInPounds(), BigDecimal.ZERO))
+            && Objects.nonNull(caseData.getGaHwfDetails().getOutstandingFee())
+            && !Objects.equals(caseData.getGaHwfDetails().getOutstandingFee(), BigDecimal.ZERO))
             || (caseData.isHWFTypeAdditional()
             && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == YesOrNo.YES
             && Objects.nonNull(caseData.getAdditionalHwfDetails())
-            && Objects.nonNull(caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds())
-            && !Objects.equals(caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds(), BigDecimal.ZERO))) {
+            && Objects.nonNull(caseData.getAdditionalHwfDetails().getOutstandingFee())
+            && !Objects.equals(caseData.getAdditionalHwfDetails().getOutstandingFee(), BigDecimal.ZERO))) {
             errors.add(WRONG_REMISSION_TYPE_SELECTED);
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -155,7 +155,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                       .hwfReferenceNumber(caseData
                                                               .getGeneralAppHelpWithFees()
                                                               .getHelpWithFeesReferenceNumber())
-                                      .outstandingFeeInPounds(BigDecimal.ZERO).build())
+                                      .outstandingFee(BigDecimal.ZERO).build())
                     .businessProcess(BusinessProcess.ready(caseEvent)).build();
             } else if (processedCaseData.isHWFTypeAdditional()) {
                 caseData = processedCaseData.toBuilder()
@@ -164,7 +164,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
                                               .hwfReferenceNumber(caseData
                                                                       .getGeneralAppHelpWithFees()
                                                                       .getHelpWithFeesReferenceNumber())
-                                              .outstandingFeeInPounds(BigDecimal.ZERO).build())
+                                              .outstandingFee(BigDecimal.ZERO).build())
                     .businessProcess(BusinessProcess.ready(UPDATE_GA_ADD_HWF))
                     .build();
                 log.info("Start business process UPDATE_GA_ADD_HWF for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());

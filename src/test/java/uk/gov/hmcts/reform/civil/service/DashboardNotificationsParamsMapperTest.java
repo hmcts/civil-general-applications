@@ -180,7 +180,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
                               .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -202,7 +202,7 @@ public class DashboardNotificationsParamsMapperTest {
             .additionalHwfDetails(HelpWithFeesDetails.builder()
                                       .hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
                                       .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -223,7 +223,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA)
                               .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -246,7 +246,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .additionalHwfDetails(HelpWithFeesDetails.builder()
                                       .hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA).remissionAmount(BigDecimal.valueOf(7500))
-                                      .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                                      .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
