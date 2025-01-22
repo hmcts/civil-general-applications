@@ -231,7 +231,7 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
         assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
-        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£200");
+        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
 
     @Test
@@ -254,7 +254,7 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
         assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
-        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£200");
+        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
 
     @Test
