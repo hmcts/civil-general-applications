@@ -68,31 +68,10 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         FeePaymentOutcomeDetails.FeePaymentOutcomeDetailsBuilder feeDetailBuilder = FeePaymentOutcomeDetails.builder();
         feeDetailBuilder.hwfNumberAvailable(YesOrNo.NO);
-        if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
-            caseDataBuilder.hwfFeeType(FeeType.ADDITIONAL);
-            if (Objects.isNull(caseData.getAdditionalHwfDetails())) {
-                caseDataBuilder.additionalHwfDetails(HelpWithFeesDetails.builder()
-                                                         .hwfFeeType(FeeType.ADDITIONAL).build());
-            }
-            if (Objects.nonNull(caseData.getGaAdditionalHelpWithFees())
-                && Objects.nonNull(caseData.getGaAdditionalHelpWithFees().getHelpWithFeesReferenceNumber())) {
-                feeDetailBuilder.hwfNumberAvailable(YesOrNo.YES)
-                    .hwfNumberForFeePaymentOutcome(caseData.getGaAdditionalHelpWithFees()
-                                                       .getHelpWithFeesReferenceNumber());
-            }
-        } else {
-            caseDataBuilder.hwfFeeType(FeeType.APPLICATION);
-            if (Objects.isNull(caseData.getGaHwfDetails())) {
-                caseDataBuilder.gaHwfDetails(HelpWithFeesDetails.builder()
-                                                 .hwfFeeType(FeeType.APPLICATION).build());
-
-            }
-            if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
-                && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())) {
-                feeDetailBuilder.hwfNumberAvailable(YesOrNo.YES)
-                    .hwfNumberForFeePaymentOutcome(caseData.getGeneralAppHelpWithFees()
-                                                       .getHelpWithFeesReferenceNumber());
-            }
+        if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())
+            && Objects.nonNull(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber())) {
+            feeDetailBuilder.hwfNumberAvailable(YesOrNo.YES)
+                .hwfNumberForFeePaymentOutcome(caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber());
         }
         caseDataBuilder.feePaymentOutcomeDetails(feeDetailBuilder.build());
         return AboutToStartOrSubmitCallbackResponse.builder()
