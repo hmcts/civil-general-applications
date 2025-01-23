@@ -121,16 +121,16 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         throws NotificationException {
         var caseReference = caseData.getCcdCaseReference();
         try {
-            log.info("Sending notification to recipient: {} for Case ID: {} with template: {}", recipient, caseReference, emailTemplate);
+            log.info("Sending notification to recipient for Case ID: {} with template: {}", caseReference, emailTemplate);
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
-            log.info("Notification sent successfully to recipient: {} for Case ID: {}", recipient, caseReference);
+            log.info("Notification sent successfully for Case ID: {}", caseReference);
         } catch (NotificationException e) {
-            log.error("Failed to send notification to recipient: {} for Case ID: {}", recipient, caseReference, e);
+            log.error("Failed to send notification for Case ID: {}", caseReference, e);
             throw new NotificationException(e);
         }
     }
