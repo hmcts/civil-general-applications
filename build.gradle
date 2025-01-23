@@ -285,7 +285,7 @@ sonarqube {
     property "sonar.projectName", "Reform :: civil-general-applications"
     property "sonar.projectKey", "civil-general-applications"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
-    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/*BaseExternalTaskHandler.java, **/stereotypes/**, **/*Exception.java, **/service/roleassignment/**"
+    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/*BaseExternalTaskHandler.java, **/stereotypes/**, **/*Exception.java"
     property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
     property "sonar.host.url", "https://sonar.reform.hmcts.net/"
   }
@@ -406,6 +406,7 @@ dependencies {
   implementation group: 'org.glassfish.jaxb', name: 'jaxb-runtime', version: '4.0.2'
 
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.3.0'
+
 
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.1.1'
