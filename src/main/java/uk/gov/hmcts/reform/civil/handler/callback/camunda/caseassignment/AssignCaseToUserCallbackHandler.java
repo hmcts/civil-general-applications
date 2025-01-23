@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.handler.callback.camunda.roleassignment;
+package uk.gov.hmcts.reform.civil.handler.callback.camunda.caseassignment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.civil.service;
+package uk.gov.hmcts.reform.civil.service.roleassignment;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.civil.ras.model.RoleAssignmentResponse;
 import uk.gov.hmcts.reform.civil.ras.model.RoleAssignmentServiceResponse;
 import uk.gov.hmcts.reform.civil.ras.model.RoleCategory;
 import uk.gov.hmcts.reform.civil.ras.model.RoleRequest;
-import uk.gov.hmcts.reform.civil.service.roleassignment.RoleAssignmentsService;
 
 import java.util.List;
 import java.util.Map;
