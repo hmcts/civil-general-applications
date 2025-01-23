@@ -25,7 +25,7 @@ public class PaymentStatusService {
         String serviceRequestReference, String authorization, CardPaymentServiceRequestDTO requestDto) {
         try {
             log.info("authorization -> " + authorization);
-            log.info("CardPaymentServiceRequestDTO -> " + serviceRequestReference);
+            log.info("serviceRequestReference -> " + serviceRequestReference);
             log.info("requestDto -> " + requestDto.toString());
             return paymentsClient.createGovPayCardPaymentRequest(serviceRequestReference, authorization, requestDto);
         } catch (FeignException.InternalServerError ex) {
@@ -36,7 +36,7 @@ public class PaymentStatusService {
             log.error("Payments response error \n\tstatus: {} => message: \"{}\"", ex.status(), ex.contentUTF8(), ex);
             log.info("Feign exception caught, payment will not be retried");
             throw new PaymentsApiException(ex.contentUTF8(), ex);
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log.info("exception -> " + ex);
             throw new PaymentsApiException(ex.getMessage());
         }
@@ -49,11 +49,15 @@ public class PaymentStatusService {
             log.info("Payment status for payment reference {} is {}", paymentReference, cardPaymentStatus.getStatus());
             return cardPaymentStatus;
         } catch (FeignException.InternalServerError ex) {
+            log.info("InternalServerError -> " + ex);
             throw new RetryablePaymentException(ex.contentUTF8(), ex);
         } catch (FeignException ex) {
             log.error("Payments response error \n\tstatus: {} => message: \"{}\"", ex.status(), ex.contentUTF8(), ex);
             log.info("Feign exception caught, payment will not be retried");
             throw new PaymentsApiException(ex.contentUTF8(), ex);
+        } catch (Exception ex) {
+            log.info("exception -> " + ex);
+            throw new PaymentsApiException(ex.getMessage());
         }
     }
 }
