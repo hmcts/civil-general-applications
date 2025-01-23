@@ -887,8 +887,6 @@ public class ParentCaseUpdateHelper {
         Optional<Element<GeneralApplication>> newApplicationElement, GeneralApplication application,
                                                              List<Element<GeneralApplication>>
                                                                  generalApplicationsList) {
-        log.info("Starting addApplication. Application to add: {}, Current applications list size: {}",
-                 application, generalApplicationsList.size());
         List<Element<GeneralApplication>> newApplication = newArrayList();
         newApplication.addAll(generalApplicationsList);
         Element<GeneralApplication> elementToAdd;
@@ -901,7 +899,6 @@ public class ParentCaseUpdateHelper {
             elementToAdd = element(application);
         }
         newApplication.add(elementToAdd);
-        log.info("Completed addApplication. New applications list size: {}", newApplication.size());
 
         return newApplication;
     }
