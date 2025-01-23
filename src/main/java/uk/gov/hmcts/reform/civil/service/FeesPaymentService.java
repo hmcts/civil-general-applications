@@ -51,6 +51,10 @@ public class FeesPaymentService {
             .language(caseData.isApplicantBilingual() ? "cy" : "En")
             .returnUrl(cuiFrontEndUrl + returnUrlSubPath + caseReference)
             .build();
+        log.info("before call payment status {} {}", requestDto, caseData.isAdditionalFeeRequested()
+            ? "getAdditionalPaymentServiceRef" + generalAppPbaDetails.getAdditionalPaymentServiceRef()
+            : "getServiceReqReference" + generalAppPbaDetails.getServiceReqReference());
+
         CardPaymentServiceRequestResponse govPayCardPaymentRequest = paymentStatusService
             .createGovPayCardPaymentRequest(
                 caseData.isAdditionalFeeRequested()
@@ -59,6 +63,7 @@ public class FeesPaymentService {
                 authorization,
                 requestDto
             );
+        log.info("after call status service ");
         return CardPaymentStatusResponse.from(govPayCardPaymentRequest);
     }
 

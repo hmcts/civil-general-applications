@@ -24,8 +24,13 @@ public class PaymentStatusService {
     public CardPaymentServiceRequestResponse createGovPayCardPaymentRequest(
         String serviceRequestReference, String authorization, CardPaymentServiceRequestDTO requestDto) {
         try {
+            log.info("authorization -> " + authorization);
+            log.info("CardPaymentServiceRequestDTO -> " + serviceRequestReference);
+            log.info("requestDto -> " + requestDto.toString());
             return paymentsClient.createGovPayCardPaymentRequest(serviceRequestReference, authorization, requestDto);
         } catch (FeignException.InternalServerError ex) {
+            log.info("InternalServerError -> " + ex);
+
             throw new RetryablePaymentException(ex.contentUTF8(), ex);
         } catch (FeignException ex) {
             log.error("Payments response error \n\tstatus: {} => message: \"{}\"", ex.status(), ex.contentUTF8(), ex);
