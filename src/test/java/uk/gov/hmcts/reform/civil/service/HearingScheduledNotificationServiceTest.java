@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CASE_ID;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 @SpringBootTest(classes = {
@@ -58,6 +59,8 @@ public class HearingScheduledNotificationServiceTest {
     private static final LocalDate GA_HEARING_DATE_SAMPLE = LocalDate.now().plusDays(10);
     private static final LocalTime GA_HEARING_TIME_SAMPLE = LocalTime.of(15, 30, 0);
     private static final String DUMMY_EMAIL = "hmcts.civil@gmail.com";
+    private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
+    private static final String CUSTOM_PARTY_REFERENCE = "Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd";
     private Map<String, String> customProp = new HashMap<>();
 
     @BeforeEach
@@ -74,22 +77,26 @@ public class HearingScheduledNotificationServiceTest {
             .thenReturn("ga-notice-of-hearing-respondent-welsh-template-id");
     }
 
-    private Map<String, String> getNotificationDataMap() {
+    private Map<String, String> getNotificationDataMap(boolean customEmailReference) {
         return Map.of(
             NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+            NotificationData.GENAPP_REFERENCE, CASE_ID.toString(),
             NotificationData.GA_HEARING_DATE, DateFormatHelper.formatLocalDate(
                 GA_HEARING_DATE_SAMPLE, DateFormatHelper.DATE),
-            NotificationData.GA_HEARING_TIME, GA_HEARING_TIME_SAMPLE.toString()
+            NotificationData.GA_HEARING_TIME, GA_HEARING_TIME_SAMPLE.toString(),
+            NotificationData.PARTY_REFERENCE, customEmailReference ? CUSTOM_PARTY_REFERENCE : PARTY_REFERENCE
         );
     }
 
     private Map<String, String> getNotificationDataMapLip(YesOrNo isLipAppln, YesOrNo isLipRespondent) {
         customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
+        customProp.put(NotificationData.GENAPP_REFERENCE, CASE_ID.toString());
         customProp.put(NotificationData.GA_HEARING_DATE, DateFormatHelper.formatLocalDate(
             GA_HEARING_DATE_SAMPLE, DateFormatHelper.DATE));
         customProp.put(NotificationData.CASE_TITLE, "Test Claimant1 Name v Test Defendant1 Name");
 
         customProp.put(NotificationData.GA_HEARING_TIME, GA_HEARING_TIME_SAMPLE.toString());
+        customProp.put(NotificationData.PARTY_REFERENCE, PARTY_REFERENCE);
         if (isLipAppln == YES) {
             customProp.put(NotificationData.GA_LIP_APPLICANT_NAME, "Test Applicant Name");
         }
@@ -113,7 +120,26 @@ public class HearingScheduledNotificationServiceTest {
         verify(notificationService, times(2)).sendMail(
             DUMMY_EMAIL,
             "general-apps-notice-of-hearing-template-id",
-            getNotificationDataMap(),
+            getNotificationDataMap(false),
+            "general-apps-notice-of-hearing-" + CASE_REFERENCE
+        );
+    }
+
+    @Test
+    void notificationShouldSendEmailReferenceWhenSolicitorReferenceisPresent() {
+
+        CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
+            .emailPartyReference("Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd")
+            .build();
+        when(solicitorEmailValidation
+                 .validateSolicitorEmail(any(), any()))
+            .thenReturn(caseData);
+
+        hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
+        verify(notificationService, times(2)).sendMail(
+            DUMMY_EMAIL,
+            "general-apps-notice-of-hearing-template-id",
+            getNotificationDataMap(true),
             "general-apps-notice-of-hearing-" + CASE_REFERENCE
         );
     }
@@ -130,7 +156,7 @@ public class HearingScheduledNotificationServiceTest {
         verify(notificationService, times(1)).sendMail(
             DUMMY_EMAIL,
             "general-apps-notice-of-hearing-template-id",
-            getNotificationDataMap(),
+            getNotificationDataMap(false),
             "general-apps-notice-of-hearing-" + CASE_REFERENCE
         );
     }
