@@ -64,6 +64,8 @@ public class FeesPaymentService {
                 requestDto
             );
         log.info("after call status service ");
+        log.info("govPayCardPaymentRequest -> " + govPayCardPaymentRequest.toString());
+
         return CardPaymentStatusResponse.from(govPayCardPaymentRequest);
     }
 

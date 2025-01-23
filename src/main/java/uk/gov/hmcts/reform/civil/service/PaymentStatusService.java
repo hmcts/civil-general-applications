@@ -36,6 +36,9 @@ public class PaymentStatusService {
             log.error("Payments response error \n\tstatus: {} => message: \"{}\"", ex.status(), ex.contentUTF8(), ex);
             log.info("Feign exception caught, payment will not be retried");
             throw new PaymentsApiException(ex.contentUTF8(), ex);
+        } catch (Exception ex){
+            log.info("exception -> " + ex);
+            throw new PaymentsApiException(ex.getMessage());
         }
     }
 
