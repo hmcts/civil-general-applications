@@ -156,7 +156,6 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             }
 
-
             if (featureToggleService.isMultiOrIntermediateTrackEnabled()) {
                 log.info("MAIN CASE ID {}", caseData.getGeneralAppParentCaseLink().getCaseReference());
                 log.info("GA CASE ID {}", caseId);
