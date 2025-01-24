@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -60,6 +61,8 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final GaForLipService gaForLipService;
 
     private final RolesAndAccessAssignmentService rolesAndAccessAssignmentService;
+
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -153,9 +156,12 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             }
 
-            log.info("MAIN CASE ID {}", caseData.getGeneralAppParentCaseLink().getCaseReference());
-            log.info("GA CASE ID {}", caseId);
-            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
+
+            if (featureToggleService.isMultiOrIntermediateTrackEnabled()) {
+                log.info("MAIN CASE ID {}", caseData.getGeneralAppParentCaseLink().getCaseReference());
+                log.info("GA CASE ID {}", caseId);
+                rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
+            }
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)

@@ -12,7 +12,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class FeatureToggleServiceTest {
 
     private static final String FAKE_FEATURE = "fake-feature";
@@ -138,4 +143,28 @@ class FeatureToggleServiceTest {
         assertThat(ImmutableList.copyOf(capturedLdUser.getCustomAttributes())).extracting("name")
             .containsOnlyOnceElementsOf(customAttributesKeys);
     }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValue_whenMintiEnabled(Boolean toggleStat) {
+        var minti = "minti";
+        givenToggle(minti, toggleStat);
+
+        assertThat(featureToggleService.isMintiEnabled()).isEqualTo(toggleStat);
+    }
+
+    @Test
+    void shouldReturnFalse_whenFeatureIsDisabled() {
+        String featureKey = "multi-or-intermediate-track";
+        ZoneId zoneId = ZoneId.systemDefault();
+        long epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
+
+        when(featureToggleService.isMintiEnabled()).thenReturn(true);
+        when(featureToggleService.isFeatureEnabledForDate(eq(featureKey), eq(epoch), eq(false)))
+            .thenReturn(false);
+
+        boolean result = featureToggleService.isMultiOrIntermediateTrackEnabled();
+        assertThat(result).isFalse();
+    }
+
 }
