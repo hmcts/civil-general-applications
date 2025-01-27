@@ -61,14 +61,14 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
                 .ifPresentOrElse(
                     gaHwfDetails -> updatedData.gaHwfDetails(
                         gaHwfDetails.toBuilder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
                     ),
                     () -> updatedData.gaHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
@@ -79,15 +79,16 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
             log.info("HWF fee type is additional for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
             Optional.ofNullable(caseData.getAdditionalHwfDetails())
                 .ifPresentOrElse(
-                    hearingHwfDetails -> updatedData.additionalHwfDetails(
-                        HelpWithFeesDetails.builder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                    additionalHwfDetails -> updatedData.additionalHwfDetails(
+                        additionalHwfDetails.toBuilder().remissionAmount(feeAmount)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .hwfFeeType(FeeType.ADDITIONAL)
                             .build()
                     ),
                     () -> updatedData.additionalHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .hwfFeeType(FeeType.ADDITIONAL)
                             .build()

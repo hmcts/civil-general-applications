@@ -60,7 +60,8 @@ public class DashboardNotificationsParamsMapper {
             if (caseData.getGaHwfDetails().getHwfCaseEvent() != null
                 && caseData.getGaHwfDetails().getHwfCaseEvent().equals(CaseEvent.PARTIAL_REMISSION_HWF_GA)) {
                 params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getGaHwfDetails().getRemissionAmount()));
-                params.put("outstandingFeeInPounds", "£" + caseData.getGaHwfDetails().getOutstandingFeeInPounds());
+                params.put("outstandingFeeInPounds", "£" + MonetaryConversions
+                    .penniesToPounds(caseData.getGaHwfDetails().getOutstandingFee()));
             }
         } else if (caseData.getAdditionalHwfDetails() != null && (caseData.getHwfFeeType() != null
             && FeeType.ADDITIONAL == caseData.getHwfFeeType())) {
@@ -68,7 +69,8 @@ public class DashboardNotificationsParamsMapper {
                 && caseData.getAdditionalHwfDetails().getHwfCaseEvent().equals(CaseEvent.PARTIAL_REMISSION_HWF_GA)) {
                 params.put("remissionAmount", "£" + MonetaryConversions.penniesToPounds(caseData.getAdditionalHwfDetails()
                                                                                             .getRemissionAmount()));
-                params.put("outstandingFeeInPounds", "£" + caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds());
+                params.put("outstandingFeeInPounds", "£" + MonetaryConversions
+                    .penniesToPounds(caseData.getAdditionalHwfDetails().getOutstandingFee()));
             }
         }
 
