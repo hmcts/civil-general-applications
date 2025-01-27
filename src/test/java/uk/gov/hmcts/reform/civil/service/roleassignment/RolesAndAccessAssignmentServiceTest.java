@@ -130,12 +130,33 @@ class RolesAndAccessAssignmentServiceTest {
                             .build())
             .build();
 
+        // pre-existing copies should not be re-copied
+        RoleAssignmentResponse preExistingCopiedAdminRoleAssignment = RoleAssignmentResponse.builder()
+            .actorId(adminUserToCopyInto)
+            .actorIdType("IDAM")
+            .roleType("CASE")
+            .roleName("allocated-admin-caseworker")
+            .roleLabel("allocated admin")
+            .classification("RESTRICTED")
+            .grantType("SPECIFIC")
+            .roleCategory("ADMIN")
+            .readOnly(false)
+            .beginTime(ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+            .created(ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+            .attributes(Attributes.builder()
+                            .substantive("Y")
+                            .caseId(gaCaseId)
+                            .caseType("GENERALAPPLICATION")
+                            .region(null)
+                            .build())
+            .build();
+
         List<RoleAssignmentResponse> roleList = new ArrayList<>();
         roleList.add(allocatedJudgeRoleAssignment);
         roleList.add(leadJudgeRoleAssignment);
         roleList.add(adminRoleAssignment);
+        roleList.add(preExistingCopiedAdminRoleAssignment);
         allocatedCaseRoles = RoleAssignmentServiceResponse.builder().roleAssignmentResponse(roleList).build();
-
     }
 
     @Test

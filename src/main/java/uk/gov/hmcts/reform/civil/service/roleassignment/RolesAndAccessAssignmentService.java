@@ -77,24 +77,31 @@ public class RolesAndAccessAssignmentService {
         roleAssignmentsByActorId.forEach((actorId, roleResponses) -> {
             roleResponses.forEach(roleResponse -> {
 
-                Map<String, Object> roleAssignmentAttributes = new HashMap<>();
-                roleAssignmentAttributes.put("caseId", gaCaseId);
-                roleAssignmentAttributes.put("caseType", "GENERALAPPLICATION");
-                roleAssignmentAttributes.put("jurisdiction", "CIVIL");
+                // Check if an assignment already copied
+                boolean assignmentCopyExists = roleAssignments.stream()
+                    .anyMatch(ra -> ra.getActorId().equals(roleResponse.getActorId())
+                        && ra.getRoleName().equals(roleResponse.getRoleName()));
 
-                roleAssignments.add(RoleAssignment.builder()
-                                        .actorId(roleResponse.getActorId())
-                                        .actorIdType(roleResponse.getActorIdType())
-                                        .grantType(GrantType.valueOf(roleResponse.getGrantType()))
-                                        .roleCategory(RoleCategory.valueOf(roleResponse.getRoleCategory()))
-                                        .roleType(RoleType.valueOf(roleResponse.getRoleType()))
-                                        .classification(roleResponse.getClassification())
-                                        .roleName(roleResponse.getRoleName())
-                                        .beginTime(roleResponse.getBeginTime())
-                                        .endTime(roleResponse.getEndTime())
-                                        .readOnly(false)
-                                        .attributes(roleAssignmentAttributes)
-                                        .build());
+                if (!assignmentCopyExists) {
+                    Map<String, Object> roleAssignmentAttributes = new HashMap<>();
+                    roleAssignmentAttributes.put("caseId", gaCaseId);
+                    roleAssignmentAttributes.put("caseType", "GENERALAPPLICATION");
+                    roleAssignmentAttributes.put("jurisdiction", "CIVIL");
+
+                    roleAssignments.add(RoleAssignment.builder()
+                                            .actorId(roleResponse.getActorId())
+                                            .actorIdType(roleResponse.getActorIdType())
+                                            .grantType(GrantType.valueOf(roleResponse.getGrantType()))
+                                            .roleCategory(RoleCategory.valueOf(roleResponse.getRoleCategory()))
+                                            .roleType(RoleType.valueOf(roleResponse.getRoleType()))
+                                            .classification(roleResponse.getClassification())
+                                            .roleName(roleResponse.getRoleName())
+                                            .beginTime(roleResponse.getBeginTime())
+                                            .endTime(roleResponse.getEndTime())
+                                            .readOnly(false)
+                                            .attributes(roleAssignmentAttributes)
+                                            .build());
+                }
             });
         });
         return roleAssignments;
