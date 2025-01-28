@@ -63,11 +63,6 @@ public class HwFDashboardNotificationsHandlerTest extends BaseCallbackHandlerTes
     @Nested
     class AboutToSubmitCallback {
 
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
-
         @Test
         void shouldRecordClaimantScenarioApplicationFee_whenInvoked() {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);

@@ -71,10 +71,6 @@ public class TaskListForClaimantUpdateHandlerTest extends BaseCallbackHandlerTes
 
     @Nested
     class AboutToSubmitCallback {
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
 
         @Test
         void shouldRecordClaimantScenarioActionNeeded_whenInvoked_claimantIsApplicant() {

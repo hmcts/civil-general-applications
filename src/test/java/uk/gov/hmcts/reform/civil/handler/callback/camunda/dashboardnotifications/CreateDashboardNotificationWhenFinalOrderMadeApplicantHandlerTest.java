@@ -54,10 +54,6 @@ class CreateDashboardNotificationWhenFinalOrderMadeApplicantHandlerTest extends 
 
     @Nested
     class AboutToSubmitCallback {
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
 
         @Test
         void shouldRecordApplicationSubmittedScenario_whenInvoked() {

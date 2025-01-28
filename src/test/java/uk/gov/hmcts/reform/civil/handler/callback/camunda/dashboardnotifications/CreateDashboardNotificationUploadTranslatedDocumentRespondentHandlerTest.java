@@ -53,10 +53,6 @@ public class CreateDashboardNotificationUploadTranslatedDocumentRespondentHandle
 
     @Nested
     class AboutToSubmitCallback {
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
 
         @Test
         void shouldRecordTranslatedDocUploadedScenario_whenInvoked() {
