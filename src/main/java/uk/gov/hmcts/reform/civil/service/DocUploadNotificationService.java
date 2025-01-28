@@ -25,6 +25,7 @@ public class DocUploadNotificationService implements NotificationData {
     private final NotificationService notificationService;
     private final NotificationsProperties notificationProperties;
     private static final String REFERENCE_TEMPLATE_DOC_UPLOAD = "general-apps-notice-of-document-upload-%s";
+    private static final String EMPTY_SOLICITOR_REFERENCES_1V1 = "Claimant Reference: Not provided - Defendant Reference: Not provided";
     private final GaForLipService gaForLipService;
     private final Map<String, String> customProps = new HashMap<>();
     private final CoreCaseDataService coreCaseDataService;
@@ -113,6 +114,9 @@ public class DocUploadNotificationService implements NotificationData {
         }
 
         customProps.put(CASE_REFERENCE, caseData.getCcdCaseReference().toString());
+        customProps.put(PARTY_REFERENCE,
+                        Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())));
+        customProps.put(GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())));
         return customProps;
     }
 
@@ -124,6 +128,14 @@ public class DocUploadNotificationService implements NotificationData {
                           && (NO.equals(caseData.getRespondent2SameLegalRepresentative())
                           || Objects.isNull(caseData.getRespondent2SameLegalRepresentative()))
                           ? ", " + caseData.getDefendant2PartyName() : "");
+    }
+
+    private String getSolicitorReferences(String emailPartyReference) {
+        if (emailPartyReference != null) {
+            return emailPartyReference;
+        } else {
+            return EMPTY_SOLICITOR_REFERENCES_1V1;
+        }
     }
 
     public String getSurname(CaseData caseData) {

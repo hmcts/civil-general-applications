@@ -97,11 +97,13 @@ public class HwfNotificationService implements NotificationData {
         if (caseData.isHWFTypeApplication()) {
             remission = MonetaryConversions
                     .penniesToPounds(HwFFeeTypeService.getGaRemissionAmount(caseData));
-            outstanding = caseData.getGaHwfDetails().getOutstandingFeeInPounds();
+            outstanding =  MonetaryConversions
+                .penniesToPounds(caseData.getGaHwfDetails().getOutstandingFee());
         } else {
             remission = MonetaryConversions
                     .penniesToPounds(HwFFeeTypeService.getAdditionalRemissionAmount(caseData));
-            outstanding = caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds();
+            outstanding = MonetaryConversions
+                .penniesToPounds(caseData.getAdditionalHwfDetails().getOutstandingFee());
         }
         return Map.of(
             PART_AMOUNT, remission.toString(),
@@ -125,10 +127,12 @@ public class HwfNotificationService implements NotificationData {
         BigDecimal outstanding;
         if (caseData.isHWFTypeApplication()) {
             remission = caseData.getGaHwfDetails().getNoRemissionDetailsSummary().getLabel();
-            outstanding = caseData.getGaHwfDetails().getOutstandingFeeInPounds();
+            outstanding = MonetaryConversions
+                .penniesToPounds(caseData.getGaHwfDetails().getOutstandingFee());
         } else {
             remission = caseData.getAdditionalHwfDetails().getNoRemissionDetailsSummary().getLabel();
-            outstanding = caseData.getAdditionalHwfDetails().getOutstandingFeeInPounds();
+            outstanding = MonetaryConversions
+                .penniesToPounds(caseData.getAdditionalHwfDetails().getOutstandingFee());
         }
         return Map.of(
             FEE_AMOUNT, outstanding.toString(),

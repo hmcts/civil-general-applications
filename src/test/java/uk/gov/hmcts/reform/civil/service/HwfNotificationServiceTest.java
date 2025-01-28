@@ -562,7 +562,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
                 .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
                 .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
                 .build();
 
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails)
@@ -588,7 +588,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
             .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
 
         CaseData caseData = GA_CASE_DATA.toBuilder()
@@ -614,7 +614,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
                 .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
                 .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
                 .build();
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails)
@@ -640,7 +640,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(PARTIAL_REMISSION_HWF_GA)
             .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
@@ -668,7 +668,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(NO_REMISSION_HWF_GA)
             .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails)
                .parentCaseReference(GA_REFERENCE).build();
@@ -692,7 +692,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(NO_REMISSION_HWF_GA)
             .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
         CaseData caseData = GA_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE).applicantBilingualLanguagePreference(YesOrNo.YES)
@@ -716,7 +716,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(NO_REMISSION_HWF_GA)
             .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails)
             .parentCaseReference(GA_REFERENCE).build();
@@ -740,7 +740,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(NO_REMISSION_HWF_GA)
             .noRemissionDetailsSummary(NoRemissionDetailsSummary.INCORRECT_EVIDENCE)
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder()
             .parentCaseReference(GA_REFERENCE)
@@ -767,7 +767,7 @@ public class HwfNotificationServiceTest {
             TYPE_OF_FEE, FeeType.APPLICATION.getLabel(),
             TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
-            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            FEE_AMOUNT, "5.00",
             NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
             NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
@@ -780,7 +780,7 @@ public class HwfNotificationServiceTest {
             TYPE_OF_FEE, FeeType.ADDITIONAL.getLabel(),
             TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
             HWF_REFERENCE_NUMBER, HWF_REFERENCE,
-            FEE_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS,
+            FEE_AMOUNT, "5.00",
             NO_REMISSION_REASONS, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabel(),
             NO_REMISSION_REASONS_WELSH, NoRemissionDetailsSummary.INCORRECT_EVIDENCE.getLabelWelsh()
         );
@@ -794,7 +794,7 @@ public class HwfNotificationServiceTest {
                 TYPE_OF_FEE_WELSH, FeeType.APPLICATION.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
-                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
+                REMAINING_AMOUNT, "5.00"
         );
     }
 
@@ -806,7 +806,7 @@ public class HwfNotificationServiceTest {
                 TYPE_OF_FEE_WELSH, FeeType.ADDITIONAL.getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, HWF_REFERENCE,
                 PART_AMOUNT, "1000.00",
-                REMAINING_AMOUNT, OUTSTANDING_AMOUNT_IN_POUNDS
+                REMAINING_AMOUNT, "5.00"
         );
     }
 
@@ -816,7 +816,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
                 .hwfCaseEvent(FEE_PAYMENT_OUTCOME_GA)
                 .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
                 .build();
 
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails)
@@ -842,7 +842,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
             .hwfCaseEvent(FEE_PAYMENT_OUTCOME_GA)
             .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-            .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+            .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
             .build();
 
         CaseData caseData = GA_CASE_DATA.toBuilder().gaHwfDetails(hwfeeDetails)
@@ -870,7 +870,7 @@ public class HwfNotificationServiceTest {
         HelpWithFeesDetails hwfeeDetails = HelpWithFeesDetails.builder()
                 .hwfCaseEvent(FEE_PAYMENT_OUTCOME_GA)
                 .remissionAmount(new BigDecimal(REMISSION_AMOUNT))
-                .outstandingFeeInPounds(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
+                .outstandingFee(new BigDecimal(OUTSTANDING_AMOUNT_IN_POUNDS))
                 .build();
 
         CaseData caseData = ADDITIONAL_CASE_DATA.toBuilder().additionalHwfDetails(hwfeeDetails)
