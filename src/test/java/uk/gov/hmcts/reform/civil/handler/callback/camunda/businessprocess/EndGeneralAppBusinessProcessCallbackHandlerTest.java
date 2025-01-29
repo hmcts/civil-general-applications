@@ -394,9 +394,9 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse());
             when(caseDetailsConverter.toCaseData(getStartEventResponse().getCaseDetails())).thenReturn(parentCaseData);
             handler.handle(getCallbackParamsGaForLipCaseData(NO));
-            verify(coreCaseDataService, times(3))
+            verify(coreCaseDataService, times(2))
                 .submitUpdate(parentCaseId.capture(), caseDataContent.capture());
-            assertThat(caseDataContent.getAllValues()).hasSize(3);
+            assertThat(caseDataContent.getAllValues()).hasSize(2);
 
             Map<String, Object> map = objectMapper
                 .convertValue(caseDataContent.getAllValues().get(0).getData(),
