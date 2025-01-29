@@ -151,6 +151,41 @@ class ApplyForHwFDashboardNotificationHandlerTest extends BaseCallbackHandlerTes
         }
 
         @Test
+        void shouldRecordApplicantScenario_ApplyForHwF_whenInvoked_gaLipIsTrueAnndWithAdditionalDetails() {
+
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .generalAppType(GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
+                                    .build())
+                .generalAppPBADetails(GAPbaDetails.builder().additionalPaymentDetails(PaymentDetails.builder()
+                                                                                          .status(PaymentStatus.SUCCESS)
+                                                                                          .build()).build())
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.NO).build())
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .isGaApplicantLip(YesOrNo.YES)
+                .build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(NOTIFY_HELP_WITH_FEE.name())
+                    .build()
+            ).build();
+
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_REQUESTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
         void shouldRecordApplicantScenario_ApplyForHwF_whenInvoked_for_additional() {
 
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
