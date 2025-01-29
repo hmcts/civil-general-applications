@@ -240,7 +240,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -287,7 +286,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -334,7 +332,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -381,7 +378,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -421,7 +417,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -464,7 +459,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -507,7 +501,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -547,7 +540,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -579,7 +571,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(false);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
@@ -606,7 +597,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -639,7 +629,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
