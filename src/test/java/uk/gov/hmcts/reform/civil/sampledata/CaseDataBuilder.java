@@ -170,6 +170,12 @@ public class CaseDataBuilder {
 
     protected Party respondent1;
     protected Party applicant1;
+    protected String emailPartyReference;
+
+    public CaseDataBuilder emailPartyReference(String emailPartyReference) {
+        this.emailPartyReference = emailPartyReference;
+        return this;
+    }
 
     public CaseDataBuilder legacyCaseReference(String legacyCaseReference) {
         this.legacyCaseReference = legacyCaseReference;
@@ -414,6 +420,7 @@ public class CaseDataBuilder {
             .ccdCaseReference(ccdCaseReference)
             .respondent2SameLegalRepresentative(respondent2SameLegalRepresentative)
             .legacyCaseReference(legacyCaseReference)
+            .emailPartyReference(emailPartyReference)
             .generalApplications(generalApplications)
             .generalAppInformOtherParty(gaInformOtherParty)
             .generalAppUrgencyRequirement(gaUrgencyRequirement)

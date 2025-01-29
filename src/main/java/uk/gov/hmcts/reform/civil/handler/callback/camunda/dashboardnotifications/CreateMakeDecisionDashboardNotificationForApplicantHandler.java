@@ -39,7 +39,11 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
     protected String getScenario(CaseData caseData) {
         if ((caseData.getJudicialDecisionRequestMoreInfo() != null
             && (GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
-            || caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)))
+            || List.of(
+                CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
+                CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED
+            )
+            .contains(caseData.getCcdState())))
             && (Objects.isNull(caseData.getJudicialDecisionMakeAnOrderForWrittenRepresentations())
             && !caseData.judgeHasMadeAnOrder())) {
             if (GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY == caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption()
@@ -58,7 +62,11 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandler extends 
             == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_APPLICANT.getScenario();
         } else if (caseData.judgeHasMadeAnOrder()
-            && caseData.getCcdState().equals(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)) {
+            && List.of(
+                CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
+                CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED
+            )
+            .contains(caseData.getCcdState())) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_APPLICANT.getScenario();
         }
         return "";

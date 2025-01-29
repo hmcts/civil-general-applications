@@ -28,7 +28,7 @@ public class NoRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
     private static final List<CaseEvent> EVENTS = List.of(NO_REMISSION_HWF_GA);
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(ABOUT_TO_SUBMIT),
         this::noRemissionHWF,
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse

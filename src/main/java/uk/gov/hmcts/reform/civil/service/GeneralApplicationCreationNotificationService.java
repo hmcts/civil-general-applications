@@ -30,6 +30,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private static final String REFERENCE_TEMPLATE = "general-application-respondent-notification-%s";
 
+    private static final String EMPTY_SOLICITOR_REFERENCES_1V1 = "Claimant Reference: Not provided - Defendant Reference: Not provided";
+
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
     private final NotificationsProperties notificationProperties;
@@ -117,20 +119,28 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
+    private String getSolicitorReferences(String emailPartyReference) {
+        if (emailPartyReference != null) {
+            return emailPartyReference;
+        } else {
+            return EMPTY_SOLICITOR_REFERENCES_1V1;
+        }
+    }
+
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
         throws NotificationException {
         var caseReference = caseData.getCcdCaseReference();
         try {
-            log.info("Sending notification to recipient: {} for Case ID: {} with template: {}", recipient, caseReference, emailTemplate);
+            log.info("Sending notification to recipient for Case ID: {} with template: {}", caseReference, emailTemplate);
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
-            log.info("Notification sent successfully to recipient: {} for Case ID: {}", recipient, caseReference);
+            log.info("Notification sent successfully for Case ID: {}", caseReference);
         } catch (NotificationException e) {
-            log.error("Failed to send notification to recipient: {} for Case ID: {}", recipient, caseReference, e);
+            log.error("Failed to send notification for Case ID: {}", caseReference, e);
             throw new NotificationException(e);
         }
     }
@@ -148,9 +158,12 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
+            GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
+            PARTY_REFERENCE,
+            Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())),
             GA_LIP_RESP_NAME, lipRespName,
 
             CASE_TITLE, Objects.requireNonNull(caseTitle)

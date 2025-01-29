@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
+import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
 import java.util.HashMap;
@@ -26,11 +27,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_DASHBOARD_NOTIFICATION_FOR_GA_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT;
 
 @ExtendWith(MockitoExtension.class)
-class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandlerTest extends BaseCallbackHandlerTest {
+public class ApplicationIssuedRespondentDashboardNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     @Mock
     private DashboardApiClient dashboardApiClient;
@@ -38,12 +39,14 @@ class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandlerTest extends
     private DashboardNotificationsParamsMapper mapper;
     @Mock
     private FeatureToggleService featureToggleService;
+    @Mock
+    private GeneralAppFeesService generalAppFeesService;
     @InjectMocks
-    private CreateDashboardNotificationWhenFinalOrderMadeRespondentHandler handler;
+    private ApplicationIssuedRespondentDashboardNotificationHandler handler;
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE);
+        assertThat(handler.handledEvents()).contains(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_RESPONDENT);
     }
 
     @Test
@@ -56,45 +59,54 @@ class CreateDashboardNotificationWhenFinalOrderMadeRespondentHandlerTest extends
     class AboutToSubmitCallback {
 
         @Test
-        void shouldRecordApplicationSubmittedScenario_whenInvoked() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        void shouldRecordApplicationSubmittedScenarioWhenFreeApplication() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder().parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaRespondentOneLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .build();
+
             HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(generalAppFeesService.isFreeApplication(caseData)).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE.name())
+                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_RESPONDENT.name())
                     .build()
             ).build();
+
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPLICATION_ORDER_MADE_RESPONDENT.getScenario(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_NONURGENT_RESPONDENT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
         }
 
         @Test
-        void shouldNotRecordApplicationSubmittedScenario_whenInvoked() {
-            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            CaseData caseData = CaseDataBuilder.builder().withoutNoticeCaseData();
-            caseData = caseData.toBuilder().parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
+        void shouldNotRecordApplicationSubmittedScenarioWhenNotFreeApplication() {
+            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
+            caseData = caseData.toBuilder()
+                .parentCaseReference(caseData.getCcdCaseReference().toString())
+                .isGaRespondentOneLip(YesOrNo.YES)
                 .parentClaimantIsApplicant(YesOrNo.YES)
                 .build();
+
             HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(generalAppFeesService.isFreeApplication(caseData)).thenReturn(false);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_RESPONDENT_DASHBOARD_NOTIFICATION_ORDER_MADE.name())
+                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_RESPONDENT.name())
                     .build()
             ).build();
+
             handler.handle(params);
             verifyNoInteractions(dashboardApiClient);
         }
-
     }
 }

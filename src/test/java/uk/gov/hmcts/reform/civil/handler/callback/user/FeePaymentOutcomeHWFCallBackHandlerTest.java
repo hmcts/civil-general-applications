@@ -83,6 +83,11 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
                 .build();
 
             // Act
@@ -99,7 +104,8 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             // Arrange
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
-                .gaAdditionalHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
+                .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
                 .build();
 
             // Act
@@ -117,7 +123,12 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             // Arrange
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .hwfFeeType(FeeType.APPLICATION)
                 .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
                 .build();
 
             // Act
@@ -135,6 +146,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
             // Arrange
             CaseData caseData = CaseData.builder()
                 .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .hwfFeeType(FeeType.APPLICATION)
                 .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
                 .build();
 
@@ -162,7 +174,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .gaHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When
@@ -181,7 +193,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForAdditionalFee(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .additionalHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When

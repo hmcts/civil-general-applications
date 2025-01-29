@@ -180,7 +180,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
                               .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -202,13 +202,13 @@ public class DashboardNotificationsParamsMapperTest {
             .additionalHwfDetails(HelpWithFeesDetails.builder()
                                       .hwfCaseEvent(CaseEvent.MORE_INFORMATION_HWF_GA)
                                       .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
     }
 
     @Test
@@ -223,7 +223,7 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA)
                               .remissionAmount(BigDecimal.valueOf(7500))
-                              .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                              .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
@@ -231,7 +231,7 @@ public class DashboardNotificationsParamsMapperTest {
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
         assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
-        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£200");
+        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
 
     @Test
@@ -246,15 +246,15 @@ public class DashboardNotificationsParamsMapperTest {
             .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YesOrNo.YES).helpWithFeesReferenceNumber("HWF-A1B-23C").build())
             .additionalHwfDetails(HelpWithFeesDetails.builder()
                                       .hwfCaseEvent(CaseEvent.PARTIAL_REMISSION_HWF_GA).remissionAmount(BigDecimal.valueOf(7500))
-                                      .outstandingFeeInPounds(new BigDecimal(200.00)).build())
+                                      .outstandingFee(new BigDecimal(200.00)).build())
             .build();
 
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
-        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£200");
+        assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
 
     @Test
@@ -292,7 +292,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
     }
 
     @Test
@@ -312,7 +312,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais ychwanegol");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
     }
 
     @Test

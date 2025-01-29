@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -65,6 +66,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
     JacksonAutoConfiguration.class,
     GaForLipService.class
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class JudicialDecisionRespondentNotificationHandlerTest {
 
     @MockBean
@@ -91,6 +93,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     private CoreCaseDataService coreCaseDataService;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private GaForLipService gaForLipService;
 
     private static final String RESPONDENT = "respondent";
 
@@ -103,6 +107,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     private static final String SAMPLE_TEMPLATE = "general-application-apps-judicial-notification-template-id";
     private static final String SAMPLE_LIP_TEMPLATE = "general-application-apps-judicial-notification-template-lip-id";
     private static final String LIP_RES_WELSH_TEMPLATE = "ga-judicial-notification-respondent-welsh-template-lip-id";
+    private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
     private static final String JUDGES_DECISION = "MAKE_DECISION";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
@@ -158,10 +163,18 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             .thenReturn(SAMPLE_LIP_TEMPLATE);
         when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
             .thenReturn(LIP_RES_WELSH_TEMPLATE);
+        when(gaForLipService.isLipApp(any())).thenReturn(false);
     }
 
     @Nested
     class SendNotificationLip {
+
+        @BeforeEach
+        public void setup() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+        }
 
         public Map<String, String> customProp = new HashMap<>();
 
@@ -682,6 +695,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
             judicialRespondentNotificationService.sendNotification(
                 caseDataForJudicialApprovalOfApplication(NO, NO).toBuilder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .generalAppPBADetails(GAPbaDetails.builder()
                                               .additionalPaymentDetails(buildAdditionalPaymentSuccessData())
                                               .build())
@@ -993,6 +1007,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private CaseData caseDataForConcurrentWrittenOption() {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .isMultiParty(NO)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .judicialDecision(GAJudicialDecision.builder()
@@ -1014,6 +1029,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         private CaseData caseDataForSequentialWrittenOption() {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .generalAppRespondentSolicitors(respondentSolicitors())
                 .judicialDecision(GAJudicialDecision.builder()
                                       .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
@@ -1034,6 +1050,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         private CaseData caseDataForConcurrentWrittenRepRespondentNotPresent() {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                               .email(DUMMY_EMAIL).build())
                 .generalAppRespondentSolicitors(respondentSolicitors())
@@ -1052,6 +1069,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         private CaseData caseDataForJudgeDismissal(YesOrNo orderAgreement, YesOrNo isWithNotice, YesOrNo isCloaked) {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .applicationIsCloaked(isCloaked)
@@ -1072,6 +1090,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         private CaseData caseDataForJudicialApprovalOfApplication(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
@@ -1091,6 +1110,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         private CaseData caseDataForJudicialDirectionOrderOfApplication(YesOrNo orderAgreement, YesOrNo isWithNotice) {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .isMultiParty(NO)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
@@ -1113,6 +1133,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             YesOrNo isWithNotice,
             YesOrNo isCloaked) {
             return CaseData.builder()
+                .ccdCaseReference(CASE_REFERENCE)
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(orderAgreement).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
                 .applicationIsCloaked(isCloaked)
@@ -1136,6 +1157,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             YesOrNo isWithNotice, YesOrNo isCloaked, String superClaimType) {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppSuperClaimType(superClaimType)
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
@@ -1161,6 +1183,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private CaseData caseDataForSequentialWrittenRepInList() {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .isMultiParty(NO)
                     .judicialDecision(GAJudicialDecision.builder()
                                           .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
@@ -1184,6 +1207,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                                                                  YesOrNo isWithNotice) {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .isMultiParty(NO)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
@@ -1207,6 +1231,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private CaseData caseDataForListForHearingRespondentsAreInList(YesOrNo hasAgreed, YesOrNo isWithNotice) {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .generalAppRespondentSolicitors(respondentSolicitors())
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(hasAgreed).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
@@ -1229,6 +1254,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                                                              YesOrNo isCloaked) {
             return
                 CaseData.builder()
+                    .ccdCaseReference(CASE_REFERENCE)
                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                        .hasAgreed(orderAgreement).build())
                     .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isWithNotice).build())
@@ -1331,16 +1357,20 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private Map<String, String> notificationPropertiesSummeryJudgementConcurrent() {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue()
+                GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue(),
+                NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
             );
         }
 
         private Map<String, String> notificationPropertiesToStrikeOut() {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.STRIKE_OUT.getDisplayedValue()
+                GeneralApplicationTypes.STRIKE_OUT.getDisplayedValue(),
+                NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
             );
         }
 
@@ -1367,8 +1397,10 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private Map<String, String> notificationPropertiesToAmendStatementOfCase() {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue()
+                GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue(),
+                NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
             );
         }
 
@@ -1381,8 +1413,10 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         private Map<String, String> notificationPropertiesToGetReliefFromSanctions() {
             return Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+                NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
-                GeneralApplicationTypes.RELIEF_FROM_SANCTIONS.getDisplayedValue()
+                GeneralApplicationTypes.RELIEF_FROM_SANCTIONS.getDisplayedValue(),
+                NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
             );
         }
 
@@ -1459,6 +1493,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption) {
 
         return CaseData.builder()
+            .ccdCaseReference(CASE_REFERENCE)
             .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
             .generalAppRespondentSolicitors(respondentSolicitors())
             .applicationIsCloaked(isCloaked)
@@ -1488,9 +1523,11 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     private Map<String, String> notificationPropertiesToStayTheClaim() {
         return Map.of(
             NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
+            NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
             NotificationData.GA_APPLICATION_TYPE,
-            GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue()
-        );
+            GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
+            NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
+            );
     }
 
     private List<Element<GASolicitorDetailsGAspec>> respondentSolicitors() {

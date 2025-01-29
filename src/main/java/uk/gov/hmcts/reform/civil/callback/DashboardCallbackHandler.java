@@ -25,7 +25,7 @@ public abstract class DashboardCallbackHandler extends CallbackHandler {
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return featureToggleService.isDashboardServiceEnabled() && featureToggleService.isGaForLipsEnabled()
+        return featureToggleService.isGaForLipsEnabled()
             ? Map.of(callbackKey(ABOUT_TO_SUBMIT), this::configureDashboardScenario)
             : Map.of(callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse);
     }
